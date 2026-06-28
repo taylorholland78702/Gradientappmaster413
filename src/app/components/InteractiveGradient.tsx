@@ -8610,7 +8610,7 @@ RANDOMIZE
           </button>
           <button
             onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+            className="flex-1 px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
             title="Audio Controls"
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -8625,19 +8625,7 @@ RANDOMIZE
             title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
           >
             {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => setIsAudioReactive(!isAudioReactive)}
-            className={`w-[60px] px-1 py-1.5 rounded-lg text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
-              isAudioReactive
-                ? 'bg-green-500 text-white'
-                : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
-            }`}
-            title={isAudioReactive ? "Disable Audio Reactivity" : "Enable Audio Reactivity"}
-          >
-            {isAudioReactive ? 'ON' : 'OFF'}
-          </button>
-        </div>
+          </button>        </div>
         
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
