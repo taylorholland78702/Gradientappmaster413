@@ -287,7 +287,7 @@ export function InteractiveGradient() {
   const [presetName, setPresetName] = useState('');
   const [savedPresets, setSavedPresets] = useState<Array<{name: string; data: any}>>([]);
   
-  // Rating system for Feeling Lucky
+  // Rating system for Randomize
   const [showRatingUI, setShowRatingUI] = useState(false);
   const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>([]);
   const [pendingRatingState, setPendingRatingState] = useState<any>(null);
@@ -931,7 +931,7 @@ export function InteractiveGradient() {
     []
   );
 
-  // Gradient types for Feeling Lucky (excludes freeform and mesh)
+  // Gradient types for Randomize (excludes freeform and mesh)
   const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = useMemo(() =>
     ['angle', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
     []
@@ -1111,7 +1111,7 @@ export function InteractiveGradient() {
     []
   );
 
-  // Feeling Lucky - randomize everything!
+  // Randomize - randomize everything!
   const feelingLucky = useCallback(() => {
     saveCurrentState();
 
@@ -1409,7 +1409,7 @@ export function InteractiveGradient() {
     setColorPins(newPins);
     setSelectedPinId(null); // Clear selection
 
-    // Rating UI removed - keeping backend rating system for Feeling Lucky algorithm
+    // Rating UI removed - keeping backend rating system for Randomize algorithm
     // setShowRatingUI(true);
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults]);
 
@@ -2260,7 +2260,7 @@ export function InteractiveGradient() {
 
     // Safety check: require a gradient type to be selected
     if (!gradientType) {
-      // Clear canvas and show nothing until Feeling Lucky is clicked
+      // Clear canvas and show nothing until Randomize is clicked
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, displayWidth, displayHeight);
       return;
@@ -5139,7 +5139,7 @@ export function InteractiveGradient() {
           <button
             onClick={feelingLucky}
             className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-lg hover:shadow-xl flex items-center justify-center"
-            title="Feeling Lucky"
+            title="Randomize"
           >
             <Shuffle className="w-4 h-4" />
           </button>
@@ -5156,7 +5156,7 @@ export function InteractiveGradient() {
       {/* Main controls */}
       <div className={`absolute top-4 left-4 flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-[#1a1a2e]/40 backdrop-blur-md rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         
-        {/* Top row with Eye, Feeling Lucky, and Refresh buttons */}
+        {/* Top row with Eye, Randomize, and Refresh buttons */}
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsControlsVisible(false)}
@@ -5169,7 +5169,7 @@ export function InteractiveGradient() {
             onClick={feelingLucky}
             className="px-2 h-[32px] rounded-lg text-[13px] transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white font-semibold shadow-lg hover:shadow-xl flex-1 flex items-center justify-center"
           >
-            FEELING LUCKY
+            Randomize
           </button>
           <button
             onClick={undoLastChange}
