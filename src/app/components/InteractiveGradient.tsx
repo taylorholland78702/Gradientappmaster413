@@ -4822,14 +4822,14 @@ export function InteractiveGradient() {
 
   // Load presets from Firestore on auth state change
   useEffect(() => {
-    signInAnonymously(auth).then(async (cred) => { const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets')); if (!snap.empty) { const presets = snap.docs.map(d => d.data()); setSavedPresets(presets); } }
-                                                 });
-      try {
-        // presets loaded from Firestore above
-      } catch (e) {
-        console.error('Failed to load presets:', e);
+    signInAnonymously(auth).then(async (cred) => {
+      const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
+      if (!snap.empty) {
+        const presets = snap.docs.map((d: any) => d.data());
+        setSavedPresets(presets);
       }
-    
+    });
+
     // Load rated results
     const storedRatings = localStorage.getItem('gradientRatings');
     if (storedRatings) {
