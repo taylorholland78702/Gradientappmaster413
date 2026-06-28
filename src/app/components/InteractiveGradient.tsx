@@ -454,11 +454,7 @@ export function InteractiveGradient() {
         lastBeatTimeRef.current = now;
         if (bassBeatSync) bassBeatPulseRef.current = 1.0;
         if (midsBeatSync) midsBeatPulseRef.current = 1.0;
-        if (trebleBeatSync) {
-          trebleBeatPulseRef.current = 1.0;
-          // Shuffle colors on every beat (like the color picker shuffle button)
-          setTargetColors(prev => prev.map(() => randomColor()));
-        }
+        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
         // Trigger beat flash indicators
         setBassFlash(true); setMidsFlash(true); setTrebleFlash(true); setBpmFlash(true);
         setTimeout(() => { setBassFlash(false); setMidsFlash(false); setTrebleFlash(false); setBpmFlash(false); }, 120);
@@ -525,7 +521,7 @@ export function InteractiveGradient() {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, randomColor]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync]);
 
   // Poll live level refs at ~30fps to drive the bar graph
   useEffect(() => {
@@ -1792,7 +1788,7 @@ export function InteractiveGradient() {
     });
     
     // Apply hue shift if audio is reactive
-    const shouldApplyHueShift = isAudioEnabled && isAudioReactive;
+    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioColorShift > 0;
     
     const applyHueShift = (color: ColorRGB): ColorRGB => {
       if (!shouldApplyHueShift) return color;
@@ -2402,11 +2398,11 @@ export function InteractiveGradient() {
     const maxRadius = Math.max(displayWidth, displayHeight);
     const fitRadius = Math.min(displayWidth, displayHeight) / 2;
     
-    // Subtle angle nudge from bass (max 20°)
-    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive)
-      ? gradientAngle + (audioGradientParam * 20)
+    // Apply audio reactivity to gradient angle if enabled
+    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive) 
+      ? gradientAngle + (audioGradientParam * 360) // Bass affects angle by up to 360 degrees
       : gradientAngle;
-
+    
     const angleRad = audioAdjustedAngle * DEG_TO_RAD;
     const cosAngle = Math.cos(angleRad);
     const sinAngle = Math.sin(angleRad);
@@ -2415,13 +2411,11 @@ export function InteractiveGradient() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-    // Universal bass zoom pulse — scales entire canvas from center on every beat
+    // Apply audio-reactive transformations when audio is enabled
     if (isAudioEnabled && isAudioReactive) {
       ctx.save();
-      const pulse = 1 + audioGradientParam * 0.12;
-      ctx.translate(centerX, centerY);
-      ctx.scale(pulse, pulse);
-      ctx.translate(-centerX, -centerY);
+      // Audio transformations will be applied to specific gradient/effect parameters
+      // rather than global canvas transformations
     }
 
     let gradient: CanvasGradient | undefined;
@@ -2706,8 +2700,8 @@ export function InteractiveGradient() {
         const waveScaleForWave = 1 / zoom;
         const waveWidth = (displayWidth / waveNumber) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
-        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 20 // Up to 20 extra amplitude
+        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive) 
+          ? audioGradientParam * 100 // Up to 100 extra amplitude
           : 0;
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
@@ -2767,8 +2761,8 @@ export function InteractiveGradient() {
         
         const shapesScale = 1 / zoom;
         // Audio reactivity: bass affects ring width
-        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 20 // Up to 20 extra width
+        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive) 
+          ? audioGradientParam * 100 // Up to 100 extra width
           : 0;
         const shapeRingWidth = (concentricRingWidth + audioShapeRingWidth) * shapesScale;
         const numShapeRings = Math.min(shapesCount, Math.ceil(maxRadius / shapeRingWidth) + 2);
@@ -2979,8 +2973,8 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         
         // Audio reactivity: bass affects gradient animation in cells
-        const audioGridOffset = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 30 // Up to 30 degree offset per cell
+        const audioGridOffset = (isAudioEnabled && isAudioReactive) 
+          ? audioGradientParam * 360 // Up to 360 degree offset
           : 0;
         
         const cellWidth = displayWidth / gridColumns;
@@ -3084,8 +3078,8 @@ export function InteractiveGradient() {
         const burstScale = 1 / zoom;
         const burstRadius = fitRadius * 0.7;
         // Audio reactivity: bass affects burst spread
-        const audioBurstSpread = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 20 // Up to 20 extra spread
+        const audioBurstSpread = (isAudioEnabled && isAudioReactive) 
+          ? audioGradientParam * 100 // Up to 100 extra spread
           : 0;
         const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
         
@@ -3114,8 +3108,8 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         
         // Audio reactivity: bass affects pin radius
-        const audioFreeformRadius = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 40 // Up to 40 extra radius
+        const audioFreeformRadius = (isAudioEnabled && isAudioReactive) 
+          ? audioGradientParam * 200 // Up to 200 extra radius
           : 0;
         
         // Create a pixel-based blend using distance to each pin
@@ -3435,7 +3429,7 @@ export function InteractiveGradient() {
       }
     }
 
-    // Restore universal zoom transform before applying effects
+    // Restore audio-reactive transformations before applying effects
     if (isAudioEnabled && isAudioReactive) {
       ctx.restore();
     }
@@ -3453,8 +3447,11 @@ export function InteractiveGradient() {
         return;
       }
       
-      // Audio modulation applies to all effects, not just the first
-      const audioModulation = (isAudioEnabled && isAudioReactive) ? audioEffectParam : 0;
+      // Check if this is the first effect and audio reactivity is enabled
+      const isFirstEffect = index === 0;
+      const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect) 
+        ? audioEffectParam 
+        : 0;
       
       // Get imageData only for effects that need it
       const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'crackle', 'dust-scratches', 'color-shift', 'duotone', 'tritone', 'gradient-map'].includes(effectType);
@@ -3481,7 +3478,7 @@ export function InteractiveGradient() {
             ctx.fillRect(0, 0, displayWidth, displayHeight);
             ctx.imageSmoothingEnabled = false;
             const cx = displayWidth / 2, cy = displayHeight / 2;
-            const seg = kaleidoscopeSegments + Math.floor(audioModulation * 4);
+            const seg = kaleidoscopeSegments + (isFirstEffect ? Math.floor(audioModulation * 8) : 0);
             const aps = (Math.PI * 2) / seg;
             const r = Math.sqrt(cx * cx + cy * cy);
             for (let i = 0; i < seg; i++) {
@@ -3518,7 +3515,7 @@ export function InteractiveGradient() {
           
         case 'pixelate': {
           const pxTmp = document.createElement('canvas');
-          const pxSize = Math.max(1, pixelSize + Math.floor(audioModulation * 10));
+          const pxSize = Math.max(1, pixelSize + (isFirstEffect ? Math.floor(audioModulation * 30) : 0));
           pxTmp.width = Math.max(1, Math.floor(displayWidth / pxSize));
           pxTmp.height = Math.max(1, Math.floor(displayHeight / pxSize));
           const pxCtx = pxTmp.getContext('2d');
@@ -3539,7 +3536,7 @@ export function InteractiveGradient() {
           tCtx.drawImage(canvas, 0, 0);
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const tSz = Math.max(10, triangleSize + Math.floor(audioModulation * 15));
+          const tSz = Math.max(10, triangleSize + (isFirstEffect ? Math.floor(audioModulation * 40) : 0));
           const cols = Math.ceil(displayWidth / tSz), rows = Math.ceil(displayHeight / tSz);
           for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
@@ -3567,7 +3564,7 @@ export function InteractiveGradient() {
           if (displayWidth <= 1 || displayHeight <= 1) break;
           const src = ctx.getImageData(0, 0, displayWidth, displayHeight);
           const dst = ctx.createImageData(displayWidth, displayHeight);
-          const off = Math.min(Math.abs(chromaticOffset + Math.floor(audioModulation * 6)), Math.floor(displayWidth / 3));
+          const off = Math.min(Math.abs(chromaticOffset + (isFirstEffect ? Math.floor(audioModulation * 10) : 0)), Math.floor(displayWidth / 3));
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               const i = (y * displayWidth + x) * 4;
@@ -3588,7 +3585,7 @@ export function InteractiveGradient() {
           const dst = ctx.createImageData(displayWidth, displayHeight);
           const cx = displayWidth / 2, cy = displayHeight / 2;
           const md = Math.sqrt(cx * cx + cy * cy);
-          const str = fisheyeStrength + audioModulation * 0.3;
+          const str = fisheyeStrength + (isFirstEffect ? audioModulation : 0);
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               const dx = x - cx, dy = y - cy;
@@ -3617,7 +3614,7 @@ export function InteractiveGradient() {
         case 'film-grain': {
           if (!imageData) break;
           const d = imageData.data;
-          const int = grainIntensity + audioModulation * 0.3;
+          const int = grainIntensity + (isFirstEffect ? audioModulation * 0.3 : 0);
           const sz = { 'fine': 0.5, 'medium': 1, 'coarse': 2, 'film': 1.5 }[grainType];
           for (let i = 0; i < d.length; i += 4) {
             const n = (Math.random() - 0.5) * int * 255 * sz;
@@ -3639,16 +3636,15 @@ export function InteractiveGradient() {
         case 'charcoal': {
           if (!imageData) break;
           const d = imageData.data;
-          const effectiveCharcoal = Math.min(1, charcoalIntensity + audioModulation * 0.2);
           for (let i = 0; i < d.length; i += 4) {
             const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
-            if (effectiveCharcoal < 0.5) {
-              const a = 1 - (effectiveCharcoal * 2);
+            if (charcoalIntensity < 0.5) {
+              const a = 1 - (charcoalIntensity * 2);
               d[i] = d[i] * (1 - a) + g * a;
               d[i + 1] = d[i + 1] * (1 - a) + g * a;
               d[i + 2] = d[i + 2] * (1 - a) + g * a;
             } else {
-              const b = (effectiveCharcoal - 0.5) * 4;
+              const b = (charcoalIntensity - 0.5) * 4;
               d[i] = Math.min(255, Math.max(0, d[i] + (d[i] - g) * b));
               d[i + 1] = Math.min(255, Math.max(0, d[i + 1] + (d[i + 1] - g) * b));
               d[i + 2] = Math.min(255, Math.max(0, d[i + 2] + (d[i + 2] - g) * b));
@@ -3660,7 +3656,7 @@ export function InteractiveGradient() {
         
         case 'posterize': {
           if (!imageData) break;
-          const d = imageData.data, lv = Math.max(2, posterizeLevels - Math.floor(audioModulation * 2)), s = 256 / lv;
+          const d = imageData.data, lv = posterizeLevels, s = 256 / lv;
           for (let i = 0; i < d.length; i += 4) {
             d[i] = Math.floor(d[i] / 256 * lv) * s;
             d[i + 1] = Math.floor(d[i + 1] / 256 * lv) * s;
@@ -3679,7 +3675,7 @@ export function InteractiveGradient() {
           htCtx.putImageData(imageData, 0, 0);
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const sz = Math.max(2, halftoneSize + Math.floor(audioModulation * 4));
+          const sz = halftoneSize;
           for (let y = 0; y < displayHeight; y += sz) {
             for (let x = 0; x < displayWidth; x += sz) {
               const pd = htCtx.getImageData(x, y, 1, 1).data;
@@ -3701,13 +3697,13 @@ export function InteractiveGradient() {
           if (canvas.width === 0 || canvas.height === 0) break;
           
           // Apply horizontal blur first for VHS tape tracking blur
-          const blurStrength = Math.floor(2 + vhsGlitchIntensity * 3 + audioModulation * 2);
+          const blurStrength = Math.floor(2 + vhsGlitchIntensity * 3);
           ctx.filter = `blur(${blurStrength}px)`;
           ctx.drawImage(canvas, 0, 0);
           ctx.filter = 'none';
-
+          
           // More horizontal glitches with varying sizes
-          const numGlitches = Math.floor(15 + vhsGlitchIntensity * 50 + audioModulation * 25);
+          const numGlitches = Math.floor(15 + vhsGlitchIntensity * 50); // 15-65 glitches
           for (let i = 0; i < numGlitches; i++) {
             const y = Math.random() * displayHeight;
             const h = Math.max(2, Math.min(60, Math.random() * 60 * vhsGlitchIntensity)); // Larger glitches
@@ -3758,7 +3754,7 @@ export function InteractiveGradient() {
           const texData = imageData.data;
           // Add dust noise
           for (let i = 0; i < texData.length; i += 4) {
-            const noise = (Math.random() - 0.5) * 30 * (dustIntensity + audioModulation * 0.4);
+            const noise = (Math.random() - 0.5) * 30 * dustIntensity;
             texData[i] += noise;
             texData[i + 1] += noise;
             texData[i + 2] += noise;
@@ -3812,7 +3808,7 @@ export function InteractiveGradient() {
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               // Apply wave in the direction of rotation
-              const waveOffset = Math.sin((y * Math.cos(angleRad) + x * Math.sin(angleRad)) * 0.05) * (waveDistortionStrength + audioModulation * 12);
+              const waveOffset = Math.sin((y * Math.cos(angleRad) + x * Math.sin(angleRad)) * 0.05) * waveDistortionStrength;
               const sourceX = x + waveOffset * Math.cos(angleRad);
               const sourceY = y + waveOffset * Math.sin(angleRad);
               // Wrap coordinates to prevent white gaps at edges
@@ -3837,11 +3833,10 @@ export function InteractiveGradient() {
         case 'color-shift': {
           if (!imageData) break;
           const d = imageData.data;
-          const effectiveHue = colorShiftHue + Math.floor(audioModulation * 30);
           for (let i = 0; i < d.length; i += 4) {
-            d[i] = (d[i] + effectiveHue) % 256;
-            d[i + 1] = (d[i + 1] + effectiveHue) % 256;
-            d[i + 2] = (d[i + 2] + effectiveHue) % 256;
+            d[i] = (d[i] + colorShiftHue) % 256;
+            d[i + 1] = (d[i + 1] + colorShiftHue) % 256;
+            d[i + 2] = (d[i + 2] + colorShiftHue) % 256;
           }
           ctx.putImageData(imageData, 0, 0);
           break;
@@ -3855,12 +3850,11 @@ export function InteractiveGradient() {
             return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 0, g: 0, b: 0 };
           };
           const c0 = h2r(duotoneColor1), c1 = h2r(duotoneColor2);
-          const effectiveDuotone = Math.min(1, duotoneIntensity + audioModulation * 0.25);
           for (let i = 0; i < d.length; i += 4) {
             const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
-            d[i] = (c0.r * (1 - t) + c1.r * t) * effectiveDuotone + d[i] * (1 - effectiveDuotone);
-            d[i + 1] = (c0.g * (1 - t) + c1.g * t) * effectiveDuotone + d[i + 1] * (1 - effectiveDuotone);
-            d[i + 2] = (c0.b * (1 - t) + c1.b * t) * effectiveDuotone + d[i + 2] * (1 - effectiveDuotone);
+            d[i] = (c0.r * (1 - t) + c1.r * t) * duotoneIntensity + d[i] * (1 - duotoneIntensity);
+            d[i + 1] = (c0.g * (1 - t) + c1.g * t) * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
+            d[i + 2] = (c0.b * (1 - t) + c1.b * t) * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
           }
           ctx.putImageData(imageData, 0, 0);
           break;
@@ -3874,7 +3868,6 @@ export function InteractiveGradient() {
             return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 0, g: 0, b: 0 };
           };
           const c0 = h2r(tritoneColor1), c1 = h2r(tritoneColor2), c2 = h2r(tritoneColor3);
-          const effectiveTritone = Math.min(1, tritoneIntensity + audioModulation * 0.25);
           for (let i = 0; i < d.length; i += 4) {
             const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
             let r, gr, b;
@@ -3889,9 +3882,9 @@ export function InteractiveGradient() {
               gr = c1.g * (1 - lt) + c2.g * lt;
               b = c1.b * (1 - lt) + c2.b * lt;
             }
-            d[i] = r * effectiveTritone + d[i] * (1 - effectiveTritone);
-            d[i + 1] = gr * effectiveTritone + d[i + 1] * (1 - effectiveTritone);
-            d[i + 2] = b * effectiveTritone + d[i + 2] * (1 - effectiveTritone);
+            d[i] = r * tritoneIntensity + d[i] * (1 - tritoneIntensity);
+            d[i + 1] = gr * tritoneIntensity + d[i + 1] * (1 - tritoneIntensity);
+            d[i + 2] = b * tritoneIntensity + d[i + 2] * (1 - tritoneIntensity);
           }
           ctx.putImageData(imageData, 0, 0);
           break;
@@ -3903,7 +3896,7 @@ export function InteractiveGradient() {
           const vigGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vigRadius);
           vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
           // Audio modulation affects vignette strength
-          const audioVignetteStrength = audioModulation * 0.5;
+          const audioVignetteStrength = isFirstEffect ? audioModulation * 0.5 : 0;
           const effectiveVignetteStrength = Math.min(1, vignetteStrength + audioVignetteStrength);
           vigGrad.addColorStop(1, `rgba(0,0,0,${effectiveVignetteStrength})`);
           ctx.fillStyle = vigGrad;
@@ -3972,11 +3965,11 @@ export function InteractiveGradient() {
         
         case 'blur': {
           if (blurType === 'gaussian') {
-            ctx.filter = `blur(${blurGaussianAmount + audioModulation * 5}px)`;
+            ctx.filter = `blur(${blurGaussianAmount + (isFirstEffect ? audioModulation * 10 : 0)}px)`;
             ctx.drawImage(canvas, 0, 0);
             ctx.filter = 'none';
           } else if (blurType === 'motion') {
-            const amt = blurMotionAmount + audioModulation * 5;
+            const amt = blurMotionAmount + (isFirstEffect ? audioModulation * 10 : 0);
             const rad = (blurMotionDirection * Math.PI) / 180;
             const iterations = Math.max(10, Math.floor(10 + amt / 2));
             const ox = Math.cos(rad) * amt, oy = Math.sin(rad) * amt;
@@ -3992,7 +3985,7 @@ export function InteractiveGradient() {
         }
         
         case 'bokeh': {
-          const bsz = bokehSize + audioModulation * 5;
+          const bsz = bokehSize + (isFirstEffect ? audioModulation * 5 : 0);
           ctx.filter = `blur(${bsz}px)`;
           ctx.drawImage(canvas, 0, 0);
           ctx.filter = 'none';
@@ -4061,7 +4054,7 @@ export function InteractiveGradient() {
         
         case 'brightness':
           // Brightness adjustment
-          const audioBrightnessBoost = audioModulation * 0.5;
+          const audioBrightnessBoost = isFirstEffect ? audioModulation * 0.5 : 0;
           const effectiveBrightness = 1 + brightnessAmount + audioBrightnessBoost;
           ctx.filter = `brightness(${effectiveBrightness})`;
           ctx.drawImage(canvas, 0, 0);
@@ -4119,7 +4112,7 @@ export function InteractiveGradient() {
 
           if (slitScanBufferRef.current.length > 1) {
             const out = ctx.createImageData(displayWidth, displayHeight);
-            const int = Math.min(1, slitScanIntensity + audioModulation * 0.2);
+            const int = slitScanIntensity;
             const buf = slitScanBufferRef.current;
 
             if (slitScanDirection === 'horizontal') {
@@ -4167,14 +4160,6 @@ export function InteractiveGradient() {
           break;
       }
     });
-
-    // Universal mids brightness boost — screen-blend white overlay
-    if (isAudioEnabled && isAudioReactive && audioEffectParam > 0.01) {
-      ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.35, audioEffectParam * 0.18)})`;
-      ctx.fillRect(0, 0, displayWidth, displayHeight);
-      ctx.globalCompositeOperation = 'source-over';
-    }
 
     const handleResize = () => {
       // Force re-render on resize - useEffect will re-run
