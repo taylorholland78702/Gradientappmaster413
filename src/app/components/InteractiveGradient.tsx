@@ -8706,10 +8706,11 @@ RANDOMIZE
           </button>
           <button
             onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="flex-1 px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-between"
             title="Audio Controls"
           >
-            <SlidersHorizontal className="w-4 h-4" />
+            <span>Audio Controls</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization()}
