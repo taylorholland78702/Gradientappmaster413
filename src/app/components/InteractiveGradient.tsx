@@ -8769,14 +8769,6 @@ RANDOMIZE
                     <span className="text-[10px] font-semibold text-white/80">Shape</span>
                     <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
                     <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                    <button onClick={() => setBassOpen(o => !o)} className="text-[9px] text-white/30 hover:text-white/60 transition-colors">{bassOpen ? '▲ less' : '▼ more'}</button>
-                    {bassOpen && (
-                      <div className="w-full flex flex-col gap-1 mt-0.5">
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Smooth</label><input type="range" min="0" max="0.99" step="0.01" value={bassSmoothing} onChange={(e) => setBassSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Thresh</label><input type="range" min="0" max="1" step="0.01" value={bassThreshold} onChange={(e) => setBassThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1 text-[9px] text-white/40"><input type="number" min="0" max="3" step="0.1" value={bassMin} onChange={(e) => setBassMin(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /><span>–</span><input type="number" min="0" max="3" step="0.1" value={bassMax} onChange={(e) => setBassMax(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /></div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Motion = Mids */}
@@ -8790,14 +8782,6 @@ RANDOMIZE
                     <span className="text-[10px] font-semibold text-white/80">Motion</span>
                     <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
                     <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                    <button onClick={() => setMidsOpen(o => !o)} className="text-[9px] text-white/30 hover:text-white/60 transition-colors">{midsOpen ? '▲ less' : '▼ more'}</button>
-                    {midsOpen && (
-                      <div className="w-full flex flex-col gap-1 mt-0.5">
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Smooth</label><input type="range" min="0" max="0.99" step="0.01" value={midsSmoothing} onChange={(e) => setMidsSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Thresh</label><input type="range" min="0" max="1" step="0.01" value={midsThreshold} onChange={(e) => setMidsThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1 text-[9px] text-white/40"><input type="number" min="0" max="3" step="0.1" value={midsMin} onChange={(e) => setMidsMin(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /><span>–</span><input type="number" min="0" max="3" step="0.1" value={midsMax} onChange={(e) => setMidsMax(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /></div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Color = Treble */}
@@ -8811,14 +8795,6 @@ RANDOMIZE
                     <span className="text-[10px] font-semibold text-white/80">Color</span>
                     <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
                     <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                    <button onClick={() => setTrebleOpen(o => !o)} className="text-[9px] text-white/30 hover:text-white/60 transition-colors">{trebleOpen ? '▲ less' : '▼ more'}</button>
-                    {trebleOpen && (
-                      <div className="w-full flex flex-col gap-1 mt-0.5">
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Smooth</label><input type="range" min="0" max="0.99" step="0.01" value={trebleSmoothing} onChange={(e) => setTrebleSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1"><label className="text-[9px] text-white/40 w-12 flex-shrink-0">Thresh</label><input type="range" min="0" max="1" step="0.01" value={trebleThreshold} onChange={(e) => setTrebleThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" /></div>
-                        <div className="flex items-center gap-1 text-[9px] text-white/40"><input type="number" min="0" max="3" step="0.1" value={trebleMin} onChange={(e) => setTrebleMin(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /><span>–</span><input type="number" min="0" max="3" step="0.1" value={trebleMax} onChange={(e) => setTrebleMax(Number(e.target.value))} className="w-8 bg-transparent border border-white/20 rounded px-0.5 text-center text-white" /></div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
