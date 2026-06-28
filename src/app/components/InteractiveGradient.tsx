@@ -5169,7 +5169,7 @@ export function InteractiveGradient() {
             onClick={feelingLucky}
             className="px-2 h-[32px] rounded-lg text-[13px] transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white font-semibold shadow-lg hover:shadow-xl flex-1 flex items-center justify-center"
           >
-            Randomize
+RANDOMIZE
           </button>
           <button
             onClick={undoLastChange}
