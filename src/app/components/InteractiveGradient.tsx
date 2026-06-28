@@ -86,6 +86,8 @@ export function InteractiveGradient() {
   const lastBeatTimeRef = useRef(0);
   const beatIntervalsRef = useRef<number[]>([]);
   const bassPrevRef = useRef(0);
+  const treblePrevRef = useRef(0);
+  const lastTrebleBeatRef = useRef(0);
   const bassBeatPulseRef = useRef(0);
   const midsBeatPulseRef = useRef(0);
   const trebleBeatPulseRef = useRef(0);
@@ -539,6 +541,15 @@ export function InteractiveGradient() {
       const trebleColorValue = Math.max(trebleMin * 360, Math.min(trebleMax * 360, trebleSmoothedRef.current));
       liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioColorShift(trebleColorValue);
+
+      // Treble onset detection for Color BEAT
+      const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
+      if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 200) {
+        lastTrebleBeatRef.current = now;
+        setGradientColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
+        setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
+      }
+      treblePrevRef.current = trebleAvgRaw;
 
       requestAnimationFrame(analyzeAudio);
     };
