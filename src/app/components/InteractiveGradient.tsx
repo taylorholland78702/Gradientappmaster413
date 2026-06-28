@@ -8604,79 +8604,79 @@ RANDOMIZE
         </div>
         
         {isAudioControlsOpen && (
-          <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs text-white whitespace-nowrap">Bass (Gradient):</label>
-                <div className="flex items-center gap-1 flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={bassMultiplier}
-                    onChange={(e) => setBassMultiplier(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                      <input
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={bassMultiplier}
-                        onChange={(e) => setBassMultiplier(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
+          <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Bass (Gradient):</label>
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    <input
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={bassMultiplier}
+                      onChange={(e) => setBassMultiplier(Number(e.target.value))}
+                      className="flex-1 min-w-0"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={bassMultiplier}
+                      onChange={(e) => setBassMultiplier(Number(e.target.value))}
+                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs text-white whitespace-nowrap">Mids (Effects):</label>
-                <div className="flex items-center gap-1 flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={midsMultiplier}
-                    onChange={(e) => setMidsMultiplier(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                      <input
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={midsMultiplier}
-                        onChange={(e) => setMidsMultiplier(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
+                <div className="flex items-center gap-1">
+                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Mids (Effects):</label>
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    <input
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={midsMultiplier}
+                      onChange={(e) => setMidsMultiplier(Number(e.target.value))}
+                      className="flex-1 min-w-0"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={midsMultiplier}
+                      onChange={(e) => setMidsMultiplier(Number(e.target.value))}
+                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs text-white whitespace-nowrap">Treble (Color):</label>
-                <div className="flex items-center gap-1 flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={trebleMultiplier}
-                    onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                      <input
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={trebleMultiplier}
-                        onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
+                <div className="flex items-center gap-1">
+                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Treble (Color):</label>
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    <input
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={trebleMultiplier}
+                      onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
+                      className="flex-1 min-w-0"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={trebleMultiplier}
+                      onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
+                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
         )}
         
         {/* Export and Presets Controls */}
