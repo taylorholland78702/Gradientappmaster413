@@ -418,6 +418,16 @@ export function InteractiveGradient() {
   const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
   const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
 
+  // Shuffle colors instantly on every detected beat when Color BEAT is active
+  useEffect(() => {
+    if (trebleBeatSync && trebleFlash) {
+      const newColors = gradientColors.map(() => randomColor());
+      setTargetColors(newColors);
+      setGradientColors(newColors);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trebleFlash]);
+
   // Audio reactivity loop
   useEffect(() => {
     if (!isAudioEnabled || !analyserRef.current || !isAudioReactive) return;
@@ -454,12 +464,7 @@ export function InteractiveGradient() {
         lastBeatTimeRef.current = now;
         if (bassBeatSync) bassBeatPulseRef.current = 1.0;
         if (midsBeatSync) midsBeatPulseRef.current = 1.0;
-        if (trebleBeatSync) {
-          trebleBeatPulseRef.current = 1.0;
-          const newColors = (prev: ColorRGB[]) => prev.map(() => randomColor());
-          setTargetColors(newColors);
-          setGradientColors(newColors);
-        }
+        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
         // Trigger beat flash indicators
         setBassFlash(true); setMidsFlash(true); setTrebleFlash(true); setBpmFlash(true);
         setTimeout(() => { setBassFlash(false); setMidsFlash(false); setTrebleFlash(false); setBpmFlash(false); }, 120);
@@ -8799,7 +8804,7 @@ RANDOMIZE
                     </div>
                     <span className="text-[10px] font-semibold text-white/80">Color</span>
                     <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                    <button onClick={() => { setTrebleBeatSync(!trebleBeatSync); const nc = (prev: ColorRGB[]) => prev.map(() => randomColor()); setTargetColors(nc); setGradientColors(nc); }} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                    <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
                   </div>
                 </div>
               </div>
