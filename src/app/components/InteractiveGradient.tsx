@@ -418,27 +418,32 @@ export function InteractiveGradient() {
   const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
   const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
 
-  // Shape BEAT: shuffle gradient type on every detected beat
+  // Shape BEAT: shuffle gradient type on every detected beat (functional update avoids stale closure)
   useEffect(() => {
-    if (bassBeatSync && bassFlash) shuffleGradientType();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bassFlash]);
+    if (!bassBeatSync || !bassFlash) return;
+    const types: GradientType[] = ['angle', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'];
+    setGradientType(prev => {
+      const choices = types.filter(t => t !== prev);
+      return choices[Math.floor(Math.random() * choices.length)];
+    });
+  }, [bassFlash, bassBeatSync]);
 
-  // Motion BEAT: shuffle effects on every detected beat
+  // Motion BEAT: shuffle effects on every detected beat (functional update avoids stale closure)
   useEffect(() => {
-    if (midsBeatSync && midsFlash) shuffleEffects();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [midsFlash]);
+    if (!midsBeatSync || !midsFlash) return;
+    const allEffects: EffectType[] = ['blur', 'charcoal', 'chromatic', 'duotone', 'dust-scratches', 'fisheye', 'film-grain', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'tritone', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion', 'color-shift'];
+    const count = Math.floor(Math.random() * 3) + 1;
+    const shuffled = [...allEffects].sort(() => Math.random() - 0.5).slice(0, count);
+    setActiveEffects(shuffled);
+  }, [midsFlash, midsBeatSync]);
 
   // Color BEAT: shuffle colors instantly on every detected beat
   useEffect(() => {
-    if (trebleBeatSync && trebleFlash) {
-      const newColors = gradientColors.map(() => randomColor());
-      setTargetColors(newColors);
-      setGradientColors(newColors);
-    }
+    if (!trebleBeatSync || !trebleFlash) return;
+    setGradientColors(prev => prev.map(() => randomColor()));
+    setTargetColors(prev => prev.map(() => randomColor()));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trebleFlash]);
+  }, [trebleFlash, trebleBeatSync]);
 
   // Audio reactivity loop
   useEffect(() => {
