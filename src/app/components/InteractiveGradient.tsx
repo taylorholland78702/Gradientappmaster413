@@ -82,6 +82,20 @@ export function InteractiveGradient() {
   const bassSmoothedRef = useRef(0);
   const midsSmoothedRef = useRef(0);
   const trebleSmoothedRef = useRef(0);
+  // Beat detection refs
+  const lastBeatTimeRef = useRef(0);
+  const beatIntervalsRef = useRef<number[]>([]);
+  const bassPrevRef = useRef(0);
+  const bassBeatPulseRef = useRef(0);
+  const midsBeatPulseRef = useRef(0);
+  const trebleBeatPulseRef = useRef(0);
+  // Live level refs (updated every rAF frame, read by UI polling)
+  const liveBaseLevelRef = useRef(0);
+  const liveMidsLevelRef = useRef(0);
+  const liveTrebleLevelRef = useRef(0);
+  const liveBassSmoothedRef = useRef(0);
+  const liveMidsSmoothedRef = useRef(0);
+  const liveTrebleSmoothedRef = useRef(0);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -337,6 +351,18 @@ export function InteractiveGradient() {
   const [midsMax, setMidsMax] = useState(2);
   const [trebleMin, setTrebleMin] = useState(0);
   const [trebleMax, setTrebleMax] = useState(2);
+  // Master sensitivity - scales all band multipliers
+  const [masterSensitivity, setMasterSensitivity] = useState(1);
+  // Per-band beat sync mode
+  const [bassBeatSync, setBassBeatSync] = useState(false);
+  const [midsBeatSync, setMidsBeatSync] = useState(false);
+  const [trebleBeatSync, setTrebleBeatSync] = useState(false);
+  // BPM display
+  const [bpm, setBpm] = useState(0);
+  // Live level display state (polled from refs)
+  const [liveBassLevel, setLiveBassLevel] = useState(0);
+  const [liveMidsLevel, setLiveMidsLevel] = useState(0);
+  const [liveTrebleLevel, setLiveTrebleLevel] = useState(0);
   const [isAudiovisualsOpen, setIsAudiovisualsOpen] = useState(false);
   const [isAudioControlsOpen, setIsAudioControlsOpen] = useState(false);
 
@@ -396,39 +422,83 @@ export function InteractiveGradient() {
 
       analyser.getByteFrequencyData(dataArray);
 
-      // Use specific frequency slices for new audio-reactive parameters
-      // Bass: slice(0, 10) → controls gradient-specific parameters
-      // === BASS band: bins 0-9 ===
+      // ---- Read frequency data ----
+      analyser.getByteFrequencyData(dataArray);
+
+      // ---- BASS (bins 0–9) ----
       let bassSum = 0;
       for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
-      const bassAvgRaw = bassSum / 10;
-      // Threshold gate
-      const bassAboveThreshold = bassAvgRaw / 255 > bassThreshold;
-      const bassRaw = bassAboveThreshold ? (bassAvgRaw / 255) * bassMultiplier : 0;
-      // Exponential moving average smoothing
+      const bassAvgRaw = (bassSum / 10) / 255; // 0-1
+      liveBaseLevelRef.current = bassAvgRaw;
+
+      // Beat detection on bass band
+      const now = performance.now();
+      const bassOnset = bassAvgRaw > bassPrevRef.current * 1.3 && bassAvgRaw > bassThreshold + 0.05;
+      if (bassOnset && now - lastBeatTimeRef.current > 200) {
+        const interval = now - lastBeatTimeRef.current;
+        if (interval < 2000) {
+          beatIntervalsRef.current.push(interval);
+          if (beatIntervalsRef.current.length > 8) beatIntervalsRef.current.shift();
+          const avgInterval = beatIntervalsRef.current.reduce((a, b) => a + b, 0) / beatIntervalsRef.current.length;
+          setBpm(Math.round(60000 / avgInterval));
+        }
+        lastBeatTimeRef.current = now;
+        if (bassBeatSync) bassBeatPulseRef.current = 1.0;
+        if (midsBeatSync) midsBeatPulseRef.current = 1.0;
+        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
+      }
+      bassPrevRef.current = bassAvgRaw;
+
+      // Bass output: continuous or beat-pulse
+      const bassAboveThreshold = bassAvgRaw > bassThreshold;
+      let bassRaw: number;
+      if (bassBeatSync) {
+        bassRaw = bassBeatPulseRef.current * bassMultiplier * masterSensitivity;
+        bassBeatPulseRef.current *= 0.85; // decay
+      } else {
+        bassRaw = bassAboveThreshold ? bassAvgRaw * bassMultiplier * masterSensitivity : 0;
+      }
       bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
-      // Clamp to [min, max]
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
+      liveBassSmoothedRef.current = bassGradientValue;
       setAudioGradientParam(bassGradientValue);
 
-      // === MIDS band: bins 10-49 ===
+      // ---- MIDS (bins 10–49) ----
       let midsSum = 0;
       for (let i = 10; i < 50 && i < bufferLength; i++) midsSum += dataArray[i];
-      const midsAvgRaw = midsSum / 40;
-      const midsAboveThreshold = midsAvgRaw / 255 > midsThreshold;
-      const midsRaw = midsAboveThreshold ? (midsAvgRaw / 255) * midsMultiplier : 0;
+      const midsAvgRaw = (midsSum / 40) / 255;
+      liveMidsLevelRef.current = midsAvgRaw;
+
+      const midsAboveThreshold = midsAvgRaw > midsThreshold;
+      let midsRaw: number;
+      if (midsBeatSync) {
+        midsRaw = midsBeatPulseRef.current * midsMultiplier * masterSensitivity;
+        midsBeatPulseRef.current *= 0.85;
+      } else {
+        midsRaw = midsAboveThreshold ? midsAvgRaw * midsMultiplier * masterSensitivity : 0;
+      }
       midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
       const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
+      liveMidsSmoothedRef.current = midsEffectValue;
       setAudioEffectParam(midsEffectValue);
 
-      // === TREBLE band: bins 50-119 ===
+      // ---- TREBLE (bins 50–119) ----
       let trebleSum = 0;
       for (let i = 50; i < 120 && i < bufferLength; i++) trebleSum += dataArray[i];
-      const trebleAvgRaw = trebleSum / 70;
-      const trebleAboveThreshold = trebleAvgRaw / 255 > trebleThreshold;
-      const trebleRaw = trebleAboveThreshold ? (trebleAvgRaw / 255) * trebleMultiplier * 360 : 0;
+      const trebleAvgRaw = (trebleSum / 70) / 255;
+      liveTrebleLevelRef.current = trebleAvgRaw;
+
+      const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
+      let trebleRaw: number;
+      if (trebleBeatSync) {
+        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 360;
+        trebleBeatPulseRef.current *= 0.85;
+      } else {
+        trebleRaw = trebleAboveThreshold ? trebleAvgRaw * trebleMultiplier * masterSensitivity * 360 : 0;
+      }
       trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
       const trebleColorValue = Math.max(trebleMin * 360, Math.min(trebleMax * 360, trebleSmoothedRef.current));
+      liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioColorShift(trebleColorValue);
 
       requestAnimationFrame(analyzeAudio);
@@ -439,7 +509,21 @@ export function InteractiveGradient() {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync]);
+
+  // Poll live level refs at ~30fps to drive the bar graph
+  useEffect(() => {
+    if (!isAudioEnabled || !isAudioReactive) return;
+    let rafId: number;
+    const poll = () => {
+      setLiveBassLevel(liveBaseLevelRef.current);
+      setLiveMidsLevel(liveMidsLevelRef.current);
+      setLiveTrebleLevel(liveTrebleLevelRef.current);
+      rafId = requestAnimationFrame(poll);
+    };
+    rafId = requestAnimationFrame(poll);
+    return () => cancelAnimationFrame(rafId);
+  }, [isAudioEnabled, isAudioReactive]);
 
   // Auto-reactive colors - change colors based on audio
   useEffect(() => {
@@ -8629,7 +8713,43 @@ RANDOMIZE
         
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
+
+                {/* Live Bar Graph */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="text-[10px] text-white/60 uppercase tracking-wider">Live Levels</label>
+                    <span className="text-[10px] text-white/40">{bpm > 0 ? `${bpm} BPM` : '– BPM'}</span>
+                  </div>
+                  <div className="flex gap-1 h-8 items-end">
+                    <div className="flex flex-col items-center flex-1 gap-0.5">
+                      <div className="w-full bg-[#1a1a3e] rounded-sm overflow-hidden h-6 flex items-end">
+                        <div className="w-full bg-blue-400 rounded-sm transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`}} />
+                      </div>
+                      <span className="text-[9px] text-white/40">Bass</span>
+                    </div>
+                    <div className="flex flex-col items-center flex-1 gap-0.5">
+                      <div className="w-full bg-[#1a1a3e] rounded-sm overflow-hidden h-6 flex items-end">
+                        <div className="w-full bg-purple-400 rounded-sm transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`}} />
+                      </div>
+                      <span className="text-[9px] text-white/40">Mids</span>
+                    </div>
+                    <div className="flex flex-col items-center flex-1 gap-0.5">
+                      <div className="w-full bg-[#1a1a3e] rounded-sm overflow-hidden h-6 flex items-end">
+                        <div className="w-full bg-pink-400 rounded-sm transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`}} />
+                      </div>
+                      <span className="text-[9px] text-white/40">Treble</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Master Sensitivity */}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Master Sensitivity:</label>
+                  <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
+                  <input type="number" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                </div>
+
                 {/* Bass Band */}
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-1">
@@ -8638,6 +8758,7 @@ RANDOMIZE
                       <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
                       <input type="number" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                     </div>
+                    <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`text-[9px] px-1.5 py-0.5 rounded flex-shrink-0 font-semibold ${bassBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/50'}`} title="Beat Sync: pulses on detected beats instead of tracking continuously">BEAT</button>
                   </div>
                   <div className="flex items-center gap-1 pl-1">
                     <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
@@ -8656,6 +8777,7 @@ RANDOMIZE
                     <input type="number" min="0" max="3" step="0.1" value={bassMax} onChange={(e) => setBassMax(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                   </div>
                 </div>
+
                 {/* Mids Band */}
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-1">
@@ -8664,6 +8786,7 @@ RANDOMIZE
                       <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
                       <input type="number" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                     </div>
+                    <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`text-[9px] px-1.5 py-0.5 rounded flex-shrink-0 font-semibold ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/50'}`} title="Beat Sync: pulses on detected beats instead of tracking continuously">BEAT</button>
                   </div>
                   <div className="flex items-center gap-1 pl-1">
                     <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
@@ -8682,6 +8805,7 @@ RANDOMIZE
                     <input type="number" min="0" max="3" step="0.1" value={midsMax} onChange={(e) => setMidsMax(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                   </div>
                 </div>
+
                 {/* Treble Band */}
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-1">
@@ -8690,6 +8814,7 @@ RANDOMIZE
                       <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
                       <input type="number" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                     </div>
+                    <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`text-[9px] px-1.5 py-0.5 rounded flex-shrink-0 font-semibold ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/50'}`} title="Beat Sync: pulses on detected beats instead of tracking continuously">BEAT</button>
                   </div>
                   <div className="flex items-center gap-1 pl-1">
                     <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
