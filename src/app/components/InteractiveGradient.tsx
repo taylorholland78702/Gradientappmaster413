@@ -454,7 +454,10 @@ export function InteractiveGradient() {
         lastBeatTimeRef.current = now;
         if (bassBeatSync) bassBeatPulseRef.current = 1.0;
         if (midsBeatSync) midsBeatPulseRef.current = 1.0;
-        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
+        if (trebleBeatSync) {
+          trebleBeatPulseRef.current = 1.0;
+          setTargetColors(prev => prev.map(() => randomColor()));
+        }
         // Trigger beat flash indicators
         setBassFlash(true); setMidsFlash(true); setTrebleFlash(true); setBpmFlash(true);
         setTimeout(() => { setBassFlash(false); setMidsFlash(false); setTrebleFlash(false); setBpmFlash(false); }, 120);
@@ -521,7 +524,7 @@ export function InteractiveGradient() {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, randomColor]);
 
   // Poll live level refs at ~30fps to drive the bar graph
   useEffect(() => {
