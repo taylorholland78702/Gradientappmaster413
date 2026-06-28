@@ -19,7 +19,7 @@
  * - Mouse wheel scroll zoom
  * - All zoom methods prevent browser default behavior for smooth experience
  */
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';import { db, auth } from '../../../firebase';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal } from 'lucide-react';
 
 interface ColorRGB {
@@ -4843,7 +4843,7 @@ export function InteractiveGradient() {
   }, []);
   
   // Save preset
-  const savePreset = () => {
+  const savePreset = async () => {
     if (!presetName.trim()) {
       alert('Please enter a preset name');
       return;
@@ -4922,7 +4922,7 @@ export function InteractiveGradient() {
   };
   
   // Delete preset
-  const deletePreset = (index: number) => {
+  const deletePreset = async (index: number) => {
     const newPresets = savedPresets.filter((_, i) => i !== index);
     setSavedPresets(newPresets);
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
