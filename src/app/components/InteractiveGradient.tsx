@@ -1788,7 +1788,7 @@ export function InteractiveGradient() {
     });
     
     // Apply hue shift if audio is reactive
-    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioColorShift > 0;
+    const shouldApplyHueShift = isAudioEnabled && isAudioReactive;
     
     const applyHueShift = (color: ColorRGB): ColorRGB => {
       if (!shouldApplyHueShift) return color;
@@ -2398,11 +2398,11 @@ export function InteractiveGradient() {
     const maxRadius = Math.max(displayWidth, displayHeight);
     const fitRadius = Math.min(displayWidth, displayHeight) / 2;
     
-    // Apply audio reactivity to gradient angle if enabled
-    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive) 
-      ? gradientAngle + (audioGradientParam * 360) // Bass affects angle by up to 360 degrees
+    // Subtle angle nudge from bass (max 20°)
+    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive)
+      ? gradientAngle + (audioGradientParam * 20)
       : gradientAngle;
-    
+
     const angleRad = audioAdjustedAngle * DEG_TO_RAD;
     const cosAngle = Math.cos(angleRad);
     const sinAngle = Math.sin(angleRad);
@@ -2411,11 +2411,13 @@ export function InteractiveGradient() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-    // Apply audio-reactive transformations when audio is enabled
+    // Universal bass zoom pulse — scales entire canvas from center on every beat
     if (isAudioEnabled && isAudioReactive) {
       ctx.save();
-      // Audio transformations will be applied to specific gradient/effect parameters
-      // rather than global canvas transformations
+      const pulse = 1 + audioGradientParam * 0.12;
+      ctx.translate(centerX, centerY);
+      ctx.scale(pulse, pulse);
+      ctx.translate(-centerX, -centerY);
     }
 
     let gradient: CanvasGradient | undefined;
@@ -2700,8 +2702,8 @@ export function InteractiveGradient() {
         const waveScaleForWave = 1 / zoom;
         const waveWidth = (displayWidth / waveNumber) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
-        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 100 // Up to 100 extra amplitude
+        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 20 // Up to 20 extra amplitude
           : 0;
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
@@ -2761,8 +2763,8 @@ export function InteractiveGradient() {
         
         const shapesScale = 1 / zoom;
         // Audio reactivity: bass affects ring width
-        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 100 // Up to 100 extra width
+        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 20 // Up to 20 extra width
           : 0;
         const shapeRingWidth = (concentricRingWidth + audioShapeRingWidth) * shapesScale;
         const numShapeRings = Math.min(shapesCount, Math.ceil(maxRadius / shapeRingWidth) + 2);
@@ -2973,8 +2975,8 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         
         // Audio reactivity: bass affects gradient animation in cells
-        const audioGridOffset = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 360 // Up to 360 degree offset
+        const audioGridOffset = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 30 // Up to 30 degree offset per cell
           : 0;
         
         const cellWidth = displayWidth / gridColumns;
@@ -3078,8 +3080,8 @@ export function InteractiveGradient() {
         const burstScale = 1 / zoom;
         const burstRadius = fitRadius * 0.7;
         // Audio reactivity: bass affects burst spread
-        const audioBurstSpread = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 100 // Up to 100 extra spread
+        const audioBurstSpread = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 20 // Up to 20 extra spread
           : 0;
         const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
         
@@ -3108,8 +3110,8 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         
         // Audio reactivity: bass affects pin radius
-        const audioFreeformRadius = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 200 // Up to 200 extra radius
+        const audioFreeformRadius = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 40 // Up to 40 extra radius
           : 0;
         
         // Create a pixel-based blend using distance to each pin
@@ -3429,7 +3431,7 @@ export function InteractiveGradient() {
       }
     }
 
-    // Restore audio-reactive transformations before applying effects
+    // Restore universal zoom transform before applying effects
     if (isAudioEnabled && isAudioReactive) {
       ctx.restore();
     }
@@ -4160,6 +4162,14 @@ export function InteractiveGradient() {
           break;
       }
     });
+
+    // Universal mids brightness boost — screen-blend white overlay
+    if (isAudioEnabled && isAudioReactive && audioEffectParam > 0.01) {
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.35, audioEffectParam * 0.18)})`;
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
+      ctx.globalCompositeOperation = 'source-over';
+    }
 
     const handleResize = () => {
       // Force re-render on resize - useEffect will re-run
