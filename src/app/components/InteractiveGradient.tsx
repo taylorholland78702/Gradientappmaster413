@@ -19,7 +19,7 @@
  * - Mouse wheel scroll zoom
  * - All zoom methods prevent browser default behavior for smooth experience
  */
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';import { db, auth } from '../../../firebase';
 import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal } from 'lucide-react';
 
 interface ColorRGB {
@@ -4820,9 +4820,9 @@ export function InteractiveGradient() {
     }
   }, []);
 
-  // Load presets from localStorage on mount
+  // Load presets from Firestore on auth state change
   useEffect(() => {
-    const stored = localStorage.getItem('gradientPresets');
+    signInAnonymously(auth).then(async (cred) => { const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets')); if (!snap.empty) { const presets = snap.docs.map(d => d.data()); setSavedPresets(presets); }
     if (stored) {
       try {
         setSavedPresets(JSON.parse(stored));
@@ -4881,7 +4881,7 @@ export function InteractiveGradient() {
     
     const newPresets = [...savedPresets, preset];
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser) { await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), String(newPresets.length - 1)), newPresets[newPresets.length - 1]); }
     setPresetName('');
     setIsPresetModalOpen(false);
   };
@@ -4925,7 +4925,7 @@ export function InteractiveGradient() {
   const deletePreset = (index: number) => {
     const newPresets = savedPresets.filter((_, i) => i !== index);
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
   
   // Toggle fullscreen
