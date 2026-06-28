@@ -4381,7 +4381,77 @@ export function InteractiveGradient() {
     const loopInfo = vcrLoop ? ' Seamless loop enabled.' : '';
     alert(`GIF export complete!${loopInfo} (Currently exports first frame as PNG. Full GIF encoding requires additional library.)`);
   };
-;
+
+  // Export as video (MP4/WebM) with audio
+  const exportAsVideo = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const recordDuration = 10000; // 10 seconds
+
+    try {
+      const videoStream = canvas.captureStream(60);
+      let finalStream: MediaStream = videoStream;
+
+      if (audioFile && audioRef.current) {
+        try {
+          if (audioContextRef.current && analyserRef.current) {
+            // Audio is already in Web Audio graph — tap the analyser output
+            const dest = audioContextRef.current.createMediaStreamDestination();
+            analyserRef.current.connect(dest);
+            const audioTracks = dest.stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+            }
+          } else {
+            // Audio not yet in Web Audio graph — safe to call createMediaElementSource
+            const audioCtx = new AudioContext();
+            const source = audioCtx.createMediaElementSource(audioRef.current);
+            const dest = audioCtx.createMediaStreamDestination();
+            source.connect(dest);
+            source.connect(audioCtx.destination);
+            const audioTracks = dest.stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+            }
+          }
+        } catch (audioErr) {
+          console.warn('Audio capture failed, exporting video only:', audioErr);
+        }
+      }
+
+      let options: MediaRecorderOptions;
+      if (MediaRecorder.isTypeSupported('video/mp4')) {
+        options = { mimeType: 'video/mp4', videoBitsPerSecond: 8000000 };
+      } else {
+        options = { mimeType: 'video/webm', videoBitsPerSecond: 8000000 };
+      }
+
+      const mediaRecorder = new MediaRecorder(finalStream, options);
+      const chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: options.mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
+        link.download = `gradient-video-${Date.now()}.${ext}`;
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => { mediaRecorder.stop(); }, recordDuration);
+
+    } catch (error) {
+      console.error('Video export failed:', error);
+    }
+  };
 
   // Export as mobile home screen wallpaper
   const exportAsMobileWallpaper = () => {
@@ -8667,6 +8737,15 @@ RANDOMIZE
               className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
             >
               PNG
+            </button>
+            <button
+              onClick={() => {
+                exportAsVideo();
+                setIsExportDropdownOpen(false);
+              }}
+              className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
+            >
+              Video
             </button>
                       </div>
         )}
