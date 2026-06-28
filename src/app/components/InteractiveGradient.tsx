@@ -420,23 +420,19 @@ export function InteractiveGradient() {
   const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
   const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
 
-  // Shape BEAT: shuffle gradient type on every detected beat (functional update avoids stale closure)
+  // Shape BEAT: pulse zoom/scale on every detected beat
   useEffect(() => {
     if (!bassBeatSync || !bassFlash) return;
-    const types: GradientType[] = ['angle', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'];
-    setGradientType(prev => {
-      const choices = types.filter(t => t !== prev);
-      return choices[Math.floor(Math.random() * choices.length)];
+    setTargetZoom(prev => {
+      const pulseZoom = 0.8 + Math.random() * 1.6; // 0.8–2.4 range
+      return pulseZoom !== prev ? pulseZoom : pulseZoom + 0.1;
     });
   }, [bassFlash, bassBeatSync]);
 
-  // Motion BEAT: shuffle effects on every detected beat (functional update avoids stale closure)
+  // Motion BEAT: toggle rotation direction on every detected beat
   useEffect(() => {
     if (!midsBeatSync || !midsFlash) return;
-    const allEffects: EffectType[] = ['blur', 'charcoal', 'chromatic', 'duotone', 'dust-scratches', 'fisheye', 'film-grain', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'tritone', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion', 'color-shift'];
-    const count = Math.floor(Math.random() * 3) + 1;
-    const shuffled = [...allEffects].sort(() => Math.random() - 0.5).slice(0, count);
-    setActiveEffects(shuffled);
+    setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise');
   }, [midsFlash, midsBeatSync]);
 
   // Color BEAT: shuffle colors instantly on every detected beat
