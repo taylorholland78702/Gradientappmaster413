@@ -19,7 +19,7 @@
  * - Mouse wheel scroll zoom
  * - All zoom methods prevent browser default behavior for smooth experience
  */
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
 import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal } from 'lucide-react';
 
 interface ColorRGB {
