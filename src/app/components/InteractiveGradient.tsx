@@ -8766,16 +8766,27 @@ RANDOMIZE
               </div>
             ) : (
               savedPresets.map((preset, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    loadPreset(preset);
-                    setIsPresetsDropdownOpen(false);
-                  }}
-                  className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
-                >
-                  {preset.name}
-                </button>
+                <div key={index} className="flex items-center w-full group">
+                  <button
+                    onClick={() => {
+                      loadPreset(preset);
+                      setIsPresetsDropdownOpen(false);
+                    }}
+                    className="flex-1 px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] text-left transition-colors font-semibold truncate"
+                  >
+                    {preset.name}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deletePreset(index);
+                    }}
+                    className="px-3 py-2 text-white/50 hover:text-red-400 hover:bg-[#3a3a5e] transition-colors text-sm font-bold flex-shrink-0"
+                    title="Delete preset"
+                  >
+                    −
+                  </button>
+                </div>
               ))
             )}
           </div>
