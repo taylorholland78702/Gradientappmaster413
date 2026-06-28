@@ -418,7 +418,19 @@ export function InteractiveGradient() {
   const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
   const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
 
-  // Shuffle colors instantly on every detected beat when Color BEAT is active
+  // Shape BEAT: shuffle gradient type on every detected beat
+  useEffect(() => {
+    if (bassBeatSync && bassFlash) shuffleGradientType();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bassFlash]);
+
+  // Motion BEAT: shuffle effects on every detected beat
+  useEffect(() => {
+    if (midsBeatSync && midsFlash) shuffleEffects();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midsFlash]);
+
+  // Color BEAT: shuffle colors instantly on every detected beat
   useEffect(() => {
     if (trebleBeatSync && trebleFlash) {
       const newColors = gradientColors.map(() => randomColor());
