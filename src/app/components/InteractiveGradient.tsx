@@ -4394,22 +4394,38 @@ export function InteractiveGradient() {
     alert(`Recording ${recordDuration/1000} seconds for screen saver${loopText}...`);
 
     try {
-      const stream = canvas.captureStream(60);
+      const videoStream = canvas.captureStream(60);
+      const audioEl = audioRef.current;
+      let finalStream: MediaStream;
+      if (audioEl && audioFile) {
+        try {
+          const audioCtx = new AudioContext();
+          const source = audioCtx.createMediaElementSource(audioEl);
+          const dest = audioCtx.createMediaStreamDestination();
+          source.connect(dest);
+          source.connect(audioCtx.destination);
+          const audioTrack = dest.stream.getAudioTracks()[0];
+          finalStream = new MediaStream([...videoStream.getVideoTracks(), audioTrack]);
+        } catch {
+          finalStream = videoStream;
+        }
+      } else {
+        finalStream = videoStream;
+      }
       let options: MediaRecorderOptions;
-      
       if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { 
+        options = {
           mimeType: 'video/mp4',
           videoBitsPerSecond: 8000000
         };
       } else {
-        options = { 
+        options = {
           mimeType: 'video/webm',
           videoBitsPerSecond: 8000000
         };
       }
 
-      const mediaRecorder = new MediaRecorder(stream, options);
+      const mediaRecorder = new MediaRecorder(finalStream, options);
       const chunks: Blob[] = [];
 
       mediaRecorder.ondataavailable = (e) => {
