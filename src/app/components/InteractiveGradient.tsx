@@ -8797,7 +8797,7 @@ RANDOMIZE
                     </div>
                     <span className="text-[10px] font-semibold text-white/80">Color</span>
                     <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                    <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                    <button onClick={() => { setTrebleBeatSync(!trebleBeatSync); setTargetColors(prev => prev.map(() => randomColor())); }} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
                   </div>
                 </div>
               </div>
