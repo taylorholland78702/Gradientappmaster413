@@ -8755,7 +8755,7 @@ RANDOMIZE
                 </div>
 
                 {/* 3-column band cards */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-start">
 
                   {/* Shape = Bass */}
                   <div className={`flex flex-col items-center gap-1.5 flex-1 rounded-lg p-2 transition-all ${bassBeatSync && bassFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
