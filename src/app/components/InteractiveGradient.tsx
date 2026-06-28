@@ -79,6 +79,9 @@ export function InteractiveGradient() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const bassSmoothedRef = useRef(0);
+  const midsSmoothedRef = useRef(0);
+  const trebleSmoothedRef = useRef(0);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -319,6 +322,21 @@ export function InteractiveGradient() {
   const [bassMultiplier, setBassMultiplier] = useState(1); // Default 1 (range 0-2)
   const [midsMultiplier, setMidsMultiplier] = useState(1); // Default 1 (range 0-2)
   const [trebleMultiplier, setTrebleMultiplier] = useState(1); // Default 1 (range 0-2)
+  // Per-band smoothing (0=instant, 0.99=very slow) – default 0.8
+  const [bassSmoothing, setBassSmoothing] = useState(0.8);
+  const [midsSmoothing, setMidsSmoothing] = useState(0.8);
+  const [trebleSmoothing, setTrebleSmoothing] = useState(0.8);
+  // Per-band threshold (0–1 fraction of 255) – signals below are gated to 0
+  const [bassThreshold, setBassThreshold] = useState(0);
+  const [midsThreshold, setMidsThreshold] = useState(0);
+  const [trebleThreshold, setTrebleThreshold] = useState(0);
+  // Per-band output range clamp
+  const [bassMin, setBassMin] = useState(0);
+  const [bassMax, setBassMax] = useState(2);
+  const [midsMin, setMidsMin] = useState(0);
+  const [midsMax, setMidsMax] = useState(2);
+  const [trebleMin, setTrebleMin] = useState(0);
+  const [trebleMax, setTrebleMax] = useState(2);
   const [isAudiovisualsOpen, setIsAudiovisualsOpen] = useState(false);
   const [isAudioControlsOpen, setIsAudioControlsOpen] = useState(false);
 
@@ -380,30 +398,37 @@ export function InteractiveGradient() {
 
       // Use specific frequency slices for new audio-reactive parameters
       // Bass: slice(0, 10) → controls gradient-specific parameters
+      // === BASS band: bins 0-9 ===
       let bassSum = 0;
-      for (let i = 0; i < 10 && i < bufferLength; i++) {
-        bassSum += dataArray[i];
-      }
-      const bassAvg = bassSum / 10;
-      const bassGradientValue = (bassAvg / 255) * bassMultiplier; // 0-1 range scaled by multiplier
+      for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
+      const bassAvgRaw = bassSum / 10;
+      // Threshold gate
+      const bassAboveThreshold = bassAvgRaw / 255 > bassThreshold;
+      const bassRaw = bassAboveThreshold ? (bassAvgRaw / 255) * bassMultiplier : 0;
+      // Exponential moving average smoothing
+      bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
+      // Clamp to [min, max]
+      const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
       setAudioGradientParam(bassGradientValue);
 
-      // Mids: slice(10, 50) → controls first effect parameters
+      // === MIDS band: bins 10-49 ===
       let midsSum = 0;
-      for (let i = 10; i < 50 && i < bufferLength; i++) {
-        midsSum += dataArray[i];
-      }
-      const midsAvg = midsSum / 40;
-      const midsEffectValue = (midsAvg / 255) * midsMultiplier; // 0-1 range scaled by multiplier
+      for (let i = 10; i < 50 && i < bufferLength; i++) midsSum += dataArray[i];
+      const midsAvgRaw = midsSum / 40;
+      const midsAboveThreshold = midsAvgRaw / 255 > midsThreshold;
+      const midsRaw = midsAboveThreshold ? (midsAvgRaw / 255) * midsMultiplier : 0;
+      midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
+      const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
       setAudioEffectParam(midsEffectValue);
 
-      // Treble: slice(50, 120) → controls color hue shift
+      // === TREBLE band: bins 50-119 ===
       let trebleSum = 0;
-      for (let i = 50; i < 120 && i < bufferLength; i++) {
-        trebleSum += dataArray[i];
-      }
-      const trebleAvg = trebleSum / 70;
-      const trebleColorValue = (trebleAvg / 255) * trebleMultiplier * 360; // 0-360 degree hue shift
+      for (let i = 50; i < 120 && i < bufferLength; i++) trebleSum += dataArray[i];
+      const trebleAvgRaw = trebleSum / 70;
+      const trebleAboveThreshold = trebleAvgRaw / 255 > trebleThreshold;
+      const trebleRaw = trebleAboveThreshold ? (trebleAvgRaw / 255) * trebleMultiplier * 360 : 0;
+      trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
+      const trebleColorValue = Math.max(trebleMin * 360, Math.min(trebleMax * 360, trebleSmoothedRef.current));
       setAudioColorShift(trebleColorValue);
 
       requestAnimationFrame(analyzeAudio);
@@ -414,7 +439,7 @@ export function InteractiveGradient() {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax]);
 
   // Auto-reactive colors - change colors based on audio
   useEffect(() => {
@@ -8616,74 +8641,83 @@ RANDOMIZE
         
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-1">
-                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Bass (Gradient):</label>
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={bassMultiplier}
-                      onChange={(e) => setBassMultiplier(Number(e.target.value))}
-                      className="flex-1 min-w-0"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={bassMultiplier}
-                      onChange={(e) => setBassMultiplier(Number(e.target.value))}
-                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
-                    />
+              <div className="flex flex-col gap-2">
+                {/* Bass Band */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Bass (Gradient):</label>
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
+                      <input type="number" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
+                    <input type="range" min="0" max="0.99" step="0.01" value={bassSmoothing} onChange={(e) => setBassSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{bassSmoothing.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Threshold</label>
+                    <input type="range" min="0" max="1" step="0.01" value={bassThreshold} onChange={(e) => setBassThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{bassThreshold.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Min / Max</label>
+                    <input type="number" min="0" max="3" step="0.1" value={bassMin} onChange={(e) => setBassMin(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    <span className="text-[10px] text-white/40">–</span>
+                    <input type="number" min="0" max="3" step="0.1" value={bassMax} onChange={(e) => setBassMax(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Mids (Effects):</label>
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={midsMultiplier}
-                      onChange={(e) => setMidsMultiplier(Number(e.target.value))}
-                      className="flex-1 min-w-0"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={midsMultiplier}
-                      onChange={(e) => setMidsMultiplier(Number(e.target.value))}
-                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
-                    />
+                {/* Mids Band */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Mids (Effects):</label>
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
+                      <input type="number" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
+                    <input type="range" min="0" max="0.99" step="0.01" value={midsSmoothing} onChange={(e) => setMidsSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{midsSmoothing.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Threshold</label>
+                    <input type="range" min="0" max="1" step="0.01" value={midsThreshold} onChange={(e) => setMidsThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{midsThreshold.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Min / Max</label>
+                    <input type="number" min="0" max="3" step="0.1" value={midsMin} onChange={(e) => setMidsMin(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    <span className="text-[10px] text-white/40">–</span>
+                    <input type="number" min="0" max="3" step="0.1" value={midsMax} onChange={(e) => setMidsMax(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Treble (Color):</label>
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={trebleMultiplier}
-                      onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
-                      className="flex-1 min-w-0"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={trebleMultiplier}
-                      onChange={(e) => setTrebleMultiplier(Number(e.target.value))}
-                      className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0"
-                    />
+                {/* Treble Band */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap w-28 flex-shrink-0">Treble (Color):</label>
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} className="flex-1 min-w-0" />
+                      <input type="number" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Smooth</label>
+                    <input type="range" min="0" max="0.99" step="0.01" value={trebleSmoothing} onChange={(e) => setTrebleSmoothing(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{trebleSmoothing.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Threshold</label>
+                    <input type="range" min="0" max="1" step="0.01" value={trebleThreshold} onChange={(e) => setTrebleThreshold(Number(e.target.value))} className="flex-1 min-w-0 h-1" />
+                    <span className="text-[10px] text-white/50 w-8 text-right">{trebleThreshold.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1">
+                    <label className="text-[10px] text-white/50 w-16 flex-shrink-0">Min / Max</label>
+                    <input type="number" min="0" max="3" step="0.1" value={trebleMin} onChange={(e) => setTrebleMin(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
+                    <span className="text-[10px] text-white/40">–</span>
+                    <input type="number" min="0" max="3" step="0.1" value={trebleMax} onChange={(e) => setTrebleMax(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-transparent border border-white/20 rounded px-1 flex-shrink-0" />
                   </div>
                 </div>
               </div>
