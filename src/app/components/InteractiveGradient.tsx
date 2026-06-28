@@ -4395,22 +4395,32 @@ export function InteractiveGradient() {
 
     try {
       const videoStream = canvas.captureStream(60);
-      const audioEl = audioRef.current;
-      let finalStream: MediaStream;
-      if (audioEl && audioFile) {
+      let finalStream: MediaStream = videoStream;
+      if (audioFile && audioRef.current) {
         try {
-          const audioCtx = new AudioContext();
-          const source = audioCtx.createMediaElementSource(audioEl);
-          const dest = audioCtx.createMediaStreamDestination();
-          source.connect(dest);
-          source.connect(audioCtx.destination);
-          const audioTrack = dest.stream.getAudioTracks()[0];
-          finalStream = new MediaStream([...videoStream.getVideoTracks(), audioTrack]);
-        } catch {
-          finalStream = videoStream;
+          if (audioContextRef.current && analyserRef.current) {
+            // Audio is already in Web Audio graph — tap the analyser output
+            const dest = audioContextRef.current.createMediaStreamDestination();
+            analyserRef.current.connect(dest);
+            const audioTracks = dest.stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+            }
+          } else {
+            // Audio not yet in Web Audio graph — safe to call createMediaElementSource
+            const audioCtx = new AudioContext();
+            const source = audioCtx.createMediaElementSource(audioRef.current);
+            const dest = audioCtx.createMediaStreamDestination();
+            source.connect(dest);
+            source.connect(audioCtx.destination);
+            const audioTracks = dest.stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+            }
+          }
+        } catch (audioErr) {
+          console.warn('Audio capture failed, exporting video only:', audioErr);
         }
-      } else {
-        finalStream = videoStream;
       }
       let options: MediaRecorderOptions;
       if (MediaRecorder.isTypeSupported('video/mp4')) {
