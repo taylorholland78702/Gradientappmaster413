@@ -8729,15 +8729,6 @@ RANDOMIZE
             </button>
             <button
               onClick={() => {
-                exportAsGIF();
-                setIsExportDropdownOpen(false);
-              }}
-              className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
-            >
-              GIF
-            </button>
-            <button
-              onClick={() => {
                 exportAsScreenSaver();
                 setIsExportDropdownOpen(false);
               }}
