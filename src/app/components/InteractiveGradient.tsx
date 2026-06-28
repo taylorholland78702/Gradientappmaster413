@@ -8755,10 +8755,10 @@ RANDOMIZE
                 </div>
 
                 {/* 3-column band cards */}
-                <div className="flex gap-2 items-start">
+                <div className="flex gap-2 items-start overflow-hidden">
 
                   {/* Shape = Bass */}
-                  <div className={`flex flex-col items-center gap-1.5 flex-1 rounded-lg p-2 transition-all ${bassBeatSync && bassFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
+                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all ${bassBeatSync && bassFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
                         <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `hsl(${220 - liveBassLevel * 180}, 90%, ${45 + liveBassLevel * 25}%)`}} />
@@ -8779,7 +8779,7 @@ RANDOMIZE
                   </div>
 
                   {/* Motion = Mids */}
-                  <div className={`flex flex-col items-center gap-1.5 flex-1 rounded-lg p-2 transition-all ${midsBeatSync && midsFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
+                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all ${midsBeatSync && midsFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
                         <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `hsl(${280 - liveMidsLevel * 100}, 80%, ${45 + liveMidsLevel * 25}%)`}} />
@@ -8800,7 +8800,7 @@ RANDOMIZE
                   </div>
 
                   {/* Color = Treble */}
-                  <div className={`flex flex-col items-center gap-1.5 flex-1 rounded-lg p-2 transition-all ${trebleBeatSync && trebleFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
+                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all ${trebleBeatSync && trebleFlash ? 'ring-2 ring-yellow-400 bg-yellow-400/10' : 'bg-[#1a1a3e]'}`}>
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
                         <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `hsl(${340 - liveTrebleLevel * 60}, 85%, ${45 + liveTrebleLevel * 25}%)`}} />
