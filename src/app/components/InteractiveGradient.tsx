@@ -8860,18 +8860,16 @@ RANDOMIZE
         {/* Audiovisuals Section */}
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           {/* Mic button + device chevron */}
-          <div className="flex flex-1 rounded-lg overflow-hidden">
+          <div className={`flex flex-1 items-center px-1.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'}`}>
             <button
               onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-              className={`flex-1 px-1.5 py-1.5 text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
-                isMicActive ? 'bg-purple-500 text-white' : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
-              }`}
+              className="flex items-center justify-center flex-1"
               title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
             >
               {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
             </button>
             {audioInputDevices.length > 0 && (
-              <div className="relative">
+              <div className="relative flex items-center">
                 <select
                   value={selectedAudioDeviceId}
                   onChange={(e) => {
@@ -8881,10 +8879,7 @@ RANDOMIZE
                       setTimeout(() => startMicVisualization(e.target.value), 100);
                     }
                   }}
-                  className={`h-full pl-1 pr-4 text-[10px] border-l border-white/10 focus:outline-none appearance-none cursor-pointer ${
-                    isMicActive ? 'bg-purple-600 text-white' : 'bg-[#2a2a4e] text-white'
-                  }`}
-                  style={{ width: '20px' }}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
                 >
                   {audioInputDevices.map(d => (
                     <option key={d.deviceId} value={d.deviceId}>
@@ -8892,7 +8887,7 @@ RANDOMIZE
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-3 h-3 text-white/60 absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 pointer-events-none" />
               </div>
             )}
           </div>
