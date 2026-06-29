@@ -5703,15 +5703,6 @@ RANDOMIZE
           </button>
         </div>
         
-        {/* Fade Speed — always visible when Fade is active */}
-        {gradientType === 'fade' && (
-          <div className="w-full mb-0.5 p-2 bg-[#2a2a4e] rounded-lg flex items-center gap-2">
-            <label className="text-xs text-white whitespace-nowrap">Speed:</label>
-            <input type="range" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="flex-1" />
-            <input type="number" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
-          </div>
-        )}
-
         {/* Gradient Type Buttons - 2 Column Grid */}
         {isGradientsOpen && (
         <div className="w-full mb-0.5">
@@ -8890,9 +8881,18 @@ RANDOMIZE
           </div>
         )}
         
+        {/* Fade Speed — bottom of gradient dropdown */}
+        {gradientType === 'fade' && (
+          <div className="w-full mt-0.5 p-2 bg-[#2a2a4e] rounded-lg flex items-center gap-2">
+            <label className="text-xs text-white whitespace-nowrap">Speed:</label>
+            <input type="range" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="flex-1" />
+            <input type="number" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+          </div>
+        )}
+
         </>
         )}
-        
+
         {/* Audiovisuals Section */}
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           {/* Mic button + device chevron */}
