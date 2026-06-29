@@ -5579,31 +5579,15 @@ export function InteractiveGradient() {
             </div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1">
-                <div className="relative w-16 h-16 mx-auto">
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
-                    <line
-                      x1="50"
-                      y1="50"
-                      x2={50 + 35 * Math.cos((waveRotation - 90) * Math.PI / 180)}
-                      y2={50 + 35 * Math.sin((waveRotation - 90) * Math.PI / 180)}
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    value={waveRotation}
-                    onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    style={{ WebkitAppearance: 'none' }}
-                  />
-                </div>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  value={waveRotation}
+                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
+                  className="flex-1"
+                />
                 <input
                   type="number"
                   min="0"
@@ -5691,31 +5675,15 @@ export function InteractiveGradient() {
             </div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1">
-                <div className="relative w-16 h-16 mx-auto">
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
-                    <line
-                      x1="50"
-                      y1="50"
-                      x2={50 + 35 * Math.cos((noiseDirection - 90) * Math.PI / 180)}
-                      y2={50 + 35 * Math.sin((noiseDirection - 90) * Math.PI / 180)}
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    value={noiseDirection}
-                    onChange={(e) => setNoiseDirection(Number(e.target.value))}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    style={{ WebkitAppearance: 'none' }}
-                  />
-                </div>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  value={noiseDirection}
+                  onChange={(e) => setNoiseDirection(Number(e.target.value))}
+                  className="flex-1"
+                />
                 <input
                   type="number"
                   min="0"
@@ -6494,56 +6462,22 @@ export function InteractiveGradient() {
                       <div className="flex items-center justify-between gap-1">
                         <label className="text-xs text-white whitespace-nowrap">Direction:</label>
                         <div className="flex items-center gap-1 flex-1">
-                          <div className="relative w-16 h-16 mx-auto">
-                            <svg viewBox="0 0 100 100" className="w-full h-full">
-                              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
-                              <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
-                              <line
-                                x1="50"
-                                y1="50"
-                                x2={50 + 35 * Math.cos((blurMotionDirection - 90) * Math.PI / 180)}
-                                y2={50 + 35 * Math.sin((blurMotionDirection - 90) * Math.PI / 180)}
-                                stroke="black"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                              />
-                              <circle
-                                cx={50 + 35 * Math.cos((blurMotionDirection - 90) * Math.PI / 180)}
-                                cy={50 + 35 * Math.sin((blurMotionDirection - 90) * Math.PI / 180)}
-                                r="6"
-                                fill="black"
-                                style={{ cursor: 'pointer' }}
-                              />
-                            </svg>
-                            <div
-                              className="absolute inset-0 cursor-pointer"
-                              onMouseDown={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const centerX = rect.left + rect.width / 2;
-                                const centerY = rect.top + rect.height / 2;
-                                
-                                const updateDirection = (clientX: number, clientY: number) => {
-                                  const angle = Math.atan2(clientY - centerY, clientX - centerX) * 180 / Math.PI + 90;
-                                  setBlurMotionDirection((angle + 360) % 360);
-                                };
-
-                                updateDirection(e.clientX, e.clientY);
-
-                                const handleMouseMove = (e: MouseEvent) => {
-                                  updateDirection(e.clientX, e.clientY);
-                                };
-
-                                const handleMouseUp = () => {
-                                  document.removeEventListener('mousemove', handleMouseMove);
-                                  document.removeEventListener('mouseup', handleMouseUp);
-                                };
-
-                                document.addEventListener('mousemove', handleMouseMove);
-                                document.addEventListener('mouseup', handleMouseUp);
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs text-white w-12 text-right">{Math.round(blurMotionDirection)}°</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="360"
+                            value={blurMotionDirection}
+                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            max="360"
+                            value={Math.round(blurMotionDirection)}
+                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
+                            className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                          />
                         </div>
                       </div>
                     </>
@@ -7432,30 +7366,14 @@ export function InteractiveGradient() {
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Rotation:</label>
                     <div className="flex items-center gap-1 flex-1">
-                      <div className="relative w-16 h-16 mx-auto">
-                        <svg viewBox="0 0 100 100" className="w-full h-full">
-                          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
-                          <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
-                          <line
-                            x1="50"
-                            y1="50"
-                            x2={50 + 35 * Math.cos((waveDistortionRotation - 90) * Math.PI / 180)}
-                            y2={50 + 35 * Math.sin((waveDistortionRotation - 90) * Math.PI / 180)}
-                            stroke="black"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <input
-                          type="range"
-                          min="0"
-                          max="360"
-                          value={waveDistortionRotation}
-                          onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                          style={{ WebkitAppearance: 'none' }}
-                        />
-                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={waveDistortionRotation}
+                        onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
+                        className="flex-1"
+                      />
                       <input
                         type="number"
                         min="0"
