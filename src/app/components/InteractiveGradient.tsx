@@ -4163,6 +4163,8 @@ export function InteractiveGradient() {
   }, [gradientType, isDraggingPin, selectedPinId, handleInteraction, isAutoMode]);
 
   const handleWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
+    // ctrlKey signals a trackpad pinch gesture — ignore it
+    if (e.ctrlKey) { e.preventDefault(); return; }
     e.preventDefault();
     lastManualZoomTime.current = Date.now();
     const multiplier = (isAutoMode ? 0.01 : 0.025) * 0.5;
