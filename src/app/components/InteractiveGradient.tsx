@@ -8846,10 +8846,10 @@ RANDOMIZE
         )}
         
         {/* Presets Controls */}
-        <div className="flex gap-[3.5px] w-full mb-0.5 justify-end relative">
+        <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center gap-1 font-semibold"
+            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-between font-semibold"
           >
             <span>Presets</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -8862,10 +8862,11 @@ RANDOMIZE
           >
             <Plus className="w-4 h-4" />
           </button>
+        </div>
 
         {/* Presets Dropdown Content */}
         {isPresetsDropdownOpen && (
-          <div className="absolute bottom-full right-0 mb-1 w-48 bg-[#2a2a4e] rounded-lg overflow-hidden max-h-[300px] overflow-y-auto z-50">
+          <div className="w-full bg-[#2a2a4e] rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
             {savedPresets.length === 0 ? (
               <div className="px-4 py-2 text-xs text-white/50 italic">
                 No saved presets
@@ -8897,7 +8898,6 @@ RANDOMIZE
             )}
           </div>
         )}
-        </div>
 
         {/* Audio Waveform Display - shown when audio file is loaded */}
         {audioFileName && waveformData.length > 0 && (
