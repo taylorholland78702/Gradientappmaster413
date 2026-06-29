@@ -5703,6 +5703,15 @@ RANDOMIZE
           </button>
         </div>
         
+        {/* Fade Speed — shown above grid so it's visible without scrolling */}
+        {isGradientsOpen && gradientType === 'fade' && (
+          <div className="w-full mb-0.5 p-2 bg-[#2a2a4e] rounded-lg flex items-center gap-2">
+            <label className="text-xs text-white whitespace-nowrap">Speed:</label>
+            <input type="range" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="flex-1" />
+            <input type="number" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+          </div>
+        )}
+
         {/* Gradient Type Buttons - 2 Column Grid */}
         {isGradientsOpen && (
         <div className="w-full mb-0.5">
@@ -6223,35 +6232,6 @@ RANDOMIZE
           </div>
         )}
         
-        {/* Fade Controls */}
-        {gradientType === 'fade' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  value={fadeSpeed}
-                  onChange={(e) => setFadeSpeed(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  value={fadeSpeed}
-                  onChange={(e) => setFadeSpeed(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Waves Controls */}
         {gradientType === 'waves' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
