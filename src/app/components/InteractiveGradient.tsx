@@ -268,6 +268,7 @@ export function InteractiveGradient() {
   // Undo state - store previous settings for one-level undo
   const undoStackRef = useRef<any[]>([]);
   const undoIndexRef = useRef(-1);
+  const [undoDepth, setUndoDepth] = useState(-1);
 
   // Track manual zoom interaction
   const lastManualZoomTime = useRef<number>(0);
@@ -819,6 +820,7 @@ export function InteractiveGradient() {
     const newIndex = undoIndexRef.current + 1;
     undoStackRef.current = [...stack.slice(0, newIndex), snapshot].slice(-10);
     undoIndexRef.current = undoStackRef.current.length - 1;
+    setUndoDepth(undoIndexRef.current);
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
       activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, 
       chromaticOffset, fisheyeStrength, tileCount, grainIntensity, blurMotionAmount, 
@@ -922,6 +924,7 @@ export function InteractiveGradient() {
     if (undoIndexRef.current < 0) return;
     const snapshot = undoStackRef.current[undoIndexRef.current];
     undoIndexRef.current -= 1;
+    setUndoDepth(undoIndexRef.current);
     if (!snapshot) return;
 
     const colors = snapshot.gradientColors || DEFAULT_COLORS;
@@ -4699,14 +4702,14 @@ export function InteractiveGradient() {
 RANDOMIZE
           </button>
           <button
-            onClick={undoAll}
-            disabled={undoIndexRef.current < 0}
+            onClick={undoLastChange}
+            disabled={undoDepth < 0}
             className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
-              undoIndexRef.current >= 0
+              undoDepth >= 0
                 ? 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
                 : 'bg-[#1a1a2e] text-white/30 cursor-not-allowed'
             }`}
-            title="Undo all (Cmd+Z steps one at a time)"
+            title="Undo (Cmd+Z)"
           >
             <Undo className="w-4 h-4" />
           </button>
