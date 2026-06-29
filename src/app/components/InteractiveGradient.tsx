@@ -5025,13 +5025,18 @@ export function InteractiveGradient() {
     }
   }, []);
 
-  // Load presets from Firestore on auth state change
+  // Load presets — localStorage first (reliable), then Firebase (sync)
   useEffect(() => {
+    const local = localStorage.getItem('gradientPresets');
+    if (local) {
+      try { setSavedPresets(JSON.parse(local)); } catch {}
+    }
     signInAnonymously(auth).then(async (cred) => {
       const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
       if (!snap.empty) {
         const presets = snap.docs.map((d: any) => d.data());
         setSavedPresets(presets);
+        localStorage.setItem('gradientPresets', JSON.stringify(presets));
       }
     });
 
@@ -5085,6 +5090,7 @@ export function InteractiveGradient() {
     
     const newPresets = [...savedPresets, preset];
     setSavedPresets(newPresets);
+    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
     if (auth.currentUser) { await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), String(newPresets.length - 1)), newPresets[newPresets.length - 1]); }
     setPresetName('');
     setIsPresetModalOpen(false);
@@ -5128,6 +5134,7 @@ export function InteractiveGradient() {
   const deletePreset = async (index: number) => {
     const newPresets = savedPresets.filter((_, i) => i !== index);
     setSavedPresets(newPresets);
+    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
 
@@ -5135,6 +5142,7 @@ export function InteractiveGradient() {
     if (!newName.trim()) return;
     const newPresets = savedPresets.map((p, i) => i === index ? { ...p, name: newName.trim() } : p);
     setSavedPresets(newPresets);
+    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
 
@@ -5152,6 +5160,7 @@ export function InteractiveGradient() {
     };
     const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
     setSavedPresets(newPresets);
+    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
   
@@ -8941,25 +8950,6 @@ RANDOMIZE
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
               <div className="flex flex-col gap-3">
-
-                {/* Vibe Presets */}
-                <div className="flex gap-1">
-                  {[
-                    { label: `Subtle`, bass: 0.4, mids: 0.3, treble: 0.3, smooth: 0.92, thresh: 0.1, master: 0.6 },
-                    { label: `Balanced`, bass: 1, mids: 1, treble: 1, smooth: 0.8, thresh: 0.05, master: 1 },
-                    { label: `Energetic`, bass: 1.6, mids: 1.4, treble: 1.2, smooth: 0.5, thresh: 0.02, master: 1.5 },
-                    { label: `Extreme`, bass: 2, mids: 2, treble: 2, smooth: 0.2, thresh: 0, master: 2.5 },
-                  ].map(v => (
-                    <button key={v.label} onClick={() => {
-                      setBassMultiplier(v.bass); setMidsMultiplier(v.mids); setTrebleMultiplier(v.treble);
-                      setBassSmoothing(v.smooth); setMidsSmoothing(v.smooth); setTrebleSmoothing(v.smooth);
-                      setBassThreshold(v.thresh); setMidsThreshold(v.thresh); setTrebleThreshold(v.thresh);
-                      setMasterSensitivity(v.master);
-                    }} className="flex-1 py-1 rounded text-[10px] font-semibold bg-[#2a2a4e] text-white/70 hover:bg-[#3a3a6e] hover:text-white transition-colors">
-                      {v.label}
-                    </button>
-                  ))}
-                </div>
 
                 {/* Intensity */}
                 <div className="flex items-center gap-2">
