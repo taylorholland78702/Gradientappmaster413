@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChevronDown, Mic, MicOff, Plus, SlidersHorizontal } from 'lucide-react';
 
 interface AudioPanelProps {
@@ -66,7 +66,6 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
   stopMicVisualization,
   onAudioFileClick,
 }) => {
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   return (
     <>
       {/* Audiovisuals Section */}
@@ -133,17 +132,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
               <span className="text-xs text-white/50 w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
 
-            {/* Advanced disclosure */}
-            <button
-              onClick={() => setIsAdvancedOpen(v => !v)}
-              className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/70 transition-colors self-start"
-            >
-              <ChevronDown className={`w-3 h-3 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />
-              Advanced
-            </button>
-
-            {isAdvancedOpen && (
-              <div className="flex gap-2 items-start overflow-hidden">
+            <div className="flex gap-2 items-start overflow-hidden">
 
                 {/* Shape = Bass */}
                 <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
@@ -181,7 +170,6 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
                   <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
               </div>
-            )}
           </div>
         </div>
       )}
