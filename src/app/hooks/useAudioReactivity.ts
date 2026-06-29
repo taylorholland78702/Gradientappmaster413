@@ -239,6 +239,15 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
   // Beat sync effects
   useEffect(() => {
+    navigator.mediaDevices?.enumerateDevices().then(devices => {
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+      if (audioInputs.length) setAudioInputDevices(audioInputs);
+      const blackhole = audioInputs.find(d => d.label.toLowerCase().includes('blackhole 2ch'));
+      if (blackhole) setSelectedAudioDeviceId(blackhole.deviceId);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!bassBeatSync || !bassFlash) return;
     onBassFlash();
   }, [bassFlash, bassBeatSync]);
