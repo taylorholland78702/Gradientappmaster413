@@ -25,6 +25,11 @@ interface AudioPanelProps {
   setBassMultiplier: (v: number) => void;
   setMidsMultiplier: (v: number) => void;
   setTrebleMultiplier: (v: number) => void;
+  subBassMultiplier: number;
+  setSubBassMultiplier: (v: number) => void;
+  subBassBeatSync: boolean;
+  setSubBassBeatSync: (v: boolean) => void;
+  liveSubBassLevel: number;
   setBassBeatSync: (v: boolean) => void;
   setMidsBeatSync: (v: boolean) => void;
   setTrebleBeatSync: (v: boolean) => void;
@@ -58,6 +63,11 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
   setBassMultiplier,
   setMidsMultiplier,
   setTrebleMultiplier,
+  subBassMultiplier,
+  setSubBassMultiplier,
+  subBassBeatSync,
+  setSubBassBeatSync,
+  liveSubBassLevel,
   setBassBeatSync,
   setMidsBeatSync,
   setTrebleBeatSync,
@@ -168,6 +178,18 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
                   <span className="text-[10px] font-semibold text-white/80">Color</span>
                   <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
                   <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                </div>
+
+                {/* Pulse = Sub-bass */}
+                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
+                  <div className="w-full relative">
+                    <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
+                      <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-semibold text-white/80">Pulse</span>
+                  <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
+                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
               </div>
           </div>

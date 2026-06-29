@@ -12,10 +12,11 @@ export interface UseAudioReactivityParams {
   onTrebleFlash: () => void;
   setTargetColors: (updater: (prev: ColorRGB[]) => ColorRGB[]) => void;
   setGradientColors: (updater: (prev: ColorRGB[]) => ColorRGB[]) => void;
+  setTargetZoom: (updater: (prev: number) => number) => void;
 }
 
 export function useAudioReactivity(params: UseAudioReactivityParams) {
-  const { onBassFlash, onMidsFlash, onTrebleFlash, setTargetColors, setGradientColors } = params;
+  const { onBassFlash, onMidsFlash, onTrebleFlash, setTargetColors, setGradientColors, setTargetZoom } = params;
 
   // State
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -49,6 +50,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(true);
   const [trebleBeatSync, setTrebleBeatSync] = useState(true);
+  const [subBassMultiplier, setSubBassMultiplier] = useState(1);
+  const [subBassBeatSync, setSubBassBeatSync] = useState(true);
+  const [liveSubBassLevel, setLiveSubBassLevel] = useState(0);
   const [bpm, setBpm] = useState(0);
   const [bassOpen, setBassOpen] = useState(false);
   const [midsOpen, setMidsOpen] = useState(false);
@@ -87,6 +91,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const liveTrebleSmoothedRef = useRef(0);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const subBassBeatPulseRef = useRef(0);
+  const subBassPrevRef = useRef(0);
+  const liveSubBassLevelRef = useRef(0);
+  const subBassSmoothedRef = useRef(0);
+  const lastSubBeatTimeRef = useRef(0);
 
   // Functions
   const initAudioContext = useCallback((source: HTMLAudioElement | MediaStream, connectToOutput: boolean = true) => {
@@ -255,6 +264,38 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // ---- Read frequency data ----
       analyser.getByteFrequencyData(dataArray);
 
+      const now = performance.now();
+
+      // ---- SUB-BASS (bins 0–2, ~0–170Hz — kick drum fundamental) ----
+      let subBassSum = 0;
+      for (let i = 0; i < 3 && i < bufferLength; i++) subBassSum += dataArray[i];
+      const subBassAvgRaw = (subBassSum / 3) / 255;
+      liveSubBassLevelRef.current = subBassAvgRaw;
+
+      const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.08;
+      if (subBassOnset && now - lastSubBeatTimeRef.current > 150) {
+        lastSubBeatTimeRef.current = now;
+        if (subBassBeatSync) subBassBeatPulseRef.current = 1.0;
+      }
+      subBassPrevRef.current = subBassAvgRaw;
+
+      let subBassRaw: number;
+      if (subBassBeatSync) {
+        subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * masterSensitivity;
+        subBassBeatPulseRef.current *= 0.80;
+      } else {
+        subBassRaw = subBassAvgRaw * subBassMultiplier * masterSensitivity;
+      }
+      subBassSmoothedRef.current = 0.6 * subBassSmoothedRef.current + 0.4 * subBassRaw;
+      const subBassValue = Math.min(1, subBassSmoothedRef.current);
+
+      if (subBassValue > 0.05) {
+        setTargetZoom(prev => {
+          const pulse = 1 + subBassValue * 0.35;
+          return Math.min(prev * pulse, prev + 0.6);
+        });
+      }
+
       // ---- BASS (bins 0–9) ----
       let bassSum = 0;
       for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
@@ -262,7 +303,6 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveBaseLevelRef.current = bassAvgRaw;
 
       // Beat detection on bass band
-      const now = performance.now();
       const bassOnset = bassAvgRaw > bassPrevRef.current * 1.3 && bassAvgRaw > bassThreshold + 0.05;
       if (bassOnset && now - lastBeatTimeRef.current > 200) {
         const interval = now - lastBeatTimeRef.current;
@@ -351,7 +391,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom]);
 
   // Poll live level refs at ~30fps to drive the bar graph
   useEffect(() => {
@@ -361,6 +401,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       setLiveBassLevel(liveBaseLevelRef.current);
       setLiveMidsLevel(liveMidsLevelRef.current);
       setLiveTrebleLevel(liveTrebleLevelRef.current);
+      setLiveSubBassLevel(liveSubBassLevelRef.current);
       rafId = requestAnimationFrame(poll);
     };
     rafId = requestAnimationFrame(poll);
@@ -443,6 +484,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     bassBeatSync, setBassBeatSync,
     midsBeatSync, setMidsBeatSync,
     trebleBeatSync, setTrebleBeatSync,
+    subBassMultiplier, setSubBassMultiplier,
+    subBassBeatSync, setSubBassBeatSync,
+    liveSubBassLevel,
     bpm, setBpm,
     bassOpen, setBassOpen,
     midsOpen, setMidsOpen,

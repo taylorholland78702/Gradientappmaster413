@@ -317,6 +317,7 @@ export function InteractiveGradient() {
     },
     setTargetColors,
     setGradientColors,
+    setTargetZoom,
   });
 
   // Destructure audio hook values for use throughout this component
@@ -352,6 +353,9 @@ export function InteractiveGradient() {
     bassBeatSync, setBassBeatSync,
     midsBeatSync, setMidsBeatSync,
     trebleBeatSync, setTrebleBeatSync,
+    subBassMultiplier, setSubBassMultiplier,
+    subBassBeatSync, setSubBassBeatSync,
+    liveSubBassLevel,
     bpm, setBpm,
     bassOpen, setBassOpen,
     midsOpen, setMidsOpen,
@@ -7640,6 +7644,11 @@ RANDOMIZE
           setBassBeatSync={setBassBeatSync}
           setMidsBeatSync={setMidsBeatSync}
           setTrebleBeatSync={setTrebleBeatSync}
+          subBassMultiplier={subBassMultiplier}
+          setSubBassMultiplier={setSubBassMultiplier}
+          subBassBeatSync={subBassBeatSync}
+          setSubBassBeatSync={setSubBassBeatSync}
+          liveSubBassLevel={liveSubBassLevel}
           setColorShiftHue={setColorShiftHue}
           startMicVisualization={startMicVisualization}
           stopMicVisualization={stopMicVisualization}
