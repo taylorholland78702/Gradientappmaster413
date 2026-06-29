@@ -4826,7 +4826,7 @@ RANDOMIZE
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsAIColorPickerOpen(!isAIColorPickerOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
+            className="flex-1 px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
           >
             <span>Color Palette</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
@@ -4836,7 +4836,7 @@ RANDOMIZE
               saveCurrentState();
               setTargetColors(gradientColors.map(() => randomColor()));
             }}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Colors"
           >
             <Shuffle className="w-4 h-4" />
@@ -4952,14 +4952,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsGradientsOpen(!isGradientsOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-between"
+            className="flex-1 px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-between"
           >
             <span>Gradients</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isGradientsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={shuffleGradientType}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Gradient Type"
           >
             <Shuffle className="w-4 h-4" />
@@ -6013,14 +6013,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsEffectsOpen(!isEffectsOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex-1 flex items-center justify-between"
+            className="px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex-1 flex items-center justify-between"
           >
             <span>Effects</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isEffectsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={randomizeEffects}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-0.5 rounded-lg text-[10px] transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Effects"
           >
             <Shuffle className="w-4 h-4" />
@@ -6037,7 +6037,7 @@ RANDOMIZE
               setActiveEffects([]);
               setIsMultiFxMode(false);
             }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-lg active:scale-100 ${
+            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] transition-all whitespace-nowrap shadow-lg active:scale-100 ${
               activeEffects.length === 0 && !isMultiFxMode
                 ? 'bg-green-600 text-white'
                 : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
@@ -6053,7 +6053,7 @@ RANDOMIZE
                 // Add a default effect or do nothing, just ensure it's not in NO FX state
               }
             }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-lg active:scale-100 ${
+            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] transition-all whitespace-nowrap shadow-lg active:scale-100 ${
               isMultiFxMode
                 ? 'bg-green-600 text-white'
                 : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
@@ -6109,7 +6109,7 @@ RANDOMIZE
                     }
                   }
                 }}
-                className={`px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-lg ${
+                className={`px-0.5 py-0.5 rounded text-[10px] transition-all whitespace-nowrap shadow-lg ${
                   activeEffects.includes(effect.value)
                     ? 'bg-purple-500 text-white'
                     : 'bg-black/30 text-white backdrop-blur-sm hover:bg-black/40'
@@ -6379,7 +6379,7 @@ RANDOMIZE
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
-                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'gaussian'
                             ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -6389,7 +6389,7 @@ RANDOMIZE
                       </button>
                       <button
                         onClick={() => setBlurType('motion')}
-                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'motion'
                             ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -7538,7 +7538,7 @@ RANDOMIZE
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                           slitScanDirection === 'horizontal'
                             ? 'bg-purple-500 text-white'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -7548,7 +7548,7 @@ RANDOMIZE
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('vertical')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                           slitScanDirection === 'vertical'
                             ? 'bg-purple-500 text-white'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -7558,7 +7558,7 @@ RANDOMIZE
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('radial')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                           slitScanDirection === 'radial'
                             ? 'bg-purple-500 text-white'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -7603,7 +7603,7 @@ RANDOMIZE
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setDitherType('bayer')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'bayer'
                             ? 'bg-purple-500 text-white'
                             : 'bg-black/30 text-white hover:bg-black/40'
@@ -7613,7 +7613,7 @@ RANDOMIZE
                       </button>
                       <button
                         onClick={() => setDitherType('floyd-steinberg')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'floyd-steinberg'
                             ? 'bg-purple-500 text-white'
                             : 'bg-black/30 text-white hover:bg-black/40'
