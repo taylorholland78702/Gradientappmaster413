@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Plus } from 'lucide-react';
+import { ChevronDown, Plus, Upload, Pencil, Minus } from 'lucide-react';
 
 interface Preset {
   name: string;
@@ -91,10 +91,10 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     e.stopPropagation();
                     updatePreset(index);
                   }}
-                  className="px-2 py-2 text-white/30 hover:text-green-400 hover:bg-white/15 transition-colors text-xs flex-shrink-0"
+                  className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
                   title="Save current edits to this preset"
                 >
-                  ↑
+                  <Upload className="w-4 h-4" />
                 </button>
                 <button
                   onClick={(e) => {
@@ -102,17 +102,17 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     setRenamingPresetIndex(index);
                     setRenamingPresetValue(preset.name);
                   }}
-                  className="px-2 py-2 text-white/30 hover:text-white/80 hover:bg-white/15 transition-colors text-xs flex-shrink-0"
+                  className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
                   title="Rename preset"
                 >
-                  ✎
+                  <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
-                  className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors text-sm font-bold flex-shrink-0"
+                  className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                   title="Delete preset"
                 >
-                  −
+                  <Minus className="w-4 h-4" />
                 </button>
               </div>
             ))
