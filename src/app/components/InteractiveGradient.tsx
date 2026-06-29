@@ -197,9 +197,9 @@ export function InteractiveGradient() {
   const [angleStartOffset, setAngleStartOffset] = useState(0);
   const [angleCenterX, setAngleCenterX] = useState(50);
   const [angleCenterY, setAngleCenterY] = useState(50);
-  const [spiralTightness, setSpiralTightness] = useState(5);
+  const [spiralTightness, setSpiralTightness] = useState(11);
   const [spiralRotations, setSpiralRotations] = useState(3);
-  const [spiralThickness, setSpiralThickness] = useState(20);
+  const [spiralThickness, setSpiralThickness] = useState(49);
   const [spiralZoom, setSpiralZoom] = useState(3.5);
   const [shapesSides, setShapesSides] = useState(4);
   const [shapesCount, setShapesCount] = useState(8);
