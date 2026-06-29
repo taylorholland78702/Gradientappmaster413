@@ -76,7 +76,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     rgba(255,255,255,0.12) var(--slider-pct, 50%),
     rgba(255,255,255,0.12) 100%
   );
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.1);
 }
 
 input[type="range"]::-moz-range-track {
@@ -101,8 +101,8 @@ input[type="range"]::-webkit-slider-thumb {
   background: #fff;
   margin-top: -5px;
   box-shadow:
-    0 0 0 1.5px rgba(0,0,0,0.4),
-    0 1px 4px rgba(0,0,0,0.5);
+    0 0 0 1.5px rgba(0,0,0,0.2),
+    0 1px 4px rgba(0,0,0,0.25);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
