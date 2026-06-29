@@ -2969,13 +2969,17 @@ export function InteractiveGradient() {
           : 0;
         const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / zoom;
 
+        const plasmaCX = displayWidth / 2;
+        const plasmaCY = displayHeight / 2;
         for (let py = 0; py < displayHeight; py++) {
           for (let px = 0; px < displayWidth; px++) {
+            const dx = px - plasmaCX;
+            const dy = py - plasmaCY;
             const value = (
               Math.sin(px * plasmaScale + gradientAngle * 0.05) +
               Math.sin(py * plasmaScale + gradientAngle * 0.05) +
               Math.sin((px + py) * plasmaScale * 0.75) +
-              Math.sin(Math.sqrt(px * px + py * py) * plasmaScale + gradientAngle * 0.05)
+              Math.sin(Math.sqrt(dx * dx + dy * dy) * plasmaScale + gradientAngle * 0.05)
             ) / 4 + 0.5;
             
             // Interpolate between colors
