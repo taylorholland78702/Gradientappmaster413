@@ -47,11 +47,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [trebleMin, setTrebleMin] = useState(0);
   const [trebleMax, setTrebleMax] = useState(2);
   const [masterSensitivity, setMasterSensitivity] = useState(1);
-  const [bassBeatSync, setBassBeatSync] = useState(true);
-  const [midsBeatSync, setMidsBeatSync] = useState(true);
-  const [trebleBeatSync, setTrebleBeatSync] = useState(true);
+  const [bassBeatSync, setBassBeatSync] = useState(false);
+  const [midsBeatSync, setMidsBeatSync] = useState(false);
+  const [trebleBeatSync, setTrebleBeatSync] = useState(false);
   const [subBassMultiplier, setSubBassMultiplier] = useState(1);
-  const [subBassBeatSync, setSubBassBeatSync] = useState(true);
+  const [subBassBeatSync, setSubBassBeatSync] = useState(false);
   const [liveSubBassLevel, setLiveSubBassLevel] = useState(0);
   const [bpm, setBpm] = useState(0);
   const [bassOpen, setBassOpen] = useState(false);
