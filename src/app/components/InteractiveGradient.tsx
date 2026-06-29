@@ -161,6 +161,7 @@ export function InteractiveGradient() {
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
+  const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
   
   // Effect parameters
   const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(8);
@@ -5465,30 +5466,54 @@ RANDOMIZE
         {/* AI Color Picker Dropdown */}
         {isAIColorPickerOpen && (
           <div className="w-full mb-0.5 bg-[#2a2a4e] rounded-lg p-3">
-            <input
-              type="text"
-              value={aiPrompt}
-              onChange={(e) => setAIPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAIPromptSubmit();
-                } else if (e.key === 'Escape') {
-                  setIsAIColorPickerOpen(false);
-                  setAIPrompt('');
-                }
-              }}
-              placeholder="Enter keywords or themes"
-              className="w-full px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/60 mb-2"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3), rgba(251, 146, 60, 0.3))'
-              }}
-              autoFocus
-            />
+            <div className="flex gap-1.5 mb-2 items-center">
+              <input
+                type="text"
+                value={aiPrompt}
+                onChange={(e) => setAIPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAIPromptSubmit();
+                  } else if (e.key === 'Escape') {
+                    setIsAIColorPickerOpen(false);
+                    setAIPrompt('');
+                  }
+                }}
+                placeholder="Enter keywords or themes"
+                className="flex-1 px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/60"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3), rgba(251, 146, 60, 0.3))'
+                }}
+                autoFocus
+              />
+              <button
+                onClick={() => setIsKeywordHelpOpen(prev => !prev)}
+                className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white text-xs font-bold flex items-center justify-center flex-shrink-0 transition-all"
+                title="Show keywords"
+              >?</button>
+            </div>
+            {isKeywordHelpOpen && (
+              <div className="mb-2 p-2 rounded bg-black/30 text-[10px] text-white/70 leading-relaxed">
+                <div className="font-bold text-white/90 mb-1">Themes</div>
+                <div className="mb-2 flex flex-wrap gap-x-1.5 gap-y-0.5">
+                  {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => (
+                    <span key={t} onClick={() => setAIPrompt(t)} className="cursor-pointer hover:text-white transition-colors">{t}</span>
+                  ))}
+                </div>
+                <div className="font-bold text-white/90 mb-1">Colors</div>
+                <div className="flex flex-wrap gap-x-1.5 gap-y-0.5">
+                  {['red','orange','yellow','green','blue','purple','pink','cyan','magenta','lime','teal','indigo','violet','brown','black','white','gray','gold','silver','coral','peach','lavender','mint','rose','sky','navy','maroon','olive','turquoise','salmon'].map(c => (
+                    <span key={c} onClick={() => setAIPrompt(c)} className="cursor-pointer hover:text-white transition-colors">{c}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex gap-1.5 justify-end">
               <button
                 onClick={() => {
                   setIsAIColorPickerOpen(false);
                   setAIPrompt('');
+                  setIsKeywordHelpOpen(false);
                 }}
                 className="px-3 py-1 rounded text-xs bg-[#3a3a5e] text-white hover:bg-[#4a4a6e] transition-all"
               >
