@@ -5703,8 +5703,8 @@ RANDOMIZE
           </button>
         </div>
         
-        {/* Fade Speed — shown above grid so it's visible without scrolling */}
-        {isGradientsOpen && gradientType === 'fade' && (
+        {/* Fade Speed — always visible when Fade is active */}
+        {gradientType === 'fade' && (
           <div className="w-full mb-0.5 p-2 bg-[#2a2a4e] rounded-lg flex items-center gap-2">
             <label className="text-xs text-white whitespace-nowrap">Speed:</label>
             <input type="range" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="flex-1" />
