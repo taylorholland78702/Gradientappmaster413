@@ -5470,93 +5470,92 @@ RANDOMIZE
         </div>
         
         {/* VCR Controls */}
-        <div className="flex items-center justify-between gap-0.5 bg-[#2a2a4e] rounded-lg p-0.5 mb-0.5 w-full">
-            <button
-              onClick={exportAsPNG}
-              className="w-8 h-8 rounded hover:bg-[#3a3a5e] text-white transition-all flex items-center justify-center flex-shrink-0"
-              title="Save PNG"
-            >
-              <Camera className="w-4 h-4" />
-            </button>
+        <div className="flex items-center bg-[#2a2a4e] rounded-lg p-0.5 mb-0.5 w-full">
+            {/* Camera zone — fixed width so icon is centered between left edge and divider */}
+            <div className="flex items-center justify-center w-9 flex-shrink-0">
+              <button
+                onClick={exportAsPNG}
+                className="w-7 h-7 rounded hover:bg-[#3a3a5e] text-white transition-all flex items-center justify-center"
+                title="Save PNG"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
 
-            <div className="w-px h-5 bg-white/20"></div>
+            <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
 
-            <button
-              onClick={toggleVCRRecording}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title="Record Video"
-            >
-              <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
-            </button>
-            
-            <button
-              onClick={handleStop}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title="Stop"
-            >
-              <Square className="w-4 h-4" />
-            </button>
-            
-            <button
-              onClick={toggleVCRPlayback}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
-            >
-              {(isVCRPlaying || isAutoMode) ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </button>
-            
-            <div className="w-px h-5 bg-white/20"></div>
-            
-            <button
-              onClick={() => {
-                if (vcrPlaybackSpeed > 2) {
-                  // Decrement by 1x when above 2x
-                  setVcrPlaybackSpeed(vcrPlaybackSpeed - 1);
-                } else if (vcrPlaybackSpeed === 2) {
-                  // At 2x, go to 1x
-                  setVcrPlaybackSpeed(1);
-                } else if (vcrPlaybackSpeed === 1) {
-                  // At 1x, go to 0.5x
-                  setVcrPlaybackSpeed(0.5);
-                }
-                // At 0.5x or below, stay at 0.5x (do nothing)
-              }}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title="Slower"
-            >
-              <Rewind className="w-4 h-4" />
-            </button>
-            
-            <span className="text-xs text-white text-center">{vcrPlaybackSpeed}x</span>
-            
-            <button
-              onClick={() => {
-                if (vcrPlaybackSpeed >= 2) {
-                  // Increment by 1x when at or above 2x, max 10x
-                  setVcrPlaybackSpeed(Math.min(10, vcrPlaybackSpeed + 1));
-                } else if (vcrPlaybackSpeed >= 1) {
-                  // At 1x, jump to 2x
-                  setVcrPlaybackSpeed(2);
-                } else {
-                  // Below 1x (0.5x), jump to 1x
-                  setVcrPlaybackSpeed(1);
-                }
-              }}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title="Faster"
-            >
-              <FastForward className="w-4 h-4" />
-            </button>
-            
-            <div className="w-px h-5 bg-white/20"></div>
-            
-            <button
-              onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-              title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
-            >
-              {rotationDirection === 'clockwise' ? <RotateCw className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
-            </button>
+            {/* Main controls — fill remaining space, centered */}
+            <div className="flex-1 flex items-center justify-around">
+              <button
+                onClick={toggleVCRRecording}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title="Record Video"
+              >
+                <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
+              </button>
+
+              <button
+                onClick={handleStop}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title="Stop"
+              >
+                <Square className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={toggleVCRPlayback}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
+              >
+                {(isVCRPlaying || isAutoMode) ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </button>
+
+              <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
+
+              <button
+                onClick={() => {
+                  if (vcrPlaybackSpeed > 2) {
+                    setVcrPlaybackSpeed(vcrPlaybackSpeed - 1);
+                  } else if (vcrPlaybackSpeed === 2) {
+                    setVcrPlaybackSpeed(1);
+                  } else if (vcrPlaybackSpeed === 1) {
+                    setVcrPlaybackSpeed(0.5);
+                  }
+                }}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title="Slower"
+              >
+                <Rewind className="w-4 h-4" />
+              </button>
+
+              <span className="text-xs text-white text-center">{vcrPlaybackSpeed}x</span>
+
+              <button
+                onClick={() => {
+                  if (vcrPlaybackSpeed >= 2) {
+                    setVcrPlaybackSpeed(Math.min(10, vcrPlaybackSpeed + 1));
+                  } else if (vcrPlaybackSpeed >= 1) {
+                    setVcrPlaybackSpeed(2);
+                  } else {
+                    setVcrPlaybackSpeed(1);
+                  }
+                }}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title="Faster"
+              >
+                <FastForward className="w-4 h-4" />
+              </button>
+
+              <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
+
+              <button
+                onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
+                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+                title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
+              >
+                {rotationDirection === 'clockwise' ? <RotateCw className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
         
         {/* Color Picker (AI) button */}
