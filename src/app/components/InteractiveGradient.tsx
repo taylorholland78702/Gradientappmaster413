@@ -4852,8 +4852,6 @@ export function InteractiveGradient() {
     } else {
       startRecording();
       setIsVCRRecording(true);
-      setIsVCRPlaying(false);
-      setIsAutoMode(false);
     }
   }, [isRecording, startRecording, stopRecording]);
 
