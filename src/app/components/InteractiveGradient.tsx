@@ -5093,15 +5093,14 @@ export function InteractiveGradient() {
   // Load preset
   const loadPreset = (preset: any) => {
     const data = preset.data;
-    // Allow presets to have different numbers of colors
     const colors = data.gradientColors || DEFAULT_COLORS;
     setGradientColors(colors);
     setTargetColors(colors);
-    setGradientAngle(data.gradientAngle);
-    setTargetAngle(data.gradientAngle);
-    setGradientType(data.gradientType);
-    setZoom(data.zoom);
-    setTargetZoom(data.zoom);
+    setGradientAngle(data.gradientAngle ?? 45);
+    setTargetAngle(data.gradientAngle ?? 45);
+    setGradientType(data.gradientType || 'angle');
+    setZoom(data.zoom ?? 1);
+    setTargetZoom(data.zoom ?? 1);
     setActiveEffects(data.activeEffects || []);
     setKaleidoscopeSegments(data.kaleidoscopeSegments || 8);
     setTwistAmount(data.twistAmount || 2);
@@ -9054,7 +9053,7 @@ RANDOMIZE
                         if (e.key === 'Enter') { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }
                         if (e.key === 'Escape') setRenamingPresetIndex(null);
                       }}
-                      onBlur={() => { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
+                      onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
                       className="flex-1 px-4 py-2 text-xs bg-[#1a1a3e] text-white focus:outline-none border-b border-purple-500"
                     />
                   ) : (
