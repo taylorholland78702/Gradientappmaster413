@@ -158,6 +158,8 @@ export function InteractiveGradient() {
   const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
+  const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(null);
+  const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
@@ -5306,8 +5308,35 @@ export function InteractiveGradient() {
       )}
       
       {/* Main controls */}
-      <div className={`absolute top-4 left-4 flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-[#1a1a2e]/40 backdrop-blur-md rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        
+      <div
+        className={`absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-[#1a1a2e]/40 backdrop-blur-md rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
+      >
+        {/* Drag handle */}
+        <div
+          className="w-full flex justify-center items-center py-0.5 cursor-grab active:cursor-grabbing select-none"
+          onMouseDown={(e) => {
+            const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+            panelDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+            const onMove = (ev: MouseEvent) => {
+              if (!panelDragRef.current) return;
+              setPanelPos({
+                x: panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
+                y: panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
+              });
+            };
+            const onUp = () => {
+              panelDragRef.current = null;
+              window.removeEventListener('mousemove', onMove);
+              window.removeEventListener('mouseup', onUp);
+            };
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+          }}
+        >
+          <div className="w-8 h-1 rounded-full bg-white/20"></div>
+        </div>
+
         {/* Top row with Eye, Randomize, and Refresh buttons */}
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
