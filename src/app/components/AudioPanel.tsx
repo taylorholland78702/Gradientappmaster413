@@ -136,9 +136,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
             {/* Intensity — always visible */}
             <div className="flex items-center gap-2">
-              <label className="text-xs text-white/70 whitespace-nowrap flex-shrink-0">Intensity</label>
+              <label className="text-xs text-white whitespace-nowrap flex-shrink-0">Intensity</label>
               <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
-              <span className="text-xs text-white/50 w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
+              <span className="text-xs text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
 
             <div className="flex gap-2 items-start overflow-hidden">
@@ -150,9 +150,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold text-white/80">Shape</span>
+                  <span className="text-[10px] font-semibold text-white">Shape</span>
                   <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white/40 hover:bg-white/20 hover:text-white/60'}`}>BEAT</button>
+                  <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white text-black' : 'bg-white/10 text-white/40 hover:bg-white/20 hover:text-white/60'}`}>BEAT</button>
                 </div>
 
                 {/* Motion = Mids */}
@@ -162,9 +162,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold text-white/80">Motion</span>
+                  <span className="text-[10px] font-semibold text-white">Motion</span>
                   <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
 
                 {/* Color = Treble */}
@@ -174,9 +174,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold text-white/80">Color</span>
+                  <span className="text-[10px] font-semibold text-white">Color</span>
                   <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                  <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
 
                 {/* Pulse = Sub-bass */}
@@ -186,9 +186,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold text-white/80">Pulse</span>
+                  <span className="text-[10px] font-semibold text-white">Pulse</span>
                   <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
               </div>
           </div>
