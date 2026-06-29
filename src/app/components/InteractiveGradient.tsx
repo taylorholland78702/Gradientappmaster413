@@ -5138,6 +5138,23 @@ export function InteractiveGradient() {
     setSavedPresets(newPresets);
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
+
+  const updatePreset = async (index: number) => {
+    const existing = savedPresets[index];
+    const updated = {
+      ...existing,
+      data: {
+        gradientColors, gradientAngle, gradientType, zoom, activeEffects,
+        kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset,
+        fisheyeStrength, tileCount, grainIntensity, blurMotionAmount, blurMotionDirection,
+        blurGaussianAmount, blurRadialAmount, posterizeLevels, halftoneSize, halftoneMove,
+        vignetteStrength, colorShiftHue, submittedAIPrompt, baseAIColors,
+      }
+    };
+    const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
+    setSavedPresets(newPresets);
+    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
+  };
   
   // Toggle fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -9048,6 +9065,16 @@ RANDOMIZE
                       {preset.name}
                     </button>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updatePreset(index);
+                    }}
+                    className="px-2 py-2 text-white/30 hover:text-green-400 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
+                    title="Save current edits to this preset"
+                  >
+                    ↑
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
