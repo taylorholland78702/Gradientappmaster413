@@ -68,6 +68,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const mp4FrameCountRef = useRef(0);
   const mp4RafRef = useRef<number | null>(null);
   const mp4StartTimeRef = useRef<number>(0);
+  // Ref-based recording flag to avoid stale closure in toggleVCRRecording
+  const isRecordingRef = useRef(false);
 
   // VCR Recording effect
   useEffect(() => {
@@ -155,6 +157,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         mp4RafRef.current = requestAnimationFrame(captureFrame);
       };
       mp4RafRef.current = requestAnimationFrame(captureFrame);
+      isRecordingRef.current = true;
       setIsRecording(true);
       return;
     }
@@ -177,6 +180,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       URL.revokeObjectURL(url);
     };
     mediaRecorder.start();
+    isRecordingRef.current = true;
     setIsRecording(true);
   }, [canvasRef]);
 
@@ -197,6 +201,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       a.click();
       URL.revokeObjectURL(url);
       mp4MuxerRef.current = null;
+      isRecordingRef.current = false;
       setIsRecording(false);
       return;
     }
@@ -205,6 +210,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const mediaRecorder = mediaRecorderRef.current;
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
+      isRecordingRef.current = false;
       setIsRecording(false);
       const stream = mediaRecorder.stream;
       if (stream) stream.getTracks().forEach(track => track.stop());
@@ -212,14 +218,14 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   }, []);
 
   const toggleVCRRecording = useCallback(async () => {
-    if (isRecording) {
+    if (isRecordingRef.current) {
       await stopRecording();
       setIsVCRRecording(false);
     } else {
       await startRecording();
       setIsVCRRecording(true);
     }
-  }, [isRecording, startRecording, stopRecording]);
+  }, [startRecording, stopRecording]);
 
   const toggleVCRPlayback = useCallback(() => {
     // Stop/Play toggle button — never touches recording state
