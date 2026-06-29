@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
-import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 export interface ColorRGB {
   r: number;
@@ -28,6 +27,19 @@ export interface UseVCRPlaybackParams {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   setIsAudioEnabled: (v: boolean) => void;
   audioRef: RefObject<HTMLAudioElement | null>;
+}
+
+function getBestMimeType(): string {
+  const candidates = [
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm',
+  ];
+  for (const type of candidates) {
+    if (MediaRecorder.isTypeSupported(type)) return type;
+  }
+  return '';
 }
 
 export function useVCRPlayback(params: UseVCRPlaybackParams) {
@@ -62,13 +74,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const recordCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const vcrRecordingStartTime = useRef<number>(0);
   const vcrPlaybackStartTime = useRef<number>(0);
-  // MP4 encoding refs
-  const mp4MuxerRef = useRef<Muxer<ArrayBufferTarget> | null>(null);
-  const videoEncoderRef = useRef<VideoEncoder | null>(null);
-  const mp4FrameCountRef = useRef(0);
   const mp4RafRef = useRef<number | null>(null);
-  const mp4StartTimeRef = useRef<number>(0);
-  // Ref-based recording flag to avoid stale closure in toggleVCRRecording
+  // Ref-based flag avoids stale closure in toggleVCRRecording
   const isRecordingRef = useRef(false);
 
   // VCR Recording effect
@@ -120,115 +127,79 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     return () => clearInterval(playbackInterval);
   }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed, vcrLoop]);
 
-  // Functions
-  const startRecording = useCallback(async () => {
+  const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Use WebCodecs + mp4-muxer if available (Chrome 94+, Edge 94+)
-    if (typeof VideoEncoder !== 'undefined') {
-      const width = canvas.width;
-      const height = canvas.height;
-      // Width/height must be even for H.264
-      const w = width % 2 === 0 ? width : width - 1;
-      const h = height % 2 === 0 ? height : height - 1;
-
-      const target = new ArrayBufferTarget();
-      const muxer = new Muxer({ target, video: { codec: 'avc', width: w, height: h }, fastStart: 'in-memory' });
-      mp4MuxerRef.current = muxer;
-      mp4FrameCountRef.current = 0;
-      mp4StartTimeRef.current = performance.now();
-
-      const encoder = new VideoEncoder({
-        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-        error: (e) => console.error('VideoEncoder error', e),
-      });
-      encoder.configure({ codec: 'avc1.42001f', width: w, height: h, bitrate: 8_000_000, framerate: 30 });
-      videoEncoderRef.current = encoder;
-
-      const captureFrame = () => {
-        if (!videoEncoderRef.current || videoEncoderRef.current.state === 'closed') return;
-        const timestamp = Math.round((performance.now() - mp4StartTimeRef.current) * 1000); // µs
-        const frame = new VideoFrame(canvas, { timestamp });
-        const keyFrame = mp4FrameCountRef.current % 60 === 0;
-        videoEncoderRef.current.encode(frame, { keyFrame });
-        frame.close();
-        mp4FrameCountRef.current++;
-        mp4RafRef.current = requestAnimationFrame(captureFrame);
-      };
-      mp4RafRef.current = requestAnimationFrame(captureFrame);
-      isRecordingRef.current = true;
-      setIsRecording(true);
+    if (!canvas) {
+      console.warn('startRecording: canvas not available');
       return;
     }
 
-    // Fallback: WebM via MediaRecorder
+    const mimeType = getBestMimeType();
     recordedChunksRef.current = [];
-    const stream = canvas.captureStream(30);
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-    mediaRecorderRef.current = mediaRecorder;
+
+    let stream: MediaStream;
+    try {
+      stream = canvas.captureStream(30);
+    } catch (err) {
+      console.error('captureStream failed:', err);
+      return;
+    }
+
+    let mediaRecorder: MediaRecorder;
+    try {
+      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    } catch (err) {
+      console.error('MediaRecorder init failed:', err);
+      stream.getTracks().forEach(t => t.stop());
+      return;
+    }
+
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) recordedChunksRef.current.push(e.data);
     };
+
     mediaRecorder.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const isMP4 = mimeType.includes('mp4');
+      const blob = new Blob(recordedChunksRef.current, { type: isMP4 ? 'video/mp4' : 'video/webm' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `gradient-${Date.now()}.webm`;
+      a.download = `gradient-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     };
+
     mediaRecorder.start();
+    mediaRecorderRef.current = mediaRecorder;
     isRecordingRef.current = true;
     setIsRecording(true);
-  }, [canvasRef]);
+  }, [canvasRef, setIsRecording]);
 
-  const stopRecording = useCallback(async () => {
-    // MP4 path
-    if (videoEncoderRef.current && videoEncoderRef.current.state !== 'closed') {
-      if (mp4RafRef.current !== null) cancelAnimationFrame(mp4RafRef.current);
-      await videoEncoderRef.current.flush();
-      videoEncoderRef.current.close();
-      videoEncoderRef.current = null;
-      mp4MuxerRef.current?.finalize();
-      const { buffer } = mp4MuxerRef.current!.target as ArrayBufferTarget;
-      const blob = new Blob([buffer], { type: 'video/mp4' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gradient-${Date.now()}.mp4`;
-      a.click();
-      URL.revokeObjectURL(url);
-      mp4MuxerRef.current = null;
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      return;
-    }
-
-    // WebM fallback path
+  const stopRecording = useCallback(() => {
     const mediaRecorder = mediaRecorderRef.current;
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
-      isRecordingRef.current = false;
-      setIsRecording(false);
       const stream = mediaRecorder.stream;
       if (stream) stream.getTracks().forEach(track => track.stop());
+      mediaRecorderRef.current = null;
     }
-  }, []);
+    isRecordingRef.current = false;
+    setIsRecording(false);
+  }, [setIsRecording]);
 
-  const toggleVCRRecording = useCallback(async () => {
+  const toggleVCRRecording = useCallback(() => {
     if (isRecordingRef.current) {
-      await stopRecording();
+      stopRecording();
       setIsVCRRecording(false);
     } else {
-      await startRecording();
+      startRecording();
       setIsVCRRecording(true);
     }
   }, [startRecording, stopRecording]);
 
   const toggleVCRPlayback = useCallback(() => {
-    // Stop/Play toggle button — never touches recording state
     if (isVCRPlaying || isAutoMode) {
       setIsVCRRecording(false);
       setIsVCRPlaying(false);
@@ -247,11 +218,11 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     }
   }, [isVCRPlaying, isAutoMode, vcrRecordedFrames.length, setIsAutoMode]);
 
-  const handleStop = useCallback(async () => {
+  const handleStop = useCallback(() => {
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
     setVcrPlaybackIndex(0);
-    await stopRecording();
+    stopRecording();
     if (audioRef.current) {
       audioRef.current.pause();
       setIsAudioEnabled(false);
