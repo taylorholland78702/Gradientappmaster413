@@ -4933,13 +4933,13 @@ RANDOMIZE
                   setAIPrompt('');
                   setIsKeywordHelpOpen(false);
                 }}
-                className="px-3 py-1 rounded text-xs bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
+                className="px-2 py-0.5 rounded text-xs bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAIPromptSubmit}
-                className="px-3 py-1 rounded text-xs bg-white text-black font-semibold hover:bg-white/80 transition-all"
+                className="px-2 py-0.5 rounded text-xs bg-white text-black shadow-sm hover:bg-white/80 transition-all"
               >
                 Generate
               </button>
