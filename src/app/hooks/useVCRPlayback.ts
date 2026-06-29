@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
+import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 export interface ColorRGB {
   r: number;
@@ -61,6 +62,12 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const recordCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const vcrRecordingStartTime = useRef<number>(0);
   const vcrPlaybackStartTime = useRef<number>(0);
+  // MP4 encoding refs
+  const mp4MuxerRef = useRef<Muxer<ArrayBufferTarget> | null>(null);
+  const videoEncoderRef = useRef<VideoEncoder | null>(null);
+  const mp4FrameCountRef = useRef(0);
+  const mp4RafRef = useRef<number | null>(null);
+  const mp4StartTimeRef = useRef<number>(0);
 
   // VCR Recording effect
   useEffect(() => {
@@ -112,9 +119,47 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed, vcrLoop]);
 
   // Functions
-  const startRecording = useCallback(() => {
+  const startRecording = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Use WebCodecs + mp4-muxer if available (Chrome 94+, Edge 94+)
+    if (typeof VideoEncoder !== 'undefined') {
+      const width = canvas.width;
+      const height = canvas.height;
+      // Width/height must be even for H.264
+      const w = width % 2 === 0 ? width : width - 1;
+      const h = height % 2 === 0 ? height : height - 1;
+
+      const target = new ArrayBufferTarget();
+      const muxer = new Muxer({ target, video: { codec: 'avc', width: w, height: h }, fastStart: 'in-memory' });
+      mp4MuxerRef.current = muxer;
+      mp4FrameCountRef.current = 0;
+      mp4StartTimeRef.current = performance.now();
+
+      const encoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+        error: (e) => console.error('VideoEncoder error', e),
+      });
+      encoder.configure({ codec: 'avc1.42001f', width: w, height: h, bitrate: 8_000_000, framerate: 30 });
+      videoEncoderRef.current = encoder;
+
+      const captureFrame = () => {
+        if (!videoEncoderRef.current || videoEncoderRef.current.state === 'closed') return;
+        const timestamp = Math.round((performance.now() - mp4StartTimeRef.current) * 1000); // µs
+        const frame = new VideoFrame(canvas, { timestamp });
+        const keyFrame = mp4FrameCountRef.current % 60 === 0;
+        videoEncoderRef.current.encode(frame, { keyFrame });
+        frame.close();
+        mp4FrameCountRef.current++;
+        mp4RafRef.current = requestAnimationFrame(captureFrame);
+      };
+      mp4RafRef.current = requestAnimationFrame(captureFrame);
+      setIsRecording(true);
+      return;
+    }
+
+    // Fallback: WebM via MediaRecorder
     recordedChunksRef.current = [];
     const stream = canvas.captureStream(30);
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
@@ -135,7 +180,28 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     setIsRecording(true);
   }, [canvasRef]);
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = useCallback(async () => {
+    // MP4 path
+    if (videoEncoderRef.current && videoEncoderRef.current.state !== 'closed') {
+      if (mp4RafRef.current !== null) cancelAnimationFrame(mp4RafRef.current);
+      await videoEncoderRef.current.flush();
+      videoEncoderRef.current.close();
+      videoEncoderRef.current = null;
+      mp4MuxerRef.current?.finalize();
+      const { buffer } = mp4MuxerRef.current!.target as ArrayBufferTarget;
+      const blob = new Blob([buffer], { type: 'video/mp4' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gradient-${Date.now()}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+      mp4MuxerRef.current = null;
+      setIsRecording(false);
+      return;
+    }
+
+    // WebM fallback path
     const mediaRecorder = mediaRecorderRef.current;
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
@@ -145,12 +211,12 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     }
   }, []);
 
-  const toggleVCRRecording = useCallback(() => {
+  const toggleVCRRecording = useCallback(async () => {
     if (isRecording) {
-      stopRecording();
+      await stopRecording();
       setIsVCRRecording(false);
     } else {
-      startRecording();
+      await startRecording();
       setIsVCRRecording(true);
     }
   }, [isRecording, startRecording, stopRecording]);
@@ -175,11 +241,11 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     }
   }, [isVCRPlaying, isAutoMode, vcrRecordedFrames.length, setIsAutoMode]);
 
-  const handleStop = useCallback(() => {
+  const handleStop = useCallback(async () => {
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
     setVcrPlaybackIndex(0);
-    stopRecording();
+    await stopRecording();
     if (audioRef.current) {
       audioRef.current.pause();
       setIsAudioEnabled(false);
@@ -201,6 +267,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     recordCanvasRef,
     vcrRecordingStartTime,
     vcrPlaybackStartTime,
+    mp4RafRef,
     // Functions
     startRecording,
     stopRecording,
