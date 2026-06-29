@@ -102,6 +102,8 @@ export function InteractiveGradient() {
   const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
   const drawParamsDirtyRef = useRef(true); // true until first draw
+  const waveNumberRef = useRef<number>(19);
+  const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
   
   // Freeform gradient pins
@@ -2190,6 +2192,10 @@ export function InteractiveGradient() {
     audioEffectParam, audioColorShift,
   }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
+  // Keep wave refs in sync so the draw function always reads current values without stale closure.
+  useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
+  useEffect(() => { waveRotationRef.current = waveRotation; drawParamsDirtyRef.current = true; }, [waveRotation]);
+
   // Draw gradient on canvas — stored imperatively in drawRef so the master RAF can call it
   // without triggering React reconciliation. Only re-assigned when non-animated params change.
   useEffect(() => {
@@ -2535,12 +2541,12 @@ export function InteractiveGradient() {
 
         ctx.save();
         ctx.translate(centerX, centerY);
-        ctx.rotate((waveRotation * Math.PI) / 180);
+        ctx.rotate((waveRotationRef.current * Math.PI) / 180);
         ctx.scale(zoom, zoom);
         ctx.translate(-centerX, -centerY);
-        
+
         const waveScaleForWave = 1 / zoom;
-        const waveWidth = (displayWidth / waveNumber) * waveScaleForWave;
+        const waveWidth = (displayWidth / waveNumberRef.current) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
         const audioWaveAmplitude = (isAudioEnabled && isAudioReactive) 
           ? audioGradientParam * 100 // Up to 100 extra amplitude
