@@ -5473,7 +5473,7 @@ RANDOMIZE
         <div className="flex items-center justify-between gap-0.5 bg-[#2a2a4e] rounded-lg p-0.5 mb-0.5 w-full">
             <button
               onClick={exportAsPNG}
-              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all flex items-center justify-center"
+              className="w-8 h-8 rounded hover:bg-[#3a3a5e] text-white transition-all flex items-center justify-center flex-shrink-0"
               title="Save PNG"
             >
               <Camera className="w-4 h-4" />
