@@ -21,6 +21,13 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
 import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera } from 'lucide-react';
+import { useAudioReactivity } from '../hooks/useAudioReactivity';
+import { useVCRPlayback } from '../hooks/useVCRPlayback';
+import { usePresets } from '../hooks/usePresets';
+import { VCRControls } from './VCRControls';
+import { AudioPanel } from './AudioPanel';
+import { PresetsPanel } from './PresetsPanel';
+import { FreeformPinsOverlay } from './FreeformPinsOverlay';
 
 interface ColorRGB {
   r: number;
@@ -75,50 +82,9 @@ export function InteractiveGradient() {
   // Pinch-to-zoom tracking
   const lastPinchDistance = useRef<number | null>(null);
   
-  // Audio refs
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const bassSmoothedRef = useRef(0);
-  const midsSmoothedRef = useRef(0);
-  const trebleSmoothedRef = useRef(0);
-  // Beat detection refs
-  const lastBeatTimeRef = useRef(0);
-  const beatIntervalsRef = useRef<number[]>([]);
-  const bassPrevRef = useRef(0);
-  const treblePrevRef = useRef(0);
-  const lastTrebleBeatRef = useRef(0);
-  const bassBeatPulseRef = useRef(0);
-  const midsBeatPulseRef = useRef(0);
-  const trebleBeatPulseRef = useRef(0);
-  // Live level refs (updated every rAF frame, read by UI polling)
-  const liveBaseLevelRef = useRef(0);
-  const liveMidsLevelRef = useRef(0);
-  const liveTrebleLevelRef = useRef(0);
-  const liveBassSmoothedRef = useRef(0);
-  const liveMidsSmoothedRef = useRef(0);
-  const liveTrebleSmoothedRef = useRef(0);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const [audioFile, setAudioFile] = useState<string | null>(null);
-  const [audioFileName, setAudioFileName] = useState<string | null>(null);
-  const [audioFileMetadata, setAudioFileMetadata] = useState<{ sampleRate: number; duration: number; } | null>(null);
-  const [waveformData, setWaveformData] = useState<number[]>([]);
-  const [isAudioReactive, setIsAudioReactive] = useState(false);
-  const [isMicActive, setIsMicActive] = useState(false);
-  
-  // Audio-reactive canvas properties
-  const [audioGradientParam, setAudioGradientParam] = useState(0); // For gradient parameters
-  const [audioEffectParam, setAudioEffectParam] = useState(0); // For first effect parameter
-  const [audioColorShift, setAudioColorShift] = useState(0); // For color hue shift
-  
-  // Video recording refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
+  // Video recording state (shared between root and useVCRPlayback hook)
   const [isRecording, setIsRecording] = useState(false);
-  const recordingAnimationRef = useRef<number | null>(null);
-  const recordCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isAutoMode, setIsAutoMode] = useState(false);
   
   const [gradientColors, setGradientColors] = useState<ColorRGB[]>(DEFAULT_COLORS);
   const [targetColors, setTargetColors] = useState<ColorRGB[]>(gradientColors);
@@ -126,7 +92,6 @@ export function InteractiveGradient() {
   const [targetAngle, setTargetAngle] = useState(45);
   const [zoom, setZoom] = useState(1);
   const [targetZoom, setTargetZoom] = useState(1);
-  const [isAutoMode, setIsAutoMode] = useState(false);
   
   // Freeform gradient pins
   const [colorPins, setColorPins] = useState<ColorPin[]>([
@@ -141,15 +106,6 @@ export function InteractiveGradient() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
   
-  // VCR controls
-  const [isVCRRecording, setIsVCRRecording] = useState(false);
-  const [isVCRPlaying, setIsVCRPlaying] = useState(false);
-  const [vcrRecordedFrames, setVcrRecordedFrames] = useState<RecordingFrame[]>([]);
-  const [vcrPlaybackSpeed, setVcrPlaybackSpeed] = useState(1);
-  const [vcrLoop, setVcrLoop] = useState(false);
-  const [vcrPlaybackIndex, setVcrPlaybackIndex] = useState(0);
-  const vcrRecordingStartTime = useRef<number>(0);
-  const vcrPlaybackStartTime = useRef<number>(0);
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
   const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
   const [aiPrompt, setAIPrompt] = useState('');
@@ -157,17 +113,12 @@ export function InteractiveGradient() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-  const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
-  const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState<string>('default');
   const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(null);
   const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
   const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
-  const [renamingPresetIndex, setRenamingPresetIndex] = useState<number | null>(null);
-  const [renamingPresetValue, setRenamingPresetValue] = useState('');
   
   // Effect parameters
   const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(8);
@@ -265,7 +216,7 @@ export function InteractiveGradient() {
   const [pixelateScaleDirection, setPixelateScaleDirection] = useState<'out' | 'in'>('out');
   const [scanType, setScanType] = useState<'horizontal' | 'vertical' | 'interlaced' | 'crt'>('horizontal');
   const [posterizeSolarize, setPosterizeSolarize] = useState(0);
-  const [audioReactiveColors, setAudioReactiveColors] = useState(false);
+  // audioReactiveColors is now in useAudioReactivity hook
   const [noiseScale, setNoiseScale] = useState(25);
   const [noiseOctaves, setNoiseOctaves] = useState(2);
   const [noiseDirection, setNoiseDirection] = useState(0);
@@ -309,10 +260,7 @@ export function InteractiveGradient() {
   // Store base AI colors to keep them anchored
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
   
-  // Preset management
-  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
-  const [presetName, setPresetName] = useState('');
-  const [savedPresets, setSavedPresets] = useState<Array<{name: string; data: any}>>([]);
+  // Preset management state is in usePresets hook (initialized below)
   
   // Rating system for Randomize
   const [showRatingUI, setShowRatingUI] = useState(false);
@@ -342,48 +290,7 @@ export function InteractiveGradient() {
   // Slit-scan temporal buffer
   const slitScanBufferRef = useRef<ImageData[]>([]);
   
-  // Audio reactivity sensitivity/multipliers
-  const [bassMultiplier, setBassMultiplier] = useState(1); // Default 1 (range 0-2)
-  const [midsMultiplier, setMidsMultiplier] = useState(1); // Default 1 (range 0-2)
-  const [trebleMultiplier, setTrebleMultiplier] = useState(1); // Default 1 (range 0-2)
-  // Per-band smoothing (0=instant, 0.99=very slow) – default 0.8
-  const [bassSmoothing, setBassSmoothing] = useState(0.8);
-  const [midsSmoothing, setMidsSmoothing] = useState(0.8);
-  const [trebleSmoothing, setTrebleSmoothing] = useState(0.8);
-  // Per-band threshold (0–1 fraction of 255) – signals below are gated to 0
-  const [bassThreshold, setBassThreshold] = useState(0);
-  const [midsThreshold, setMidsThreshold] = useState(0);
-  const [trebleThreshold, setTrebleThreshold] = useState(0);
-  // Per-band output range clamp
-  const [bassMin, setBassMin] = useState(0);
-  const [bassMax, setBassMax] = useState(2);
-  const [midsMin, setMidsMin] = useState(0);
-  const [midsMax, setMidsMax] = useState(2);
-  const [trebleMin, setTrebleMin] = useState(0);
-  const [trebleMax, setTrebleMax] = useState(2);
-  // Master sensitivity - scales all band multipliers
-  const [masterSensitivity, setMasterSensitivity] = useState(1);
-  // Per-band beat sync mode
-  const [bassBeatSync, setBassBeatSync] = useState(false);
-  const [midsBeatSync, setMidsBeatSync] = useState(false);
-  const [trebleBeatSync, setTrebleBeatSync] = useState(false);
-  // BPM display
-  const [bpm, setBpm] = useState(0);
-  // Band expand/collapse state
-  const [bassOpen, setBassOpen] = useState(false);
-  const [midsOpen, setMidsOpen] = useState(false);
-  const [trebleOpen, setTrebleOpen] = useState(false);
-  // Beat flash state (momentary highlight on beat)
-  const [bassFlash, setBassFlash] = useState(false);
-  const [midsFlash, setMidsFlash] = useState(false);
-  const [trebleFlash, setTrebleFlash] = useState(false);
-  const [bpmFlash, setBpmFlash] = useState(false);
-  // Live level display state (polled from refs)
-  const [liveBassLevel, setLiveBassLevel] = useState(0);
-  const [liveMidsLevel, setLiveMidsLevel] = useState(0);
-  const [liveTrebleLevel, setLiveTrebleLevel] = useState(0);
-  const [isAudiovisualsOpen, setIsAudiovisualsOpen] = useState(false);
-  const [isAudioControlsOpen, setIsAudioControlsOpen] = useState(false);
+  // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
   // Minimum time between color changes (in milliseconds)
   const CHANGE_INTERVAL = 300;
@@ -402,31 +309,192 @@ export function InteractiveGradient() {
     return `#${r}${g}${b}`;
   }, []);
 
-  // Initialize audio context and analyser
-  // Unified audio initialization
-  const initAudioContext = useCallback((source: HTMLAudioElement | MediaStream, connectToOutput: boolean = true) => {
-    if (!audioContextRef.current) {
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
+  // ─── Custom Hooks ────────────────────────────────────────────────────────────
 
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      analyserRef.current = analyser;
+  // useAudioReactivity — all audio state, refs, processing loops
+  const audio = useAudioReactivity({
+    onBassFlash: () => setTargetZoom(prev => {
+      const pulseZoom = 0.8 + Math.random() * 1.6;
+      return pulseZoom !== prev ? pulseZoom : pulseZoom + 0.1;
+    }),
+    onMidsFlash: () => setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'),
+    onTrebleFlash: () => {
+      const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
+      setGradientColors(prev => prev.map(() => randomC()));
+      setTargetColors(prev => prev.map(() => randomC()));
+    },
+    setTargetColors,
+    setGradientColors,
+  });
 
-      const audioSource = source instanceof HTMLAudioElement
-        ? audioContext.createMediaElementSource(source)
-        : audioContext.createMediaStreamSource(source);
-      sourceRef.current = audioSource;
+  // Destructure audio hook values for use throughout this component
+  const {
+    isAudioEnabled, setIsAudioEnabled,
+    audioFile, setAudioFile,
+    audioFileName, setAudioFileName,
+    audioFileMetadata, setAudioFileMetadata,
+    waveformData, setWaveformData,
+    isAudioReactive, setIsAudioReactive,
+    isMicActive, setIsMicActive,
+    audioGradientParam, setAudioGradientParam,
+    audioEffectParam, setAudioEffectParam,
+    audioColorShift, setAudioColorShift,
+    audioInputDevices, setAudioInputDevices,
+    selectedAudioDeviceId, setSelectedAudioDeviceId,
+    bassMultiplier, setBassMultiplier,
+    midsMultiplier, setMidsMultiplier,
+    trebleMultiplier, setTrebleMultiplier,
+    bassSmoothing, setBassSmoothing,
+    midsSmoothing, setMidsSmoothing,
+    trebleSmoothing, setTrebleSmoothing,
+    bassThreshold, setBassThreshold,
+    midsThreshold, setMidsThreshold,
+    trebleThreshold, setTrebleThreshold,
+    bassMin, setBassMin,
+    bassMax, setBassMax,
+    midsMin, setMidsMin,
+    midsMax, setMidsMax,
+    trebleMin, setTrebleMin,
+    trebleMax, setTrebleMax,
+    masterSensitivity, setMasterSensitivity,
+    bassBeatSync, setBassBeatSync,
+    midsBeatSync, setMidsBeatSync,
+    trebleBeatSync, setTrebleBeatSync,
+    bpm, setBpm,
+    bassOpen, setBassOpen,
+    midsOpen, setMidsOpen,
+    trebleOpen, setTrebleOpen,
+    bassFlash, setBassFlash,
+    midsFlash, setMidsFlash,
+    trebleFlash, setTrebleFlash,
+    bpmFlash, setBpmFlash,
+    liveBassLevel, setLiveBassLevel,
+    liveMidsLevel, setLiveMidsLevel,
+    liveTrebleLevel, setLiveTrebleLevel,
+    isAudiovisualsOpen, setIsAudiovisualsOpen,
+    isAudioControlsOpen, setIsAudioControlsOpen,
+    audioReactiveColors, setAudioReactiveColors,
+    audioRef,
+    analyserRef,
+    handleFileUpload,
+    startMicVisualization,
+    stopMicVisualization,
+    toggleAudio,
+    initAudioContext,
+  } = audio;
 
-      audioSource.connect(analyser);
-      if (connectToOutput) {
-        analyser.connect(audioContext.destination);
-      }
-    }
-  }, []);
+  // useVCRPlayback — VCR recording/playback state and handlers
+  const vcr = useVCRPlayback({
+    isRecording,
+    setIsRecording,
+    isAutoMode,
+    setIsAutoMode,
+    setTargetColors,
+    setTargetAngle: (updater) => setTargetAngle(updater),
+    setTargetZoom: (updater) => setTargetZoom(updater),
+    gradientColors,
+    gradientAngle,
+    zoom,
+    canvasRef,
+    setIsAudioEnabled,
+    audioRef,
+  });
 
-  const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
-  const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
+  const {
+    isVCRRecording, setIsVCRRecording,
+    isVCRPlaying, setIsVCRPlaying,
+    vcrRecordedFrames, setVcrRecordedFrames,
+    vcrPlaybackSpeed, setVcrPlaybackSpeed,
+    vcrLoop, setVcrLoop,
+    vcrPlaybackIndex, setVcrPlaybackIndex,
+    vcrRecordingStartTime,
+    vcrPlaybackStartTime,
+    mediaRecorderRef,
+    recordedChunksRef,
+    recordingAnimationRef,
+    recordCanvasRef,
+    startRecording,
+    stopRecording,
+    toggleVCRRecording,
+    toggleVCRPlayback,
+    handleStop,
+  } = vcr;
+
+  // usePresets — preset save/load/delete/rename
+  const presets = usePresets({
+    getCurrentState: () => ({
+      gradientColors,
+      gradientAngle,
+      gradientType,
+      zoom,
+      activeEffects,
+      kaleidoscopeSegments,
+      twistAmount,
+      pixelSize,
+      triangleSize,
+      chromaticOffset,
+      fisheyeStrength,
+      tileCount,
+      grainIntensity,
+      blurMotionAmount,
+      blurMotionDirection,
+      blurGaussianAmount,
+      blurRadialAmount,
+      posterizeLevels,
+      halftoneSize,
+      halftoneMove,
+      vignetteStrength,
+      colorShiftHue,
+      submittedAIPrompt,
+      baseAIColors,
+    }),
+    applyPresetData: (data) => {
+      const colors = data.gradientColors || DEFAULT_COLORS;
+      setGradientColors(colors);
+      setTargetColors(colors);
+      setGradientAngle(data.gradientAngle ?? 45);
+      setTargetAngle(data.gradientAngle ?? 45);
+      setGradientType((data.gradientType as GradientType) || 'angle');
+      setZoom(data.zoom ?? 1);
+      setTargetZoom(data.zoom ?? 1);
+      setActiveEffects((data.activeEffects || []) as EffectType[]);
+      setKaleidoscopeSegments(data.kaleidoscopeSegments || 8);
+      setTwistAmount(data.twistAmount || 2);
+      setPixelSize(data.pixelSize || 20);
+      setTriangleSize(data.triangleSize || 40);
+      setChromaticOffset(data.chromaticOffset || 5);
+      setFisheyeStrength(data.fisheyeStrength || 0.5);
+      setTileCount(data.tileCount || 2);
+      setGrainIntensity(data.grainIntensity || 0.1);
+      setBlurMotionAmount(data.blurMotionAmount || 5);
+      setBlurMotionDirection(data.blurMotionDirection || 0);
+      setBlurGaussianAmount(data.blurGaussianAmount || 5);
+      setBlurRadialAmount(data.blurRadialAmount || 5);
+      setPosterizeLevels(data.posterizeLevels || 8);
+      setHalftoneSize(data.halftoneSize || 4);
+      setHalftoneMove(data.halftoneMove || false);
+      setVignetteStrength(data.vignetteStrength || 0.5);
+      setColorShiftHue(data.colorShiftHue || 0);
+      setSubmittedAIPrompt(data.submittedAIPrompt || '');
+      setBaseAIColors(data.baseAIColors || null);
+    },
+  });
+
+  const {
+    isPresetModalOpen, setIsPresetModalOpen,
+    presetName, setPresetName,
+    savedPresets, setSavedPresets,
+    renamingPresetIndex, setRenamingPresetIndex,
+    renamingPresetValue, setRenamingPresetValue,
+    isPresetsDropdownOpen, setIsPresetsDropdownOpen,
+    savePreset,
+    loadPreset,
+    deletePreset,
+    renamePreset,
+    updatePreset,
+  } = presets;
+
+  // ─── End Custom Hooks ────────────────────────────────────────────────────────
 
   // Sync --slider-pct CSS var so the purple-pink fill tracks the thumb position
   useEffect(() => {
@@ -465,326 +533,9 @@ export function InteractiveGradient() {
     });
   });
 
-  // Shape BEAT: pulse zoom/scale on every detected beat
-  useEffect(() => {
-    if (!bassBeatSync || !bassFlash) return;
-    setTargetZoom(prev => {
-      const pulseZoom = 0.8 + Math.random() * 1.6; // 0.8–2.4 range
-      return pulseZoom !== prev ? pulseZoom : pulseZoom + 0.1;
-    });
-  }, [bassFlash, bassBeatSync]);
+  // Beat sync effects are now in useAudioReactivity hook via callbacks
 
-  // Motion BEAT: toggle rotation direction on every detected beat
-  useEffect(() => {
-    if (!midsBeatSync || !midsFlash) return;
-    setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise');
-  }, [midsFlash, midsBeatSync]);
-
-  // Color BEAT: shuffle colors instantly on every detected beat
-  useEffect(() => {
-    if (!trebleBeatSync || !trebleFlash) return;
-    setGradientColors(prev => prev.map(() => randomColor()));
-    setTargetColors(prev => prev.map(() => randomColor()));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trebleFlash, trebleBeatSync]);
-
-  // Audio reactivity loop
-  useEffect(() => {
-    if (!isAudioEnabled || !analyserRef.current || !isAudioReactive) return;
-
-    const analyser = analyserRef.current;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const analyzeAudio = () => {
-      if (!isAudioEnabled || !isAudioReactive) return;
-
-      analyser.getByteFrequencyData(dataArray);
-
-      // ---- Read frequency data ----
-      analyser.getByteFrequencyData(dataArray);
-
-      // ---- BASS (bins 0–9) ----
-      let bassSum = 0;
-      for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
-      const bassAvgRaw = (bassSum / 10) / 255; // 0-1
-      liveBaseLevelRef.current = bassAvgRaw;
-
-      // Beat detection on bass band
-      const now = performance.now();
-      const bassOnset = bassAvgRaw > bassPrevRef.current * 1.3 && bassAvgRaw > bassThreshold + 0.05;
-      if (bassOnset && now - lastBeatTimeRef.current > 200) {
-        const interval = now - lastBeatTimeRef.current;
-        if (interval < 2000) {
-          beatIntervalsRef.current.push(interval);
-          if (beatIntervalsRef.current.length > 8) beatIntervalsRef.current.shift();
-          const avgInterval = beatIntervalsRef.current.reduce((a, b) => a + b, 0) / beatIntervalsRef.current.length;
-          setBpm(Math.round(60000 / avgInterval));
-        }
-        lastBeatTimeRef.current = now;
-        if (bassBeatSync) bassBeatPulseRef.current = 1.0;
-        if (midsBeatSync) midsBeatPulseRef.current = 1.0;
-        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
-        // Trigger beat flash indicators
-        setBassFlash(true); setMidsFlash(true); setTrebleFlash(true); setBpmFlash(true);
-        setTimeout(() => { setBassFlash(false); setMidsFlash(false); setTrebleFlash(false); setBpmFlash(false); }, 120);
-      }
-      bassPrevRef.current = bassAvgRaw;
-
-      // Bass output: continuous or beat-pulse
-      const bassAboveThreshold = bassAvgRaw > bassThreshold;
-      let bassRaw: number;
-      if (bassBeatSync) {
-        bassRaw = bassBeatPulseRef.current * bassMultiplier * masterSensitivity;
-        bassBeatPulseRef.current *= 0.85; // decay
-      } else {
-        bassRaw = bassAboveThreshold ? bassAvgRaw * bassMultiplier * masterSensitivity : 0;
-      }
-      bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
-      const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
-      liveBassSmoothedRef.current = bassGradientValue;
-      setAudioGradientParam(bassGradientValue);
-
-      // ---- MIDS (bins 10–49) ----
-      let midsSum = 0;
-      for (let i = 10; i < 50 && i < bufferLength; i++) midsSum += dataArray[i];
-      const midsAvgRaw = (midsSum / 40) / 255;
-      liveMidsLevelRef.current = midsAvgRaw;
-
-      const midsAboveThreshold = midsAvgRaw > midsThreshold;
-      let midsRaw: number;
-      if (midsBeatSync) {
-        midsRaw = midsBeatPulseRef.current * midsMultiplier * masterSensitivity;
-        midsBeatPulseRef.current *= 0.85;
-      } else {
-        midsRaw = midsAboveThreshold ? midsAvgRaw * midsMultiplier * masterSensitivity : 0;
-      }
-      midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
-      const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
-      liveMidsSmoothedRef.current = midsEffectValue;
-      setAudioEffectParam(midsEffectValue);
-
-      // ---- TREBLE (bins 50–119) ----
-      let trebleSum = 0;
-      for (let i = 50; i < 120 && i < bufferLength; i++) trebleSum += dataArray[i];
-      const trebleAvgRaw = (trebleSum / 70) / 255;
-      liveTrebleLevelRef.current = trebleAvgRaw;
-
-      const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
-      let trebleRaw: number;
-      if (trebleBeatSync) {
-        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 360;
-        trebleBeatPulseRef.current *= 0.85;
-      } else {
-        trebleRaw = trebleAboveThreshold ? trebleAvgRaw * trebleMultiplier * masterSensitivity * 360 : 0;
-      }
-      trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
-      const trebleColorValue = Math.max(trebleMin * 360, Math.min(trebleMax * 360, trebleSmoothedRef.current));
-      liveTrebleSmoothedRef.current = trebleColorValue;
-      setAudioColorShift(trebleColorValue);
-
-      // Treble onset detection for Color BEAT
-      const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
-      if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 200) {
-        lastTrebleBeatRef.current = now;
-        setGradientColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
-        setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
-      }
-      treblePrevRef.current = trebleAvgRaw;
-
-      requestAnimationFrame(analyzeAudio);
-    };
-
-    const animId = requestAnimationFrame(analyzeAudio);
-
-    return () => {
-      cancelAnimationFrame(animId);
-    };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync]);
-
-  // Poll live level refs at ~30fps to drive the bar graph
-  useEffect(() => {
-    if (!isAudioEnabled || !isAudioReactive) return;
-    let rafId: number;
-    const poll = () => {
-      setLiveBassLevel(liveBaseLevelRef.current);
-      setLiveMidsLevel(liveMidsLevelRef.current);
-      setLiveTrebleLevel(liveTrebleLevelRef.current);
-      rafId = requestAnimationFrame(poll);
-    };
-    rafId = requestAnimationFrame(poll);
-    return () => cancelAnimationFrame(rafId);
-  }, [isAudioEnabled, isAudioReactive]);
-
-  // Auto-reactive colors - change colors based on audio
-  useEffect(() => {
-    if (!audioReactiveColors || !isAudioEnabled || !analyserRef.current) return;
-
-    const analyser = analyserRef.current;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    let lastColorChange = 0;
-    const colorChangeInterval = 500; // Change colors every 500ms when audio is strong
-
-    const analyzeForColors = () => {
-      if (!audioReactiveColors || !isAudioEnabled) return;
-
-      analyser.getByteFrequencyData(dataArray);
-
-      // Calculate overall audio energy
-      let totalEnergy = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        totalEnergy += dataArray[i];
-      }
-      const avgEnergy = totalEnergy / bufferLength;
-
-      // When audio is strong enough, gradually shift colors
-      if (avgEnergy > 30 && Date.now() - lastColorChange > colorChangeInterval) {
-        setTargetColors(prev => prev.map(color => {
-          // Slightly shift each color based on frequency data
-          const hueShift = (avgEnergy / 255) * 30; // Shift up to 30 degrees
-          return {
-            r: Math.min(255, Math.max(0, color.r + (Math.random() - 0.5) * hueShift)),
-            g: Math.min(255, Math.max(0, color.g + (Math.random() - 0.5) * hueShift)),
-            b: Math.min(255, Math.max(0, color.b + (Math.random() - 0.5) * hueShift)),
-          };
-        }));
-        lastColorChange = Date.now();
-      }
-
-      requestAnimationFrame(analyzeForColors);
-    };
-
-    const animId = requestAnimationFrame(analyzeForColors);
-
-    return () => {
-      cancelAnimationFrame(animId);
-    };
-  }, [audioReactiveColors, isAudioEnabled]);
-
-  // Handle audio file upload
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAudioFile(url);
-      setAudioFileName(file.name);
-      
-      // Create a temporary audio element to extract metadata and waveform
-      const tempAudio = new Audio(url);
-      tempAudio.addEventListener('loadedmetadata', async () => {
-        const duration = tempAudio.duration;
-        
-        // Extract waveform data using Web Audio API
-        try {
-          const audioContext = new AudioContext();
-          const response = await fetch(url);
-          const arrayBuffer = await response.arrayBuffer();
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-          
-          // Store metadata
-          setAudioFileMetadata({
-            sampleRate: audioBuffer.sampleRate,
-            duration: duration
-          });
-          
-          // Generate waveform data with min/max values for actual waveform display
-          const channelData = audioBuffer.getChannelData(0);
-          const samples = 100; // Number of bars to display
-          const blockSize = Math.floor(channelData.length / samples);
-          const waveform: number[] = [];
-          
-          for (let i = 0; i < samples; i++) {
-            let min = 1;
-            let max = -1;
-            for (let j = 0; j < blockSize; j++) {
-              const sample = channelData[i * blockSize + j];
-              if (sample < min) min = sample;
-              if (sample > max) max = sample;
-            }
-            // Store both min and max as a combined amplitude value
-            waveform.push(max - min);
-          }
-          
-          setWaveformData(waveform);
-        } catch (error) {
-          console.error('Error generating waveform:', error);
-        }
-      });
-      
-      // Wait for audio element to be created
-      setTimeout(() => {
-        if (audioRef.current) {
-          initAudio(audioRef.current);
-          audioRef.current.play();
-          setIsAudioEnabled(true);
-          setIsAudioReactive(true); // Auto-enable audio reactivity when loaded
-        }
-      }, 100);
-    }
-  }, []);
-
-  // Start microphone visualization
-  const startMicVisualization = async (deviceId?: string) => {
-    try {
-      const constraints: MediaStreamConstraints = {
-        audio: deviceId && deviceId !== 'default' ? { deviceId: { exact: deviceId } } : true,
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-
-      // Enumerate devices after permission is granted (browser requires permission first)
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      setAudioInputDevices(devices.filter(d => d.kind === 'audioinput'));
-
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      analyserRef.current = analyser;
-
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      setIsMicActive(true);
-      setIsAudioEnabled(true);
-      setIsAudioReactive(true);
-    } catch (error) {
-      // Silently fail - microphone access is blocked in preview environments
-    }
-  };
-
-  // Stop microphone visualization
-  const stopMicVisualization = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    
-    analyserRef.current = null;
-    setIsMicActive(false);
-    setIsAudioEnabled(false);
-    setIsAudioReactive(false);
-  };
-
-  // Toggle audio reactivity
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (isAudioEnabled) {
-        audioRef.current.pause();
-        setIsAudioEnabled(false);
-      } else {
-        audioRef.current.play();
-        setIsAudioEnabled(true);
-      }
-    }
-  };
+  // Audio reactivity and mic functions are now in useAudioReactivity hook
 
   // Interpolate between current and target colors and angle (optimized with single RAF)
   useEffect(() => {
@@ -2376,67 +2127,7 @@ export function InteractiveGradient() {
     return () => clearInterval(interval);
   }, [isAutoMode, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
 
-  // VCR Recording
-  useEffect(() => {
-    if (!isVCRRecording) return;
-
-    // Start recording timestamp
-    if (vcrRecordedFrames.length === 0) {
-      vcrRecordingStartTime.current = Date.now();
-    }
-
-    const interval = setInterval(() => {
-      const frame: RecordingFrame = {
-        colors: [...gradientColors],
-        angle: gradientAngle,
-        zoom: zoom,
-        timestamp: Date.now() - vcrRecordingStartTime.current
-      };
-      setVcrRecordedFrames(prev => [...prev, frame]);
-    }, 50); // Record at 20fps
-
-    return () => clearInterval(interval);
-  }, [isVCRRecording, gradientColors, gradientAngle, zoom]);
-
-  // VCR Playback
-  useEffect(() => {
-    if (!isVCRPlaying || vcrRecordedFrames.length === 0) return;
-
-    vcrPlaybackStartTime.current = Date.now();
-    
-    const playbackInterval = setInterval(() => {
-      const elapsed = (Date.now() - vcrPlaybackStartTime.current) * vcrPlaybackSpeed;
-      
-      // Find the frame to display based on elapsed time
-      let frameIndex = vcrRecordedFrames.findIndex((frame, i) => {
-        const nextFrame = vcrRecordedFrames[i + 1];
-        return frame.timestamp <= elapsed && (!nextFrame || nextFrame.timestamp > elapsed);
-      });
-
-      if (frameIndex === -1) {
-        // Playback complete - we've gone past the last frame
-        if (vcrLoop && vcrRecordedFrames.length > 0) {
-          // Seamlessly loop back to the beginning
-          vcrPlaybackStartTime.current = Date.now();
-          frameIndex = 0;
-        } else {
-          setIsVCRPlaying(false);
-          setVcrPlaybackIndex(0);
-          return;
-        }
-      }
-
-      setVcrPlaybackIndex(frameIndex);
-      const frame = vcrRecordedFrames[frameIndex];
-      if (frame) {
-        setTargetColors(frame.colors);
-        setTargetAngle(frame.angle);
-        setTargetZoom(frame.zoom);
-      }
-    }, 50);
-
-    return () => clearInterval(playbackInterval);
-  }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed, vcrLoop]);
+  // VCR recording/playback effects are now in useVCRPlayback hook
 
   // Draw gradient on canvas
   useEffect(() => {
@@ -4739,217 +4430,7 @@ export function InteractiveGradient() {
     }, 'image/png');
   };
 
-  // Start recording video
-  const startRecording = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    try {
-      // Create offscreen canvas at 1080p for high-quality recording
-      const recordCanvas = document.createElement('canvas');
-      recordCanvas.width = 2560;
-      recordCanvas.height = 1440;
-      const recordCtx = recordCanvas.getContext('2d');
-      if (!recordCtx) return;
-
-      // Store canvas in ref for access in stop function
-      recordCanvasRef.current = recordCanvas;
-
-      // Start capturing the recording canvas at 60fps
-      const stream = recordCanvas.captureStream(60);
-      
-      // Determine best supported format - prioritize MP4 for QuickTime/Premiere compatibility
-      let options: MediaRecorderOptions;
-      let fileExtension = 'mp4';
-      
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
-        // H.264 in MP4 - best compatibility with QuickTime/Premiere
-        options = { 
-          mimeType: 'video/mp4;codecs=avc1',
-          videoBitsPerSecond: 25000000 // 25 Mbps for 2K
-        };
-        fileExtension = 'mp4';
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { 
-          mimeType: 'video/mp4',
-          videoBitsPerSecond: 25000000
-        };
-        fileExtension = 'mp4';
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-        // H.264 in WebM container - works in some editors
-        options = { 
-          mimeType: 'video/webm;codecs=h264',
-          videoBitsPerSecond: 25000000
-        };
-        fileExtension = 'mp4'; // Can often be played as MP4
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-        options = { 
-          mimeType: 'video/webm;codecs=vp9',
-          videoBitsPerSecond: 25000000
-        };
-        fileExtension = 'webm';
-      } else if (MediaRecorder.isTypeSupported('video/webm')) {
-        options = { 
-          mimeType: 'video/webm',
-          videoBitsPerSecond: 25000000
-        };
-        fileExtension = 'webm';
-      } else {
-        options = { 
-          videoBitsPerSecond: 25000000
-        };
-        fileExtension = 'mp4';
-      }
-      
-      const mediaRecorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = mediaRecorder;
-      recordedChunksRef.current = [];
-
-      // Animation loop to continuously copy main canvas to recording canvas at 1080p
-      const copyToRecordCanvas = () => {
-        if (!recordCanvasRef.current || !canvasRef.current) return;
-        const ctx = recordCanvasRef.current.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(canvasRef.current, 0, 0, recordCanvasRef.current.width, recordCanvasRef.current.height);
-        }
-        recordingAnimationRef.current = requestAnimationFrame(copyToRecordCanvas);
-      };
-      
-      // Start the animation loop
-      copyToRecordCanvas();
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-          console.log(`Recorded chunk: ${event.data.size} bytes`);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        // Stop the animation loop
-        if (recordingAnimationRef.current !== null) {
-          cancelAnimationFrame(recordingAnimationRef.current);
-          recordingAnimationRef.current = null;
-        }
-        
-        // Create blob with the correct mimeType
-        const mimeType = mediaRecorder.mimeType || options.mimeType || 'video/mp4';
-        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-        
-        console.log(`Recording stopped. Total size: ${blob.size} bytes from ${recordedChunksRef.current.length} chunks`);
-        
-        if (blob.size === 0) {
-          alert('Recording failed: No data captured');
-          recordedChunksRef.current = [];
-          return;
-        }
-        
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gradient-1080p-${Date.now()}.${fileExtension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up after download completes
-        setTimeout(() => {
-          URL.revokeObjectURL(url);
-        }, 1000);
-        recordedChunksRef.current = [];
-        recordCanvasRef.current = null;
-      };
-
-      mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
-        alert('Recording error occurred');
-        setIsRecording(false);
-        if (recordingAnimationRef.current !== null) {
-          cancelAnimationFrame(recordingAnimationRef.current);
-          recordingAnimationRef.current = null;
-        }
-      };
-
-      // Start recording with timeslice for regular data collection
-      mediaRecorder.start(100); // Collect data every 100ms
-      setIsRecording(true);
-      console.log('Recording started');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Could not start recording. Your browser may not support this feature.');
-    }
-  }, []);
-
-  // Stop recording video
-  const stopRecording = useCallback(() => {
-    console.log('Stop recording called');
-    const mediaRecorder = mediaRecorderRef.current;
-    
-    // Stop animation loop first
-    if (recordingAnimationRef.current !== null) {
-      cancelAnimationFrame(recordingAnimationRef.current);
-      recordingAnimationRef.current = null;
-    }
-    
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      // Request final data before stopping
-      if (mediaRecorder.state === 'recording') {
-        console.log('Stopping MediaRecorder...');
-        mediaRecorder.stop();
-      }
-      setIsRecording(false);
-      
-      // Stop all tracks in the stream
-      const stream = mediaRecorder.stream;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    }
-  }, []);
-
-  // VCR toggle handlers
-  const toggleVCRRecording = useCallback(() => {
-    if (isRecording) {
-      stopRecording();
-      setIsVCRRecording(false);
-    } else {
-      startRecording();
-      setIsVCRRecording(true);
-    }
-  }, [isRecording, startRecording, stopRecording]);
-
-  const toggleVCRPlayback = useCallback(() => {
-    // Stop/Play toggle button — never touches recording state
-    if (isVCRPlaying || isAutoMode) {
-      setIsVCRRecording(false);
-      setIsVCRPlaying(false);
-      setVcrPlaybackIndex(0);
-      setIsAutoMode(false);
-    } else {
-      if (vcrRecordedFrames.length > 0) {
-        setIsVCRRecording(false);
-        setIsVCRPlaying(true);
-        setIsAutoMode(false);
-      } else {
-        setIsAutoMode(true);
-        setIsVCRRecording(false);
-        setIsVCRPlaying(false);
-      }
-    }
-  }, [isVCRPlaying, isAutoMode, vcrRecordedFrames.length]);
-
-  // Stop button - completely stops playback and resets to beginning (does not touch recording)
-  const handleStop = useCallback(() => {
-    setIsVCRRecording(false);
-    setIsVCRPlaying(false);
-    setIsAutoMode(false);
-    setVcrPlaybackIndex(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsAudioEnabled(false);
-    }
-  }, []);
+  // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
 
   // Toggle full screen
   const toggleFullScreen = () => {
@@ -5037,145 +4518,8 @@ export function InteractiveGradient() {
     }
   }, []);
 
-  // Load presets — localStorage first (reliable), then Firebase (sync)
-  useEffect(() => {
-    const local = localStorage.getItem('gradientPresets');
-    if (local) {
-      try { setSavedPresets(JSON.parse(local)); } catch {}
-    }
-    signInAnonymously(auth).then(async (cred) => {
-      const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
-      if (!snap.empty) {
-        const presets = snap.docs.map((d: any) => d.data());
-        setSavedPresets(presets);
-        localStorage.setItem('gradientPresets', JSON.stringify(presets));
-      }
-    });
+  // Preset load effect, savePreset, loadPreset, deletePreset, renamePreset, updatePreset are now in usePresets hook
 
-    // Load rated results
-    const storedRatings = localStorage.getItem('gradientRatings');
-    if (storedRatings) {
-      try {
-        setRatedResults(JSON.parse(storedRatings));
-      } catch (e) {
-        console.error('Failed to load ratings:', e);
-      }
-    }
-  }, []);
-  
-  // Save preset
-  const savePreset = async () => {
-    if (!presetName.trim()) {
-      alert('Please enter a preset name');
-      return;
-    }
-    
-    const preset = {
-      name: presetName.trim(),
-      data: {
-        gradientColors,
-        gradientAngle,
-        gradientType,
-        zoom,
-        activeEffects,
-        kaleidoscopeSegments,
-        twistAmount,
-        pixelSize,
-        triangleSize,
-        chromaticOffset,
-        fisheyeStrength,
-        tileCount,
-        grainIntensity,
-        blurMotionAmount,
-        blurMotionDirection,
-        blurGaussianAmount,
-        blurRadialAmount,
-        posterizeLevels,
-        halftoneSize,
-        halftoneMove,
-        vignetteStrength,
-        colorShiftHue,
-        submittedAIPrompt,
-        baseAIColors
-      }
-    };
-    
-    const newPresets = [...savedPresets, preset];
-    setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) { await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), String(newPresets.length - 1)), newPresets[newPresets.length - 1]); }
-    setPresetName('');
-    setIsPresetModalOpen(false);
-  };
-  
-  // Load preset
-  const loadPreset = (preset: any) => {
-    const data = preset.data;
-    const colors = data.gradientColors || DEFAULT_COLORS;
-    setGradientColors(colors);
-    setTargetColors(colors);
-    setGradientAngle(data.gradientAngle ?? 45);
-    setTargetAngle(data.gradientAngle ?? 45);
-    setGradientType(data.gradientType || 'angle');
-    setZoom(data.zoom ?? 1);
-    setTargetZoom(data.zoom ?? 1);
-    setActiveEffects(data.activeEffects || []);
-    setKaleidoscopeSegments(data.kaleidoscopeSegments || 8);
-    setTwistAmount(data.twistAmount || 2);
-    setPixelSize(data.pixelSize || 20);
-    setTriangleSize(data.triangleSize || 40);
-    setChromaticOffset(data.chromaticOffset || 5);
-    setFisheyeStrength(data.fisheyeStrength || 0.5);
-    setTileCount(data.tileCount || 2);
-    setGrainIntensity(data.grainIntensity || 0.1);
-    setBlurMotionAmount(data.blurMotionAmount || data.blurAmount || 5);
-    setBlurMotionDirection(data.blurMotionDirection || 0);
-    setBlurGaussianAmount(data.blurGaussianAmount || 5);
-    setBlurRadialAmount(data.blurRadialAmount || 5);
-    setPosterizeLevels(data.posterizeLevels || 8);
-    setHalftoneSize(data.halftoneSize || 4);
-    setHalftoneMove(data.halftoneMove || false);
-    setVignetteStrength(data.vignetteStrength || 0.5);
-    setColorShiftHue(data.colorShiftHue || 0);
-    setSubmittedAIPrompt(data.submittedAIPrompt || '');
-    setBaseAIColors(data.baseAIColors || null);
-    setIsPresetModalOpen(false);
-  };
-  
-  // Delete preset
-  const deletePreset = async (index: number) => {
-    const newPresets = savedPresets.filter((_, i) => i !== index);
-    setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
-  };
-
-  const renamePreset = async (index: number, newName: string) => {
-    if (!newName.trim()) return;
-    const newPresets = savedPresets.map((p, i) => i === index ? { ...p, name: newName.trim() } : p);
-    setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
-  };
-
-  const updatePreset = async (index: number) => {
-    const existing = savedPresets[index];
-    const updated = {
-      ...existing,
-      data: {
-        gradientColors, gradientAngle, gradientType, zoom, activeEffects,
-        kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset,
-        fisheyeStrength, tileCount, grainIntensity, blurMotionAmount, blurMotionDirection,
-        blurGaussianAmount, blurRadialAmount, posterizeLevels, halftoneSize, halftoneMove,
-        vignetteStrength, colorShiftHue, submittedAIPrompt, baseAIColors,
-      }
-    };
-    const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
-    setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
-  };
-  
   // Toggle fullscreen
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -5224,52 +4568,12 @@ export function InteractiveGradient() {
       
       {/* Freeform Pins Overlay */}
       {gradientType === 'freeform' && (
-        <div className="absolute inset-0 pointer-events-none">
-          {colorPins.map((pin) => {
-            const canvas = canvasRef.current;
-            if (!canvas) return null;
-            const pixelX = pin.x * window.innerWidth;
-            const pixelY = pin.y * window.innerHeight;
-            const isSelected = selectedPinId === pin.id;
-            
-            return (
-              <div
-                key={pin.id}
-                className="absolute pointer-events-auto cursor-pointer"
-                style={{
-                  left: `${pin.x * 100}%`,
-                  top: `${pin.y * 100}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  setSelectedPinId(pin.id);
-                  setIsDraggingPin(true);
-                }}
-              >
-                {/* Influence radius visualization */}
-                <div
-                  className="absolute rounded-full border-2 border-white/30 pointer-events-none"
-                  style={{
-                    width: `${pin.radius * 2}px`,
-                    height: `${pin.radius * 2}px`,
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    opacity: isSelected ? 0.5 : 0.2,
-                  }}
-                />
-                {/* Pin marker */}
-                <div
-                  className={`w-6 h-6 rounded-full border-3 ${isSelected ? 'border-white' : 'border-white/50'} shadow-lg`}
-                  style={{
-                    backgroundColor: `rgb(${pin.color.r}, ${pin.color.g}, ${pin.color.b})`,
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <FreeformPinsOverlay
+          colorPins={colorPins}
+          selectedPinId={selectedPinId}
+          setSelectedPinId={setSelectedPinId}
+          setIsDraggingPin={setIsDraggingPin}
+        />
       )}
       
       {/* Upper Right Controls */}
@@ -5471,93 +4775,20 @@ RANDOMIZE
         </div>
         
         {/* VCR Controls */}
-        <div className="flex items-center bg-[#2a2a4e] rounded-lg p-0.5 mb-0.5 w-full">
-            {/* Camera zone — fixed width so icon is centered between left edge and divider */}
-            <div className="flex items-center justify-center w-9 flex-shrink-0">
-              <button
-                onClick={exportAsPNG}
-                className="w-7 h-7 rounded hover:bg-[#3a3a5e] text-white transition-all flex items-center justify-center"
-                title="Save PNG"
-              >
-                <Camera className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
-
-            {/* Main controls — fill remaining space, centered */}
-            <div className="flex-1 flex items-center justify-around">
-              <button
-                onClick={toggleVCRRecording}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title="Record Video"
-              >
-                <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
-              </button>
-
-              <button
-                onClick={handleStop}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title="Stop"
-              >
-                <Square className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={toggleVCRPlayback}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
-              >
-                {(isVCRPlaying || isAutoMode) ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </button>
-
-              <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
-
-              <button
-                onClick={() => {
-                  if (vcrPlaybackSpeed > 2) {
-                    setVcrPlaybackSpeed(vcrPlaybackSpeed - 1);
-                  } else if (vcrPlaybackSpeed === 2) {
-                    setVcrPlaybackSpeed(1);
-                  } else if (vcrPlaybackSpeed === 1) {
-                    setVcrPlaybackSpeed(0.5);
-                  }
-                }}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title="Slower"
-              >
-                <Rewind className="w-4 h-4" />
-              </button>
-
-              <span className="text-xs text-white text-center">{vcrPlaybackSpeed}x</span>
-
-              <button
-                onClick={() => {
-                  if (vcrPlaybackSpeed >= 2) {
-                    setVcrPlaybackSpeed(Math.min(10, vcrPlaybackSpeed + 1));
-                  } else if (vcrPlaybackSpeed >= 1) {
-                    setVcrPlaybackSpeed(2);
-                  } else {
-                    setVcrPlaybackSpeed(1);
-                  }
-                }}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title="Faster"
-              >
-                <FastForward className="w-4 h-4" />
-              </button>
-
-              <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
-
-              <button
-                onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-                className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
-                title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
-              >
-                {rotationDirection === 'clockwise' ? <RotateCw className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
+        <VCRControls
+          isRecording={isRecording}
+          isVCRPlaying={isVCRPlaying}
+          isAutoMode={isAutoMode}
+          vcrRecordedFrames={vcrRecordedFrames}
+          vcrPlaybackSpeed={vcrPlaybackSpeed}
+          rotationDirection={rotationDirection}
+          setVcrPlaybackSpeed={setVcrPlaybackSpeed}
+          setRotationDirection={setRotationDirection}
+          toggleVCRRecording={toggleVCRRecording}
+          handleStop={handleStop}
+          toggleVCRPlayback={toggleVCRPlayback}
+          exportAsPNG={exportAsPNG}
+        />
         
         {/* Color Picker (AI) button */}
         <div className="flex gap-[3.5px] w-full mb-0.5">
@@ -8450,241 +7681,55 @@ RANDOMIZE
 </>
         )}
 
-        {/* Audiovisuals Section */}
-        <div className="w-full mb-0.5 flex gap-[3.5px]">
-          {/* Mic button + device chevron */}
-          <div className={`flex flex-1 items-center px-1.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'}`}>
-            <button
-              onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-              className="flex items-center justify-center flex-1"
-              title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
-            >
-              {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-            </button>
-            {audioInputDevices.length > 0 && (
-              <div className="relative flex items-center">
-                <select
-                  value={selectedAudioDeviceId}
-                  onChange={(e) => {
-                    setSelectedAudioDeviceId(e.target.value);
-                    if (isMicActive) {
-                      stopMicVisualization();
-                      setTimeout(() => startMicVisualization(e.target.value), 100);
-                    }
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                >
-                  {audioInputDevices.map(d => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 pointer-events-none" />
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
-            title="Load Audio File"
-          >
-            <span>Audio</span>
-            <Plus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
-            title="Audio Controls"
-          >
-            <SlidersHorizontal className="w-6 h-4" />
-            <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-
-        {isAudioControlsOpen && (
-          <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
-              <div className="flex flex-col gap-3">
-
-                {/* Intensity */}
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-white/70 whitespace-nowrap flex-shrink-0">Intensity</label>
-                  <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
-                  <span className="text-xs text-white/50 w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
-                </div>
-
-                {/* 3-column band cards */}
-                <div className="flex gap-2 items-start overflow-hidden">
-
-                  {/* Shape = Bass */}
-                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
-                    <div className="w-full relative">
-                      <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-semibold text-white/80">Shape</span>
-                    <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
-                    <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                  </div>
-
-                  {/* Motion = Mids */}
-                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
-                    <div className="w-full relative">
-                      <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-semibold text-white/80">Motion</span>
-                    <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
-                    <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                  </div>
-
-                  {/* Color = Treble */}
-                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
-                    <div className="w-full relative">
-                      <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-semibold text-white/80">Color</span>
-                    <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                    <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-        )}
+        {/* Audio Panel */}
+        <AudioPanel
+          isMicActive={isMicActive}
+          audioInputDevices={audioInputDevices}
+          selectedAudioDeviceId={selectedAudioDeviceId}
+          isAudioControlsOpen={isAudioControlsOpen}
+          masterSensitivity={masterSensitivity}
+          bassMultiplier={bassMultiplier}
+          midsMultiplier={midsMultiplier}
+          trebleMultiplier={trebleMultiplier}
+          bassBeatSync={bassBeatSync}
+          midsBeatSync={midsBeatSync}
+          trebleBeatSync={trebleBeatSync}
+          liveBassLevel={liveBassLevel}
+          liveMidsLevel={liveMidsLevel}
+          liveTrebleLevel={liveTrebleLevel}
+          audioFileName={audioFileName}
+          waveformData={waveformData}
+          audioFileMetadata={audioFileMetadata}
+          setSelectedAudioDeviceId={setSelectedAudioDeviceId}
+          setIsAudioControlsOpen={setIsAudioControlsOpen}
+          setMasterSensitivity={setMasterSensitivity}
+          setBassMultiplier={setBassMultiplier}
+          setMidsMultiplier={setMidsMultiplier}
+          setTrebleMultiplier={setTrebleMultiplier}
+          setBassBeatSync={setBassBeatSync}
+          setMidsBeatSync={setMidsBeatSync}
+          setTrebleBeatSync={setTrebleBeatSync}
+          setColorShiftHue={setColorShiftHue}
+          startMicVisualization={startMicVisualization}
+          stopMicVisualization={stopMicVisualization}
+          onAudioFileClick={() => fileInputRef.current?.click()}
+        />
         
-        {/* Presets Controls */}
-        <div className="flex gap-[3.5px] w-full mb-0.5">
-          <button
-            onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-between font-semibold"
-          >
-            <span>Presets</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          <button
-            onClick={() => setIsPresetModalOpen(true)}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
-            title="Add Preset"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Presets Dropdown Content */}
-        {isPresetsDropdownOpen && (
-          <div className="w-full bg-[#2a2a4e] rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
-            {savedPresets.length === 0 ? (
-              <div className="px-4 py-2 text-xs text-white/50 italic">
-                No saved presets
-              </div>
-            ) : (
-              savedPresets.map((preset, index) => (
-                <div key={index} className="flex items-center w-full group">
-                  {renamingPresetIndex === index ? (
-                    <input
-                      autoFocus
-                      value={renamingPresetValue}
-                      onChange={(e) => setRenamingPresetValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }
-                        if (e.key === 'Escape') setRenamingPresetIndex(null);
-                      }}
-                      onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
-                      className="flex-1 px-4 py-2 text-xs bg-[#1a1a3e] text-white focus:outline-none border-b border-purple-500"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { loadPreset(preset); setIsPresetsDropdownOpen(false); }}
-                      className="flex-1 px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] text-left transition-colors font-semibold truncate"
-                    >
-                      {preset.name}
-                    </button>
-                  )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updatePreset(index);
-                    }}
-                    className="px-2 py-2 text-white/30 hover:text-green-400 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
-                    title="Save current edits to this preset"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRenamingPresetIndex(index);
-                      setRenamingPresetValue(preset.name);
-                    }}
-                    className="px-2 py-2 text-white/30 hover:text-white/80 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
-                    title="Rename preset"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
-                    className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-[#3a3a5e] transition-colors text-sm font-bold flex-shrink-0"
-                    title="Delete preset"
-                  >
-                    −
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Audio Waveform Display - shown when audio file is loaded */}
-        {audioFileName && waveformData.length > 0 && (
-          <div className="w-full mb-0.5 bg-black/40 backdrop-blur-sm rounded-lg px-1.5 py-3">
-            {/* Waveform Visualization */}
-            <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
-              {/* Center line */}
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full h-px bg-white/20"></div>
-              </div>
-              {waveformData.map((amplitude, index) => {
-                const height = Math.max(1, amplitude * 17.5); // Scale to fit with room at top
-                const hue = (index / waveformData.length) * 360; // Rainbow gradient
-                return (
-                  <div
-                    key={index}
-                    className="flex-1 relative flex items-center justify-center"
-                  >
-                    <div
-                      className="w-full rounded-sm"
-                      style={{
-                        height: `${height}px`,
-                        background: `linear-gradient(to top, hsl(${hue}, 80%, 60%), hsl(${hue}, 90%, 70%))`,
-                        opacity: 0.8
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Audio File Info */}
-            <div className="flex items-center justify-between gap-1">
-              <div className="flex-1 min-w-0">
-                <div className="text-white text-[9px] font-semibold truncate leading-tight">
-                  {audioFileName}
-                </div>
-                {audioFileMetadata && (
-                  <div className="text-white/60 text-[8px] leading-tight">
-                    {(audioFileMetadata.sampleRate / 1000).toFixed(1)} kHz • {Math.floor(audioFileMetadata.duration / 60)}:{String(Math.floor(audioFileMetadata.duration % 60)).padStart(2, '0')}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Presets Panel */}
+        <PresetsPanel
+          isPresetsDropdownOpen={isPresetsDropdownOpen}
+          savedPresets={savedPresets}
+          renamingPresetIndex={renamingPresetIndex}
+          renamingPresetValue={renamingPresetValue}
+          setIsPresetsDropdownOpen={setIsPresetsDropdownOpen}
+          setIsPresetModalOpen={setIsPresetModalOpen}
+          setRenamingPresetIndex={setRenamingPresetIndex}
+          setRenamingPresetValue={setRenamingPresetValue}
+          loadPreset={loadPreset}
+          deletePreset={deletePreset}
+          renamePreset={renamePreset}
+          updatePreset={updatePreset}
+        />
         
       </div>
       {audioFile && (
