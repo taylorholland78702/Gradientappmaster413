@@ -2235,8 +2235,6 @@ export function InteractiveGradient() {
   // Auto mode - automatically change colors
   useEffect(() => {
     if (!isAutoMode) return;
-    
-    // Stop VCR recording/playback when auto mode starts
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
 
@@ -4856,51 +4854,37 @@ export function InteractiveGradient() {
   }, [isRecording, startRecording, stopRecording]);
 
   const toggleVCRPlayback = useCallback(() => {
-    // Stop/Play toggle button
+    // Stop/Play toggle button — never touches recording state
     if (isVCRPlaying || isAutoMode) {
-      // Currently playing - stop everything
-      if (isRecording) {
-        stopRecording();
-      }
       setIsVCRRecording(false);
       setIsVCRPlaying(false);
       setVcrPlaybackIndex(0);
       setIsAutoMode(false);
     } else {
-      // Not playing - start playback or auto mode
       if (vcrRecordedFrames.length > 0) {
         setIsVCRRecording(false);
         setIsVCRPlaying(true);
         setIsAutoMode(false);
       } else {
-        // No recorded frames - start auto mode
         setIsAutoMode(true);
         setIsVCRRecording(false);
         setIsVCRPlaying(false);
       }
     }
-  }, [isVCRPlaying, isAutoMode, isRecording, vcrRecordedFrames.length, stopRecording]);
+  }, [isVCRPlaying, isAutoMode, vcrRecordedFrames.length]);
 
-  // Stop button - completely stops playback and resets to beginning
+  // Stop button - completely stops playback and resets to beginning (does not touch recording)
   const handleStop = useCallback(() => {
-    // Stop recording if active
-    if (isRecording) {
-      stopRecording();
-    }
-    
-    // Stop all playback modes
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
     setIsAutoMode(false);
     setVcrPlaybackIndex(0);
-    
-    // Stop and reset audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsAudioEnabled(false);
     }
-  }, [isRecording, stopRecording]);
+  }, []);
 
   // Toggle full screen
   const toggleFullScreen = () => {
