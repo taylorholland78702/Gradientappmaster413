@@ -293,8 +293,8 @@ export function InteractiveGradient() {
   const [windmillBlades, setWindmillBlades] = useState(8);
   const [windmillRotation, setWindmillRotation] = useState(0);
   const [iridescentAngle, setIridescentAngle] = useState(0);
-  const [iridescentIntensity, setIridescentIntensity] = useState(1);
-  const [iridescentScale, setIridescentScale] = useState(1);
+  const [iridescentIntensity, setIridescentIntensity] = useState(0.5);
+  const [iridescentScale, setIridescentScale] = useState(3);
   const [waveDistortionStrength, setWaveDistortionStrength] = useState(20);
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(0);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
