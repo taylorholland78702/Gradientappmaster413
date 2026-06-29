@@ -246,10 +246,10 @@ export function InteractiveGradient() {
   const [shapesCount, setShapesCount] = useState(15);
   const [concentricRingWidth, setConcentricRingWidth] = useState(100);
   const [concentricRingCount, setConcentricRingCount] = useState(10);
-  const [waveAmplitude, setWaveAmplitude] = useState(50);
+  const [waveAmplitude, setWaveAmplitude] = useState(35);
   const [waveFrequency, setWaveFrequency] = useState(3);
-  const [waveNumber, setWaveNumber] = useState(3);
-  const [waveRotation, setWaveRotation] = useState(0);
+  const [waveNumber, setWaveNumber] = useState(19);
+  const [waveRotation, setWaveRotation] = useState(45);
   const [meshGridSize, setMeshGridSize] = useState(4);
   
   // New effect parameters
@@ -438,7 +438,7 @@ export function InteractiveGradient() {
     const initAll = () =>
       document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(update);
 
-    // Update on every input event
+    // Update on every input event (range drag or keyboard on range)
     const onInput = (e: Event) => { if ((e.target as HTMLElement).matches('input[type="range"]')) update(e.target as HTMLInputElement); };
     document.addEventListener('input', onInput);
 
@@ -452,6 +452,17 @@ export function InteractiveGradient() {
       observer.disconnect();
     };
   }, []);
+
+  // Re-sync all range fills after every render (catches number-input keyboard changes
+  // that update React state → re-render the range value but fire no DOM input event)
+  useEffect(() => {
+    document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(el => {
+      const min = Number(el.min) || 0;
+      const max = Number(el.max) || 100;
+      const pct = ((Number(el.value) - min) / (max - min)) * 100;
+      el.style.setProperty('--slider-pct', `${Math.max(0, Math.min(100, pct))}%`);
+    });
+  });
 
   // Shape BEAT: pulse zoom/scale on every detected beat
   useEffect(() => {
