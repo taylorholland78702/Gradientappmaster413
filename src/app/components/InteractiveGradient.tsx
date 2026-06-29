@@ -5495,48 +5495,79 @@ RANDOMIZE
         {/* AI Color Picker Dropdown */}
         {isAIColorPickerOpen && (
           <div className="w-full mb-0.5 bg-[#2a2a4e] rounded-lg p-3">
+            {/* Selected keyword chips */}
+            <div className="flex flex-wrap gap-1 mb-2 min-h-[28px]">
+              {aiPrompt.split(' ').filter(Boolean).map((kw, i) => (
+                <span key={i} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r from-pink-500/60 to-purple-500/60 text-white">
+                  {kw}
+                  <button onClick={() => setAIPrompt(prev => prev.split(' ').filter(Boolean).filter((_, j) => j !== i).join(' '))} className="ml-0.5 text-white/60 hover:text-white leading-none">×</button>
+                </span>
+              ))}
+              {aiPrompt.split(' ').filter(Boolean).length === 0 && (
+                <span className="text-[10px] text-white/30 italic">Click keywords below to add (up to 8)</span>
+              )}
+            </div>
+
             <div className="flex gap-1.5 mb-2 items-center">
               <input
                 type="text"
-                value={aiPrompt}
-                onChange={(e) => setAIPrompt(e.target.value)}
+                value=""
+                readOnly
+                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords' : 'Or type a custom prompt'}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAIPromptSubmit();
-                  } else if (e.key === 'Escape') {
-                    setIsAIColorPickerOpen(false);
-                    setAIPrompt('');
-                  }
+                  if (e.key === 'Enter') handleAIPromptSubmit();
+                  if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
                 }}
-                placeholder="Enter keywords or themes"
-                className="flex-1 px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/60"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3), rgba(251, 146, 60, 0.3))'
+                onChange={(e) => {
+                  const val = e.target.value.trim();
+                  if (!val) return;
+                  const current = aiPrompt.split(' ').filter(Boolean);
+                  if (current.length < 8) setAIPrompt(current.concat(val).join(' '));
                 }}
-                autoFocus
+                className="flex-1 px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/40"
+                style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.3), rgba(251,146,60,0.3))' }}
               />
               <button
                 onClick={() => setIsKeywordHelpOpen(prev => !prev)}
-                className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white text-xs font-bold flex items-center justify-center flex-shrink-0 transition-all"
+                className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 transition-all ${isKeywordHelpOpen ? 'bg-white/30 text-white' : 'bg-white/10 hover:bg-white/20 text-white/60 hover:text-white'}`}
                 title="Show keywords"
               >?</button>
             </div>
+
             {isKeywordHelpOpen && (
               <div className="mb-2 p-2 rounded bg-black/30 text-[10px] text-white/70 leading-relaxed">
                 <div className="font-bold text-white/90 mb-1">Themes</div>
-                <div className="mb-2 flex flex-wrap gap-x-1.5 gap-y-0.5">
-                  {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => (
-                    <span key={t} onClick={() => setAIPrompt(t)} className="cursor-pointer hover:text-white transition-colors">{t}</span>
-                  ))}
+                <div className="mb-2 flex flex-wrap gap-1">
+                  {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => {
+                    const selected = aiPrompt.split(' ').filter(Boolean).includes(t);
+                    const full = aiPrompt.split(' ').filter(Boolean).length >= 8;
+                    return (
+                      <span key={t} onClick={() => {
+                        const current = aiPrompt.split(' ').filter(Boolean);
+                        if (selected) setAIPrompt(current.filter(k => k !== t).join(' '));
+                        else if (!full) setAIPrompt(current.concat(t).join(' '));
+                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-pink-500/70 text-white' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</span>
+                    );
+                  })}
                 </div>
                 <div className="font-bold text-white/90 mb-1">Colors</div>
-                <div className="flex flex-wrap gap-x-1.5 gap-y-0.5">
-                  {['red','orange','yellow','green','blue','purple','pink','cyan','magenta','lime','teal','indigo','violet','brown','black','white','gray','gold','silver','coral','peach','lavender','mint','rose','sky','navy','maroon','olive','turquoise','salmon'].map(c => (
-                    <span key={c} onClick={() => setAIPrompt(c)} className="cursor-pointer hover:text-white transition-colors">{c}</span>
-                  ))}
+                <div className="flex flex-wrap gap-1">
+                  {['red','orange','yellow','green','blue','purple','pink','cyan','magenta','lime','teal','indigo','violet','brown','black','white','gray','gold','silver','coral','peach','lavender','mint','rose','sky','navy','maroon','olive','turquoise','salmon'].map(c => {
+                    const selected = aiPrompt.split(' ').filter(Boolean).includes(c);
+                    const full = aiPrompt.split(' ').filter(Boolean).length >= 8;
+                    return (
+                      <span key={c} onClick={() => {
+                        const current = aiPrompt.split(' ').filter(Boolean);
+                        if (selected) setAIPrompt(current.filter(k => k !== c).join(' '));
+                        else if (!full) setAIPrompt(current.concat(c).join(' '));
+                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-purple-500/70 text-white' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{c}</span>
+                    );
+                  })}
                 </div>
+                <div className="mt-1.5 text-white/40 text-right">{aiPrompt.split(' ').filter(Boolean).length}/8 selected</div>
               </div>
             )}
+
             <div className="flex gap-1.5 justify-end">
               <button
                 onClick={() => {
