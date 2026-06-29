@@ -33,7 +33,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
   const [bassMultiplier, setBassMultiplier] = useState(1);
   const [midsMultiplier, setMidsMultiplier] = useState(1);
-  const [trebleMultiplier, setTrebleMultiplier] = useState(1);
+  const [trebleMultiplier, setTrebleMultiplier] = useState(0.5);
   const [bassSmoothing, setBassSmoothing] = useState(0.8);
   const [midsSmoothing, setMidsSmoothing] = useState(0.8);
   const [trebleSmoothing, setTrebleSmoothing] = useState(0.8);
@@ -364,13 +364,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
       let trebleRaw: number;
       if (trebleBeatSync) {
-        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 360;
+        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 90;
         trebleBeatPulseRef.current *= 0.85;
       } else {
-        trebleRaw = trebleAboveThreshold ? trebleAvgRaw * trebleMultiplier * masterSensitivity * 360 : 0;
+        trebleRaw = trebleAboveThreshold ? trebleAvgRaw * trebleMultiplier * masterSensitivity * 90 : 0;
       }
       trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
-      const trebleColorValue = Math.max(trebleMin * 360, Math.min(trebleMax * 360, trebleSmoothedRef.current));
+      const trebleColorValue = Math.max(trebleMin * 90, Math.min(trebleMax * 90, trebleSmoothedRef.current));
       liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioColorShift(trebleColorValue);
 
