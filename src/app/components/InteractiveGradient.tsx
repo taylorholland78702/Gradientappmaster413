@@ -4742,13 +4742,15 @@ export function InteractiveGradient() {
       <div
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
-          background: isPanelLight ? 'rgba(245,245,250,0.92)' : 'rgba(12,12,20,0.42)',
-          backdropFilter: isPanelLight ? 'blur(20px)' : 'blur(40px) saturate(180%)',
+          background: isPanelLight
+            ? 'rgba(245,245,250,0.92)'
+            : 'linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 100%)',
+          backdropFilter: isPanelLight ? 'blur(20px)' : 'blur(48px) saturate(200%) brightness(1.08)',
           boxShadow: isPanelLight
             ? '0 4px 32px rgba(0,0,0,0.15)'
-            : '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2)',
+            : '0 8px 40px rgba(0,0,0,0.35), inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(255,255,255,0.08), inset 1px 0 0 rgba(255,255,255,0.12), inset -1px 0 0 rgba(255,255,255,0.08)',
         }}
-        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/15'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/25'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* Drag handle */}
         <div
