@@ -183,7 +183,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       streamRef.current = stream;
 
       const devices = await navigator.mediaDevices.enumerateDevices();
-      setAudioInputDevices(devices.filter(d => d.kind === 'audioinput'));
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+      setAudioInputDevices(audioInputs);
+      const blackhole = audioInputs.find(d => d.label.toLowerCase().includes('blackhole 2ch'));
+      if (blackhole && selectedAudioDeviceId === 'default') {
+        setSelectedAudioDeviceId(blackhole.deviceId);
+      }
 
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
