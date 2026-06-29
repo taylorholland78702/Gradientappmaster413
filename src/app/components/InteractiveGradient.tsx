@@ -13,11 +13,7 @@
  * - Math constants: DEG_TO_RAD and TWO_PI pre-calculated
  * - Optimized loops: Pre-calculated angle increments and common values
  * 
- * Pinch/Zoom Support:
- * - Trackpad pinch-to-zoom (Ctrl+wheel event)
- * - Two-finger touch pinch-to-zoom on mobile/tablet
  * - Mouse wheel scroll zoom
- * - All zoom methods prevent browser default behavior for smooth experience
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
 import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera } from 'lucide-react';
@@ -79,8 +75,6 @@ export function InteractiveGradient() {
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
   const [resolutionMultiplier, setResolutionMultiplier] = useState(1); // 1x, 2x, 3x, 4x
   
-  // Pinch-to-zoom tracking
-  const lastPinchDistance = useRef<number | null>(null);
   
   // Video recording state (shared between root and useVCRPlayback hook)
   const [isRecording, setIsRecording] = useState(false);
@@ -4144,42 +4138,9 @@ export function InteractiveGradient() {
     setIsDragging(false);
     setIsDraggingPin(false);
     previousPosition.current = null;
-    lastPinchDistance.current = null; // Reset pinch distance
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    // Handle pinch-to-zoom with two fingers
-    if (e.touches.length === 2) {
-      e.preventDefault(); // Prevent default pinch zoom behavior
-      
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      
-      // Calculate distance between two touch points
-      const deltaX = touch2.clientX - touch1.clientX;
-      const deltaY = touch2.clientY - touch1.clientY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
-      if (lastPinchDistance.current !== null) {
-        // Track manual zoom interaction to prevent audio from overriding
-        lastManualZoomTime.current = Date.now();
-        
-        // Calculate zoom change based on pinch distance change
-        const distanceChange = distance - lastPinchDistance.current;
-        const zoomMultiplier = isAutoMode ? 0.005 : 0.01; // Faster zoom when auto is off
-        const zoomDelta = distanceChange * zoomMultiplier;
-        
-        // Update zoom level (clamp between 0.05 and 20 for extreme zoom range)
-        setTargetZoom(prev => Math.max(0.05, Math.min(20, prev + zoomDelta)));
-      }
-      
-      lastPinchDistance.current = distance;
-      return;
-    }
-    
-    // Reset pinch distance when not using two fingers
-    lastPinchDistance.current = null;
-    
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       
@@ -4202,23 +4163,10 @@ export function InteractiveGradient() {
   }, [gradientType, isDraggingPin, selectedPinId, handleInteraction, isAutoMode]);
 
   const handleWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
-    // Support both trackpad pinch (with ctrlKey) and regular mouse wheel scroll
-    // ctrlKey indicates trackpad pinch or Ctrl+wheel
-    const isPinch = e.ctrlKey;
-    
-    // Always handle zoom for better UX
     e.preventDefault();
-    
-    // Track manual zoom interaction to prevent audio from overriding
     lastManualZoomTime.current = Date.now();
-    
-    // Use deltaY to determine zoom direction and magnitude
-    // More responsive when auto mode is off, and adjust for pinch vs wheel
-    const baseMultiplier = isAutoMode ? 0.01 : 0.025;
-    const zoomMultiplier = isPinch ? baseMultiplier : baseMultiplier * 0.5; // Slower for mouse wheel
-    const zoomDelta = -e.deltaY * zoomMultiplier;
-    
-    // Update zoom level (clamp between 0.05 and 20 for extreme zoom range)
+    const multiplier = (isAutoMode ? 0.01 : 0.025) * 0.5;
+    const zoomDelta = -e.deltaY * multiplier;
     setTargetZoom(prev => Math.max(0.05, Math.min(20, prev + zoomDelta)));
   }, [isAutoMode]);
 
@@ -4455,7 +4403,6 @@ export function InteractiveGradient() {
               '✅ All other features work great:\n' +
               '• Interactive gradient (click & drag)\n' +
               '• All gradient types (Linear, Radial, etc.)\n' +
-              '• Pinch to zoom\n' +
               '• Auto mode\n' +
               '• Export Image (JPG)\n' +
               '• Record Video\n\n' +
@@ -4486,7 +4433,6 @@ export function InteractiveGradient() {
         '✅ All other features work great:\n' +
         '• Click & drag to change colors\n' +
         '• Switch gradient types\n' +
-        '• Pinch to zoom\n' +
         '• Auto mode animations\n' +
         '• Export images\n' +
         '• Record videos'
