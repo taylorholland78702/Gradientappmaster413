@@ -3562,24 +3562,27 @@ export function InteractiveGradient() {
             tc.drawImage(canvas, 0, 0);
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, displayWidth, displayHeight);
-            ctx.imageSmoothingEnabled = false;
+            ctx.imageSmoothingEnabled = true;
             const cx = displayWidth / 2, cy = displayHeight / 2;
-            const seg = kaleidoscopeSegments + (isFirstEffect ? Math.floor(audioModulation * 8) : 0);
+            const seg = Math.max(1, kaleidoscopeSegments + (isFirstEffect ? Math.floor(audioModulation * 8) : 0));
             const aps = (Math.PI * 2) / seg;
-            const r = Math.sqrt(cx * cx + cy * cy);
+            // Use diagonal so segments always reach every corner
+            const r = Math.sqrt(cx * cx + cy * cy) * 1.5;
             for (let i = 0; i < seg; i++) {
               ctx.save();
               ctx.translate(cx, cy);
               ctx.rotate(i * aps);
               ctx.beginPath();
               ctx.moveTo(0, 0);
-              ctx.lineTo(r, -r * Math.tan(aps / 2));
-              ctx.lineTo(r, r * Math.tan(aps / 2));
+              ctx.lineTo(r, -r);
+              ctx.lineTo(r, r);
               ctx.closePath();
               ctx.clip();
               if (i % 2 === 0) ctx.scale(1, -1);
               ctx.rotate(-i * aps);
-              ctx.drawImage(tmp, -cx, -cy);
+              // Scale source up so it fills beyond edges
+              const scale = r / Math.max(cx, cy);
+              ctx.drawImage(tmp, -cx * scale, -cy * scale, displayWidth * scale, displayHeight * scale);
               ctx.restore();
             }
             ctx.imageSmoothingEnabled = true;
