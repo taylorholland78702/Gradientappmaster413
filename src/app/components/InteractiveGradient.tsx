@@ -4888,7 +4888,7 @@ RANDOMIZE
                   if (e.key === 'Enter') handleAIPromptSubmit();
                   if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
                 }}
-                className="w-full px-2 py-1.5 rounded text-xs bg-white/8 backdrop-blur-sm border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white/80 cursor-pointer"
+                className="w-full px-2 py-1.5 rounded text-xs bg-white/8 backdrop-blur-sm border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white cursor-pointer"
               />
             </div>
 
