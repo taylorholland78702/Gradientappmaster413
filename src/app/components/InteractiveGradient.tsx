@@ -160,11 +160,7 @@ export function InteractiveGradient() {
   const [linesAngle, setLinesAngle] = useState(0); // 0-360 degrees
   const [linesThickness, setLinesThickness] = useState(1);
   const [liquifyStrength, setLiquifyStrength] = useState(30);
-  const [mandalaSegments, setMandalaSegments] = useState(8);
   const [pinchStrength, setPinchStrength] = useState(0.5);
-  const [polarAngle, setPolarAngle] = useState(0);
-  const [polarRadius, setPolarRadius] = useState(1);
-  const [polarRotation, setPolarRotation] = useState(0);
   const [scanLineSize, setScanLineSize] = useState(4);
   const [scanLineOffset, setScanLineOffset] = useState(0);
   const [sepiaIntensity, setSepiaIntensity] = useState(1);
@@ -771,11 +767,7 @@ export function InteractiveGradient() {
       linesAngle,
       linesThickness,
       liquifyStrength,
-      mandalaSegments,
       pinchStrength,
-      polarAngle,
-      polarRadius,
-      polarRotation,
       scanLineSize,
       sepiaIntensity,
       solarizeThreshold,
@@ -834,8 +826,8 @@ export function InteractiveGradient() {
       vignetteStrength, colorShiftHue, bulgeStrength, charcoalIntensity, colorBurnIntensity, 
       colorDodgeIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, 
       dustCrackleIntensity, gridSize, hexGridSize, lightLeakIntensity, lensFlareIntensity, lensFlareX, lensFlareY, lensFlareSize, linesCount, linesAngle, 
-      linesThickness, liquifyStrength, mandalaSegments, pinchStrength, polarAngle, polarRadius, 
-      polarRotation, scanLineSize, sepiaIntensity, solarizeThreshold, triGridSize, gridSides, gridRows, gridColumns, 
+      linesThickness, liquifyStrength, pinchStrength,
+      scanLineSize, sepiaIntensity, solarizeThreshold, triGridSize, gridSides, gridRows, gridColumns,
       tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, vhsGlitchIntensity, 
       polygonSides, polygon2Sides, waveDistortionStrength,
       spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
@@ -982,11 +974,7 @@ export function InteractiveGradient() {
     setLinesAngle(previousState.linesAngle);
     setLinesThickness(previousState.linesThickness);
     setLiquifyStrength(previousState.liquifyStrength);
-    setMandalaSegments(previousState.mandalaSegments);
     setPinchStrength(previousState.pinchStrength);
-    setPolarAngle(previousState.polarAngle);
-    setPolarRadius(previousState.polarRadius);
-    setPolarRotation(previousState.polarRotation);
     setScanLineSize(previousState.scanLineSize);
     setSepiaIntensity(previousState.sepiaIntensity);
     setSolarizeThreshold(previousState.solarizeThreshold);
@@ -1418,11 +1406,7 @@ export function InteractiveGradient() {
       linesAngle,
       linesThickness,
       liquifyStrength,
-      mandalaSegments,
       pinchStrength,
-      polarAngle,
-      polarRadius,
-      polarRotation,
       scanLineSize,
       sepiaIntensity,
       solarizeThreshold,
@@ -1481,8 +1465,8 @@ export function InteractiveGradient() {
     colorShiftHue, bulgeStrength, charcoalIntensity, colorBurnIntensity, colorDodgeIntensity,
     digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, dustCrackleIntensity,
     gridSize, hexGridSize, lightLeakIntensity, lensFlareIntensity, lensFlareX, lensFlareY, lensFlareSize,
-    linesCount, linesAngle, linesThickness, liquifyStrength, mandalaSegments, pinchStrength,
-    polarAngle, polarRadius, polarRotation, scanLineSize, sepiaIntensity, solarizeThreshold,
+    linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
+    scanLineSize, sepiaIntensity, solarizeThreshold,
     triGridSize, gridSides, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3,
     vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
     spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
@@ -3961,7 +3945,7 @@ export function InteractiveGradient() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, polarAngle, polarRadius, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }, [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   const handleInteraction = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return;
@@ -6984,35 +6968,6 @@ RANDOMIZE
                 </>
               )}
 
-              {activeEffects.includes('mandala') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Mandala</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Segments:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                    <input
-                      type="range"
-                      min="4"
-                      max="16"
-                      value={mandalaSegments}
-                      onChange={(e) => setMandalaSegments(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="4"
-                        max="16"
-                        value={mandalaSegments}
-                        onChange={(e) => setMandalaSegments(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
               {activeEffects.includes('mosaic') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
