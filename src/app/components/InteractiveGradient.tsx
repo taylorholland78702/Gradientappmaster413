@@ -8512,19 +8512,17 @@ RANDOMIZE
                   <label className="text-xs text-white/70 whitespace-nowrap flex-shrink-0">Intensity</label>
                   <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
                   <span className="text-xs text-white/50 w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
-                  <span className={`text-[10px] font-mono w-16 text-right flex-shrink-0 transition-colors ${bpmFlash ? 'text-yellow-300' : 'text-white/40'}`}>{bpm > 0 ? `${bpm} BPM` : '– BPM'}</span>
                 </div>
 
                 {/* 3-column band cards */}
                 <div className="flex gap-2 items-start overflow-hidden">
 
                   {/* Shape = Bass */}
-                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all bg-[#1a1a3e] ${bassBeatSync && bassFlash ? 'beat-flash' : ''}`}>
+                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `hsl(${220 - liveBassLevel * 180}, 90%, ${45 + liveBassLevel * 25}%)`}} />
+                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                       </div>
-                      <span className="absolute top-0.5 right-1 text-[9px] font-mono text-white/60">{liveBassLevel.toFixed(2)}</span>
                     </div>
                     <span className="text-[10px] font-semibold text-white/80">Shape</span>
                     <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
@@ -8532,12 +8530,11 @@ RANDOMIZE
                   </div>
 
                   {/* Motion = Mids */}
-                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all bg-[#1a1a3e] ${midsBeatSync && midsFlash ? 'beat-flash' : ''}`}>
+                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `hsl(${280 - liveMidsLevel * 100}, 80%, ${45 + liveMidsLevel * 25}%)`}} />
+                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                       </div>
-                      <span className="absolute top-0.5 right-1 text-[9px] font-mono text-white/60">{liveMidsLevel.toFixed(2)}</span>
                     </div>
                     <span className="text-[10px] font-semibold text-white/80">Motion</span>
                     <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
@@ -8545,12 +8542,11 @@ RANDOMIZE
                   </div>
 
                   {/* Color = Treble */}
-                  <div className={`flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 transition-all bg-[#1a1a3e] ${trebleBeatSync && trebleFlash ? 'beat-flash' : ''}`}>
+                  <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
                     <div className="w-full relative">
                       <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
-                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `hsl(${340 - liveTrebleLevel * 60}, 85%, ${45 + liveTrebleLevel * 25}%)`}} />
+                        <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                       </div>
-                      <span className="absolute top-0.5 right-1 text-[9px] font-mono text-white/60">{liveTrebleLevel.toFixed(2)}</span>
                     </div>
                     <span className="text-[10px] font-semibold text-white/80">Color</span>
                     <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
