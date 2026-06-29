@@ -41,7 +41,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       <div className="flex gap-[3.5px] w-full mb-0.5">
         <button
           onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-          className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-between font-semibold"
+          className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-between font-semibold"
         >
           <span>Presets</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -49,7 +49,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
         <button
           onClick={() => setIsPresetModalOpen(true)}
-          className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+          className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
           title="Add Preset"
         >
           <Plus className="w-4 h-4" />
@@ -58,7 +58,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
       {/* Presets Dropdown Content */}
       {isPresetsDropdownOpen && (
-        <div className="w-full bg-[#2a2a4e] rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
+        <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
           {savedPresets.length === 0 ? (
             <div className="px-4 py-2 text-xs text-white/50 italic">
               No saved presets
@@ -76,12 +76,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       if (e.key === 'Escape') setRenamingPresetIndex(null);
                     }}
                     onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
-                    className="flex-1 px-4 py-2 text-xs bg-[#1a1a3e] text-white focus:outline-none border-b border-purple-500"
+                    className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none border-b border-purple-500"
                   />
                 ) : (
                   <button
                     onClick={() => { loadPreset(preset); setIsPresetsDropdownOpen(false); }}
-                    className="flex-1 px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] text-left transition-colors font-semibold truncate"
+                    className="flex-1 px-4 py-2 text-xs text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
                   >
                     {preset.name}
                   </button>
@@ -91,7 +91,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     e.stopPropagation();
                     updatePreset(index);
                   }}
-                  className="px-2 py-2 text-white/30 hover:text-green-400 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
+                  className="px-2 py-2 text-white/30 hover:text-green-400 hover:bg-white/15 transition-colors text-xs flex-shrink-0"
                   title="Save current edits to this preset"
                 >
                   ↑
@@ -102,14 +102,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     setRenamingPresetIndex(index);
                     setRenamingPresetValue(preset.name);
                   }}
-                  className="px-2 py-2 text-white/30 hover:text-white/80 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
+                  className="px-2 py-2 text-white/30 hover:text-white/80 hover:bg-white/15 transition-colors text-xs flex-shrink-0"
                   title="Rename preset"
                 >
                   ✎
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
-                  className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-[#3a3a5e] transition-colors text-sm font-bold flex-shrink-0"
+                  className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors text-sm font-bold flex-shrink-0"
                   title="Delete preset"
                 >
                   −

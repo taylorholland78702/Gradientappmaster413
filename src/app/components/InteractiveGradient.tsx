@@ -4715,7 +4715,7 @@ export function InteractiveGradient() {
         <div className="absolute top-4 left-4 pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left">
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Show Controls"
           >
             <EyeOff className="w-4 h-4" />
@@ -4729,7 +4729,7 @@ export function InteractiveGradient() {
           </button>
           <button
             onClick={() => setIsPresetModalOpen(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Add Preset"
           >
             <Plus className="w-4 h-4" />
@@ -4739,7 +4739,7 @@ export function InteractiveGradient() {
       
       {/* Main controls */}
       <div
-        className={`absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-[#1a1a2e]/40 backdrop-blur-md rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/8 backdrop-blur-xl border border-white/10 rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
       >
         {/* Drag handle */}
@@ -4771,7 +4771,7 @@ export function InteractiveGradient() {
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Hide Controls"
           >
             <Eye className="w-4 h-4" />
@@ -4787,7 +4787,7 @@ RANDOMIZE
             disabled={undoDepth < 0}
             className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
               undoDepth >= 0
-                ? 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+                ? 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                 : 'bg-[#1a1a2e] text-white/30 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
@@ -4799,7 +4799,7 @@ RANDOMIZE
               // Refresh functionality - reset to default state
               window.location.reload();
             }}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -4826,7 +4826,7 @@ RANDOMIZE
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsAIColorPickerOpen(!isAIColorPickerOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
+            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
           >
             <span>Color Palette</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
@@ -4836,7 +4836,7 @@ RANDOMIZE
               saveCurrentState();
               setTargetColors(gradientColors.map(() => randomColor()));
             }}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Colors"
           >
             <Shuffle className="w-4 h-4" />
@@ -4844,7 +4844,7 @@ RANDOMIZE
         </div>
         {submittedAIPrompt && (
           <div className="flex items-center gap-1 mb-0.5">
-            <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-[#2a2a4e]/50 rounded text-center truncate">
+            <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-white/8 backdrop-blur-sm/50 rounded text-center truncate">
               "{submittedAIPrompt}"
             </div>
             <button
@@ -4855,7 +4855,7 @@ RANDOMIZE
                 setTargetColors(DEFAULT_COLORS);
                 setAIPrompt('');
               }}
-              className="w-6 h-6 flex-shrink-0 rounded bg-[#2a2a4e]/50 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
+              className="w-6 h-6 flex-shrink-0 rounded bg-white/8 backdrop-blur-sm/50 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
               title="Clear keywords"
             >×</button>
           </div>
@@ -4863,7 +4863,7 @@ RANDOMIZE
         
         {/* AI Color Picker Dropdown */}
         {isAIColorPickerOpen && (
-          <div className="w-full mb-0.5 bg-[#2a2a4e] rounded-lg p-3">
+          <div className="w-full mb-0.5 bg-white/8 backdrop-blur-sm rounded-lg p-3">
             {/* Selected keyword chips */}
             <div className="flex flex-wrap gap-1 mb-2 min-h-[28px]">
               {aiPrompt.split(' ').filter(Boolean).map((kw, i) => (
@@ -4952,14 +4952,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsGradientsOpen(!isGradientsOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-between"
+            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-between"
           >
             <span>Gradients</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isGradientsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={shuffleGradientType}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Gradient Type"
           >
             <Shuffle className="w-4 h-4" />
@@ -4977,7 +4977,7 @@ RANDOMIZE
                 className={`px-0.5 py-0.5 rounded text-xs capitalize transition-all whitespace-nowrap ${
                   gradientType === type
                     ? 'bg-white text-black shadow-lg'
-                    : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+                    : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                 }`}
               >
                 {getGradientDisplayName(type)}
@@ -4992,7 +4992,7 @@ RANDOMIZE
         <>
         {/* Grid Controls */}
         {gradientType === 'grid' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5040,7 +5040,7 @@ RANDOMIZE
         
         {/* Freeform Controls */}
         {gradientType === 'freeform' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex flex-col gap-1">
               <button
                 onClick={(e) => {
@@ -5140,7 +5140,7 @@ RANDOMIZE
         
         {/* Polygon Controls */}
         {gradientType === 'polygon' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5167,7 +5167,7 @@ RANDOMIZE
         
         {/* Polar Grid Controls */}
         {gradientType === 'polygon-solid' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Radials:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5215,7 +5215,7 @@ RANDOMIZE
         
         {/* Iridescent Controls */}
         {gradientType === 'iridescent' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Intensity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5267,7 +5267,7 @@ RANDOMIZE
         
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Start Angle:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5336,7 +5336,7 @@ RANDOMIZE
         
         {/* Shapes Controls */}
         {gradientType === 'shapes' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5419,7 +5419,7 @@ RANDOMIZE
         
         {/* Spiral Controls */}
         {gradientType === 'spiral' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Tightness:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5488,7 +5488,7 @@ RANDOMIZE
         
         {/* Waves Controls */}
         {gradientType === 'waves' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Amplitude:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5594,7 +5594,7 @@ RANDOMIZE
         
         {/* Mesh Controls */}
         {gradientType === 'mesh' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Grid Size:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5621,7 +5621,7 @@ RANDOMIZE
         
         {/* Noise Controls */}
         {gradientType === 'noise' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5706,7 +5706,7 @@ RANDOMIZE
         
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5733,7 +5733,7 @@ RANDOMIZE
         
         {/* Radial Controls */}
         {gradientType === 'radial' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5781,7 +5781,7 @@ RANDOMIZE
         
         {/* Radial Burst Controls */}
         {gradientType === 'radial-burst' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Burst Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -5957,7 +5957,7 @@ RANDOMIZE
 
         {/* Conical Spiral Controls */}
         {gradientType === 'conical-spiral' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Turns:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -6013,14 +6013,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsEffectsOpen(!isEffectsOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex-1 flex items-center justify-between"
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex-1 flex items-center justify-between"
           >
             <span>Effects</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isEffectsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={randomizeEffects}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Effects"
           >
             <Shuffle className="w-4 h-4" />
@@ -6040,7 +6040,7 @@ RANDOMIZE
             className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-lg active:scale-100 ${
               activeEffects.length === 0 && !isMultiFxMode
                 ? 'bg-green-600 text-white'
-                : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+                : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
             }`}
           >
             NO FX
@@ -6056,7 +6056,7 @@ RANDOMIZE
             className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-lg active:scale-100 ${
               isMultiFxMode
                 ? 'bg-green-600 text-white'
-                : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+                : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
             }`}
           >
             MULTI FX
@@ -6122,7 +6122,7 @@ RANDOMIZE
         </div>
         
         {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (
-          <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5">
+          <div className="w-full bg-white/5 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5">
             <div className="flex flex-col gap-1">
               {activeEffects.includes('kaleidoscope') && (
                 <>

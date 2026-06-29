@@ -81,7 +81,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
       {/* Audiovisuals Section */}
       <div className="w-full mb-0.5 flex gap-[3.5px]">
         {/* Mic button + device chevron */}
-        <div className={`flex flex-1 items-center px-1.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'}`}>
+        <div className={`flex flex-1 items-center px-1.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
             className="flex items-center justify-center flex-1"
@@ -115,7 +115,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
         <button
           onClick={onAudioFileClick}
-          className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
+          className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center gap-1"
           title="Load Audio File"
         >
           <span>Audio</span>
@@ -123,7 +123,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
         </button>
         <button
           onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-          className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
+          className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center gap-1"
           title="Audio Controls"
         >
           <SlidersHorizontal className="w-6 h-4" />
@@ -132,7 +132,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
       </div>
 
       {isAudioControlsOpen && (
-        <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
+        <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
           <div className="flex flex-col gap-3">
 
             {/* Intensity — always visible */}
@@ -145,9 +145,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
             <div className="flex gap-2 items-start overflow-hidden">
 
                 {/* Shape = Bass */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
+                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
                   <div className="w-full relative">
-                    <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
@@ -157,39 +157,39 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                 </div>
 
                 {/* Motion = Mids */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
+                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
                   <div className="w-full relative">
-                    <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
                   <span className="text-[10px] font-semibold text-white/80">Motion</span>
                   <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
 
                 {/* Color = Treble */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
+                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
                   <div className="w-full relative">
-                    <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
                   <span className="text-[10px] font-semibold text-white/80">Color</span>
                   <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                  <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
 
                 {/* Pulse = Sub-bass */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-[#1a1a3e]">
+                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
                   <div className="w-full relative">
-                    <div className="w-full bg-black/40 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
                       <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                     </div>
                   </div>
                   <span className="text-[10px] font-semibold text-white/80">Pulse</span>
                   <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-yellow-500 text-black' : 'bg-[#2a2a4e] text-white/40 hover:text-white/70'}`}>BEAT</button>
+                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-yellow-500 text-black' : 'bg-white/8 backdrop-blur-sm text-white/40 hover:text-white/70'}`}>BEAT</button>
                 </div>
               </div>
           </div>
@@ -198,7 +198,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
       {/* Audio Waveform Display - shown when audio file is loaded */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full mb-0.5 bg-black/40 backdrop-blur-sm rounded-lg px-1.5 py-3">
+        <div className="w-full mb-0.5 bg-white/5 backdrop-blur-sm rounded-lg px-1.5 py-3">
           {/* Waveform Visualization */}
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             {/* Center line */}
