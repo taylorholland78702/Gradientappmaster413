@@ -46,6 +46,10 @@
 .control-panel * {
   text-shadow: 0 0 0.12em rgba(0,0,0,0.3);
 }
+.control-panel .text-black,
+.control-panel .text-black * {
+  text-shadow: none;
+}
 
 /* ── Universal slider reset ── */
 input[type="range"] {
