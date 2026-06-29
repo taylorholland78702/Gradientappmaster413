@@ -1036,6 +1036,13 @@ export function InteractiveGradient() {
 
   }, []);
 
+  // Jump all the way back to the oldest snapshot in the stack
+  const undoAll = useCallback(() => {
+    if (undoIndexRef.current < 0) return;
+    undoIndexRef.current = 0;
+    undoLastChange();
+  }, [undoLastChange]);
+
   // Keyboard shortcuts - Cmd/Ctrl+Z for undo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -4741,14 +4748,14 @@ export function InteractiveGradient() {
 RANDOMIZE
           </button>
           <button
-            onClick={undoLastChange}
+            onClick={undoAll}
             disabled={undoIndexRef.current < 0}
             className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
               undoIndexRef.current >= 0
                 ? 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
                 : 'bg-[#1a1a2e] text-white/30 cursor-not-allowed'
             }`}
-            title="Undo (Cmd+Z)"
+            title="Undo all (Cmd+Z steps one at a time)"
           >
             <Undo className="w-4 h-4" />
           </button>
