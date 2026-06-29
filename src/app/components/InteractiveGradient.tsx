@@ -5356,6 +5356,8 @@ RANDOMIZE
               <Camera className="w-4 h-4" />
             </button>
 
+            <div className="w-px h-5 bg-white/20"></div>
+
             <button
               onClick={toggleVCRRecording}
               className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
