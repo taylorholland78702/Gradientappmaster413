@@ -4570,6 +4570,9 @@ export function InteractiveGradient() {
           selectedPinId={selectedPinId}
           setSelectedPinId={setSelectedPinId}
           setIsDraggingPin={setIsDraggingPin}
+          onRadiusChange={(id, radius) =>
+            setColorPins(prev => prev.map(p => p.id === id ? { ...p, radius } : p))
+          }
         />
       )}
       
