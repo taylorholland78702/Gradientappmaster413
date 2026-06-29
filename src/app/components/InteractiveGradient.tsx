@@ -5556,14 +5556,14 @@ RANDOMIZE
               <div className="flex items-center gap-1 flex-1">
                 <div className="relative w-16 h-16 mx-auto">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="40" fill="rgba(0,0,0,0.3)" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
+                    <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
                     <line
                       x1="50"
                       y1="50"
                       x2={50 + 35 * Math.cos((waveRotation - 90) * Math.PI / 180)}
                       y2={50 + 35 * Math.sin((waveRotation - 90) * Math.PI / 180)}
-                      stroke="white"
+                      stroke="black"
                       strokeWidth="2"
                       strokeLinecap="round"
                     />
@@ -5668,14 +5668,14 @@ RANDOMIZE
               <div className="flex items-center gap-1 flex-1">
                 <div className="relative w-16 h-16 mx-auto">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="40" fill="rgba(0,0,0,0.3)" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
+                    <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
                     <line
                       x1="50"
                       y1="50"
                       x2={50 + 35 * Math.cos((noiseDirection - 90) * Math.PI / 180)}
                       y2={50 + 35 * Math.sin((noiseDirection - 90) * Math.PI / 180)}
-                      stroke="white"
+                      stroke="black"
                       strokeWidth="2"
                       strokeLinecap="round"
                     />
@@ -6449,14 +6449,14 @@ RANDOMIZE
                         <div className="flex items-center gap-1 flex-1">
                           <div className="relative w-16 h-16 mx-auto">
                             <svg viewBox="0 0 100 100" className="w-full h-full">
-                              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-                              <circle cx="50" cy="50" r="40" fill="rgba(0,0,0,0.3)" />
+                              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
+                              <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
                               <line
                                 x1="50"
                                 y1="50"
                                 x2={50 + 35 * Math.cos((blurMotionDirection - 90) * Math.PI / 180)}
                                 y2={50 + 35 * Math.sin((blurMotionDirection - 90) * Math.PI / 180)}
-                                stroke="white"
+                                stroke="black"
                                 strokeWidth="3"
                                 strokeLinecap="round"
                               />
@@ -6464,7 +6464,7 @@ RANDOMIZE
                                 cx={50 + 35 * Math.cos((blurMotionDirection - 90) * Math.PI / 180)}
                                 cy={50 + 35 * Math.sin((blurMotionDirection - 90) * Math.PI / 180)}
                                 r="6"
-                                fill="white"
+                                fill="black"
                                 style={{ cursor: 'pointer' }}
                               />
                             </svg>
@@ -7387,14 +7387,14 @@ RANDOMIZE
                     <div className="flex items-center gap-1 flex-1">
                       <div className="relative w-16 h-16 mx-auto">
                         <svg viewBox="0 0 100 100" className="w-full h-full">
-                          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-                          <circle cx="50" cy="50" r="40" fill="rgba(0,0,0,0.3)" />
+                          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
+                          <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.7)" />
                           <line
                             x1="50"
                             y1="50"
                             x2={50 + 35 * Math.cos((waveDistortionRotation - 90) * Math.PI / 180)}
                             y2={50 + 35 * Math.sin((waveDistortionRotation - 90) * Math.PI / 180)}
-                            stroke="white"
+                            stroke="black"
                             strokeWidth="2"
                             strokeLinecap="round"
                           />
