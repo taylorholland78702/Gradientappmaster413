@@ -2914,19 +2914,28 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const noiseImageData = ctx.createImageData(displayWidth, displayHeight);
         const noiseData = noiseImageData.data;
-        
-        // Audio reactivity: bass affects noise scale
-        const audioNoiseScale = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 0.002 // Up to +0.002 scale
-          : 0;
+
+        const audioActive = isAudioEnabled && isAudioReactive;
+        // Bass: scale pulse
+        const audioNoiseScale = audioActive ? audioGradientParam * 0.005 : 0;
         const baseNoiseScale = ((noiseScale + audioNoiseScale * 1000) * 0.001) / zoom;
-        
+        // Bass: rotation angle
+        const noiseAudioRotation = audioActive ? audioGradientParam * Math.PI * 0.5 : 0;
+        const noiseRotCos = Math.cos(noiseDirection * 0.01 + noiseAudioRotation);
+        const noiseRotSin = Math.sin(noiseDirection * 0.01 + noiseAudioRotation);
+        // Mids: flowing warp offset
+        const noiseWarpX = audioActive ? audioEffectParam * 300 : 0;
+        const noiseWarpY = audioActive ? audioEffectParam * 200 : 0;
+
         const noiseCX = displayWidth / 2;
         const noiseCY = displayHeight / 2;
         for (let ny = 0; ny < displayHeight; ny++) {
           for (let nx = 0; nx < displayWidth; nx++) {
             const ndx = nx - noiseCX;
             const ndy = ny - noiseCY;
+            // Rotate coordinate space around center
+            const rx = ndx * noiseRotCos - ndy * noiseRotSin + noiseWarpX;
+            const ry = ndx * noiseRotSin + ndy * noiseRotCos + noiseWarpY;
             // Multi-octave noise based on noiseOctaves setting
             let combinedNoise = 0;
             let amplitude = 1;
@@ -2935,13 +2944,13 @@ export function InteractiveGradient() {
             for (let octave = 0; octave < noiseOctaves; octave++) {
               const frequency = Math.pow(2, octave);
               const scale = baseNoiseScale * frequency;
-              const noise = Math.sin(ndx * scale + noiseDirection * 0.1 * frequency) *
-                           Math.cos(ndy * scale + noiseDirection * 0.1 * frequency);
+              const noise = Math.sin(rx * scale + noiseDirection * 0.1 * frequency) *
+                           Math.cos(ry * scale + noiseDirection * 0.1 * frequency);
               combinedNoise += noise * amplitude;
               totalAmplitude += amplitude;
               amplitude *= 0.5;
             }
-            
+
             combinedNoise = (combinedNoise / totalAmplitude + 1) / 2; // Normalize to 0-1
             
             // Interpolate between colors
