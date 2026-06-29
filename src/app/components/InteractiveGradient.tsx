@@ -86,6 +86,20 @@ export function InteractiveGradient() {
   const [targetAngle, setTargetAngle] = useState(45);
   const [zoom, setZoom] = useState(1);
   const [targetZoom, setTargetZoom] = useState(1);
+
+  // Refs that shadow the animated state values — updated every RAF frame without React re-renders.
+  // The master animation loop lerps these and calls drawRef imperatively.
+  // State is synced back every 3 frames (~20fps) for undo/VCR continuity.
+  const gradientColorsRef = useRef<ColorRGB[]>(DEFAULT_COLORS);
+  const gradientAngleRef = useRef<number>(45);
+  const zoomRef = useRef<number>(1);
+  const targetColorsRef = useRef<ColorRGB[]>(DEFAULT_COLORS);
+  const targetAngleRef = useRef<number>(45);
+  const targetZoomRef = useRef<number>(1);
+  const vcrPlaybackSpeedRef = useRef<number>(1);
+  const isAutoModeRef = useRef<boolean>(false);
+  const drawRef = useRef<() => void>(() => {});
+  const lerpSyncFrameRef = useRef(0);
   
   // Freeform gradient pins
   const [colorPins, setColorPins] = useState<ColorPin[]>([
@@ -538,57 +552,54 @@ export function InteractiveGradient() {
 
   // Audio reactivity and mic functions are now in useAudioReactivity hook
 
-  // Interpolate between current and target colors and angle (optimized with single RAF)
+  // Keep target/mode refs in sync with state so the master RAF loop can read them without restarts.
+  useEffect(() => { targetColorsRef.current = targetColors; }, [targetColors]);
+  useEffect(() => { targetAngleRef.current = targetAngle; }, [targetAngle]);
+  useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
+  useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
+  useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
+
+  // Master animation RAF — lerps animated refs and calls drawRef imperatively.
+  // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
   useEffect(() => {
     let rafId: number;
-    
-    const animate = () => {
-      // Batch all state updates together for better performance
-      setGradientColors(prev => 
-        prev.map((color, index) => {
-          const target = targetColors[index];
-          // Safety check: ensure both color and target exist
-          if (!color || !target) return color || { r: 128, g: 128, b: 128 };
-          
-          const speed = 0.025 * vcrPlaybackSpeed; // Apply VCR speed control
-          
-          const newColor = {
-            r: color.r + (target.r - color.r) * speed,
-            g: color.g + (target.g - color.g) * speed,
-            b: color.b + (target.b - color.b) * speed,
-          };
-          
-          // Safety check: ensure no NaN values
-          if (isNaN(newColor.r) || isNaN(newColor.g) || isNaN(newColor.b)) {
-            return target; // Fall back to target if calculation produced NaN
-          }
-          
-          return newColor;
-        })
-      );
-      
-      setGradientAngle(prev => {
-        const speed = 0.1 * vcrPlaybackSpeed; // Apply VCR speed control
-        return prev + (targetAngle - prev) * speed;
-      });
-      
-      setZoom(prev => {
-        const baseSpeed = isAutoMode ? 0.1 : 0.3;
-        const speed = baseSpeed * vcrPlaybackSpeed; // Apply VCR speed control
-        return prev + (targetZoom - prev) * speed;
-      });
-      
-      rafId = requestAnimationFrame(animate);
-    };
+    const loop = () => {
+      const spd = vcrPlaybackSpeedRef.current;
 
-    rafId = requestAnimationFrame(animate);
-
-    return () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+      // Lerp colors directly in ref
+      const colors = gradientColorsRef.current;
+      const targets = targetColorsRef.current;
+      const colorSpd = 0.025 * spd;
+      for (let i = 0; i < colors.length; i++) {
+        const c = colors[i];
+        const t = targets[i];
+        if (!c || !t) continue;
+        const nr = c.r + (t.r - c.r) * colorSpd;
+        const ng = c.g + (t.g - c.g) * colorSpd;
+        const nb = c.b + (t.b - c.b) * colorSpd;
+        colors[i] = (isNaN(nr) || isNaN(ng) || isNaN(nb)) ? t : { r: nr, g: ng, b: nb };
       }
+
+      gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * (0.1 * spd);
+      const zoomSpd = (isAutoModeRef.current ? 0.1 : 0.3) * spd;
+      zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
+
+      // Draw imperatively — no React reconciliation
+      drawRef.current();
+
+      // Sync back to state every 3 frames (~20fps) for undo snapshots and VCR recording
+      lerpSyncFrameRef.current++;
+      if (lerpSyncFrameRef.current % 3 === 0) {
+        setGradientColors([...gradientColorsRef.current]);
+        setGradientAngle(gradientAngleRef.current);
+        setZoom(zoomRef.current);
+      }
+
+      rafId = requestAnimationFrame(loop);
     };
-  }, [targetColors, targetAngle, targetZoom, isAutoMode, vcrPlaybackSpeed]);
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   // Generate random color (memoized as it doesn't depend on state)
   const randomColor = useCallback((): ColorRGB => ({
@@ -2134,7 +2145,7 @@ export function InteractiveGradient() {
   // Collapse all drawing-relevant state into one memoized object so the drawing
   // useEffect only does a single reference comparison per render instead of 150+.
   const drawParams = useMemo(() => ({
-    resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects,
+    resolutionMultiplier, gradientType, activeEffects,
     kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
     tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
     blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
@@ -2155,15 +2166,22 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
-  // Draw gradient on canvas
+  // Draw gradient on canvas — stored imperatively in drawRef so the master RAF can call it
+  // without triggering React reconciliation. Only re-assigned when non-animated params change.
   useEffect(() => {
+    drawRef.current = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
+
+    // Read animated values from refs (updated every frame without React state changes)
+    const gradientColors = gradientColorsRef.current;
+    const gradientAngle = gradientAngleRef.current;
+    const zoom = zoomRef.current;
 
     // Set canvas internal resolution (with multiplier for higher quality)
     // Canvas will render at higher resolution but display at window size via CSS
@@ -3986,8 +4004,10 @@ export function InteractiveGradient() {
       ctx.restore();
     });
 
+    }; // end drawRef.current assignment
+
     const handleResize = () => {
-      // Force re-render on resize - useEffect will re-run
+      // Force re-assignment of drawRef on resize so new dimensions are captured
     };
 
     window.addEventListener('resize', handleResize);

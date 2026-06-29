@@ -392,15 +392,18 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     };
   }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom]);
 
-  // Poll live level refs at ~30fps to drive the bar graph
+  // Poll live level refs at ~15fps to drive the bar graph (every 4th frame)
   useEffect(() => {
     if (!isAudioEnabled || !isAudioReactive) return;
     let rafId: number;
+    let frame = 0;
     const poll = () => {
-      setLiveBassLevel(liveBaseLevelRef.current);
-      setLiveMidsLevel(liveMidsLevelRef.current);
-      setLiveTrebleLevel(liveTrebleLevelRef.current);
-      setLiveSubBassLevel(liveSubBassLevelRef.current);
+      if (++frame % 4 === 0) {
+        setLiveBassLevel(liveBaseLevelRef.current);
+        setLiveMidsLevel(liveMidsLevelRef.current);
+        setLiveTrebleLevel(liveTrebleLevelRef.current);
+        setLiveSubBassLevel(liveSubBassLevelRef.current);
+      }
       rafId = requestAnimationFrame(poll);
     };
     rafId = requestAnimationFrame(poll);
