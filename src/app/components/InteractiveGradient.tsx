@@ -166,6 +166,8 @@ export function InteractiveGradient() {
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
   const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
+  const [renamingPresetIndex, setRenamingPresetIndex] = useState<number | null>(null);
+  const [renamingPresetValue, setRenamingPresetValue] = useState('');
   
   // Effect parameters
   const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(8);
@@ -5126,6 +5128,13 @@ export function InteractiveGradient() {
     setSavedPresets(newPresets);
     if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
   };
+
+  const renamePreset = async (index: number, newName: string) => {
+    if (!newName.trim()) return;
+    const newPresets = savedPresets.map((p, i) => i === index ? { ...p, name: newName.trim() } : p);
+    setSavedPresets(newPresets);
+    if (auth.currentUser) { const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets'); const snap = await getDocs(presetsRef); snap.docs.forEach(d => deleteDoc(d.ref)); newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p)); }
+  };
   
   // Toggle fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -9016,21 +9025,40 @@ RANDOMIZE
             ) : (
               savedPresets.map((preset, index) => (
                 <div key={index} className="flex items-center w-full group">
-                  <button
-                    onClick={() => {
-                      loadPreset(preset);
-                      setIsPresetsDropdownOpen(false);
-                    }}
-                    className="flex-1 px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] text-left transition-colors font-semibold truncate"
-                  >
-                    {preset.name}
-                  </button>
+                  {renamingPresetIndex === index ? (
+                    <input
+                      autoFocus
+                      value={renamingPresetValue}
+                      onChange={(e) => setRenamingPresetValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }
+                        if (e.key === 'Escape') setRenamingPresetIndex(null);
+                      }}
+                      onBlur={() => { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
+                      className="flex-1 px-4 py-2 text-xs bg-[#1a1a3e] text-white focus:outline-none border-b border-purple-500"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { loadPreset(preset); setIsPresetsDropdownOpen(false); }}
+                      className="flex-1 px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] text-left transition-colors font-semibold truncate"
+                    >
+                      {preset.name}
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      deletePreset(index);
+                      setRenamingPresetIndex(index);
+                      setRenamingPresetValue(preset.name);
                     }}
-                    className="px-3 py-2 text-white/50 hover:text-red-400 hover:bg-[#3a3a5e] transition-colors text-sm font-bold flex-shrink-0"
+                    className="px-2 py-2 text-white/30 hover:text-white/80 hover:bg-[#3a3a5e] transition-colors text-xs flex-shrink-0"
+                    title="Rename preset"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
+                    className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-[#3a3a5e] transition-colors text-sm font-bold flex-shrink-0"
                     title="Delete preset"
                   >
                     −
