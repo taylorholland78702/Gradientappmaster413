@@ -661,8 +661,6 @@ export function InteractiveGradient() {
     let rafId: number;
     const animateSlitScan = () => {
       setSlitScanAnimTrigger(prev => prev + 1);
-      // Auto-rotate gradient to make slit-scan effect visible
-      setGradientAngle(prev => (prev + 0.5) % 360);
       rafId = requestAnimationFrame(animateSlitScan);
     };
 
@@ -674,9 +672,9 @@ export function InteractiveGradient() {
     };
   }, [activeEffects]);
 
-  // Continuous animation for Voronoi morphing
+  // Continuous animation for Voronoi morphing — only when PLAY is active
   useEffect(() => {
-    if (gradientType !== 'voronoi') return;
+    if (gradientType !== 'voronoi' || (!isAutoMode && !isVCRPlaying)) return;
 
     let rafId: number;
     const animateVoronoi = () => {
@@ -686,11 +684,11 @@ export function InteractiveGradient() {
 
     rafId = requestAnimationFrame(animateVoronoi);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
 
-  // Continuous animation for Radar sweep
+  // Continuous animation for Radar sweep — only when PLAY is active
   useEffect(() => {
-    if (gradientType !== 'radar') return;
+    if (gradientType !== 'radar' || (!isAutoMode && !isVCRPlaying)) return;
 
     let rafId: number;
     const animateRadar = () => {
@@ -700,11 +698,11 @@ export function InteractiveGradient() {
 
     rafId = requestAnimationFrame(animateRadar);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
 
-  // Continuous rotation animation for Flower gradient
+  // Continuous rotation animation for Flower gradient — only when PLAY is active
   useEffect(() => {
-    if (gradientType !== 'flower') return;
+    if (gradientType !== 'flower' || (!isAutoMode && !isVCRPlaying)) return;
 
     let rafId: number;
     const animateFlower = () => {
@@ -714,7 +712,7 @@ export function InteractiveGradient() {
 
     rafId = requestAnimationFrame(animateFlower);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
 
   // Save current state for undo (defined early for use in other functions)
   const saveCurrentState = useCallback(() => {
