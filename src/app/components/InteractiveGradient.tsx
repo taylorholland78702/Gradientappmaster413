@@ -312,7 +312,6 @@ export function InteractiveGradient() {
     onMidsFlash: () => setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'),
     onTrebleFlash: () => {
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
-      setGradientColors(prev => prev.map(() => randomC()));
       setTargetColors(prev => prev.map(() => randomC()));
     },
     setTargetColors,

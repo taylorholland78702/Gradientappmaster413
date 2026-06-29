@@ -374,11 +374,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioColorShift(trebleColorValue);
 
-      // Treble onset detection for Color BEAT
+      // Treble onset detection for Color BEAT — only update target so lerp eases in smoothly
       const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
-      if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 200) {
+      if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 800) {
         lastTrebleBeatRef.current = now;
-        setGradientColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
         setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
       }
       treblePrevRef.current = trebleAvgRaw;
