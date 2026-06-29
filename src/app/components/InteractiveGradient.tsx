@@ -301,7 +301,7 @@ export function InteractiveGradient() {
   const [radarFadeLength, setRadarFadeLength] = useState(90);
   const [fadeSpeed, setFadeSpeed] = useState(1);
   const [radarSpeed, setRadarSpeed] = useState(2);
-  const [flowerCircles, setFlowerCircles] = useState(7);
+  const [flowerCircles, setFlowerCircles] = useState(1);
   const [flowerScale, setFlowerScale] = useState(1);
   const [flowerRotation, setFlowerRotation] = useState(0);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
@@ -6763,27 +6763,6 @@ RANDOMIZE
                   step="0.1"
                   value={flowerScale}
                   onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Rotation:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={flowerRotation}
-                  onChange={(e) => setFlowerRotation(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={flowerRotation}
-                  onChange={(e) => setFlowerRotation(Number(e.target.value))}
                   className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
                 />
               </div>
