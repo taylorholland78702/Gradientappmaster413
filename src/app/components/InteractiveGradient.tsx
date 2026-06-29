@@ -6039,7 +6039,7 @@ RANDOMIZE
             }}
             className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm active:scale-100 ${
               activeEffects.length === 0 && !isMultiFxMode
-                ? 'bg-green-600 text-white'
+                ? 'bg-white text-black'
                 : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
             }`}
           >
@@ -6055,7 +6055,7 @@ RANDOMIZE
             }}
             className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm active:scale-100 ${
               isMultiFxMode
-                ? 'bg-green-600 text-white'
+                ? 'bg-white text-black'
                 : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
             }`}
           >
@@ -6111,8 +6111,8 @@ RANDOMIZE
                 }}
                 className={`px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm ${
                   activeEffects.includes(effect.value)
-                    ? 'bg-purple-500 text-white'
-                    : 'bg-black/30 text-white backdrop-blur-sm hover:bg-black/40'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                 }`}
               >
                 {effect.label}
