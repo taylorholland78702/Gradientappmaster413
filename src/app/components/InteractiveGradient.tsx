@@ -3417,12 +3417,11 @@ export function InteractiveGradient() {
         }
         
         case 'oil-paint':
-          // Oil paint effect
-          ctx.filter = `blur(${oilPaintRadius}px)`;
+          ctx.filter = `blur(5px)`;
           ctx.drawImage(canvas, 0, 0);
           ctx.filter = 'none';
           break;
-        
+
 
         
         case 'charcoal': {
@@ -7037,35 +7036,6 @@ RANDOMIZE
                         max="40"
                         value={mosaicSize}
                         onChange={(e) => setMosaicSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
-              {activeEffects.includes('oil-paint') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Oil Paint</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Radius:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={oilPaintRadius}
-                      onChange={(e) => setOilPaintRadius(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={oilPaintRadius}
-                        onChange={(e) => setOilPaintRadius(Number(e.target.value))}
                         className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
                       />
                   </div>
