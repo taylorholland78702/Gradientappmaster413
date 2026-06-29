@@ -230,9 +230,9 @@ export function InteractiveGradient() {
   const [noiseDirection, setNoiseDirection] = useState(0);
   const [plasmaSpeed, setPlasmaSpeed] = useState(1);
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
-  const [radialBurstCount, setRadialBurstCount] = useState(6);
-  const [radialBurstSpread, setRadialBurstSpread] = useState(30);
-  const [radialBurstSize, setRadialBurstSize] = useState(100);
+  const [radialBurstCount, setRadialBurstCount] = useState(8);
+  const [radialBurstSpread, setRadialBurstSpread] = useState(71);
+  const [radialBurstSize, setRadialBurstSize] = useState(73);
   
   // New dither, slit-scan, and diffusion effect parameters
   const [ditherType, setDitherType] = useState<'bayer' | 'floyd-steinberg'>('bayer');
