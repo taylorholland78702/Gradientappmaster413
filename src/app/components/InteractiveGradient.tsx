@@ -5564,7 +5564,7 @@ export function InteractiveGradient() {
                   min="1"
                   max="20"
                   value={waveNumber}
-                  onChange={(e) => setWaveNumber(Number(e.target.value))}
+                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
                   className="flex-1"
                 />
                 <input
@@ -5572,7 +5572,7 @@ export function InteractiveGradient() {
                   min="1"
                   max="20"
                   value={waveNumber}
-                  onChange={(e) => setWaveNumber(Number(e.target.value))}
+                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
                   className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
                 />
               </div>
@@ -5599,7 +5599,7 @@ export function InteractiveGradient() {
                     min="0"
                     max="360"
                     value={waveRotation}
-                    onChange={(e) => setWaveRotation(Number(e.target.value))}
+                    onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                     style={{ WebkitAppearance: 'none' }}
                   />
@@ -5609,7 +5609,7 @@ export function InteractiveGradient() {
                   min="0"
                   max="360"
                   value={waveRotation}
-                  onChange={(e) => setWaveRotation(Number(e.target.value))}
+                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
                   className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
                 />
               </div>
