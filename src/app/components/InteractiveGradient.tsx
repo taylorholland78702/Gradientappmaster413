@@ -244,8 +244,8 @@ export function InteractiveGradient() {
   const [diffusionFeed, setDiffusionFeed] = useState(0.055);
   const [diffusionKill, setDiffusionKill] = useState(0.062);
   const [diffusionAnimTrigger, setDiffusionAnimTrigger] = useState(0); // Animation trigger for continuous updates
-  const [voronoiCellCount, setVoronoiCellCount] = useState(10);
-  const [voronoiDistortion, setVoronoiDistortion] = useState(0);
+  const [voronoiCellCount, setVoronoiCellCount] = useState(19);
+  const [voronoiDistortion, setVoronoiDistortion] = useState(100);
   const [voronoiMorphSpeed, setVoronoiMorphSpeed] = useState(1);
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
   const [conicalSpiralTurns, setConicalSpiralTurns] = useState(20);
