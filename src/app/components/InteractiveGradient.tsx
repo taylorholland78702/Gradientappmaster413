@@ -158,6 +158,8 @@ export function InteractiveGradient() {
   const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
+  const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState<string>('default');
   const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(null);
   const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
@@ -709,13 +711,18 @@ export function InteractiveGradient() {
   }, []);
 
   // Start microphone visualization
-  const startMicVisualization = async () => {
+  const startMicVisualization = async (deviceId?: string) => {
     try {
-      // Request microphone permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const constraints: MediaStreamConstraints = {
+        audio: deviceId && deviceId !== 'default' ? { deviceId: { exact: deviceId } } : true,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
-      
-      // Initialize audio context with microphone
+
+      // Enumerate devices after permission is granted (browser requires permission first)
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setAudioInputDevices(devices.filter(d => d.kind === 'audioinput'));
+
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
 
@@ -725,8 +732,7 @@ export function InteractiveGradient() {
 
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
-      // Don't connect to destination to avoid feedback
-      
+
       setIsMicActive(true);
       setIsAudioEnabled(true);
       setIsAudioReactive(true);
@@ -8869,18 +8875,50 @@ RANDOMIZE
             <SlidersHorizontal className="w-8 h-4" />
             <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
           </button>
-          <button
-            onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization()}
-            className={`w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
-              isMicActive
-                ? 'bg-purple-500 text-white'
-                : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
-            }`}
-            title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
-          >
-            {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-          </button>        </div>
-        
+          <div className="flex flex-col gap-0.5">
+            <button
+              onClick={() => {
+                if (isMicActive) {
+                  stopMicVisualization();
+                } else {
+                  startMicVisualization(selectedAudioDeviceId);
+                }
+              }}
+              className={`w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
+                isMicActive
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+              }`}
+              title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
+            >
+              {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Audio input device selector */}
+        {audioInputDevices.length > 0 && (
+          <div className="w-full mb-0.5">
+            <select
+              value={selectedAudioDeviceId}
+              onChange={(e) => {
+                setSelectedAudioDeviceId(e.target.value);
+                if (isMicActive) {
+                  stopMicVisualization();
+                  setTimeout(() => startMicVisualization(e.target.value), 100);
+                }
+              }}
+              className="w-full px-2 py-1 rounded-lg text-[10px] bg-[#2a2a4e] text-white border border-white/10 focus:outline-none focus:border-purple-500 truncate"
+            >
+              {audioInputDevices.map(d => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
               <div className="flex flex-col gap-3">
