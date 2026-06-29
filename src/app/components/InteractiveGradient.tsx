@@ -853,14 +853,14 @@ export function InteractiveGradient() {
     let rafId: number;
     const animateHalftone = () => {
       // Update time directly in the animation loop with VCR speed control
-      halftoneTimeRef.current += 0.5 * halftoneMoveSpeed * vcrPlaybackSpeed;
+      halftoneTimeRef.current += 0.5 * vcrPlaybackSpeed;
       setHalftoneAnimTrigger(prev => prev + 1);
       rafId = requestAnimationFrame(animateHalftone);
     };
     
     rafId = requestAnimationFrame(animateHalftone);
     return () => cancelAnimationFrame(rafId);
-  }, [activeEffects, halftoneMove, halftoneMoveSpeed, vcrPlaybackSpeed]);
+  }, [activeEffects, halftoneMove, vcrPlaybackSpeed]);
 
   // Continuous animation for grid rotation
   useEffect(() => {
@@ -927,31 +927,31 @@ export function InteractiveGradient() {
 
   // Continuous animation for Voronoi morphing
   useEffect(() => {
-    if (gradientType !== 'voronoi' || voronoiMorphSpeed === 0) return;
+    if (gradientType !== 'voronoi') return;
 
     let rafId: number;
     const animateVoronoi = () => {
-      setVoronoiAnimTime(prev => prev + voronoiMorphSpeed * 0.01);
+      setVoronoiAnimTime(prev => prev + 0.01 * vcrPlaybackSpeed);
       rafId = requestAnimationFrame(animateVoronoi);
     };
 
     rafId = requestAnimationFrame(animateVoronoi);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, voronoiMorphSpeed]);
+  }, [gradientType, vcrPlaybackSpeed]);
 
   // Continuous animation for Radar sweep
   useEffect(() => {
-    if (gradientType !== 'radar' || radarSpeed === 0) return;
+    if (gradientType !== 'radar') return;
 
     let rafId: number;
     const animateRadar = () => {
-      setRadarSweepAngle(prev => (prev + radarSpeed) % 360);
+      setRadarSweepAngle(prev => (prev + 2 * vcrPlaybackSpeed) % 360);
       rafId = requestAnimationFrame(animateRadar);
     };
 
     rafId = requestAnimationFrame(animateRadar);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, radarSpeed]);
+  }, [gradientType, vcrPlaybackSpeed]);
 
   // Continuous rotation animation for Flower gradient
   useEffect(() => {
@@ -959,13 +959,13 @@ export function InteractiveGradient() {
 
     let rafId: number;
     const animateFlower = () => {
-      setFlowerAnimTime(prev => prev + 0.5);
+      setFlowerAnimTime(prev => prev + 0.5 * vcrPlaybackSpeed);
       rafId = requestAnimationFrame(animateFlower);
     };
 
     rafId = requestAnimationFrame(animateFlower);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType]);
+  }, [gradientType, vcrPlaybackSpeed]);
 
   // Save current state for undo (defined early for use in other functions)
   const saveCurrentState = useCallback(() => {
@@ -2900,7 +2900,7 @@ export function InteractiveGradient() {
         
         // Use continuous gradientAngle without modulo to avoid jumps
         const totalColors = gradientColors.length;
-        const normalizedAngle = (gradientAngle * fadeSpeed) / 360;
+        const normalizedAngle = gradientAngle / 360;
         const exactPosition = normalizedAngle % totalColors;
         const currentColorIndex = Math.floor(exactPosition);
         const nextColorIndex = (currentColorIndex + 1) % totalColors;
@@ -6444,29 +6444,6 @@ RANDOMIZE
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  value={plasmaSpeed}
-                  onChange={(e) => setPlasmaSpeed(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="5"
-                        step="0.1"
-                        value={plasmaSpeed}
-                        onChange={(e) => setPlasmaSpeed(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -6633,29 +6610,6 @@ RANDOMIZE
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Morph Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={voronoiMorphSpeed}
-                  onChange={(e) => setVoronoiMorphSpeed(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={voronoiMorphSpeed}
-                  onChange={(e) => setVoronoiMorphSpeed(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
           </div>
         )}
 
@@ -6663,29 +6617,6 @@ RANDOMIZE
         {gradientType === 'radar' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-black/30 backdrop-blur-sm rounded-lg">
             <div className="text-xs text-white font-semibold mb-2">Radar Controls</div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={radarSpeed}
-                  onChange={(e) => setRadarSpeed(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={radarSpeed}
-                  onChange={(e) => setRadarSpeed(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Fade Length:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -7538,26 +7469,6 @@ RANDOMIZE
                     >
                       {halftoneMove ? 'ON' : 'OFF'}
                     </button>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={halftoneMoveSpeed}
-                        onChange={(e) => setHalftoneMoveSpeed(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={halftoneMoveSpeed}
-                        onChange={(e) => setHalftoneMoveSpeed(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
                   </div>
                 </>
               )}
@@ -8881,16 +8792,7 @@ RANDOMIZE
           </div>
         )}
         
-        {/* Fade Speed — bottom of gradient dropdown */}
-        {gradientType === 'fade' && (
-          <div className="w-full mt-0.5 p-2 bg-[#2a2a4e] rounded-lg flex items-center gap-2">
-            <label className="text-xs text-white whitespace-nowrap">Speed:</label>
-            <input type="range" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="flex-1" />
-            <input type="number" min="0.1" max="5" step="0.1" value={fadeSpeed} onChange={(e) => setFadeSpeed(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
-          </div>
-        )}
-
-        </>
+</>
         )}
 
         {/* Audiovisuals Section */}
