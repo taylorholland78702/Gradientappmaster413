@@ -550,7 +550,7 @@ export function InteractiveGradient() {
           // Safety check: ensure both color and target exist
           if (!color || !target) return color || { r: 128, g: 128, b: 128 };
           
-          const speed = 0.08 * vcrPlaybackSpeed; // Apply VCR speed control
+          const speed = 0.025 * vcrPlaybackSpeed; // Apply VCR speed control
           
           const newColor = {
             r: color.r + (target.r - color.r) * speed,
