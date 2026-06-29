@@ -6863,11 +6863,12 @@ RANDOMIZE
             <div className="flex flex-col gap-1">
               {activeEffects.includes('kaleidoscope') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Kaleidoscope</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Segments:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Kaleidoscope</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Segments:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -6891,11 +6892,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('tile') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Tile</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Tiles:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tile</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Tiles:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -6919,11 +6921,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('ripple') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Ripple</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ripple</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -6969,234 +6972,92 @@ RANDOMIZE
                 </>
               )}
               {activeEffects.includes('pixelate') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Pixelate</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pixelate</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="5"
-                        max="200"
-                        value={pixelSize}
-                        onChange={(e) => setPixelSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="200"
-                        value={pixelSize}
-                        onChange={(e) => setPixelSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('triangulate') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Triangulate</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Triangulate</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="10"
-                        max="200"
-                        value={triangleSize}
-                        onChange={(e) => setTriangleSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="10"
-                        max="200"
-                        value={triangleSize}
-                        onChange={(e) => setTriangleSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('chromatic') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Chromatic</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Chromatic</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Offset:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="1"
-                        max="200"
-                        value={chromaticOffset}
-                        onChange={(e) => setChromaticOffset(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="200"
-                        value={chromaticOffset}
-                        onChange={(e) => setChromaticOffset(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('fisheye') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Fisheye</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fisheye</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={fisheyeStrength}
-                        onChange={(e) => setFisheyeStrength(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={fisheyeStrength}
-                        onChange={(e) => setFisheyeStrength(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('bloom') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Bloom</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="2"
-                        step="0.05"
-                        value={bloomIntensity}
-                        onChange={(e) => setBloomIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.05"
-                        value={bloomIntensity}
-                        onChange={(e) => setBloomIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('vignette') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Vignette</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Vignette</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={vignetteStrength}
-                        onChange={(e) => setVignetteStrength(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={vignetteStrength}
-                        onChange={(e) => setVignetteStrength(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('color-shift') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Shift</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shift</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Hue:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="255"
-                        value={colorShiftHue}
-                        onChange={(e) => setColorShiftHue(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="255"
-                        value={colorShiftHue}
-                        onChange={(e) => setColorShiftHue(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('film-grain') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Grain</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={grainIntensity}
-                        onChange={(e) => setGrainIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={grainIntensity}
-                        onChange={(e) => setGrainIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grain</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
@@ -7247,10 +7108,10 @@ RANDOMIZE
               )}
               {activeEffects.includes('blur') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Blur</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1 mb-2">
+                  <div className="flex items-center gap-1 mt-1 mb-1">
+                    {isMultiFxMode && activeEffects.length > 1 && (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Blur</span>
+                    )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
@@ -7381,58 +7242,26 @@ RANDOMIZE
                 </>
               )}
               {activeEffects.includes('posterize') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Posterize</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Posterize</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Levels:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="16"
-                        value={posterizeLevels}
-                        onChange={(e) => setPosterizeLevels(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="16"
-                        value={posterizeLevels}
-                        onChange={(e) => setPosterizeLevels(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('halftone') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Halftone</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="200"
-                        value={halftoneSize}
-                        onChange={(e) => setHalftoneSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="200"
-                        value={halftoneSize}
-                        onChange={(e) => setHalftoneSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Halftone</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
+                    )}
+                    <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Variation:</label>
@@ -7473,182 +7302,74 @@ RANDOMIZE
                 </>
               )}
               {activeEffects.includes('bulge') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Bulge</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bulge</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bulgeStrength}
-                        onChange={(e) => setBulgeStrength(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bulgeStrength}
-                        onChange={(e) => setBulgeStrength(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="1" step="0.05" value={bulgeStrength} onChange={(e) => setBulgeStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={bulgeStrength} onChange={(e) => setBulgeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               {activeEffects.includes('charcoal') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Saturate</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Saturate</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={charcoalIntensity}
-                        onChange={(e) => setCharcoalIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={charcoalIntensity}
-                        onChange={(e) => setCharcoalIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               
               
               {activeEffects.includes('crackle') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Crackle</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crackle</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={crackleIntensity}
-                        onChange={(e) => setCrackleIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={crackleIntensity}
-                        onChange={(e) => setCrackleIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="0" max="1" step="0.05" value={crackleIntensity} onChange={(e) => setCrackleIntensity(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={crackleIntensity} onChange={(e) => setCrackleIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
 
               {activeEffects.includes('crystallize') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Crystallize</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crystallize</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="5"
-                        max="50"
-                        value={crystallizeSize}
-                        onChange={(e) => setCrystallizeSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="50"
-                        value={crystallizeSize}
-                        onChange={(e) => setCrystallizeSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
+                  )}
+                  <input type="range" min="5" max="50" value={crystallizeSize} onChange={(e) => setCrystallizeSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="5" max="50" value={crystallizeSize} onChange={(e) => setCrystallizeSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
               )}
               
               {activeEffects.includes('displacement') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Displacement</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Displace</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      value={displacementStrength}
-                      onChange={(e) => setDisplacementStrength(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="5"
-                        max="50"
-                        value={displacementStrength}
-                        onChange={(e) => setDisplacementStrength(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
+                  )}
+                  <input type="range" min="5" max="50" value={displacementStrength} onChange={(e) => setDisplacementStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="5" max="50" value={displacementStrength} onChange={(e) => setDisplacementStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
-                </>
               )}
               {activeEffects.includes('duotone') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Duotone</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={duotoneIntensity}
-                        onChange={(e) => setDuotoneIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={duotoneIntensity}
-                        onChange={(e) => setDuotoneIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Duotone</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Color 1:</label>
@@ -7672,31 +7393,14 @@ RANDOMIZE
               )}
               {activeEffects.includes('dust-scratches') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Dust</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Dust:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={dustIntensity}
-                        onChange={(e) => setDustIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={dustIntensity}
-                        onChange={(e) => setDustIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dust</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Dust:</label>
+                    )}
+                    <input type="range" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Crackle:</label>
@@ -7724,98 +7428,46 @@ RANDOMIZE
                 </>
               )}
               {activeEffects.includes('fabric-weave') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Fabric Weave</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fabric</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Scale:</label>
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="5"
-                      max="30"
-                      value={fabricScale}
-                      onChange={(e) => setFabricScale(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="5"
-                        max="30"
-                        value={fabricScale}
-                        onChange={(e) => setFabricScale(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
+                  )}
+                  <input type="range" min="5" max="30" value={fabricScale} onChange={(e) => setFabricScale(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="5" max="30" value={fabricScale} onChange={(e) => setFabricScale(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
-                </>
               )}
               {activeEffects.includes('gradient-map') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Gradient Map</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grad Map</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={gradientMapIntensity}
-                      onChange={(e) => setGradientMapIntensity(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={gradientMapIntensity}
-                        onChange={(e) => setGradientMapIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
+                  )}
+                  <input type="range" min="0" max="1" step="0.05" value={gradientMapIntensity} onChange={(e) => setGradientMapIntensity(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={gradientMapIntensity} onChange={(e) => setGradientMapIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
-                </>
               )}
               {activeEffects.includes('grid-overlay') && (
-                <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Grid Overlay</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 mt-1">
+                  {isMultiFxMode && activeEffects.length > 1 ? (
+                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid Over</span>
+                  ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      value={gridSize}
-                      onChange={(e) => setGridSize(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="10"
-                        max="100"
-                        value={gridSize}
-                        onChange={(e) => setGridSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
+                  )}
+                  <input type="range" min="10" max="100" value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="10" max="100" value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
-                </>
               )}
               {activeEffects.includes('grid') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Grid</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Sides:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Sides:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7962,12 +7614,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('impressionist') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Impressionist</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Brush Size:</label>
-                  <div className="flex items-center gap-2 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Impressn</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Brush Size:</label>
+                    )}
+                    <div className="flex items-center gap-2 flex-1">
                     <input
                       type="range"
                       min="2"
@@ -7990,12 +7643,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('ink-wash') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Ink Wash</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  <div className="flex items-center gap-2 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ink Wash</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <div className="flex items-center gap-2 flex-1">
                     <input
                       type="range"
                       min="0"
@@ -8020,11 +7674,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('lens-flare') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Lens Flare</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Lens Flare</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="range"
@@ -8101,12 +7756,13 @@ RANDOMIZE
 
               {activeEffects.includes('mandala') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Mandala</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Segments:</label>
-                  <div className="flex items-center gap-1 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Mandala</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Segments:</label>
+                    )}
+                    <div className="flex items-center gap-1 flex-1">
                     <input
                       type="range"
                       min="4"
@@ -8129,12 +7785,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('mosaic') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Mosaic</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  <div className="flex items-center gap-1 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Mosaic</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    )}
+                    <div className="flex items-center gap-1 flex-1">
                     <input
                       type="range"
                       min="5"
@@ -8157,12 +7814,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('oil-paint') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Oil Paint</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Radius:</label>
-                  <div className="flex items-center gap-1 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Oil Paint</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Radius:</label>
+                    )}
+                    <div className="flex items-center gap-1 flex-1">
                     <input
                       type="range"
                       min="1"
@@ -8185,11 +7843,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('palette-knife') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Palette Knife</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Palette</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8213,12 +7872,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('paper-texture') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Paper Texture</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  <div className="flex items-center gap-1 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Paper Tex</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <div className="flex items-center gap-1 flex-1">
                     <input
                       type="range"
                       min="0"
@@ -8243,12 +7903,13 @@ RANDOMIZE
               )}
               {activeEffects.includes('pastel') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Pastel</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  <div className="flex items-center gap-1 flex-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pastel</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <div className="flex items-center gap-1 flex-1">
                     <input
                       type="range"
                       min="0"
@@ -8276,11 +7937,12 @@ RANDOMIZE
               
               {activeEffects.includes('shatter') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Shatter</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shatter</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    )}
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="range"
@@ -8305,11 +7967,12 @@ RANDOMIZE
               
               {activeEffects.includes('stipple') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Stipple</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Stipple</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    )}
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="range"
@@ -8333,11 +7996,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('swirl') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Swirl</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Swirl</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                    )}
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="range"
@@ -8363,11 +8027,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('triangular-grid') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Triangular Grid</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tri Grid</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8391,11 +8056,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('tritone') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Tritone</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tritone</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8441,11 +8107,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('vhs-glitch') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">VHS</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">VHS</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8471,11 +8138,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('tape-hiss') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Tape Hiss</div>
-                  )}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Tape Hiss:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tape Hiss</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Tape Hiss:</label>
+                    )}
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="range"
@@ -8501,29 +8169,14 @@ RANDOMIZE
               )}
               {activeEffects.includes('wave-distortion') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Wave</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="5"
-                        max="100"
-                        value={waveDistortionStrength}
-                        onChange={(e) => setWaveDistortionStrength(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="100"
-                        value={waveDistortionStrength}
-                        onChange={(e) => setWaveDistortionStrength(Number(e.target.value))}
-                        className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Wave</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                    )}
+                    <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Rotation:</label>
@@ -8566,11 +8219,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('bokeh') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Bokeh</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bokeh</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8640,11 +8294,12 @@ RANDOMIZE
               )}
               {activeEffects.includes('brightness') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Brightness</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 ? (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Brightness</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                    )}
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8670,11 +8325,11 @@ RANDOMIZE
               )}
               {activeEffects.includes('slit-scan') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Slit-Scan</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Direction:</label>
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 && (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Slit-Scan</span>
+                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Dir:</label>
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
@@ -8735,10 +8390,10 @@ RANDOMIZE
               )}
               {activeEffects.includes('dither') && (
                 <>
-                  {isMultiFxMode && activeEffects.length > 1 && (
-                    <div className="text-xs font-semibold text-purple-300 mt-1 mb-0.5">Dither</div>
-                  )}
-                  <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1 mt-1">
+                    {isMultiFxMode && activeEffects.length > 1 && (
+                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dither</span>
+                    )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-1 flex-1">
                       <button
