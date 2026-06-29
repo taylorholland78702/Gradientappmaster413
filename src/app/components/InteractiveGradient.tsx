@@ -8861,7 +8861,7 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex-1 flex items-center justify-between"
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
             title="Load Audio File"
           >
             <span>Audio</span>
@@ -8869,55 +8869,51 @@ RANDOMIZE
           </button>
           <button
             onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-between"
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
             title="Audio Controls"
           >
-            <SlidersHorizontal className="w-8 h-4" />
+            <SlidersHorizontal className="w-6 h-4" />
             <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
           </button>
-          <div className="flex flex-col gap-0.5">
+
+          {/* Mic button + device chevron */}
+          <div className="flex flex-1 rounded-lg overflow-hidden">
             <button
-              onClick={() => {
-                if (isMicActive) {
-                  stopMicVisualization();
-                } else {
-                  startMicVisualization(selectedAudioDeviceId);
-                }
-              }}
-              className={`w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
-                isMicActive
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
+              onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
+              className={`flex-1 px-1.5 py-1.5 text-xs transition-all font-semibold shadow-lg flex items-center justify-center ${
+                isMicActive ? 'bg-purple-500 text-white' : 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
               }`}
               title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
             >
               {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
             </button>
+            {audioInputDevices.length > 0 && (
+              <div className="relative">
+                <select
+                  value={selectedAudioDeviceId}
+                  onChange={(e) => {
+                    setSelectedAudioDeviceId(e.target.value);
+                    if (isMicActive) {
+                      stopMicVisualization();
+                      setTimeout(() => startMicVisualization(e.target.value), 100);
+                    }
+                  }}
+                  className={`h-full pl-1 pr-4 text-[10px] border-l border-white/10 focus:outline-none appearance-none cursor-pointer ${
+                    isMicActive ? 'bg-purple-600 text-white' : 'bg-[#2a2a4e] text-white'
+                  }`}
+                  style={{ width: '20px' }}
+                >
+                  {audioInputDevices.map(d => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3 h-3 text-white/60 absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Audio input device selector */}
-        {audioInputDevices.length > 0 && (
-          <div className="w-full mb-0.5">
-            <select
-              value={selectedAudioDeviceId}
-              onChange={(e) => {
-                setSelectedAudioDeviceId(e.target.value);
-                if (isMicActive) {
-                  stopMicVisualization();
-                  setTimeout(() => startMicVisualization(e.target.value), 100);
-                }
-              }}
-              className="w-full px-2 py-1 rounded-lg text-[10px] bg-[#2a2a4e] text-white border border-white/10 focus:outline-none focus:border-purple-500 truncate"
-            >
-              {audioInputDevices.map(d => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
 
         {isAudioControlsOpen && (
           <div className="w-full bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
