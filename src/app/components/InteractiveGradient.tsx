@@ -2933,19 +2933,20 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const burstCount = radialBurstCount;
         const burstScale = 1 / zoom;
-        const burstRadius = fitRadius * (radialBurstSize * 0.01);
+        const sizeScale = radialBurstSize / 100;
+        const burstRadius = fitRadius * 0.7;
         // Audio reactivity: bass affects burst spread
-        const audioBurstSpread = (isAudioEnabled && isAudioReactive) 
+        const audioBurstSpread = (isAudioEnabled && isAudioReactive)
           ? audioGradientParam * 100 // Up to 100 extra spread
           : 0;
         const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
-        
+
         for (let i = 0; i < burstCount; i++) {
           const burstAngle = (i * 360 / burstCount + gradientAngle) * DEG_TO_RAD;
-          const offsetDist = fitRadius * spreadFactor * burstScale;
+          const offsetDist = fitRadius * spreadFactor * burstScale * sizeScale;
           const burstX = centerX + Math.cos(burstAngle) * offsetDist;
           const burstY = centerY + Math.sin(burstAngle) * offsetDist;
-          const burstRadiusValue = Math.max(0, burstRadius * burstScale);
+          const burstRadiusValue = Math.max(0, burstRadius * burstScale * sizeScale);
           const burstGrad = ctx.createRadialGradient(burstX, burstY, 0, burstX, burstY, burstRadiusValue);
           const burstColor = gradientColors[i % gradientColors.length];
           if (!burstColor) continue;
