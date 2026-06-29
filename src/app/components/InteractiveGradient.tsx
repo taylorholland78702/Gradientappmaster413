@@ -4743,11 +4743,11 @@ export function InteractiveGradient() {
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
           background: isPanelLight
-            ? 'rgba(245,245,250,0.92)'
+            ? 'rgba(255,255,255,0.45)'
             : 'rgba(18,20,30,0.88)',
-          backdropFilter: 'blur(20px)',
+          backdropFilter: isPanelLight ? 'blur(40px) saturate(180%)' : 'blur(20px)',
           boxShadow: isPanelLight
-            ? '0 4px 32px rgba(0,0,0,0.15)'
+            ? '0 8px 40px rgba(0,0,0,0.12), inset 0 1.5px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(255,255,255,0.3)'
             : '0 4px 32px rgba(0,0,0,0.5)',
         }}
         className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/15'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
