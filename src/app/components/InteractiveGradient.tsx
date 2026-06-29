@@ -272,7 +272,8 @@ export function InteractiveGradient() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Undo state - store previous settings for one-level undo
-  const [previousState, setPreviousState] = useState<any>(null);
+  const undoStackRef = useRef<any[]>([]);
+  const undoIndexRef = useRef(-1);
 
   // Track manual zoom interaction
   const lastManualZoomTime = useRef<number>(0);
@@ -716,7 +717,7 @@ export function InteractiveGradient() {
 
   // Save current state for undo (defined early for use in other functions)
   const saveCurrentState = useCallback(() => {
-    setPreviousState({
+    const snapshot = {
       gradientColors: [...gradientColors],
       targetColors: [...targetColors],
       gradientType,
@@ -818,8 +819,13 @@ export function InteractiveGradient() {
       resolutionMultiplier,
       baseAIColors: baseAIColors ? [...baseAIColors] : null,
       submittedAIPrompt,
-    });
-  }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom, 
+    };
+    // Push snapshot onto a 10-item stack, discarding any forward history
+    const stack = undoStackRef.current;
+    const newIndex = undoIndexRef.current + 1;
+    undoStackRef.current = [...stack.slice(0, newIndex), snapshot].slice(-10);
+    undoIndexRef.current = undoStackRef.current.length - 1;
+  }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
       activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, 
       chromaticOffset, fisheyeStrength, tileCount, grainIntensity, blurMotionAmount, 
       blurMotionDirection, blurGaussianAmount, blurRadialAmount, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, 
@@ -917,117 +923,118 @@ export function InteractiveGradient() {
     }
   }, [saveCurrentState]);
 
-  // Undo to previous state
+  // Undo to previous state (up to 10 levels)
   const undoLastChange = useCallback(() => {
-    if (!previousState) return;
-    
-    // Ensure colors are valid and match in length
-    const colors = previousState.gradientColors || DEFAULT_COLORS;
-    const targets = previousState.targetColors || colors;
+    if (undoIndexRef.current < 0) return;
+    const snapshot = undoStackRef.current[undoIndexRef.current];
+    undoIndexRef.current -= 1;
+    if (!snapshot) return;
+
+    const colors = snapshot.gradientColors || DEFAULT_COLORS;
+    const targets = snapshot.targetColors || colors;
     setGradientColors(colors);
     setTargetColors(targets);
-    setGradientType(previousState.gradientType);
-    setGradientAngle(previousState.gradientAngle);
-    setTargetAngle(previousState.targetAngle);
-    setZoom(previousState.zoom);
-    setTargetZoom(previousState.targetZoom);
-    setActiveEffects(previousState.activeEffects);
-    setColorPins(previousState.colorPins);
-    setKaleidoscopeSegments(previousState.kaleidoscopeSegments);
-    setTwistAmount(previousState.twistAmount);
-    setPixelSize(previousState.pixelSize);
-    setTriangleSize(previousState.triangleSize);
-    setChromaticOffset(previousState.chromaticOffset);
-    setFisheyeStrength(previousState.fisheyeStrength);
-    setTileCount(previousState.tileCount);
-    setGrainIntensity(previousState.grainIntensity);
-    setBlurMotionAmount(previousState.blurMotionAmount);
-    setBlurMotionDirection(previousState.blurMotionDirection);
-    setBlurGaussianAmount(previousState.blurGaussianAmount);
-    setBlurRadialAmount(previousState.blurRadialAmount);
-    setBlurType(previousState.blurType);
-    setPosterizeLevels(previousState.posterizeLevels);
-    setHalftoneSize(previousState.halftoneSize);
-    setHalftoneVariation(previousState.halftoneVariation);
-    setHalftoneMove(previousState.halftoneMove);
-    setHalftoneMoveSpeed(previousState.halftoneMoveSpeed);
-    setVignetteStrength(previousState.vignetteStrength);
-    setColorShiftHue(previousState.colorShiftHue);
-    setBulgeStrength(previousState.bulgeStrength);
-    setCharcoalIntensity(previousState.charcoalIntensity);
-    setColorBurnIntensity(previousState.colorBurnIntensity);
-    setColorDodgeIntensity(previousState.colorDodgeIntensity);
-    setDigitalNoiseIntensity(previousState.digitalNoiseIntensity);
-    setDuotoneIntensity(previousState.duotoneIntensity);
-    setDuotoneColor1(previousState.duotoneColor1);
-    setDuotoneColor2(previousState.duotoneColor2);
-    setDustIntensity(previousState.dustIntensity);
-    setDustCrackleIntensity(previousState.dustCrackleIntensity);
-    setGridSize(previousState.gridSize);
-    setHexGridSize(previousState.hexGridSize);
-    setLightLeakIntensity(previousState.lightLeakIntensity);
-    setLensFlareIntensity(previousState.lensFlareIntensity);
-    setLensFlareX(previousState.lensFlareX);
-    setLensFlareY(previousState.lensFlareY);
-    setLensFlareSize(previousState.lensFlareSize);
-    setLinesCount(previousState.linesCount);
-    setLinesAngle(previousState.linesAngle);
-    setLinesThickness(previousState.linesThickness);
-    setLiquifyStrength(previousState.liquifyStrength);
-    setPinchStrength(previousState.pinchStrength);
-    setScanLineSize(previousState.scanLineSize);
-    setSepiaIntensity(previousState.sepiaIntensity);
-    setSolarizeThreshold(previousState.solarizeThreshold);
-    setTriGridSize(previousState.triGridSize);
-    setGridSides(previousState.gridSides);
-    setTritoneIntensity(previousState.tritoneIntensity);
-    setTritoneColor1(previousState.tritoneColor1);
-    setTritoneColor2(previousState.tritoneColor2);
-    setTritoneColor3(previousState.tritoneColor3);
-    setVhsGlitchIntensity(previousState.vhsGlitchIntensity);
-    setGridRows(previousState.gridRows);
-    setGridColumns(previousState.gridColumns);
-    setPolygonSides(previousState.polygonSides);
-    setPolygon2Sides(previousState.polygon2Sides);
-    setWaveDistortionStrength(previousState.waveDistortionStrength);
-    setSpiralTightness(previousState.spiralTightness);
-    setSpiralRotations(previousState.spiralRotations);
-    setSpiralThickness(previousState.spiralThickness);
-    setSpiralZoom(previousState.spiralZoom);
-    setShapesSides(previousState.shapesSides);
-    setShapesCount(previousState.shapesCount);
-    setConcentricRingWidth(previousState.concentricRingWidth);
-    setConcentricRingCount(previousState.concentricRingCount);
-    setWaveAmplitude(previousState.waveAmplitude);
-    setWaveFrequency(previousState.waveFrequency);
-    setWaveNumber(previousState.waveNumber || 3);
-    setWaveRotation(previousState.waveRotation || 0);
-    setMeshGridSize(previousState.meshGridSize);
-    setNoiseScale(previousState.noiseScale);
-    setNoiseOctaves(previousState.noiseOctaves);
-    setNoiseDirection(previousState.noiseDirection || 0);
-    setPlasmaSpeed(previousState.plasmaSpeed);
-    setPlasmaComplexity(previousState.plasmaComplexity);
-    setRadialBurstCount(previousState.radialBurstCount);
-    setRadialBurstSpread(previousState.radialBurstSpread);
-    setConicalSpiralTurns(previousState.conicalSpiralTurns);
-    setConicalSpiralTightness(previousState.conicalSpiralTightness);
-    setWindmillBlades(previousState.windmillBlades);
-    setWindmillRotation(previousState.windmillRotation);
-    setGridRotation(previousState.gridRotation);
-    setShapesRotation(previousState.shapesRotation || 0);
-    setAngleStartOffset(previousState.angleStartOffset);
-    setAngleCenterX(previousState.angleCenterX);
-    setAngleCenterY(previousState.angleCenterY);
-    setIridescentAngle(previousState.iridescentAngle);
-    setIridescentIntensity(previousState.iridescentIntensity);
-    setIridescentScale(previousState.iridescentScale);
-    setResolutionMultiplier(previousState.resolutionMultiplier || 1);
-    setBaseAIColors(previousState.baseAIColors);
-    setSubmittedAIPrompt(previousState.submittedAIPrompt);
+    setGradientType(snapshot.gradientType);
+    setGradientAngle(snapshot.gradientAngle);
+    setTargetAngle(snapshot.targetAngle);
+    setZoom(snapshot.zoom);
+    setTargetZoom(snapshot.targetZoom);
+    setActiveEffects(snapshot.activeEffects);
+    setColorPins(snapshot.colorPins);
+    setKaleidoscopeSegments(snapshot.kaleidoscopeSegments);
+    setTwistAmount(snapshot.twistAmount);
+    setPixelSize(snapshot.pixelSize);
+    setTriangleSize(snapshot.triangleSize);
+    setChromaticOffset(snapshot.chromaticOffset);
+    setFisheyeStrength(snapshot.fisheyeStrength);
+    setTileCount(snapshot.tileCount);
+    setGrainIntensity(snapshot.grainIntensity);
+    setBlurMotionAmount(snapshot.blurMotionAmount);
+    setBlurMotionDirection(snapshot.blurMotionDirection);
+    setBlurGaussianAmount(snapshot.blurGaussianAmount);
+    setBlurRadialAmount(snapshot.blurRadialAmount);
+    setBlurType(snapshot.blurType);
+    setPosterizeLevels(snapshot.posterizeLevels);
+    setHalftoneSize(snapshot.halftoneSize);
+    setHalftoneVariation(snapshot.halftoneVariation);
+    setHalftoneMove(snapshot.halftoneMove);
+    setHalftoneMoveSpeed(snapshot.halftoneMoveSpeed);
+    setVignetteStrength(snapshot.vignetteStrength);
+    setColorShiftHue(snapshot.colorShiftHue);
+    setBulgeStrength(snapshot.bulgeStrength);
+    setCharcoalIntensity(snapshot.charcoalIntensity);
+    setColorBurnIntensity(snapshot.colorBurnIntensity);
+    setColorDodgeIntensity(snapshot.colorDodgeIntensity);
+    setDigitalNoiseIntensity(snapshot.digitalNoiseIntensity);
+    setDuotoneIntensity(snapshot.duotoneIntensity);
+    setDuotoneColor1(snapshot.duotoneColor1);
+    setDuotoneColor2(snapshot.duotoneColor2);
+    setDustIntensity(snapshot.dustIntensity);
+    setDustCrackleIntensity(snapshot.dustCrackleIntensity);
+    setGridSize(snapshot.gridSize);
+    setHexGridSize(snapshot.hexGridSize);
+    setLightLeakIntensity(snapshot.lightLeakIntensity);
+    setLensFlareIntensity(snapshot.lensFlareIntensity);
+    setLensFlareX(snapshot.lensFlareX);
+    setLensFlareY(snapshot.lensFlareY);
+    setLensFlareSize(snapshot.lensFlareSize);
+    setLinesCount(snapshot.linesCount);
+    setLinesAngle(snapshot.linesAngle);
+    setLinesThickness(snapshot.linesThickness);
+    setLiquifyStrength(snapshot.liquifyStrength);
+    setPinchStrength(snapshot.pinchStrength);
+    setScanLineSize(snapshot.scanLineSize);
+    setSepiaIntensity(snapshot.sepiaIntensity);
+    setSolarizeThreshold(snapshot.solarizeThreshold);
+    setTriGridSize(snapshot.triGridSize);
+    setGridSides(snapshot.gridSides);
+    setTritoneIntensity(snapshot.tritoneIntensity);
+    setTritoneColor1(snapshot.tritoneColor1);
+    setTritoneColor2(snapshot.tritoneColor2);
+    setTritoneColor3(snapshot.tritoneColor3);
+    setVhsGlitchIntensity(snapshot.vhsGlitchIntensity);
+    setGridRows(snapshot.gridRows);
+    setGridColumns(snapshot.gridColumns);
+    setPolygonSides(snapshot.polygonSides);
+    setPolygon2Sides(snapshot.polygon2Sides);
+    setWaveDistortionStrength(snapshot.waveDistortionStrength);
+    setSpiralTightness(snapshot.spiralTightness);
+    setSpiralRotations(snapshot.spiralRotations);
+    setSpiralThickness(snapshot.spiralThickness);
+    setSpiralZoom(snapshot.spiralZoom);
+    setShapesSides(snapshot.shapesSides);
+    setShapesCount(snapshot.shapesCount);
+    setConcentricRingWidth(snapshot.concentricRingWidth);
+    setConcentricRingCount(snapshot.concentricRingCount);
+    setWaveAmplitude(snapshot.waveAmplitude);
+    setWaveFrequency(snapshot.waveFrequency);
+    setWaveNumber(snapshot.waveNumber || 3);
+    setWaveRotation(snapshot.waveRotation || 0);
+    setMeshGridSize(snapshot.meshGridSize);
+    setNoiseScale(snapshot.noiseScale);
+    setNoiseOctaves(snapshot.noiseOctaves);
+    setNoiseDirection(snapshot.noiseDirection || 0);
+    setPlasmaSpeed(snapshot.plasmaSpeed);
+    setPlasmaComplexity(snapshot.plasmaComplexity);
+    setRadialBurstCount(snapshot.radialBurstCount);
+    setRadialBurstSpread(snapshot.radialBurstSpread);
+    setConicalSpiralTurns(snapshot.conicalSpiralTurns);
+    setConicalSpiralTightness(snapshot.conicalSpiralTightness);
+    setWindmillBlades(snapshot.windmillBlades);
+    setWindmillRotation(snapshot.windmillRotation);
+    setGridRotation(snapshot.gridRotation);
+    setShapesRotation(snapshot.shapesRotation || 0);
+    setAngleStartOffset(snapshot.angleStartOffset);
+    setAngleCenterX(snapshot.angleCenterX);
+    setAngleCenterY(snapshot.angleCenterY);
+    setIridescentAngle(snapshot.iridescentAngle);
+    setIridescentIntensity(snapshot.iridescentIntensity);
+    setIridescentScale(snapshot.iridescentScale);
+    setResolutionMultiplier(snapshot.resolutionMultiplier || 1);
+    setBaseAIColors(snapshot.baseAIColors);
+    setSubmittedAIPrompt(snapshot.submittedAIPrompt);
 
-    setPreviousState(null); // Clear undo after using it
-  }, [previousState]);
+  }, []);
 
   // Keyboard shortcuts - Cmd/Ctrl+Z for undo
   useEffect(() => {
@@ -4735,10 +4742,10 @@ RANDOMIZE
           </button>
           <button
             onClick={undoLastChange}
-            disabled={!previousState}
+            disabled={undoIndexRef.current < 0}
             className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
-              previousState 
-                ? 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]' 
+              undoIndexRef.current >= 0
+                ? 'bg-[#2a2a4e] text-white hover:bg-[#3a3a5e]'
                 : 'bg-[#1a1a2e] text-white/30 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
