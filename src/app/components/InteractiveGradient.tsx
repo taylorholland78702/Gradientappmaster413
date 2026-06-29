@@ -423,17 +423,30 @@ export function InteractiveGradient() {
   const initAudio = (audioElement: HTMLAudioElement) => initAudioContext(audioElement, true);
   const initMicAudio = (stream: MediaStream) => initAudioContext(stream, false);
 
-  // Sync --slider-pct CSS var on all range inputs so the fill gradient tracks the thumb
+  // Sync --slider-pct CSS var so the purple-pink fill tracks the thumb position
   useEffect(() => {
     const update = (el: HTMLInputElement) => {
-      const pct = ((Number(el.value) - Number(el.min)) / (Number(el.max) - Number(el.min))) * 100;
-      el.style.setProperty('--slider-pct', `${pct}%`);
+      const min = Number(el.min) || 0;
+      const max = Number(el.max) || 100;
+      const pct = ((Number(el.value) - min) / (max - min)) * 100;
+      el.style.setProperty('--slider-pct', `${Math.max(0, Math.min(100, pct))}%`);
     };
-    const handler = (e: Event) => update(e.target as HTMLInputElement);
-    document.addEventListener('input', handler);
-    // Initialise existing sliders on mount
-    document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(update);
-    return () => document.removeEventListener('input', handler);
+    const initAll = () =>
+      document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(update);
+
+    // Update on every input event
+    const onInput = (e: Event) => { if ((e.target as HTMLElement).matches('input[type="range"]')) update(e.target as HTMLInputElement); };
+    document.addEventListener('input', onInput);
+
+    // Watch for new sliders added to the DOM (conditional renders / dropdowns opening)
+    const observer = new MutationObserver(() => initAll());
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    initAll();
+    return () => {
+      document.removeEventListener('input', onInput);
+      observer.disconnect();
+    };
   }, []);
 
   // Shape BEAT: pulse zoom/scale on every detected beat
