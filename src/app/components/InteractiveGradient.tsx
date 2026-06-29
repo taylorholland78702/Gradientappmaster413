@@ -2253,11 +2253,12 @@ export function InteractiveGradient() {
 
       case 'angle':
         // Save context and apply zoom transformation
+        // Clamp to >= 1 so audio pulses never shrink below full canvas coverage
         ctx.save();
         const conicCenterX = (displayWidth * angleCenterX) / 100;
         const conicCenterY = (displayHeight * angleCenterY) / 100;
         ctx.translate(conicCenterX, conicCenterY);
-        ctx.scale(zoom, zoom);
+        ctx.scale(Math.max(1, zoom), Math.max(1, zoom));
         ctx.translate(-conicCenterX, -conicCenterY);
         const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180;
         gradient = ctx.createConicGradient(conicStartAngle, conicCenterX, conicCenterY);
