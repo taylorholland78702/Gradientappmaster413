@@ -8859,23 +8859,6 @@ RANDOMIZE
         
         {/* Audiovisuals Section */}
         <div className="w-full mb-0.5 flex gap-[3.5px]">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
-            title="Load Audio File"
-          >
-            <span>Audio</span>
-            <Plus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
-            title="Audio Controls"
-          >
-            <SlidersHorizontal className="w-6 h-4" />
-            <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
-          </button>
-
           {/* Mic button + device chevron */}
           <div className="flex flex-1 rounded-lg overflow-hidden">
             <button
@@ -8913,6 +8896,23 @@ RANDOMIZE
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
+            title="Load Audio File"
+          >
+            <span>Audio</span>
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center gap-1"
+            title="Audio Controls"
+          >
+            <SlidersHorizontal className="w-6 h-4" />
+            <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
+          </button>
         </div>
 
         {isAudioControlsOpen && (
