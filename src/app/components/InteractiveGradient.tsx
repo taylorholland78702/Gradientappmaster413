@@ -232,6 +232,7 @@ export function InteractiveGradient() {
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
   const [radialBurstCount, setRadialBurstCount] = useState(6);
   const [radialBurstSpread, setRadialBurstSpread] = useState(30);
+  const [radialBurstSize, setRadialBurstSize] = useState(70);
   
   // New dither, slit-scan, and diffusion effect parameters
   const [ditherType, setDitherType] = useState<'bayer' | 'floyd-steinberg'>('bayer');
@@ -2932,7 +2933,7 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const burstCount = radialBurstCount;
         const burstScale = 1 / zoom;
-        const burstRadius = fitRadius * 0.7;
+        const burstRadius = fitRadius * (radialBurstSize * 0.01);
         // Audio reactivity: bass affects burst spread
         const audioBurstSpread = (isAudioEnabled && isAudioReactive) 
           ? audioGradientParam * 100 // Up to 100 extra spread
@@ -5818,7 +5819,7 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-2">
               <label className="text-xs text-white">Spread:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -5835,6 +5836,27 @@ export function InteractiveGradient() {
                   max="100"
                   value={radialBurstSpread}
                   onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
+                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <label className="text-xs text-white">Size:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="10"
+                  max="200"
+                  value={radialBurstSize}
+                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="10"
+                  max="200"
+                  value={radialBurstSize}
+                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
                   className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
                 />
               </div>
