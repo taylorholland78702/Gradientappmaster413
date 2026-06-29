@@ -227,8 +227,8 @@ export function InteractiveGradient() {
   const [duotoneColor1, setDuotoneColor1] = useState('#000033'); // Dark blue
   const [duotoneColor2, setDuotoneColor2] = useState('#FF6B35'); // Orange
   const [vhsGlitchIntensity, setVhsGlitchIntensity] = useState(0.5);
-  const [gridRows, setGridRows] = useState(5);
-  const [gridColumns, setGridColumns] = useState(5);
+  const [gridRows, setGridRows] = useState(20);
+  const [gridColumns, setGridColumns] = useState(3);
   const [gridRotation, setGridRotation] = useState(0);
   const [gridRotationDirection, setGridRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
   const [shapesRotation, setShapesRotation] = useState(0);
