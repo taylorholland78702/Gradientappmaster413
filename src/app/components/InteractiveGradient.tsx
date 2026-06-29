@@ -299,6 +299,7 @@ export function InteractiveGradient() {
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(0);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
   const [radarFadeLength, setRadarFadeLength] = useState(90);
+  const [fadeSpeed, setFadeSpeed] = useState(1);
   const [radarSpeed, setRadarSpeed] = useState(2);
   const [flowerCircles, setFlowerCircles] = useState(7);
   const [flowerScale, setFlowerScale] = useState(1);
@@ -2899,7 +2900,7 @@ export function InteractiveGradient() {
         
         // Use continuous gradientAngle without modulo to avoid jumps
         const totalColors = gradientColors.length;
-        const normalizedAngle = gradientAngle / 360; // Slowed down even more (1 full color cycle per 360*6 degrees = 2160 degrees)
+        const normalizedAngle = (gradientAngle * fadeSpeed) / 360;
         const exactPosition = normalizedAngle % totalColors;
         const currentColorIndex = Math.floor(exactPosition);
         const nextColorIndex = (currentColorIndex + 1) % totalColors;
@@ -4270,7 +4271,7 @@ export function InteractiveGradient() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, polarAngle, polarRadius, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }, [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, polarAngle, polarRadius, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   const handleInteraction = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return;
@@ -6222,6 +6223,35 @@ RANDOMIZE
           </div>
         )}
         
+        {/* Fade Controls */}
+        {gradientType === 'fade' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Speed:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0.1"
+                  max="5"
+                  step="0.1"
+                  value={fadeSpeed}
+                  onChange={(e) => setFadeSpeed(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="0.1"
+                  max="5"
+                  step="0.1"
+                  value={fadeSpeed}
+                  onChange={(e) => setFadeSpeed(Number(e.target.value))}
+                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Waves Controls */}
         {gradientType === 'waves' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-[#2a2a4e] rounded-lg">
