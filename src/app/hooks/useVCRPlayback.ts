@@ -27,6 +27,10 @@ export interface UseVCRPlaybackParams {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   setIsAudioEnabled: (v: boolean) => void;
   audioRef: RefObject<HTMLAudioElement | null>;
+  audioContextRef: RefObject<AudioContext | null>;
+  analyserRef: RefObject<AnalyserNode | null>;
+  streamRef: RefObject<MediaStream | null>;
+  audioFile: string | null;
 }
 
 function getBestMimeType(): string {
@@ -57,6 +61,10 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     canvasRef,
     setIsAudioEnabled,
     audioRef,
+    audioContextRef,
+    analyserRef,
+    streamRef,
+    audioFile,
   } = params;
 
   // State
@@ -137,12 +145,32 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const mimeType = getBestMimeType();
     recordedChunksRef.current = [];
 
-    let stream: MediaStream;
+    let videoStream: MediaStream;
     try {
-      stream = canvas.captureStream(30);
+      videoStream = canvas.captureStream(30);
     } catch (err) {
       console.error('captureStream failed:', err);
       return;
+    }
+
+    // Try to attach audio tracks
+    let stream = videoStream;
+    try {
+      let audioTracks: MediaStreamTrack[] = [];
+      if (audioFile && audioContextRef.current && analyserRef.current) {
+        // File audio: tap the analyser output via MediaStreamDestination
+        const dest = audioContextRef.current.createMediaStreamDestination();
+        analyserRef.current.connect(dest);
+        audioTracks = dest.stream.getAudioTracks();
+      } else if (streamRef.current) {
+        // Mic: use the live mic stream tracks directly
+        audioTracks = streamRef.current.getAudioTracks();
+      }
+      if (audioTracks.length > 0) {
+        stream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+      }
+    } catch (err) {
+      console.warn('Audio capture failed, recording video only:', err);
     }
 
     let mediaRecorder: MediaRecorder;
@@ -175,7 +203,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     mediaRecorderRef.current = mediaRecorder;
     isRecordingRef.current = true;
     setIsRecording(true);
-  }, [canvasRef, setIsRecording]);
+  }, [canvasRef, setIsRecording, audioFile, audioContextRef, analyserRef, streamRef]);
 
   const stopRecording = useCallback(() => {
     const mediaRecorder = mediaRecorderRef.current;

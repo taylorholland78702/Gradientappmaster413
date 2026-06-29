@@ -368,6 +368,8 @@ export function InteractiveGradient() {
     audioReactiveColors, setAudioReactiveColors,
     audioRef,
     analyserRef,
+    audioContextRef,
+    streamRef,
     handleFileUpload,
     startMicVisualization,
     stopMicVisualization,
@@ -390,6 +392,10 @@ export function InteractiveGradient() {
     canvasRef,
     setIsAudioEnabled,
     audioRef,
+    audioContextRef,
+    analyserRef,
+    streamRef,
+    audioFile,
   });
 
   const {
