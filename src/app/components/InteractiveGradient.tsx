@@ -20,7 +20,7 @@
  * - All zoom methods prevent browser default behavior for smooth experience
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera } from 'lucide-react';
 
 interface ColorRGB {
   r: number;
@@ -5367,6 +5367,14 @@ RANDOMIZE
         {/* VCR Controls */}
         <div className="flex items-center justify-between gap-0.5 bg-[#2a2a4e] rounded-lg p-0.5 mb-0.5 w-full">
             <button
+              onClick={exportAsPNG}
+              className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
+              title="Save PNG"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+
+            <button
               onClick={toggleVCRRecording}
               className="p-1 rounded hover:bg-[#3a3a5e] text-white transition-all"
               title="Record Video"
@@ -5412,7 +5420,7 @@ RANDOMIZE
               <Rewind className="w-4 h-4" />
             </button>
             
-            <span className="text-xs text-white px-0.5 min-w-[2.5rem] text-center">{vcrPlaybackSpeed}x</span>
+            <span className="text-xs text-white text-center">{vcrPlaybackSpeed}x</span>
             
             <button
               onClick={() => {
@@ -8839,24 +8847,16 @@ RANDOMIZE
             </div>
         )}
         
-        {/* Export and Presets Controls */}
-        <div className="flex gap-[3.5px] w-full mb-0.5">
-          <button
-            onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex-1 flex items-center justify-between font-semibold"
-          >
-            <span>Export</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isExportDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-          
+        {/* Presets Controls */}
+        <div className="flex gap-[3.5px] w-full mb-0.5 justify-end relative">
           <button
             onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex-1 flex items-center justify-between font-semibold"
+            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] flex items-center gap-1 font-semibold"
           >
             <span>Presets</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
-          
+
           <button
             onClick={() => setIsPresetModalOpen(true)}
             className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-[#2a2a4e] text-white hover:bg-[#3a3a5e] font-semibold shadow-lg flex items-center justify-center"
@@ -8864,44 +8864,10 @@ RANDOMIZE
           >
             <Plus className="w-4 h-4" />
           </button>
-        </div>
-        
-        {/* Export Dropdown Content */}
-        {isExportDropdownOpen && (
-          <div className="w-full bg-[#2a2a4e] rounded-lg overflow-hidden mb-0.5">
-            <button
-              onClick={() => {
-                exportGradient();
-                setIsExportDropdownOpen(false);
-              }}
-              className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
-            >
-              JPG
-            </button>
-            <button
-              onClick={() => {
-                exportAsPNG();
-                setIsExportDropdownOpen(false);
-              }}
-              className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
-            >
-              PNG
-            </button>
-            <button
-              onClick={() => {
-                exportAsVideo();
-                setIsExportDropdownOpen(false);
-              }}
-              className="px-4 py-2 text-xs text-white hover:bg-[#3a3a5e] w-full text-left transition-colors font-semibold"
-            >
-              Video
-            </button>
-                      </div>
-        )}
 
         {/* Presets Dropdown Content */}
         {isPresetsDropdownOpen && (
-          <div className="w-full bg-[#2a2a4e] rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
+          <div className="absolute bottom-full right-0 mb-1 w-48 bg-[#2a2a4e] rounded-lg overflow-hidden max-h-[300px] overflow-y-auto z-50">
             {savedPresets.length === 0 ? (
               <div className="px-4 py-2 text-xs text-white/50 italic">
                 No saved presets
@@ -8933,7 +8899,8 @@ RANDOMIZE
             )}
           </div>
         )}
-        
+        </div>
+
         {/* Audio Waveform Display - shown when audio file is loaded */}
         {audioFileName && waveformData.length > 0 && (
           <div className="w-full mb-0.5 bg-black/40 backdrop-blur-sm rounded-lg px-1.5 py-3">
