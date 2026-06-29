@@ -4682,8 +4682,8 @@ export function InteractiveGradient() {
     try {
       // Create offscreen canvas at 1080p for high-quality recording
       const recordCanvas = document.createElement('canvas');
-      recordCanvas.width = 1920;
-      recordCanvas.height = 1080;
+      recordCanvas.width = 2560;
+      recordCanvas.height = 1440;
       const recordCtx = recordCanvas.getContext('2d');
       if (!recordCtx) return;
 
@@ -4701,37 +4701,37 @@ export function InteractiveGradient() {
         // H.264 in MP4 - best compatibility with QuickTime/Premiere
         options = { 
           mimeType: 'video/mp4;codecs=avc1',
-          videoBitsPerSecond: 15000000 // 15 Mbps for 1080p
+          videoBitsPerSecond: 25000000 // 25 Mbps for 2K
         };
         fileExtension = 'mp4';
       } else if (MediaRecorder.isTypeSupported('video/mp4')) {
         options = { 
           mimeType: 'video/mp4',
-          videoBitsPerSecond: 15000000
+          videoBitsPerSecond: 25000000
         };
         fileExtension = 'mp4';
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
         // H.264 in WebM container - works in some editors
         options = { 
           mimeType: 'video/webm;codecs=h264',
-          videoBitsPerSecond: 15000000
+          videoBitsPerSecond: 25000000
         };
         fileExtension = 'mp4'; // Can often be played as MP4
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
         options = { 
           mimeType: 'video/webm;codecs=vp9',
-          videoBitsPerSecond: 15000000
+          videoBitsPerSecond: 25000000
         };
         fileExtension = 'webm';
       } else if (MediaRecorder.isTypeSupported('video/webm')) {
         options = { 
           mimeType: 'video/webm',
-          videoBitsPerSecond: 15000000
+          videoBitsPerSecond: 25000000
         };
         fileExtension = 'webm';
       } else {
         options = { 
-          videoBitsPerSecond: 15000000
+          videoBitsPerSecond: 25000000
         };
         fileExtension = 'mp4';
       }
