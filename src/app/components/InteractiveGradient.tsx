@@ -4672,7 +4672,7 @@ export function InteractiveGradient() {
               ) : (
                 <div className="space-y-2">
                   {savedPresets.map((preset, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg p-3">
+                    <div key={index} className="flex items-center gap-2 bg-white/8 backdrop-blur-sm rounded-lg p-3">
                       <button
                         onClick={() => loadPreset(preset)}
                         className="flex-1 text-left text-sm text-black hover:text-purple-600 font-medium"
@@ -4701,7 +4701,7 @@ export function InteractiveGradient() {
                   setIsPresetModalOpen(false);
                   setPresetName('');
                 }}
-                className="px-4 py-2 rounded-lg text-sm bg-gray-300 text-black hover:bg-gray-400 transition-all"
+                className="px-4 py-2 rounded-lg text-sm bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
               >
                 Close
               </button>
@@ -4893,7 +4893,7 @@ RANDOMIZE
             </div>
 
             {isKeywordHelpOpen && (
-              <div className="mb-2 p-2 rounded bg-black/30 text-[10px] text-white/70 leading-relaxed">
+              <div className="mb-2 p-2 rounded bg-white/5 border border-white/8 text-[10px] text-white/70 leading-relaxed">
                 <div className="font-bold text-white/90 mb-1">Themes</div>
                 <div className="mb-2 flex flex-wrap gap-1">
                   {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => {
@@ -5386,7 +5386,7 @@ RANDOMIZE
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'none'
                       ? 'bg-white text-black'
-                      : 'bg-black/30 text-white hover:bg-black/40'
+                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                   }`}
                 >
                   OFF
@@ -5396,7 +5396,7 @@ RANDOMIZE
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'clockwise'
                       ? 'bg-white text-black'
-                      : 'bg-black/30 text-white hover:bg-black/40'
+                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                   }`}
                 >
                   ⟳
@@ -5406,7 +5406,7 @@ RANDOMIZE
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'counterclockwise'
                       ? 'bg-white text-black'
-                      : 'bg-black/30 text-white hover:bg-black/40'
+                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                   }`}
                 >
                   ⟲
@@ -5828,7 +5828,7 @@ RANDOMIZE
         
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-black/30 backdrop-blur-sm rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
             <div className="text-xs text-white font-semibold mb-2">Voronoi Controls</div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Cell Count:</label>
@@ -5877,7 +5877,7 @@ RANDOMIZE
 
         {/* Radar Controls */}
         {gradientType === 'radar' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-black/30 backdrop-blur-sm rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
             <div className="text-xs text-white font-semibold mb-2">Radar Controls</div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Fade Length:</label>
@@ -5905,7 +5905,7 @@ RANDOMIZE
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-black/30 backdrop-blur-sm rounded-lg">
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
             <div className="text-xs text-white font-semibold mb-2">Flower Controls</div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Circles:</label>
@@ -6127,7 +6127,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Kaleidoscope</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Kaleidoscope</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Segments:</label>
                     )}
@@ -6156,7 +6156,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tile</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Tile</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Tiles:</label>
                     )}
@@ -6185,7 +6185,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ripple</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Ripple</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
                     )}
@@ -6236,7 +6236,7 @@ RANDOMIZE
               {activeEffects.includes('pixelate') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pixelate</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Pixelate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   )}
@@ -6247,7 +6247,7 @@ RANDOMIZE
               {activeEffects.includes('triangulate') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Triangulate</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Triangulate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   )}
@@ -6258,7 +6258,7 @@ RANDOMIZE
               {activeEffects.includes('chromatic') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Chromatic</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Chromatic</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Offset:</label>
                   )}
@@ -6269,7 +6269,7 @@ RANDOMIZE
               {activeEffects.includes('fisheye') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fisheye</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Fisheye</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   )}
@@ -6280,7 +6280,7 @@ RANDOMIZE
               {activeEffects.includes('bloom') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   )}
@@ -6291,7 +6291,7 @@ RANDOMIZE
               {activeEffects.includes('vignette') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Vignette</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Vignette</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   )}
@@ -6302,7 +6302,7 @@ RANDOMIZE
               {activeEffects.includes('color-shift') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shift</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Shift</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Hue:</label>
                   )}
@@ -6314,7 +6314,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grain</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Grain</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -6329,7 +6329,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'fine'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Fine
@@ -6339,7 +6339,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'medium'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Med
@@ -6349,7 +6349,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'coarse'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Coarse
@@ -6359,7 +6359,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'film'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Film
@@ -6372,7 +6372,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1 mb-1">
                     {activeEffects.length > 1 && (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Blur</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Blur</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
@@ -6381,7 +6381,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
                           blurType === 'gaussian'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Gaussian
@@ -6391,7 +6391,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
                           blurType === 'motion'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Motion
@@ -6506,7 +6506,7 @@ RANDOMIZE
               {activeEffects.includes('posterize') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Posterize</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Posterize</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Levels:</label>
                   )}
@@ -6518,7 +6518,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Halftone</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Halftone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
                     )}
@@ -6555,7 +6555,7 @@ RANDOMIZE
                       className={`px-2 py-1 text-xs rounded transition-all ${
                         halftoneMove
                           ? 'bg-blue-500 text-white'
-                          : 'bg-gray-700 text-white hover:bg-gray-600'
+                          : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                       }`}
                     >
                       {halftoneMove ? 'ON' : 'OFF'}
@@ -6566,7 +6566,7 @@ RANDOMIZE
               {activeEffects.includes('bulge') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bulge</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Bulge</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   )}
@@ -6577,7 +6577,7 @@ RANDOMIZE
               {activeEffects.includes('charcoal') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Saturate</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Saturate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   )}
@@ -6590,7 +6590,7 @@ RANDOMIZE
               {activeEffects.includes('crackle') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crackle</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Crackle</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   )}
@@ -6602,7 +6602,7 @@ RANDOMIZE
               {activeEffects.includes('crystallize') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crystallize</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Crystallize</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   )}
@@ -6614,7 +6614,7 @@ RANDOMIZE
               {activeEffects.includes('displacement') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Displace</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Displace</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   )}
@@ -6626,7 +6626,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Duotone</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Duotone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -6657,7 +6657,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dust</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Dust</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Dust:</label>
                     )}
@@ -6692,7 +6692,7 @@ RANDOMIZE
               {activeEffects.includes('fabric-weave') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fabric</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Fabric</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Scale:</label>
                   )}
@@ -6703,7 +6703,7 @@ RANDOMIZE
               {activeEffects.includes('gradient-map') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grad Map</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Grad Map</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   )}
@@ -6714,7 +6714,7 @@ RANDOMIZE
               {activeEffects.includes('grid-overlay') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid Over</span>
+                    <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Grid Over</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   )}
@@ -6726,7 +6726,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Grid</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Sides:</label>
                     )}
@@ -6845,7 +6845,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'none'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         OFF
@@ -6855,7 +6855,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'clockwise'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         ⟳
@@ -6865,7 +6865,7 @@ RANDOMIZE
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'counterclockwise'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         ⟲
@@ -6878,7 +6878,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Impressn</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Impressn</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Brush Size:</label>
                     )}
@@ -6907,7 +6907,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ink Wash</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Ink Wash</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -6938,7 +6938,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Lens Flare</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Lens Flare</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -7020,7 +7020,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Mosaic</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Mosaic</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
                     )}
@@ -7049,7 +7049,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Palette</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Palette</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
                     )}
@@ -7078,7 +7078,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Paper Tex</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Paper Tex</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -7109,7 +7109,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pastel</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Pastel</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -7143,7 +7143,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shatter</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Shatter</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
                     )}
@@ -7173,7 +7173,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Stipple</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Stipple</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
                     )}
@@ -7202,7 +7202,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Swirl</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Swirl</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                     )}
@@ -7233,7 +7233,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tri Grid</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Tri Grid</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
                     )}
@@ -7262,7 +7262,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tritone</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Tritone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -7313,7 +7313,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">VHS</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">VHS</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     )}
@@ -7344,7 +7344,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tape Hiss</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Tape Hiss</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Tape Hiss:</label>
                     )}
@@ -7375,7 +7375,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Wave</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Wave</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                     )}
@@ -7425,7 +7425,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bokeh</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Bokeh</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
                     )}
@@ -7500,7 +7500,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 ? (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Brightness</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Brightness</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Amount:</label>
                     )}
@@ -7531,7 +7531,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 && (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Slit-Scan</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Slit-Scan</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Dir:</label>
                     <div className="flex gap-1 flex-1">
@@ -7540,7 +7540,7 @@ RANDOMIZE
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'horizontal'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Horiz
@@ -7550,7 +7550,7 @@ RANDOMIZE
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'vertical'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Vert
@@ -7560,7 +7560,7 @@ RANDOMIZE
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'radial'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Radial
@@ -7596,7 +7596,7 @@ RANDOMIZE
                 <>
                   <div className="flex items-center gap-1 mt-1">
                     {activeEffects.length > 1 && (
-                      <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dither</span>
+                      <span className="text-[10px] font-semibold text-white/60 whitespace-nowrap shrink-0 w-[68px]">Dither</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-1 flex-1">
@@ -7605,7 +7605,7 @@ RANDOMIZE
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'bayer'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Bayer
@@ -7615,7 +7615,7 @@ RANDOMIZE
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'floyd-steinberg'
                             ? 'bg-white text-black'
-                            : 'bg-black/30 text-white hover:bg-black/40'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                         }`}
                       >
                         Floyd-Steinberg
