@@ -21,7 +21,7 @@ interface PresetsPanelProps {
   updatePreset: (index: number) => void;
 }
 
-export const PresetsPanel: React.FC<PresetsPanelProps> = ({
+const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   isPresetsDropdownOpen,
   savedPresets,
   renamingPresetIndex,
@@ -122,3 +122,5 @@ export const PresetsPanel: React.FC<PresetsPanelProps> = ({
     </>
   );
 };
+
+export const PresetsPanel = React.memo(PresetsPanelInner);

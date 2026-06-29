@@ -278,6 +278,7 @@ export function InteractiveGradient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const handleAudioFileClick = useCallback(() => fileInputRef.current?.click(), []);
   
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -7690,7 +7691,7 @@ RANDOMIZE
           setColorShiftHue={setColorShiftHue}
           startMicVisualization={startMicVisualization}
           stopMicVisualization={stopMicVisualization}
-          onAudioFileClick={() => fileInputRef.current?.click()}
+          onAudioFileClick={handleAudioFileClick}
         />
         
         {/* Presets Panel */}

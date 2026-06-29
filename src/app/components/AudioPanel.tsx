@@ -39,7 +39,7 @@ interface AudioPanelProps {
   onAudioFileClick: () => void;
 }
 
-export const AudioPanel: React.FC<AudioPanelProps> = ({
+const AudioPanelInner: React.FC<AudioPanelProps> = ({
   isMicActive,
   audioInputDevices,
   selectedAudioDeviceId,
@@ -244,3 +244,5 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({
     </>
   );
 };
+
+export const AudioPanel = React.memo(AudioPanelInner);

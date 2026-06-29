@@ -16,7 +16,7 @@ interface VCRControlsProps {
   exportAsPNG: () => void;
 }
 
-export const VCRControls: React.FC<VCRControlsProps> = ({
+const VCRControlsInner: React.FC<VCRControlsProps> = ({
   isRecording,
   isVCRPlaying,
   isAutoMode,
@@ -120,3 +120,5 @@ export const VCRControls: React.FC<VCRControlsProps> = ({
     </div>
   );
 };
+
+export const VCRControls = React.memo(VCRControlsInner);

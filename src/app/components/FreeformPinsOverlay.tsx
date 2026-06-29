@@ -22,7 +22,7 @@ interface FreeformPinsOverlayProps {
   onRadiusChange: (id: string, radius: number) => void;
 }
 
-export const FreeformPinsOverlay: React.FC<FreeformPinsOverlayProps> = ({
+const FreeformPinsOverlayInner: React.FC<FreeformPinsOverlayProps> = ({
   colorPins,
   selectedPinId,
   setSelectedPinId,
@@ -134,3 +134,5 @@ export const FreeformPinsOverlay: React.FC<FreeformPinsOverlayProps> = ({
     </div>
   );
 };
+
+export const FreeformPinsOverlay = React.memo(FreeformPinsOverlayInner);
