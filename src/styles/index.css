@@ -54,6 +54,59 @@
   filter: drop-shadow(0 0 1px rgba(0,0,0,0.6)) drop-shadow(0 0 2px rgba(0,0,0,0.3));
 }
 
+/* ── Light panel mode ── */
+.control-panel.panel-light,
+.control-panel.panel-light * {
+  color: rgba(0,0,0,0.82) !important;
+  text-shadow: none !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+.control-panel.panel-light svg {
+  filter: none !important;
+  color: rgba(0,0,0,0.7) !important;
+}
+/* Frosted glass elements → dark tint */
+.control-panel.panel-light [class*="bg-white"] {
+  background-color: rgba(0,0,0,0.06) !important;
+}
+/* Section bg containers */
+.control-panel.panel-light [class*="bg-white\/5"] {
+  background-color: rgba(0,0,0,0.03) !important;
+}
+/* Keep RANDOMIZE gradient */
+.control-panel.panel-light [class*="from-purple"] {
+  background-image: linear-gradient(to right, #9333ea, #ec4899, #facc15) !important;
+  color: white !important;
+}
+/* Active states (currently bg-white text-black) → invert to dark bg white text */
+.control-panel.panel-light .text-black {
+  background-color: rgba(0,0,0,0.82) !important;
+  color: white !important;
+}
+/* Hover states in light mode */
+.control-panel.panel-light button:not([class*="from-purple"]):hover {
+  background-color: rgba(0,0,0,0.1) !important;
+}
+/* Drag handle */
+.control-panel.panel-light .bg-white\/20 {
+  background-color: rgba(0,0,0,0.15) !important;
+}
+/* Slider track in light mode */
+.control-panel.panel-light input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0.6) 0%,
+    rgba(0,0,0,0.6) var(--slider-pct, 50%),
+    rgba(0,0,0,0.12) var(--slider-pct, 50%),
+    rgba(0,0,0,0.12) 100%
+  ) !important;
+  box-shadow: none !important;
+}
+.control-panel.panel-light input[type="range"]::-webkit-slider-thumb {
+  background: rgba(0,0,0,0.8) !important;
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.2) !important;
+}
+
 /* ── Universal slider reset ── */
 input[type="range"] {
   -webkit-appearance: none;

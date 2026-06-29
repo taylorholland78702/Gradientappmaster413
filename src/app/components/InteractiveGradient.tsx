@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera } from 'lucide-react';
+import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera, Sun, Moon } from 'lucide-react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -113,6 +113,7 @@ export function InteractiveGradient() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [isPanelLight, setIsPanelLight] = useState(false);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
@@ -4739,9 +4740,13 @@ export function InteractiveGradient() {
       
       {/* Main controls */}
       <div
-        style={{ background: 'rgba(10,10,15,0.82)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 32px rgba(0,0,0,0.5)' }}
-        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border border-white/10 rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
+        style={{
+          ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
+          background: isPanelLight ? 'rgba(245,245,250,0.92)' : 'rgba(10,10,15,0.82)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: isPanelLight ? '0 4px 32px rgba(0,0,0,0.15)' : '0 4px 32px rgba(0,0,0,0.5)',
+        }}
+        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/10'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* Drag handle */}
         <div
@@ -4768,7 +4773,7 @@ export function InteractiveGradient() {
           <div className="w-8 h-1 rounded-full bg-white/20"></div>
         </div>
 
-        {/* Top row with Eye, Randomize, and Refresh buttons */}
+        {/* Top row with Eye, Light/Dark, Randomize, and Refresh buttons */}
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsControlsVisible(false)}
@@ -4778,8 +4783,15 @@ export function InteractiveGradient() {
             <Eye className="w-4 h-4" />
           </button>
           <button
+            onClick={() => setIsPanelLight(v => !v)}
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            title={isPanelLight ? 'Switch to Dark Panel' : 'Switch to Light Panel'}
+          >
+            {isPanelLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          <button
             onClick={feelingLucky}
-            className="px-2 h-[32px] rounded-lg text-[13px] transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white font-semibold shadow-sm hover:shadow flex-1 flex items-center justify-center"
+            className="px-2 h-[32px] rounded-lg text-[11px] transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white font-semibold shadow-sm hover:shadow flex-1 flex items-center justify-center"
           >
 RANDOMIZE
           </button>
