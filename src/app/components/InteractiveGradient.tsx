@@ -113,7 +113,7 @@ export function InteractiveGradient() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
-  const [isPanelLight, setIsPanelLight] = useState(false);
+  const [isPanelLight, setIsPanelLight] = useState(true);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
