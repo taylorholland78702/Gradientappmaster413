@@ -4739,7 +4739,7 @@ export function InteractiveGradient() {
       
       {/* Main controls */}
       <div
-        style={{ background: 'rgba(10,10,15,0.72)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 32px rgba(0,0,0,0.45)' }}
+        style={{ background: 'rgba(10,10,15,0.82)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 32px rgba(0,0,0,0.5)' }}
         className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto border border-white/10 rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
       >

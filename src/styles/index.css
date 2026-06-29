@@ -41,14 +41,17 @@
   z-index: 10;
 }
 
-/* ── Control panel: subtle outline scaled to font size ── */
+/* ── Control panel: legibility on any background ── */
 .control-panel,
 .control-panel * {
-  text-shadow: 0 0 0.12em rgba(0,0,0,0.3);
+  text-shadow: 0 0 0.12em rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4);
 }
 .control-panel .text-black,
 .control-panel .text-black * {
   text-shadow: none;
+}
+.control-panel svg {
+  filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.9)) drop-shadow(0 0 3px rgba(0,0,0,0.5));
 }
 
 /* ── Universal slider reset ── */
@@ -73,6 +76,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     rgba(255,255,255,0.12) var(--slider-pct, 50%),
     rgba(255,255,255,0.12) 100%
   );
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
 }
 
 input[type="range"]::-moz-range-track {
@@ -97,8 +101,8 @@ input[type="range"]::-webkit-slider-thumb {
   background: #fff;
   margin-top: -5px;
   box-shadow:
-    0 0 0 2px rgba(255,255,255,0.3),
-    0 1px 3px rgba(0,0,0,0.4);
+    0 0 0 1.5px rgba(0,0,0,0.4),
+    0 1px 4px rgba(0,0,0,0.5);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
