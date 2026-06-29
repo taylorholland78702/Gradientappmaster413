@@ -98,7 +98,10 @@ export function InteractiveGradient() {
   const targetZoomRef = useRef<number>(1);
   const vcrPlaybackSpeedRef = useRef<number>(1);
   const isAutoModeRef = useRef<boolean>(false);
+  const isVCRPlayingRef = useRef<boolean>(false);
+  const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
+  const drawParamsDirtyRef = useRef(true); // true until first draw
   const lerpSyncFrameRef = useRef(0);
   
   // Freeform gradient pins
@@ -558,18 +561,22 @@ export function InteractiveGradient() {
   useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
   useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
   useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
+  useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
+  useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
   // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
+  // Skips the draw entirely when nothing is animating and values have converged.
   useEffect(() => {
     let rafId: number;
     const loop = () => {
       const spd = vcrPlaybackSpeedRef.current;
 
-      // Lerp colors directly in ref
+      // Lerp colors directly in ref, track max channel diff for convergence check
       const colors = gradientColorsRef.current;
       const targets = targetColorsRef.current;
       const colorSpd = 0.025 * spd;
+      let maxColorDiff = 0;
       for (let i = 0; i < colors.length; i++) {
         const c = colors[i];
         const t = targets[i];
@@ -578,14 +585,24 @@ export function InteractiveGradient() {
         const ng = c.g + (t.g - c.g) * colorSpd;
         const nb = c.b + (t.b - c.b) * colorSpd;
         colors[i] = (isNaN(nr) || isNaN(ng) || isNaN(nb)) ? t : { r: nr, g: ng, b: nb };
+        maxColorDiff = Math.max(maxColorDiff, Math.abs(t.r - nr), Math.abs(t.g - ng), Math.abs(t.b - nb));
       }
 
+      const angleDiff = Math.abs(targetAngleRef.current - gradientAngleRef.current);
       gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * (0.1 * spd);
+
       const zoomSpd = (isAutoModeRef.current ? 0.1 : 0.3) * spd;
+      const zoomDiff = Math.abs(targetZoomRef.current - zoomRef.current);
       zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
 
-      // Draw imperatively — no React reconciliation
-      drawRef.current();
+      // Skip draw when idle: nothing is actively animating and all values have settled
+      const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current;
+      const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
+
+      if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {
+        drawRef.current();
+        if (hasConverged && !isAnimating) drawParamsDirtyRef.current = false;
+      }
 
       // Sync back to state every 3 frames (~20fps) for undo snapshots and VCR recording
       lerpSyncFrameRef.current++;
@@ -2171,6 +2188,7 @@ export function InteractiveGradient() {
   // Draw gradient on canvas — stored imperatively in drawRef so the master RAF can call it
   // without triggering React reconciliation. Only re-assigned when non-animated params change.
   useEffect(() => {
+    drawParamsDirtyRef.current = true; // signal RAF to redraw with new params
     drawRef.current = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
