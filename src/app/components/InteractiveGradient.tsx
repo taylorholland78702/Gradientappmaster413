@@ -2130,6 +2130,32 @@ export function InteractiveGradient() {
 
   // VCR recording/playback effects are now in useVCRPlayback hook
 
+  // Collapse all drawing-relevant state into one memoized object so the drawing
+  // useEffect only does a single reference comparison per render instead of 150+.
+  const drawParams = useMemo(() => ({
+    resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects,
+    kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
+    tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
+    blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
+    halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength,
+    pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness,
+    dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
+    waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
+    lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity,
+    tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity,
+    digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize,
+    gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
+    spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
+    waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed,
+    plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion,
+    voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation,
+    iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
+    fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity,
+    bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
+    slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
+    audioEffectParam, audioColorShift,
+  }), [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+
   // Draw gradient on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -3236,6 +3262,7 @@ export function InteractiveGradient() {
       if (canvas.width === 0 || canvas.height === 0) {
         return;
       }
+      ctx.save();
       
       // Check if this is the first effect and audio reactivity is enabled
       const isFirstEffect = index === 0;
@@ -3256,7 +3283,7 @@ export function InteractiveGradient() {
         }
       }
       
-      switch (effectType) {
+      try { switch (effectType) {
         case 'kaleidoscope': {
           const tmp = document.createElement('canvas');
           tmp.width = displayWidth;
@@ -3950,7 +3977,11 @@ export function InteractiveGradient() {
             ctx.putImageData(out, 0, 0);
           }
           break;
+      } } catch (err) {
+        console.error(`Effect "${effectType}" failed:`, err);
+        ctx.restore();
       }
+      ctx.restore();
     });
 
     const handleResize = () => {
@@ -3962,7 +3993,8 @@ export function InteractiveGradient() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [resolutionMultiplier, gradientColors, gradientAngle, gradientType, zoom, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawParams]);
 
   const handleInteraction = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return;
@@ -4096,6 +4128,10 @@ export function InteractiveGradient() {
     
     handleInteraction(e.clientX, e.clientY);
   }, [gradientType, isDraggingPin, selectedPinId, handleInteraction]);
+
+  const handlePinRadiusChange = useCallback((id: string, radius: number) => {
+    setColorPins(prev => prev.map(p => p.id === id ? { ...p, radius } : p));
+  }, []);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (gradientType === 'freeform' && !isDraggingPin && e.touches.length === 1) {
@@ -4527,9 +4563,7 @@ export function InteractiveGradient() {
           selectedPinId={selectedPinId}
           setSelectedPinId={setSelectedPinId}
           setIsDraggingPin={setIsDraggingPin}
-          onRadiusChange={(id, radius) =>
-            setColorPins(prev => prev.map(p => p.id === id ? { ...p, radius } : p))
-          }
+          onRadiusChange={handlePinRadiusChange}
         />
       )}
       
@@ -6052,7 +6086,7 @@ RANDOMIZE
               {activeEffects.includes('kaleidoscope') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Kaleidoscope</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Segments:</label>
@@ -6081,7 +6115,7 @@ RANDOMIZE
               {activeEffects.includes('tile') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tile</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Tiles:</label>
@@ -6110,7 +6144,7 @@ RANDOMIZE
               {activeEffects.includes('ripple') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ripple</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
@@ -6161,7 +6195,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('pixelate') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pixelate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -6172,7 +6206,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('triangulate') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Triangulate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -6183,7 +6217,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('chromatic') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Chromatic</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Offset:</label>
@@ -6194,7 +6228,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('fisheye') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fisheye</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -6205,7 +6239,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('bloom') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6216,7 +6250,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('vignette') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Vignette</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -6227,7 +6261,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('color-shift') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shift</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Hue:</label>
@@ -6239,7 +6273,7 @@ RANDOMIZE
               {activeEffects.includes('film-grain') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grain</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6297,7 +6331,7 @@ RANDOMIZE
               {activeEffects.includes('blur') && (
                 <>
                   <div className="flex items-center gap-1 mt-1 mb-1">
-                    {isMultiFxMode && activeEffects.length > 1 && (
+                    {activeEffects.length > 1 && (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Blur</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
@@ -6431,7 +6465,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('posterize') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Posterize</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Levels:</label>
@@ -6443,7 +6477,7 @@ RANDOMIZE
               {activeEffects.includes('halftone') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Halftone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
@@ -6491,7 +6525,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('bulge') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bulge</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -6502,7 +6536,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('charcoal') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Saturate</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6515,7 +6549,7 @@ RANDOMIZE
               
               {activeEffects.includes('crackle') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crackle</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6527,7 +6561,7 @@ RANDOMIZE
 
               {activeEffects.includes('crystallize') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Crystallize</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -6539,7 +6573,7 @@ RANDOMIZE
               
               {activeEffects.includes('displacement') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Displace</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -6551,7 +6585,7 @@ RANDOMIZE
               {activeEffects.includes('duotone') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Duotone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6582,7 +6616,7 @@ RANDOMIZE
               {activeEffects.includes('dust-scratches') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dust</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Dust:</label>
@@ -6617,7 +6651,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('fabric-weave') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Fabric</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Scale:</label>
@@ -6628,7 +6662,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('gradient-map') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grad Map</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6639,7 +6673,7 @@ RANDOMIZE
               )}
               {activeEffects.includes('grid-overlay') && (
                 <div className="flex items-center gap-1 mt-1">
-                  {isMultiFxMode && activeEffects.length > 1 ? (
+                  {activeEffects.length > 1 ? (
                     <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid Over</span>
                   ) : (
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -6651,7 +6685,7 @@ RANDOMIZE
               {activeEffects.includes('grid') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Grid</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Sides:</label>
@@ -6803,7 +6837,7 @@ RANDOMIZE
               {activeEffects.includes('impressionist') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Impressn</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Brush Size:</label>
@@ -6832,7 +6866,7 @@ RANDOMIZE
               {activeEffects.includes('ink-wash') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Ink Wash</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6863,7 +6897,7 @@ RANDOMIZE
               {activeEffects.includes('lens-flare') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Lens Flare</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -6945,7 +6979,7 @@ RANDOMIZE
               {activeEffects.includes('mosaic') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Mosaic</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -6974,7 +7008,7 @@ RANDOMIZE
               {activeEffects.includes('palette-knife') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Palette</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -7003,7 +7037,7 @@ RANDOMIZE
               {activeEffects.includes('paper-texture') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Paper Tex</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -7034,7 +7068,7 @@ RANDOMIZE
               {activeEffects.includes('pastel') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Pastel</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -7068,7 +7102,7 @@ RANDOMIZE
               {activeEffects.includes('shatter') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Shatter</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -7098,7 +7132,7 @@ RANDOMIZE
               {activeEffects.includes('stipple') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Stipple</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -7127,7 +7161,7 @@ RANDOMIZE
               {activeEffects.includes('swirl') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Swirl</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -7158,7 +7192,7 @@ RANDOMIZE
               {activeEffects.includes('triangular-grid') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tri Grid</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Size:</label>
@@ -7187,7 +7221,7 @@ RANDOMIZE
               {activeEffects.includes('tritone') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tritone</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -7238,7 +7272,7 @@ RANDOMIZE
               {activeEffects.includes('vhs-glitch') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">VHS</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
@@ -7269,7 +7303,7 @@ RANDOMIZE
               {activeEffects.includes('tape-hiss') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Tape Hiss</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Tape Hiss:</label>
@@ -7300,7 +7334,7 @@ RANDOMIZE
               {activeEffects.includes('wave-distortion') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Wave</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Strength:</label>
@@ -7350,7 +7384,7 @@ RANDOMIZE
               {activeEffects.includes('bokeh') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Bokeh</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
@@ -7425,7 +7459,7 @@ RANDOMIZE
               {activeEffects.includes('brightness') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 ? (
+                    {activeEffects.length > 1 ? (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Brightness</span>
                     ) : (
                       <label className="text-xs text-white whitespace-nowrap">Amount:</label>
@@ -7456,7 +7490,7 @@ RANDOMIZE
               {activeEffects.includes('slit-scan') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 && (
+                    {activeEffects.length > 1 && (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Slit-Scan</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Dir:</label>
@@ -7521,7 +7555,7 @@ RANDOMIZE
               {activeEffects.includes('dither') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
-                    {isMultiFxMode && activeEffects.length > 1 && (
+                    {activeEffects.length > 1 && (
                       <span className="text-[10px] font-semibold text-purple-300 whitespace-nowrap shrink-0 w-[68px]">Dither</span>
                     )}
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
