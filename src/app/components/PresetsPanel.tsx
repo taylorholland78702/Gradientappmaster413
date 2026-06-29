@@ -49,7 +49,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
         <button
           onClick={() => setIsPresetModalOpen(true)}
-          className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+          className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
           title="Add Preset"
         >
           <Plus className="w-4 h-4" />

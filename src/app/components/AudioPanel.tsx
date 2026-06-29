@@ -81,7 +81,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
       {/* Audiovisuals Section */}
       <div className="w-full mb-0.5 flex gap-[3.5px]">
         {/* Mic button + device chevron */}
-        <div className={`flex flex-1 items-center px-1.5 py-1 rounded-lg text-xs font-semibold shadow-lg gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
+        <div className={`flex flex-1 items-center px-1.5 py-1 rounded-lg text-xs font-semibold shadow-sm gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
             className="flex items-center justify-center flex-1"
@@ -115,7 +115,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
         <button
           onClick={onAudioFileClick}
-          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center gap-1"
+          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center gap-1"
           title="Load Audio File"
         >
           <span>Audio</span>
@@ -123,7 +123,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
         </button>
         <button
           onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center gap-1"
+          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center gap-1"
           title="Audio Controls"
         >
           <SlidersHorizontal className="w-6 h-4" />
