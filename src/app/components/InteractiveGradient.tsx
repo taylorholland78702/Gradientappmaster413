@@ -2921,18 +2921,22 @@ export function InteractiveGradient() {
           : 0;
         const baseNoiseScale = ((noiseScale + audioNoiseScale * 1000) * 0.001) / zoom;
         
+        const noiseCX = displayWidth / 2;
+        const noiseCY = displayHeight / 2;
         for (let ny = 0; ny < displayHeight; ny++) {
           for (let nx = 0; nx < displayWidth; nx++) {
+            const ndx = nx - noiseCX;
+            const ndy = ny - noiseCY;
             // Multi-octave noise based on noiseOctaves setting
             let combinedNoise = 0;
             let amplitude = 1;
             let totalAmplitude = 0;
-            
+
             for (let octave = 0; octave < noiseOctaves; octave++) {
               const frequency = Math.pow(2, octave);
               const scale = baseNoiseScale * frequency;
-              const noise = Math.sin(nx * scale + noiseDirection * 0.1 * frequency) *
-                           Math.cos(ny * scale + noiseDirection * 0.1 * frequency);
+              const noise = Math.sin(ndx * scale + noiseDirection * 0.1 * frequency) *
+                           Math.cos(ndy * scale + noiseDirection * 0.1 * frequency);
               combinedNoise += noise * amplitude;
               totalAmplitude += amplitude;
               amplitude *= 0.5;
