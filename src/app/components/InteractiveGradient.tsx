@@ -5491,8 +5491,21 @@ RANDOMIZE
           </button>
         </div>
         {submittedAIPrompt && (
-          <div className="px-2 py-1 text-xs text-white/70 bg-[#2a2a4e]/50 rounded text-center truncate mb-0.5">
-            "{submittedAIPrompt}"
+          <div className="flex items-center gap-1 mb-0.5">
+            <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-[#2a2a4e]/50 rounded text-center truncate">
+              "{submittedAIPrompt}"
+            </div>
+            <button
+              onClick={() => {
+                setSubmittedAIPrompt('');
+                setBaseAIColors(null);
+                setGradientColors(DEFAULT_COLORS);
+                setTargetColors(DEFAULT_COLORS);
+                setAIPrompt('');
+              }}
+              className="w-6 h-6 flex-shrink-0 rounded bg-[#2a2a4e]/50 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
+              title="Clear keywords"
+            >×</button>
           </div>
         )}
         
