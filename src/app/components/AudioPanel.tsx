@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Mic, MicOff, Plus, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Mic, MicOff, Plus } from 'lucide-react';
 
 interface AudioPanelProps {
   isMicActive: boolean;
@@ -80,38 +80,37 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
     <>
       {/* Audiovisuals Section */}
       <div className="w-full mb-0.5 flex gap-[3.5px]">
-        {/* Mic button + device chevron */}
-        <div className={`flex flex-1 items-center px-1.5 py-1 rounded-lg text-xs font-semibold shadow-sm gap-1 transition-all ${isMicActive ? 'bg-purple-500 text-white' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
-          <button
-            onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="flex items-center justify-center flex-1"
-            title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
-          >
-            {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-          </button>
-          {audioInputDevices.length > 0 && (
-            <div className="relative flex items-center">
-              <select
-                value={selectedAudioDeviceId}
-                onChange={(e) => {
-                  setSelectedAudioDeviceId(e.target.value);
-                  if (isMicActive) {
-                    stopMicVisualization();
-                    setTimeout(() => startMicVisualization(e.target.value), 100);
-                  }
-                }}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full"
-              >
-                {audioInputDevices.map(d => (
-                  <option key={d.deviceId} value={d.deviceId}>
-                    {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 pointer-events-none" />
-            </div>
-          )}
-        </div>
+        {/* Mic button */}
+        <button
+          onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
+          className="px-1.5 py-1 rounded-lg text-xs font-semibold shadow-sm transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+          title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
+        >
+          {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+        </button>
+
+        {audioInputDevices.length > 0 && (
+          <div className="relative flex items-center px-1 py-1 rounded-lg bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all shadow-sm">
+            <select
+              value={selectedAudioDeviceId}
+              onChange={(e) => {
+                setSelectedAudioDeviceId(e.target.value);
+                if (isMicActive) {
+                  stopMicVisualization();
+                  setTimeout(() => startMicVisualization(e.target.value), 100);
+                }
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+            >
+              {audioInputDevices.map(d => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 pointer-events-none" />
+          </div>
+        )}
 
         <button
           onClick={onAudioFileClick}
@@ -123,11 +122,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
         </button>
         <button
           onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center gap-1"
+          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between gap-1"
           title="Audio Controls"
         >
-          <SlidersHorizontal className="w-6 h-4" />
-          <ChevronDown className={`w-4 h-4 transition-transform ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
+          <span>Audio Controls</span>
+          <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
 

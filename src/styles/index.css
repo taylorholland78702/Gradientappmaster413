@@ -58,8 +58,8 @@ input[type="range"]::-webkit-slider-runnable-track {
   border-radius: 99px;
   background: linear-gradient(
     to right,
-    #a855f7 0%,
-    #ec4899 var(--slider-pct, 50%),
+    rgba(255,255,255,0.8) 0%,
+    rgba(255,255,255,0.8) var(--slider-pct, 50%),
     rgba(255,255,255,0.12) var(--slider-pct, 50%),
     rgba(255,255,255,0.12) 100%
   );
@@ -74,7 +74,7 @@ input[type="range"]::-moz-range-track {
 input[type="range"]::-moz-range-progress {
   height: 3px;
   border-radius: 99px;
-  background: linear-gradient(to right, #a855f7, #ec4899);
+  background: rgba(255,255,255,0.8);
 }
 
 /* ── Thumb ── */
@@ -87,16 +87,14 @@ input[type="range"]::-webkit-slider-thumb {
   background: #fff;
   margin-top: -5px;
   box-shadow:
-    0 0 0 2px rgba(168, 85, 247, 0.5),
-    0 0 8px rgba(236, 72, 153, 0.5),
+    0 0 0 2px rgba(255,255,255,0.3),
     0 1px 3px rgba(0,0,0,0.4);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.7),
-    0 0 14px rgba(236, 72, 153, 0.7),
+    0 0 0 3px rgba(255,255,255,0.5),
     0 1px 4px rgba(0,0,0,0.4);
   transform: scale(1.15);
 }
@@ -104,8 +102,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 input[type="range"]::-webkit-slider-thumb:active {
   transform: scale(1.25);
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.9),
-    0 0 20px rgba(236, 72, 153, 0.8),
+    0 0 0 3px rgba(255,255,255,0.7),
     0 1px 4px rgba(0,0,0,0.5);
 }
 
@@ -116,8 +113,7 @@ input[type="range"]::-moz-range-thumb {
   border: none;
   background: #fff;
   box-shadow:
-    0 0 0 2px rgba(168, 85, 247, 0.5),
-    0 0 8px rgba(236, 72, 153, 0.5),
+    0 0 0 2px rgba(255,255,255,0.3),
     0 1px 3px rgba(0,0,0,0.4);
   cursor: pointer;
   transition: box-shadow 0.15s ease;
@@ -125,8 +121,7 @@ input[type="range"]::-moz-range-thumb {
 
 input[type="range"]::-moz-range-thumb:hover {
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.7),
-    0 0 14px rgba(236, 72, 153, 0.7);
+    0 0 0 3px rgba(255,255,255,0.5);
 }
 
 /* ── Hide number input spinners ── */

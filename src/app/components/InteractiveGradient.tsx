@@ -4788,7 +4788,7 @@ RANDOMIZE
             className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
               undoDepth >= 0
                 ? 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
-                : 'bg-[#1a1a2e] text-white/30 cursor-not-allowed'
+                : 'bg-white/8 backdrop-blur-sm text-white/25 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
           >
@@ -4863,33 +4863,31 @@ RANDOMIZE
         
         {/* AI Color Picker Dropdown */}
         {isAIColorPickerOpen && (
-          <div className="w-full mb-0.5 bg-white/8 backdrop-blur-sm rounded-lg p-3">
+          <div className="w-full mb-0.5 bg-white/8 backdrop-blur-sm rounded-lg p-2">
             {/* Selected keyword chips */}
-            <div className="flex flex-wrap gap-1 mb-2 min-h-[28px]">
-              {aiPrompt.split(' ').filter(Boolean).map((kw, i) => (
-                <span key={i} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r from-pink-500/60 to-purple-500/60 text-white">
-                  {kw}
-                  <button onClick={() => setAIPrompt(prev => prev.split(' ').filter(Boolean).filter((_, j) => j !== i).join(' '))} className="ml-0.5 text-white/60 hover:text-white leading-none">×</button>
-                </span>
-              ))}
-              {aiPrompt.split(' ').filter(Boolean).length === 0 && (
-                <span className="text-[10px] text-white/30 italic">Click keywords below to add (up to 8)</span>
-              )}
-            </div>
+            {aiPrompt.split(' ').filter(Boolean).length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {aiPrompt.split(' ').filter(Boolean).map((kw, i) => (
+                  <span key={i} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white">
+                    {kw}
+                    <button onClick={() => setAIPrompt(prev => prev.split(' ').filter(Boolean).filter((_, j) => j !== i).join(' '))} className="ml-0.5 text-white/60 hover:text-white leading-none">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="mb-2">
               <input
                 type="text"
                 value=""
                 readOnly
-                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords selected' : 'Click to browse keywords…'}
+                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords selected' : 'Click to browse keywords (up to 8)'}
                 onFocus={() => setIsKeywordHelpOpen(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAIPromptSubmit();
                   if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
                 }}
-                className="w-full px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/40 cursor-pointer"
-                style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.3), rgba(251,146,60,0.3))' }}
+                className="w-full px-2 py-1.5 rounded text-xs bg-white/8 backdrop-blur-sm border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white/40 cursor-pointer"
               />
             </div>
 
@@ -4905,7 +4903,7 @@ RANDOMIZE
                         const current = aiPrompt.split(' ').filter(Boolean);
                         if (selected) setAIPrompt(current.filter(k => k !== t).join(' '));
                         else if (!full) setAIPrompt(current.concat(t).join(' '));
-                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-pink-500/70 text-white' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</span>
+                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-white text-black' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</span>
                     );
                   })}
                 </div>
@@ -4919,7 +4917,7 @@ RANDOMIZE
                         const current = aiPrompt.split(' ').filter(Boolean);
                         if (selected) setAIPrompt(current.filter(k => k !== c).join(' '));
                         else if (!full) setAIPrompt(current.concat(c).join(' '));
-                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-purple-500/70 text-white' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{c}</span>
+                      }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-white text-black' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{c}</span>
                     );
                   })}
                 </div>
@@ -4934,13 +4932,13 @@ RANDOMIZE
                   setAIPrompt('');
                   setIsKeywordHelpOpen(false);
                 }}
-                className="px-3 py-1 rounded text-xs bg-[#3a3a5e] text-white hover:bg-[#4a4a6e] transition-all"
+                className="px-3 py-1 rounded text-xs bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAIPromptSubmit}
-                className="px-3 py-1 rounded text-xs bg-gradient-to-r from-pink-500 to-orange-500 text-white hover:from-pink-600 hover:to-orange-600 transition-all"
+                className="px-3 py-1 rounded text-xs bg-white text-black font-semibold hover:bg-white/80 transition-all"
               >
                 Generate
               </button>
@@ -7540,7 +7538,7 @@ RANDOMIZE
                         onClick={() => setSlitScanDirection('horizontal')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'horizontal'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
                         }`}
                       >
@@ -7550,7 +7548,7 @@ RANDOMIZE
                         onClick={() => setSlitScanDirection('vertical')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'vertical'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
                         }`}
                       >
@@ -7560,7 +7558,7 @@ RANDOMIZE
                         onClick={() => setSlitScanDirection('radial')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'radial'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
                         }`}
                       >
@@ -7605,7 +7603,7 @@ RANDOMIZE
                         onClick={() => setDitherType('bayer')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'bayer'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
                         }`}
                       >
@@ -7615,7 +7613,7 @@ RANDOMIZE
                         onClick={() => setDitherType('floyd-steinberg')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'floyd-steinberg'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/30 text-white hover:bg-black/40'
                         }`}
                       >

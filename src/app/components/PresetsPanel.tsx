@@ -76,7 +76,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       if (e.key === 'Escape') setRenamingPresetIndex(null);
                     }}
                     onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
-                    className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none border-b border-purple-500"
+                    className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none border-b border-white/40"
                   />
                 ) : (
                   <button
