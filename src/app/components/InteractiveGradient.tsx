@@ -4739,7 +4739,7 @@ export function InteractiveGradient() {
       
       {/* Main controls */}
       <div
-        className={`absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/8 backdrop-blur-xl border border-white/10 rounded-xl p-[6px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[280px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-[6px] scale-[1.15] origin-top-left shadow-[0_4px_24px_rgba(0,0,0,0.3)] ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
       >
         {/* Drag handle */}
