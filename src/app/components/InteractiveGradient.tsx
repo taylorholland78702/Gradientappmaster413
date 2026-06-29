@@ -4826,7 +4826,7 @@ RANDOMIZE
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsAIColorPickerOpen(!isAIColorPickerOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
+            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg hover:shadow-xl flex items-center justify-between"
           >
             <span>Color Palette</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
@@ -4836,7 +4836,7 @@ RANDOMIZE
               saveCurrentState();
               setTargetColors(gradientColors.map(() => randomColor()));
             }}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Colors"
           >
             <Shuffle className="w-4 h-4" />
@@ -4952,14 +4952,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsGradientsOpen(!isGradientsOpen)}
-            className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-between"
+            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-between"
           >
             <span>Gradients</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isGradientsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={shuffleGradientType}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Gradient Type"
           >
             <Shuffle className="w-4 h-4" />
@@ -6013,14 +6013,14 @@ RANDOMIZE
         <div className="w-full mb-0.5 flex gap-[3.5px]">
           <button
             onClick={() => setIsEffectsOpen(!isEffectsOpen)}
-            className="px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex-1 flex items-center justify-between"
+            className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex-1 flex items-center justify-between"
           >
             <span>Effects</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isEffectsOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={randomizeEffects}
-            className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
             title="Shuffle Effects"
           >
             <Shuffle className="w-4 h-4" />

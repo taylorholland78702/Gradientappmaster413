@@ -41,7 +41,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       <div className="flex gap-[3.5px] w-full mb-0.5">
         <button
           onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-          className="flex-1 px-1.5 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-between font-semibold"
+          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-between font-semibold"
         >
           <span>Presets</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -49,7 +49,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
         <button
           onClick={() => setIsPresetModalOpen(true)}
-          className="w-[32px] px-1 py-1.5 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
+          className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-lg flex items-center justify-center"
           title="Add Preset"
         >
           <Plus className="w-4 h-4" />
