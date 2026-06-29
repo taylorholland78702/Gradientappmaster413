@@ -5525,30 +5525,20 @@ RANDOMIZE
               )}
             </div>
 
-            <div className="flex gap-1.5 mb-2 items-center">
+            <div className="mb-2">
               <input
                 type="text"
                 value=""
                 readOnly
-                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords' : 'Or type a custom prompt'}
+                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords selected' : 'Click to browse keywords…'}
+                onFocus={() => setIsKeywordHelpOpen(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAIPromptSubmit();
                   if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
                 }}
-                onChange={(e) => {
-                  const val = e.target.value.trim();
-                  if (!val) return;
-                  const current = aiPrompt.split(' ').filter(Boolean);
-                  if (current.length < 8) setAIPrompt(current.concat(val).join(' '));
-                }}
-                className="flex-1 px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/40"
+                className="w-full px-2 py-1.5 rounded text-xs border border-white/30 focus:border-white/60 focus:outline-none text-white placeholder-white/40 cursor-pointer"
                 style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.3), rgba(251,146,60,0.3))' }}
               />
-              <button
-                onClick={() => setIsKeywordHelpOpen(prev => !prev)}
-                className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 transition-all ${isKeywordHelpOpen ? 'bg-white/30 text-white' : 'bg-white/10 hover:bg-white/20 text-white/60 hover:text-white'}`}
-                title="Show keywords"
-              >?</button>
             </div>
 
             {isKeywordHelpOpen && (
