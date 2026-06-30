@@ -685,11 +685,9 @@ export function InteractiveGradient() {
     return () => cancelAnimationFrame(rafId);
   }, [gradientType, isVCRPlaying, vcrPlaybackSpeed, shapesRotationDirection]);
 
-  // Refs so animation loops can read latest audio values without restarting
+  // Ref so animation loops can read latest bass value without restarting
   const audioGradientParamRef = useRef(audioGradientParam);
   audioGradientParamRef.current = audioGradientParam;
-  const isAudioActiveRef = useRef(isAudioEnabled && isAudioReactive);
-  isAudioActiveRef.current = isAudioEnabled && isAudioReactive;
 
   // Continuous spin for windmill gradient
   useEffect(() => {
