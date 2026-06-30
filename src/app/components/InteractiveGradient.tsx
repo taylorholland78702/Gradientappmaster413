@@ -691,8 +691,8 @@ export function InteractiveGradient() {
     let rafId: number;
     const animateWindmill = () => {
       setWindmillRotation(prev => {
-        const baseSpeed = 0.5; // steady base spin
-        const audioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 2.5 : 0;
+        const baseSpeed = 3; // fast continuous spin
+        const audioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 6 : 0;
         return (prev + baseSpeed + audioBoost) % 360;
       });
       rafId = requestAnimationFrame(animateWindmill);
