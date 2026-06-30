@@ -79,6 +79,7 @@ export function InteractiveGradient() {
   // Video recording state (shared between root and useVCRPlayback hook)
   const [isRecording, setIsRecording] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(false);
+  const [isAutoColor, setIsAutoColor] = useState(true);
   const [gradientTransitionOpacity, setGradientTransitionOpacity] = useState(1);
   
   const [gradientColors, setGradientColors] = useState<ColorRGB[]>(DEFAULT_COLORS);
@@ -2212,34 +2213,32 @@ export function InteractiveGradient() {
       };
       
       // Different behavior for different gradient types
-      if (gradientType === 'fade') {
-        setTargetColors(prev =>
-          prev.map((color, index) =>
-            applyColorShift(color, baseAIColors?.[index] || null, 8)
-          )
-        );
-      } else if (gradientType === 'waves' || gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
-        // These gradients benefit from faster, more dramatic color shifts on Play
-        setTargetColors(prev =>
-          prev.map((color, index) =>
-            applyColorShift(color, baseAIColors?.[index] || null, 60)
-          )
-        );
-      } else {
-        // All other gradient types
-        const numColorsToChange = Math.floor(Math.random() * 2) + 2;
-        const indicesToChange = new Set<number>();
-        
-        while (indicesToChange.size < numColorsToChange) {
-          indicesToChange.add(Math.floor(Math.random() * gradientColors.length));
+      if (isAutoColor) {
+        if (gradientType === 'fade') {
+          setTargetColors(prev =>
+            prev.map((color, index) =>
+              applyColorShift(color, baseAIColors?.[index] || null, 8)
+            )
+          );
+        } else if (gradientType === 'waves' || gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
+          setTargetColors(prev =>
+            prev.map((color, index) =>
+              applyColorShift(color, baseAIColors?.[index] || null, 60)
+            )
+          );
+        } else {
+          const numColorsToChange = Math.floor(Math.random() * 2) + 2;
+          const indicesToChange = new Set<number>();
+          while (indicesToChange.size < numColorsToChange) {
+            indicesToChange.add(Math.floor(Math.random() * gradientColors.length));
+          }
+          setTargetColors(prev =>
+            prev.map((color, index) => {
+              const shiftRange = indicesToChange.has(index) ? 40 : 16;
+              return applyColorShift(color, baseAIColors?.[index] || null, shiftRange);
+            })
+          );
         }
-        
-        setTargetColors(prev => 
-          prev.map((color, index) => {
-            const shiftRange = indicesToChange.has(index) ? 40 : 16;
-            return applyColorShift(color, baseAIColors?.[index] || null, shiftRange);
-          })
-        );
       }
       
       // Rotation speeds based on gradient type
@@ -2257,7 +2256,7 @@ export function InteractiveGradient() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isAutoMode, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
+  }, [isAutoMode, isAutoColor, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
 
   // VCR recording/playback effects are now in useVCRPlayback hook
 
@@ -5099,6 +5098,13 @@ export function InteractiveGradient() {
           >
             <span>Color Palette</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <button
+            onClick={() => setIsAutoColor(prev => !prev)}
+            className={`px-2 py-1 rounded-lg text-xs transition-all backdrop-blur-sm font-semibold shadow-sm ${isAutoColor ? 'bg-white text-black' : 'bg-white/8 text-white hover:bg-white/15'}`}
+            title="Auto color change"
+          >
+            AUTO
           </button>
           <button
             onClick={() => {
