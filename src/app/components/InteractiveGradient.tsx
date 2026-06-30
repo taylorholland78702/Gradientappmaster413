@@ -757,8 +757,9 @@ export function InteractiveGradient() {
   const audioEffectParamRef = useRef(audioEffectParam);
   audioEffectParamRef.current = audioEffectParam;
 
-  // Refs for contrast pulse and canvas shake
+  // Refs for contrast/saturation pulse and canvas shake
   const contrastPulseRef = useRef(0);
+  const saturationPulseRef = useRef(0);
   const shakeRef = useRef({ x: 0, y: 0 });
   const shakeWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -1913,21 +1914,25 @@ export function InteractiveGradient() {
     }
   }, [isAudioEnabled, isAudioReactive, audioColorShift]);
 
-  // Contrast pulse — bass hits spike canvas contrast then decay via RAF
+  // Contrast + saturation pulse — bass hits spike both, decay via RAF
   useEffect(() => {
     if (!isAudioEnabled || !isAudioReactive) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     let rafId: number;
     const animate = () => {
-      contrastPulseRef.current *= 0.82; // decay
-      const contrast = 1 + contrastPulseRef.current * 2.5;
-      canvas.style.filter = contrast > 1.01 ? `contrast(${contrast.toFixed(2)})` : '';
-      if (contrastPulseRef.current > 0.01) rafId = requestAnimationFrame(animate);
+      contrastPulseRef.current *= 0.82;
+      saturationPulseRef.current *= 0.80;
+      const contrast = 1 + contrastPulseRef.current * 2.0;
+      const saturate = 1 + saturationPulseRef.current * 3.5;
+      const active = contrastPulseRef.current > 0.01 || saturationPulseRef.current > 0.01;
+      canvas.style.filter = active ? `contrast(${contrast.toFixed(2)}) saturate(${saturate.toFixed(2)})` : '';
+      if (active) rafId = requestAnimationFrame(animate);
     };
-    // Spike on audioGradientParam (bass)
     if (audioGradientParam > 0.3) {
-      contrastPulseRef.current = Math.min(1, audioGradientParam / 5);
+      const strength = Math.min(1, audioGradientParam / 5);
+      contrastPulseRef.current = strength;
+      saturationPulseRef.current = strength;
       rafId = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(rafId);
@@ -3789,6 +3794,24 @@ export function InteractiveGradient() {
 
     // Restore audio-reactive transformations before applying effects
     if (isAudioEnabled && isAudioReactive) {
+      ctx.restore();
+    }
+
+    // Vocal shimmer — treble energy scatters bright sparkle pixels
+    if (isAudioEnabled && isAudioReactive && audioColorShift > 4) {
+      const shimmer = Math.min(1, audioColorShift / 90);
+      const count = Math.floor(shimmer * shimmer * 400);
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const sx = Math.random() * displayWidth;
+        const sy = Math.random() * displayHeight;
+        const alpha = (0.4 + Math.random() * 0.6) * shimmer;
+        const size = Math.random() < 0.75 ? 1 : 2;
+        const hue = (Math.random() * 60 + audioColorShift * 3) % 360;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = `hsl(${hue}, 100%, 88%)`;
+        ctx.fillRect(sx, sy, size, size);
+      }
       ctx.restore();
     }
 
