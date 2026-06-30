@@ -1211,18 +1211,26 @@ export function InteractiveGradient() {
       const harmonyColors = gradientColors.map((_, i) => {
         let hue: number;
         if (colorScheme < 0.4) {
-          // Analogous: tight cluster
           hue = (baseHue + (i - 1) * 30 + (Math.random() * 20 - 10) + 360) % 360;
         } else if (colorScheme < 0.7) {
-          // Complementary split
           hue = (baseHue + (i % 2 === 0 ? 0 : 150 + Math.random() * 60) + (Math.random() * 20 - 10) + 360) % 360;
         } else {
-          // Triadic
           hue = (baseHue + i * 120 + (Math.random() * 30 - 15) + 360) % 360;
         }
-        const sat = 55 + Math.random() * 40; // 55–95% saturation
-        const lit = 35 + Math.random() * 35; // 35–70% lightness
-        return hslToRgb(hue, sat, lit);
+        const sat = 60 + Math.random() * 35;  // 60–95%
+        const lit = 42 + Math.random() * 28;  // 42–70% — prevents near-black or near-white
+        const c = hslToRgb(hue, sat, lit);
+        // Hard clamp: ensure perceived brightness is never too dark or too washed out
+        const brightness = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
+        if (brightness < 40) {
+          const boost = 40 / Math.max(1, brightness);
+          return { r: Math.min(255, Math.round(c.r * boost)), g: Math.min(255, Math.round(c.g * boost)), b: Math.min(255, Math.round(c.b * boost)) };
+        }
+        if (brightness > 220) {
+          const scale = 220 / brightness;
+          return { r: Math.round(c.r * scale), g: Math.round(c.g * scale), b: Math.round(c.b * scale) };
+        }
+        return c;
       });
       setTargetColors(harmonyColors);
 
@@ -4779,21 +4787,21 @@ export function InteractiveGradient() {
         <div className="absolute top-4 left-4 pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left">
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-white/70 backdrop-blur-md text-black border border-black/15 shadow-md hover:bg-white/90 flex items-center justify-center"
             title="Show Controls"
           >
             <EyeOff className="w-4 h-4" />
           </button>
           <button
             onClick={feelingLucky}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white border border-white/30 shadow-md hover:shadow-lg flex items-center justify-center"
             title="Randomize"
           >
             <Shuffle className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsPresetModalOpen(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-white/70 backdrop-blur-md text-black border border-black/15 shadow-md hover:bg-white/90 flex items-center justify-center"
             title="Add Preset"
           >
             <Plus className="w-4 h-4" />
