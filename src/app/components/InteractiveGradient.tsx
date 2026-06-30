@@ -2812,7 +2812,8 @@ export function InteractiveGradient() {
         const audioActive = isAudioEnabled && isAudioReactive;
         // Bass: scale pulse
         const audioNoiseScale = audioActive ? audioGradientParam * 0.005 : 0;
-        const baseNoiseScale = ((noiseScale + audioNoiseScale * 1000) * 0.001) / zoom;
+        const noiseZoom = audioActive ? 1 : zoom;
+        const baseNoiseScale = ((noiseScale + audioNoiseScale * 1000) * 0.001) / noiseZoom;
         // Bass: rotation angle
         const noiseAudioRotation = audioActive ? audioGradientParam * Math.PI * 0.5 : 0;
         const noiseRotCos = Math.cos(noiseDirection * 0.01 + noiseAudioRotation);
@@ -2875,7 +2876,8 @@ export function InteractiveGradient() {
         const audioPlasmaComplexity = (isAudioEnabled && isAudioReactive)
           ? audioGradientParam * 50 // Up to 50 extra complexity
           : 0;
-        const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / zoom;
+        const plasmaZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / plasmaZoom;
 
         const plasmaCX = displayWidth / 2;
         const plasmaCY = displayHeight / 2;
@@ -3215,7 +3217,8 @@ export function InteractiveGradient() {
             
             // Calculate viewing angle (simulates looking at surface from different angles)
             const angle = Math.atan2(dy, dx);
-            const dist = Math.sqrt(dx * dx + dy * dy) / zoom;
+            const iridescentZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+            const dist = Math.sqrt(dx * dx + dy * dy) / iridescentZoom;
             
             // Thin-film interference calculation
             // Creates rainbow-like color shifts based on angle and distance
