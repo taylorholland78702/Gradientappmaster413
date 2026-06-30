@@ -354,15 +354,15 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveBassSmoothedRef.current = bassGradientValue;
       setAudioGradientParam(bassGradientValue);
 
-      // Bass drives zoom — use raw unsmoothed value for instant punch
-      // Normalize to 0-1 range so higher bassMultiplier/bassMax don't explode zoom
+      // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
       setTargetZoom(prev => {
+        const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (bassRawForZoom > 0.05) {
-          const pulse = 1 + bassRawForZoom * (bassBeatSync ? 3.5 : 1.8);
-          return Math.min(prev * pulse, prev + (bassBeatSync ? 4.0 : 2.0));
+          const spike = bassRawForZoom * (bassBeatSync ? 2.5 : 1.2);
+          return Math.min(decayed + spike, 1 + (bassBeatSync ? 2.5 : 1.2));
         }
-        return prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
+        return decayed;
       });
 
       // ---- MIDS (bins 10–49) ----
