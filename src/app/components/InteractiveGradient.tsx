@@ -726,19 +726,19 @@ export function InteractiveGradient() {
     };
   }, [activeEffects]);
 
-  // Continuous animation for Voronoi morphing — only when PLAY is active
+  // Continuous animation for Voronoi morphing — PLAY or mic active
   useEffect(() => {
-    if (gradientType !== 'voronoi' || (!isAutoMode && !isVCRPlaying)) return;
+    if (gradientType !== 'voronoi' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
 
     let rafId: number;
     const animateVoronoi = () => {
-      setVoronoiAnimTime(prev => prev + 0.01 * vcrPlaybackSpeed);
+      setVoronoiAnimTime(prev => prev + 0.01 * (isAutoMode || isVCRPlaying ? vcrPlaybackSpeed : 1));
       rafId = requestAnimationFrame(animateVoronoi);
     };
 
     rafId = requestAnimationFrame(animateVoronoi);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   // Continuous animation for Radar sweep — when PLAY is active OR mic is on
   useEffect(() => {
@@ -3173,20 +3173,24 @@ export function InteractiveGradient() {
 
         // Generate seed points with animated positions
         const voronoiSeeds: Array<{x: number, y: number, colorIndex: number}> = [];
-        const audioVoronoiCount = (isAudioEnabled && isAudioReactive)
-          ? Math.floor(audioGradientParam * 25) // Up to 25 extra cells
-          : 0;
+        const voronoiAudioActive = isAudioEnabled && isAudioReactive;
+        // Bass adds extra cells, treble shifts color assignment, mids add extra movement
+        const audioVoronoiCount = voronoiAudioActive ? Math.floor(audioGradientParam * 15) : 0;
         const totalVoronoiCells = voronoiCellCount + audioVoronoiCount;
+        // Treble: integer offset into palette so each beat can assign different colors
+        const voronoiColorOffset = voronoiAudioActive
+          ? Math.floor(audioColorShift * gradientColors.length * 3) % gradientColors.length
+          : 0;
 
         for (let i = 0; i < totalVoronoiCells; i++) {
-          // Base position from seed
           const baseX = voronoiSeed(i * 2) * displayWidth;
           const baseY = voronoiSeed(i * 2 + 1) * displayHeight;
 
-          // Add morphing offset based on time; audio accelerates cell movement
-          const audioMorphBoost = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 3 : 1;
-          const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5) * displayWidth * 0.15;
-          const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7) * displayHeight * 0.15;
+          // Bass accelerates morph speed, mids add extra lateral displacement
+          const audioMorphBoost = voronoiAudioActive ? 1 + audioGradientParam * 8 : 1;
+          const audioMidShift = voronoiAudioActive ? audioEffectParam * 0.25 : 0;
+          const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5 + audioMidShift) * displayWidth * 0.3;
+          const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7 + audioMidShift) * displayHeight * 0.3;
 
           voronoiSeeds.push({
             x: baseX + offsetX,
@@ -3194,52 +3198,38 @@ export function InteractiveGradient() {
             colorIndex: i % gradientColors.length
           });
         }
-        
-        // Audio reactivity: bass affects distortion
-        const audioVoronoiDistortion = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 180 // Strong distortion warp on bass
-          : 0;
+
+        const audioVoronoiDistortion = voronoiAudioActive ? audioGradientParam * 250 : 0;
         const totalVoronoiDistortion = (voronoiDistortion + audioVoronoiDistortion) * 0.01;
-        
-        // Render Voronoi cells
+        const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
+        const voronoiBassPulse = voronoiAudioActive ? audioGradientParam : 0;
+
         for (let vy = 0; vy < displayHeight; vy++) {
           for (let vx = 0; vx < displayWidth; vx++) {
             let minDist = Infinity;
             let nearestSeed = voronoiSeeds[0];
-            
-            // Find nearest seed point
+
             voronoiSeeds.forEach(seed => {
               const dx = vx - seed.x;
               const dy = vy - seed.y;
-              // Add distortion to create more organic shapes
               const distortion = totalVoronoiDistortion * (Math.sin(dx * 0.01) * Math.cos(dy * 0.01)) * 100;
               const dist = Math.sqrt(dx * dx + dy * dy) + distortion;
-              if (dist < minDist) {
-                minDist = dist;
-                nearestSeed = seed;
-              }
+              if (dist < minDist) { minDist = dist; nearestSeed = seed; }
             });
-            
-            // Treble shifts which color each cell picks; bass pulses brightness from center
-            const voronoiColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.6 : 0;
-            const shiftedIdx = (nearestSeed.colorIndex / gradientColors.length + voronoiColorShift) % 1;
-            const vColorPos = shiftedIdx * (gradientColors.length - 1);
-            const vColorIdx = Math.floor(vColorPos);
-            const vColorFrac = vColorPos - vColorIdx;
-            const vc1 = gradientColors[vColorIdx % gradientColors.length];
-            const vc2 = gradientColors[(vColorIdx + 1) % gradientColors.length];
-            if (!vc1 || !vc2) continue;
+
+            // Use solid palette colors — shift index on treble for color cycling
+            const vColorIdx = (nearestSeed.colorIndex + voronoiColorOffset) % gradientColors.length;
+            const color = gradientColors[vColorIdx];
+            if (!color) continue;
 
             const vdx = vx - centerX, vdy = vy - centerY;
-            const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
             const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
-            const voronoiBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
-            const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.8;
+            const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
 
             const idx = (vy * displayWidth + vx) * 4;
-            voronoiData[idx]     = Math.min(255, Math.round((vc1.r + (vc2.r - vc1.r) * vColorFrac) * vBoost));
-            voronoiData[idx + 1] = Math.min(255, Math.round((vc1.g + (vc2.g - vc1.g) * vColorFrac) * vBoost));
-            voronoiData[idx + 2] = Math.min(255, Math.round((vc1.b + (vc2.b - vc1.b) * vColorFrac) * vBoost));
+            voronoiData[idx]     = Math.min(255, Math.round(color.r * vBoost));
+            voronoiData[idx + 1] = Math.min(255, Math.round(color.g * vBoost));
+            voronoiData[idx + 2] = Math.min(255, Math.round(color.b * vBoost));
             voronoiData[idx + 3] = 255;
           }
         }
