@@ -2330,9 +2330,9 @@ export function InteractiveGradient() {
         ctx.save();
         const conicCenterX = (displayWidth * angleCenterX) / 100;
         const conicCenterY = (displayHeight * angleCenterY) / 100;
-        ctx.translate(conicCenterX, conicCenterY);
+        ctx.translate(centerX, centerY);
         ctx.scale(Math.max(1, zoom), Math.max(1, zoom));
-        ctx.translate(-conicCenterX, -conicCenterY);
+        ctx.translate(-centerX, -centerY);
         const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180;
         gradient = ctx.createConicGradient(conicStartAngle, conicCenterX, conicCenterY);
         break;
@@ -2859,47 +2859,54 @@ export function InteractiveGradient() {
         ctx.putImageData(plasmaImageData, 0, 0);
         break;
       
-      case 'grid':
+      case 'grid': {
         // Grid pattern with customizable rows and columns
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-centerX, -centerY);
+
         // Audio reactivity: bass affects gradient animation in cells
-        const audioGridOffset = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 360 // Up to 360 degree offset
-          : 0;
-        
-        const cellWidth = displayWidth / gridColumns;
-        const cellHeight = displayHeight / gridRows;
+        const audioGridOffset = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 360 : 0;
+
+        // Expand draw area to cover canvas when zoomed out
+        const gridOverdraw = Math.max(1, 1 / zoom);
+        const gridDrawW = displayWidth * gridOverdraw;
+        const gridDrawH = displayHeight * gridOverdraw;
+        const gridOffX = (displayWidth - gridDrawW) / 2;
+        const gridOffY = (displayHeight - gridDrawH) / 2;
+        const cellWidth = gridDrawW / gridColumns;
+        const cellHeight = gridDrawH / gridRows;
+
         for (let row = 0; row < gridRows; row++) {
           for (let col = 0; col < gridColumns; col++) {
-            // Calculate the angle for this cell's gradient
             const cellAngle = (gradientAngle + row * 30 + col * 30 + audioGridOffset) % 360;
             const angleRad = (cellAngle * Math.PI) / 180;
-            
-            // Calculate gradient direction based on angle
-            const cellCenterX = col * cellWidth + cellWidth / 2;
-            const cellCenterY = row * cellHeight + cellHeight / 2;
+            const cellCenterX = gridOffX + col * cellWidth + cellWidth / 2;
+            const cellCenterY = gridOffY + row * cellHeight + cellHeight / 2;
             const gradLength = Math.max(cellWidth, cellHeight);
-            
             const x1 = cellCenterX - Math.cos(angleRad) * gradLength / 2;
             const y1 = cellCenterY - Math.sin(angleRad) * gradLength / 2;
             const x2 = cellCenterX + Math.cos(angleRad) * gradLength / 2;
             const y2 = cellCenterY + Math.sin(angleRad) * gradLength / 2;
-            
             const cellGrad = ctx.createLinearGradient(x1, y1, x2, y2);
-            
             for (let j = 0; j < gradientColors.length; j++) {
               const cellColor = gradientColors[(j + row + col) % gradientColors.length];
               if (!cellColor) continue;
-              cellGrad.addColorStop(j / (gradientColors.length - 1), 
+              cellGrad.addColorStop(j / (gradientColors.length - 1),
                 `rgb(${cellColor.r}, ${cellColor.g}, ${cellColor.b})`);
             }
             ctx.fillStyle = cellGrad;
-            ctx.fillRect(col * cellWidth, row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
+            ctx.fillRect(gridOffX + col * cellWidth, gridOffY + row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
           }
         }
+        ctx.restore();
         break;
+      }
       
       case 'checkerboard':
         // Checkerboard pattern with exact squares
