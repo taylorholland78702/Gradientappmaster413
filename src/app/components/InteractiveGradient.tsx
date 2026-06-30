@@ -2399,16 +2399,13 @@ export function InteractiveGradient() {
     const gradientAngle = gradientAngleRef.current;
     const zoom = zoomRef.current;
 
-    // Set canvas internal resolution (with multiplier for higher quality)
-    // Canvas will render at higher resolution but display at window size via CSS
-    const displayWidth = window.innerWidth;
-    const displayHeight = window.innerHeight;
+    // Use canvas's actual rendered size (avoids gap when window.innerWidth < viewport)
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    const displayWidth = canvas.offsetWidth || window.innerWidth;
+    const displayHeight = canvas.offsetHeight || window.innerHeight;
     canvas.width = displayWidth * resolutionMultiplier;
     canvas.height = displayHeight * resolutionMultiplier;
-
-    // Set CSS display size to match window (this keeps visual size consistent)
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
 
     // Scale context for high-resolution rendering
     ctx.scale(resolutionMultiplier, resolutionMultiplier);
