@@ -253,8 +253,6 @@ export function InteractiveGradient() {
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
   const [conicalSpiralTurns, setConicalSpiralTurns] = useState(10);
   const [conicalSpiralTightness, setConicalSpiralTightness] = useState(2);
-  const [windmillBlades, setWindmillBlades] = useState(8);
-  const [windmillRotation, setWindmillRotation] = useState(0);
   const [iridescentAngle, setIridescentAngle] = useState(0);
   const [iridescentIntensity, setIridescentIntensity] = useState(0.5);
   const [iridescentScale, setIridescentScale] = useState(3);
@@ -570,7 +568,7 @@ export function InteractiveGradient() {
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
-  // When mic activates on windmill, freeze target colors so the lerp loop doesn't drift colors
+  // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
   useEffect(() => {
     if (isMicActive && gradientType === 'spiral') {
       setTargetColors([...gradientColorsRef.current]);
@@ -698,20 +696,6 @@ export function InteractiveGradient() {
   const audioGradientParamRef = useRef(audioGradientParam);
   audioGradientParamRef.current = audioGradientParam;
 
-  // Windmill: unbounded time counter so the diverge/sync cycle works correctly
-  const windmillBladesRef = useRef(windmillBlades);
-  windmillBladesRef.current = windmillBlades;
-
-  useEffect(() => {
-    if (gradientType !== 'windmill') return;
-    let rafId: number;
-    const animateWindmill = () => {
-      setWindmillRotation(prev => prev + 1.2);
-      rafId = requestAnimationFrame(animateWindmill);
-    };
-    rafId = requestAnimationFrame(animateWindmill);
-    return () => cancelAnimationFrame(rafId);
-  }, [gradientType]);
 
   // Continuous animation for slit-scan effect
   useEffect(() => {
@@ -874,9 +858,7 @@ export function InteractiveGradient() {
       radialBurstSize,
       conicalSpiralTurns,
       conicalSpiralTightness,
-      windmillBlades,
-      windmillRotation,
-      gridRotation,
+            gridRotation,
       shapesRotation,
       angleStartOffset,
       angleCenterX,
@@ -908,7 +890,7 @@ export function InteractiveGradient() {
       spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
       waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
       plasmaComplexity, radialBurstCount, radialBurstSpread,
-      conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, gridRotation,
+      conicalSpiralTurns, conicalSpiralTightness, gridRotation,
       angleStartOffset, angleCenterX, angleCenterY,
       iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt]);
@@ -1090,8 +1072,6 @@ export function InteractiveGradient() {
     setRadialBurstSpread(snapshot.radialBurstSpread);
     setConicalSpiralTurns(snapshot.conicalSpiralTurns);
     setConicalSpiralTightness(snapshot.conicalSpiralTightness);
-    setWindmillBlades(snapshot.windmillBlades);
-    setWindmillRotation(snapshot.windmillRotation);
     setGridRotation(snapshot.gridRotation);
     setShapesRotation(snapshot.shapesRotation || 0);
     setAngleStartOffset(snapshot.angleStartOffset);
@@ -1602,9 +1582,7 @@ export function InteractiveGradient() {
       voronoiDistortion,
       conicalSpiralTurns,
       conicalSpiralTightness,
-      windmillBlades,
-      windmillRotation,
-      gridRotation,
+            gridRotation,
       shapesRotation,
       angleStartOffset,
       angleCenterX,
@@ -1628,8 +1606,7 @@ export function InteractiveGradient() {
     spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
     noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
-    voronoiCellCount, voronoiDistortion, conicalSpiralTurns, conicalSpiralTightness, windmillBlades,
-    windmillRotation, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
+    voronoiCellCount, voronoiDistortion, conicalSpiralTurns, conicalSpiralTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
     isAudioEnabled, isAudioReactive,
   ]);
@@ -2294,13 +2271,13 @@ export function InteractiveGradient() {
     spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
     waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed,
     plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
-    voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation,
+    voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
     fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3436,57 +3413,13 @@ export function InteractiveGradient() {
         break;
       }
 
-      case 'windmill': {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-
-        const numBlades = windmillBlades || 6;
-        const t = (windmillRotation || 0) * Math.PI / 180; // base time in radians
-        const bladeSpan = (Math.PI * 2) / numBlades;
-        const wmRadius = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2 + 10;
-
-        // Base speed multipliers — blades always move, crossing over each other
-        const baseMultipliers = [1.0, 1.18, 0.82, 1.35, 0.68, 1.22, 0.88, 1.12];
-
-        const tightness = 1;
-        const effectiveBladeSpan = bladeSpan;
-
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-
-        for (let i = 0; i < numBlades; i++) {
-          // Tightness pulls speed multipliers toward 1.0 (all same) or away (more chaos)
-          const base = baseMultipliers[i % baseMultipliers.length];
-          const speed = 1 + (base - 1) * tightness;
-          const bladeAngle = t * speed + (i / numBlades) * Math.PI * 2;
-
-          // Colors come straight from palette — no audio color shift
-          const c = gradientColors[i % gradientColors.length];
-          if (!c) continue;
-
-          const bladeGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, wmRadius);
-          bladeGrad.addColorStop(0, `rgba(${c.r},${c.g},${c.b},0.95)`);
-          bladeGrad.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0.7)`);
-
-          ctx.fillStyle = bladeGrad;
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          ctx.arc(centerX, centerY, wmRadius, bladeAngle, bladeAngle + effectiveBladeSpan);
-          ctx.closePath();
-          ctx.fill();
-        }
-
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.restore();
-        break;
-      }
 
       default:
         break;
     }
 
     // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'conical-spiral', 'radial-burst', 'freeform', 'flower', 'radar', 'windmill'];
+    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'conical-spiral', 'radial-burst', 'freeform', 'flower', 'radar'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
         addGradientStops(gradient, gradientColors);
@@ -4352,7 +4285,7 @@ export function InteractiveGradient() {
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     // Self-animating gradients — drag interaction conflicts with their own animation
-    const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'conical-spiral'];
+    const NO_DRAG_TYPES = ['spiral', 'radar', 'flower', 'conical-spiral'];
     if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
 
     // In freeform mode, if not dragging a pin, clicking adds a new pin or changes interaction
