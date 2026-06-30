@@ -2376,10 +2376,10 @@ export function InteractiveGradient() {
 
       case 'angle': {
         ctx.save();
-        // Bass shifts the conic start angle, treble shifts center position
-        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 2 : 0;
-        const audioConicCenterDX = (isAudioEnabled && isAudioReactive) ? (audioGradientParam - 0.5) * displayWidth * 0.3 : 0;
-        const audioConicCenterDY = (isAudioEnabled && isAudioReactive) ? audioEffectParam * displayHeight * 0.3 : 0;
+        // Bass gently shifts the conic start angle, treble subtly drifts the center
+        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 0.3 : 0;
+        const audioConicCenterDX = (isAudioEnabled && isAudioReactive) ? (audioGradientParam - 0.5) * displayWidth * 0.06 : 0;
+        const audioConicCenterDY = (isAudioEnabled && isAudioReactive) ? audioEffectParam * displayHeight * 0.06 : 0;
         const conicCenterX = (displayWidth * angleCenterX) / 100 + audioConicCenterDX;
         const conicCenterY = (displayHeight * angleCenterY) / 100 + audioConicCenterDY;
         ctx.translate(centerX, centerY);
@@ -2441,15 +2441,15 @@ export function InteractiveGradient() {
         const polygonSolidScale = 1 / zoom;
         const polygonSolidRadius = fitRadius; // Use fitRadius to ensure shape fits
 
-        // Audio reactivity: bass affects radial count, mid affects ring count, treble affects rotation
+        // Audio reactivity: subtle — bass nudges radial count, mids nudge ring count, treble rotates gently
         const audioRadialBoost = (isAudioEnabled && isAudioReactive)
-          ? Math.floor(audioGradientParam * 12) // Bass adds up to 12 radials
+          ? Math.floor(audioGradientParam * 3) // Bass adds up to 3 radials
           : 0;
         const audioRingBoost = (isAudioEnabled && isAudioReactive)
-          ? Math.floor(audioEffectParam * 10) // Mid adds up to 10 rings
+          ? Math.floor(audioEffectParam * 2) // Mids add up to 2 rings
           : 0;
         const audioRotation = (isAudioEnabled && isAudioReactive)
-          ? audioColorShift * 180 // Treble rotates up to 180 degrees
+          ? audioColorShift * 20 // Treble rotates up to 20 degrees
           : 0;
 
         const solidSides = Math.max(1, polygon2Sides + audioRadialBoost); // Use polygon2Sides for this gradient type
