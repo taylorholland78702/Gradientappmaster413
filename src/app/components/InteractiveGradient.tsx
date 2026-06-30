@@ -102,7 +102,7 @@ export function InteractiveGradient() {
   const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
   const drawParamsDirtyRef = useRef(true); // true until first draw
-  const waveNumberRef = useRef<number>(19);
+  const waveNumberRef = useRef<number>(20);
   const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
   
@@ -207,9 +207,9 @@ export function InteractiveGradient() {
   const [shapesCount, setShapesCount] = useState(8);
   const [concentricRingWidth, setConcentricRingWidth] = useState(100);
   const [concentricRingCount, setConcentricRingCount] = useState(10);
-  const [waveAmplitude, setWaveAmplitude] = useState(35);
-  const [waveFrequency, setWaveFrequency] = useState(3);
-  const [waveNumber, setWaveNumber] = useState(19);
+  const [waveAmplitude, setWaveAmplitude] = useState(44);
+  const [waveFrequency, setWaveFrequency] = useState(5);
+  const [waveNumber, setWaveNumber] = useState(20);
   const [waveRotation, setWaveRotation] = useState(45);
   const [meshGridSize, setMeshGridSize] = useState(4);
   

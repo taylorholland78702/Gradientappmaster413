@@ -85,8 +85,10 @@
 }
 /* BEAT active state in light mode */
 .control-panel.panel-light .beat-active {
-  background-color: rgba(0,0,0,0.75) !important;
+  background-color: rgba(0,0,0,0.82) !important;
   color: white !important;
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.5) !important;
+  text-shadow: none !important;
 }
 /* Hover states in light mode */
 .control-panel.panel-light button:not([class*="from-purple"]):hover {

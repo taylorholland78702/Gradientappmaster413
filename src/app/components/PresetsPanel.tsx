@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Plus, Upload, Pencil, Minus } from 'lucide-react';
+import { ChevronDown, Plus, Save, Pencil, Minus } from 'lucide-react';
 
 interface Preset {
   name: string;
@@ -94,7 +94,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
                   title="Save current edits to this preset"
                 >
-                  <Upload className="w-4 h-4" />
+                  <Save className="w-4 h-4" />
                 </button>
                 <button
                   onClick={(e) => {
