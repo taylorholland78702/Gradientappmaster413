@@ -2426,6 +2426,21 @@ export function InteractiveGradient() {
     // Scale context for high-resolution rendering
     ctx.scale(resolutionMultiplier, resolutionMultiplier);
 
+    // putImageData ignores ctx transforms, so route through drawImage to respect DPR scale
+    const putScaledImageData = (imgData: ImageData, dx = 0, dy = 0) => {
+      if (resolutionMultiplier === 1) {
+        ctx.putImageData(imgData, dx, dy);
+      } else {
+        const tmp = new OffscreenCanvas(imgData.width, imgData.height);
+        (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).putImageData(imgData, 0, 0);
+        ctx.save();
+        ctx.resetTransform();
+        ctx.drawImage(tmp, dx * resolutionMultiplier, dy * resolutionMultiplier,
+          imgData.width * resolutionMultiplier, imgData.height * resolutionMultiplier);
+        ctx.restore();
+      }
+    };
+
     // Safety check: require a gradient type to be selected
     if (!gradientType) {
       // Clear canvas and show nothing until Randomize is clicked
@@ -3009,7 +3024,7 @@ export function InteractiveGradient() {
             noiseData[idx + 3] = 255;
           }
         }
-        ctx.putImageData(noiseImageData, 0, 0);
+        putScaledImageData(noiseImageData);
         break;
       
       case 'plasma':
@@ -3056,7 +3071,7 @@ export function InteractiveGradient() {
             plasmaData[idx + 3] = 255;
           }
         }
-        ctx.putImageData(plasmaImageData, 0, 0);
+        putScaledImageData(plasmaImageData);
         break;
       
       case 'grid': {
@@ -3173,7 +3188,7 @@ export function InteractiveGradient() {
             spiralData[pixelIndex + 3] = 255;
           }
         }
-        ctx.putImageData(spiralImageData, 0, 0);
+        putScaledImageData(spiralImageData);
         break;
       
       case 'radial-burst': {
@@ -3260,7 +3275,7 @@ export function InteractiveGradient() {
           }
         }
         
-        ctx.putImageData(imageData, 0, 0);
+        putScaledImageData(imageData);
         break;
 
       case 'voronoi':
@@ -3341,7 +3356,7 @@ export function InteractiveGradient() {
           }
         }
         
-        ctx.putImageData(voronoiImageData, 0, 0);
+        putScaledImageData(voronoiImageData);
         break;
 
       case 'iridescent':
@@ -3423,7 +3438,7 @@ export function InteractiveGradient() {
           }
         }
         
-        ctx.putImageData(iridescentImageData, 0, 0);
+        putScaledImageData(iridescentImageData);
         break;
 
       case 'aurora': {
@@ -3500,7 +3515,7 @@ export function InteractiveGradient() {
             d[idx + 3] = 255;
           }
         }
-        ctx.putImageData(imageData, 0, 0);
+        putScaledImageData(imageData);
         break;
       }
 
@@ -3557,7 +3572,7 @@ export function InteractiveGradient() {
             d2[idx2 + 3] = 255;
           }
         }
-        ctx.putImageData(imageData2, 0, 0);
+        putScaledImageData(imageData2);
         break;
       }
 
@@ -3599,7 +3614,7 @@ export function InteractiveGradient() {
             d3[idx3 + 3] = 255;
           }
         }
-        ctx.putImageData(imageData3, 0, 0);
+        putScaledImageData(imageData3);
         break;
       }
 
@@ -3652,7 +3667,7 @@ export function InteractiveGradient() {
           }
         }
 
-        ctx.putImageData(radarImageData, 0, 0);
+        putScaledImageData(radarImageData);
         break;
       }
 
@@ -3823,7 +3838,7 @@ export function InteractiveGradient() {
             data[i + 1] = 255 - data[i + 1]; // Green
             data[i + 2] = 255 - data[i + 2]; // Blue
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
           
         case 'pixelate': {
@@ -3896,7 +3911,7 @@ export function InteractiveGradient() {
               dst.data[i + 3] = 255;
             }
           }
-          ctx.putImageData(dst, 0, 0);
+          putScaledImageData(dst);
           break;
         }
           
@@ -3945,7 +3960,7 @@ export function InteractiveGradient() {
               }
             }
           }
-          ctx.putImageData(dst, 0, 0);
+          putScaledImageData(dst);
           break;
         }
         
@@ -3959,7 +3974,7 @@ export function InteractiveGradient() {
             const n = (Math.random() - 0.5) * int * 255 * sz;
             d[i] += n; d[i + 1] += n; d[i + 2] += n;
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -3988,7 +4003,7 @@ export function InteractiveGradient() {
               d[i + 2] = Math.min(255, Math.max(0, d[i + 2] + (d[i + 2] - g) * b));
             }
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -4000,7 +4015,7 @@ export function InteractiveGradient() {
             d[i + 1] = Math.floor(d[i + 1] / 256 * lv) * s;
             d[i + 2] = Math.floor(d[i + 2] / 256 * lv) * s;
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -4058,7 +4073,7 @@ export function InteractiveGradient() {
                 const slice = ctx.getImageData(0, y, displayWidth, h);
                 // Apply additional blur to the displaced slice
                 ctx.filter = `blur(${blurStrength * 1.5}px)`;
-                ctx.putImageData(slice, offset, y);
+                putScaledImageData(slice, offset, y);
                 ctx.filter = 'none';
               } catch (e) {
                 // Skip if getImageData fails
@@ -4088,7 +4103,7 @@ export function InteractiveGradient() {
                 data[i + 2] = tempData[blueSourceI + 2];
               }
             }
-            ctx.putImageData(imageData, 0, 0);
+            putScaledImageData(imageData);
           }
           break;
         
@@ -4104,7 +4119,7 @@ export function InteractiveGradient() {
             texData[i + 1] += noise;
             texData[i + 2] += noise;
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           
           // Add crackle lines
           if (dustCrackleIntensity > 0) {
@@ -4167,7 +4182,7 @@ export function InteractiveGradient() {
               tempWave.data[destIdx + 3] = 255;
             }
           }
-          ctx.putImageData(tempWave, 0, 0);
+          putScaledImageData(tempWave);
           } catch (e) {
             console.error('Wave distortion error:', e);
           }
@@ -4183,7 +4198,7 @@ export function InteractiveGradient() {
             d[i + 1] = (d[i + 1] + colorShiftHue) % 256;
             d[i + 2] = (d[i + 2] + colorShiftHue) % 256;
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -4201,7 +4216,7 @@ export function InteractiveGradient() {
             d[i + 1] = (c0.g * (1 - t) + c1.g * t) * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
             d[i + 2] = (c0.b * (1 - t) + c1.b * t) * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -4231,7 +4246,7 @@ export function InteractiveGradient() {
             d[i + 1] = gr * tritoneIntensity + d[i + 1] * (1 - tritoneIntensity);
             d[i + 2] = b * tritoneIntensity + d[i + 2] * (1 - tritoneIntensity);
           }
-          ctx.putImageData(imageData, 0, 0);
+          putScaledImageData(imageData);
           break;
         }
         
@@ -4446,7 +4461,7 @@ export function InteractiveGradient() {
             }
           }
           
-          ctx.putImageData(ditherImageData, 0, 0);
+          putScaledImageData(ditherImageData);
           break;
 
         case 'slit-scan':
@@ -4500,7 +4515,7 @@ export function InteractiveGradient() {
                 }
               }
             }
-            ctx.putImageData(out, 0, 0);
+            putScaledImageData(out);
           }
           break;
       } } catch (err) {
