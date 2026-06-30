@@ -2650,8 +2650,8 @@ export function InteractiveGradient() {
         const waveScaleForWave = 1 / waveZoom;
         const waveWidth = (displayWidth / waveNumberRef.current) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
-        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 100 // Up to 100 extra amplitude
+        const audioWaveAmplitude = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 20 // Subtle amplitude nudge on bass
           : 0;
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
