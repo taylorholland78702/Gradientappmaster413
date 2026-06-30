@@ -211,6 +211,8 @@ export function InteractiveGradient() {
   const [spiralRotations, setSpiralRotations] = useState(3);
   const [spiralThickness, setSpiralThickness] = useState(49);
   const [spiralZoom, setSpiralZoom] = useState(3.5);
+  const [waveScale, setWaveScale] = useState(1.0);
+  const [radialSizeScale, setRadialSizeScale] = useState(1.0);
   const [shapesSides, setShapesSides] = useState(4);
   const [shapesCount, setShapesCount] = useState(8);
   const [concentricRingWidth, setConcentricRingWidth] = useState(100);
@@ -2455,7 +2457,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2563,7 +2565,7 @@ export function InteractiveGradient() {
         const dampenedRadialZoom = radialAudioActive ? 1 : 1 + (zoom - 1) * radialDampening;
         // Bass makes ring breathe — larger pulse on strong hits, decays between
         const audioRadiusScale = radialAudioActive ? 1 + audioGradientParam * 0.8 : 1;
-        const radialScale = (1 / dampenedRadialZoom) * audioRadiusScale;
+        const radialScale = (1 / dampenedRadialZoom) * audioRadiusScale * radialSizeScale;
         const radialCenterX = (displayWidth * angleCenterX) / 100;
         const radialCenterY = (displayHeight * angleCenterY) / 100;
         const radialRadius = Math.max(0, Math.min(displayWidth, displayHeight) / 2 * radialScale);
@@ -2820,7 +2822,7 @@ export function InteractiveGradient() {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate((waveRotationRef.current * Math.PI) / 180);
-        const waveZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        const waveZoom = (isAudioEnabled && isAudioReactive) ? 1 / waveScale : zoom / waveScale;
         ctx.scale(waveZoom, waveZoom);
         ctx.translate(-centerX, -centerY);
 
@@ -6234,7 +6236,7 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Thickness:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -6255,9 +6257,16 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Scale:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.5" max="10" step="0.1" value={spiralZoom} onChange={(e) => setSpiralZoom(Number(e.target.value))} className="flex-1" />
+                <span className="text-xs text-white w-10 text-right">{spiralZoom.toFixed(1)}</span>
+              </div>
+            </div>
           </div>
         )}
-        
+
         {/* Waves Controls */}
         {gradientType === 'waves' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
@@ -6324,7 +6333,7 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -6345,9 +6354,16 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Scale:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.25" max="4" step="0.05" value={waveScale} onChange={(e) => setWaveScale(Number(e.target.value))} className="flex-1" />
+                <span className="text-xs text-white w-10 text-right">{waveScale.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         )}
-        
+
         {/* Mesh Controls */}
         {gradientType === 'mesh' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
@@ -6488,7 +6504,7 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Center Y:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -6509,9 +6525,16 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Scale:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
+                <span className="text-xs text-white w-10 text-right">{radialSizeScale.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         )}
-        
+
         {/* Radial Burst Controls */}
         {gradientType === 'radial-burst' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
