@@ -50,7 +50,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [bassBeatSync, setBassBeatSync] = useState(false);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);
-  const [subBassMultiplier, setSubBassMultiplier] = useState(1);
+  const [subBassMultiplier, setSubBassMultiplier] = useState(2.5);
   const [subBassBeatSync, setSubBassBeatSync] = useState(false);
   const [liveSubBassLevel, setLiveSubBassLevel] = useState(0);
   const [bpm, setBpm] = useState(0);
@@ -305,20 +305,20 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let subBassRaw: number;
       if (subBassBeatSync) {
         subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * masterSensitivity;
-        subBassBeatPulseRef.current *= 0.68; // faster decay = snappier pulse
+        subBassBeatPulseRef.current *= 0.6; // snappier decay = cleaner hits
       } else {
         subBassRaw = subBassAvgRaw * subBassMultiplier * masterSensitivity;
       }
-      subBassSmoothedRef.current = 0.5 * subBassSmoothedRef.current + 0.5 * subBassRaw;
+      subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
       const subBassValue = Math.min(1, subBassSmoothedRef.current);
 
       setTargetZoom(prev => {
         if (subBassValue > 0.05) {
-          const pulse = 1 + subBassValue * (subBassBeatSync ? 0.7 : 0.35);
-          return Math.min(prev * pulse, prev + (subBassBeatSync ? 1.2 : 0.6));
+          const pulse = 1 + subBassValue * (subBassBeatSync ? 1.4 : 0.7);
+          return Math.min(prev * pulse, prev + (subBassBeatSync ? 2.0 : 1.0));
         }
-        // Decay back toward 1 between beats
-        return prev + (1 - prev) * (subBassBeatSync ? 0.18 : 0.08);
+        // Snap back faster so next hit lands clean
+        return prev + (1 - prev) * (subBassBeatSync ? 0.3 : 0.12);
       });
 
       // ---- BASS (bins 0–9) ----
