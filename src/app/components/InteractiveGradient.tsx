@@ -2399,13 +2399,13 @@ export function InteractiveGradient() {
     const gradientAngle = gradientAngleRef.current;
     const zoom = zoomRef.current;
 
-    // Use canvas's actual rendered size (avoids gap when window.innerWidth < viewport)
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    const displayWidth = canvas.offsetWidth || window.innerWidth;
-    const displayHeight = canvas.offsetHeight || window.innerHeight;
+    // document.documentElement.clientWidth is the most reliable full-viewport measurement
+    const displayWidth = document.documentElement.clientWidth || window.innerWidth;
+    const displayHeight = document.documentElement.clientHeight || window.innerHeight;
     canvas.width = displayWidth * resolutionMultiplier;
     canvas.height = displayHeight * resolutionMultiplier;
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
 
     // Scale context for high-resolution rendering
     ctx.scale(resolutionMultiplier, resolutionMultiplier);
