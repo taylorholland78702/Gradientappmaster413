@@ -2991,18 +2991,19 @@ export function InteractiveGradient() {
         const spiralImageData = ctx.createImageData(displayWidth, displayHeight);
         const spiralData = spiralImageData.data;
         
-        // Audio reactivity: bass affects spiral tightness
-        const audioConicalTightness = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 10 // Up to 10x tighter
+        // Audio reactivity: bass gently varies tightness; bypass zoom when audio active
+        const audioConicalTightness = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 2 // Subtle tightness pulse
           : 0;
-        
+        const conicalZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+
         for (let sy = 0; sy < displayHeight; sy++) {
           for (let sx = 0; sx < displayWidth; sx++) {
             const dx = sx - centerX;
             const dy = sy - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const spiralAngle = Math.atan2(dy, dx);
-            const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * conicalSpiralTurns / zoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
+            const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * conicalSpiralTurns / conicalZoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
             const normalizedAngle = (finalAngle + Math.PI) / (Math.PI * 2); // 0 to 1
             
             // Interpolate between colors
