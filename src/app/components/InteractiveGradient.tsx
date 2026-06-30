@@ -1247,21 +1247,10 @@ export function InteractiveGradient() {
       const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(randomGradient);
 
-      // Weighted effect selection — preferred effects appear more often
-      const PREFERRED_FX: EffectType[] = ['blur', 'vignette', 'chromatic', 'film-grain', 'wave-distortion', 'color-shift', 'fisheye', 'bokeh', 'brightness'];
-      const STATEMENT_FX: EffectType[] = ['kaleidoscope', 'halftone', 'posterize', 'duotone', 'invert', 'pixelate'];
-      const ACCENT_FX: EffectType[] = ['vhs-glitch', 'dust-scratches', 'dither', 'triangulate', 'grid', 'slit-scan'];
-      const weightedPool: EffectType[] = [
-        ...PREFERRED_FX, ...PREFERRED_FX, ...PREFERRED_FX, // 3× weight
-        ...STATEMENT_FX, ...STATEMENT_FX,                   // 2× weight
-        ...ACCENT_FX,                                        // 1× weight
-      ];
-      const numEffects = Math.random() < 0.45 ? 1 : Math.random() < 0.75 ? 2 : 3; // skew toward fewer
-      const selectedEffects: EffectType[] = [];
-      for (let i = 0; i < numEffects * 10 && selectedEffects.length < numEffects; i++) {
-        const pick = weightedPool[Math.floor(Math.random() * weightedPool.length)];
-        if (!selectedEffects.includes(pick)) selectedEffects.push(pick);
-      }
+      // Flat effect selection — all effects equally likely during ratings phase
+      const shuffled = [...ALL_EFFECTS].sort(() => Math.random() - 0.5);
+      const numEffects = Math.random() < 0.35 ? 1 : Math.random() < 0.7 ? 2 : 3;
+      const selectedEffects: EffectType[] = shuffled.slice(0, numEffects);
 
       setActiveEffects(selectedEffects);
       setIsMultiFxMode(true);
