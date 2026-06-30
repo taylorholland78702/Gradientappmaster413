@@ -3230,8 +3230,9 @@ export function InteractiveGradient() {
             const dy = sy - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const spiralAngle = Math.atan2(dy, dx);
-            const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * (conicalSpiralTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
-            const normalizedAngle = (finalAngle + Math.PI) / (Math.PI * 2);
+            const rawAngle = spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * (conicalSpiralTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD;
+            const finalAngle = ((rawAngle % TWO_PI) + TWO_PI) % TWO_PI;
+            const normalizedAngle = finalAngle / TWO_PI;
 
             const shiftedAngle = (normalizedAngle + conicalColorShift) % 1;
             const colorPos = shiftedAngle * (gradientColors.length - 1);
