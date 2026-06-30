@@ -274,7 +274,7 @@ export function InteractiveGradient() {
   // Preset management state is in usePresets hook (initialized below)
   
   // Rating system for Randomize
-  const [showRatingUI, setShowRatingUI] = useState(true);
+  const [showRatingUI, setShowRatingUI] = useState(false);
   const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
     try { return JSON.parse(localStorage.getItem('gradientRatings') || '[]'); } catch { return []; }
   });
@@ -2324,11 +2324,10 @@ export function InteractiveGradient() {
         );
         break;
 
-      case 'radial':
-        // Invert zoom for radial gradient - show entire circle on load
-        // Add damping to make radial animate more slowly
-        const radialDampening = 0.2; // Reduce zoom impact for slower, more subtle animation
-        const dampenedRadialZoom = 1 + (zoom - 1) * radialDampening;
+      case 'radial': {
+        // When audio is active, skip zoom so sub-bass pulse doesn't shrink the radial
+        const radialDampening = 0.2;
+        const dampenedRadialZoom = (isAudioEnabled && isAudioReactive) ? 1 : 1 + (zoom - 1) * radialDampening;
         // Audio reactivity: bass affects radius pulsing
         const audioRadiusScale = (isAudioEnabled && isAudioReactive) 
           ? 1 + (audioGradientParam * 0.5) // Up to 50% larger radius
@@ -2339,6 +2338,7 @@ export function InteractiveGradient() {
         const radialRadius = Math.max(0, Math.min(displayWidth, displayHeight) / 2 * radialScale);
         gradient = ctx.createRadialGradient(radialCenterX, radialCenterY, 0, radialCenterX, radialCenterY, radialRadius);
         break;
+      }
 
       case 'angle':
         // Save context and apply zoom transformation
@@ -2645,12 +2645,12 @@ export function InteractiveGradient() {
         ctx.restore();
         break;
 
-      case 'shapes':
+      case 'shapes': {
         // Create concentric polygons with variable sides
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        const shapesScale = 1 / zoom;
+        // When audio active, don't let sub-bass zoom shrink shapes via 1/zoom
+        const shapesScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
         // Audio reactivity: bass affects ring width
         const audioShapeRingWidth = (isAudioEnabled && isAudioReactive) 
           ? audioGradientParam * 100 // Up to 100 extra width
@@ -2702,6 +2702,7 @@ export function InteractiveGradient() {
           ctx.fill();
         }
         break;
+      }
 
       case 'fade':
         // Simple solid color that progressively fades through gradient colors
@@ -2985,12 +2986,13 @@ export function InteractiveGradient() {
         ctx.putImageData(spiralImageData, 0, 0);
         break;
       
-      case 'radial-burst':
+      case 'radial-burst': {
         // Multiple radial gradients - centered and sized to fit window on load
         ctx.fillStyle = 'rgb(0, 0, 0)';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const burstCount = radialBurstCount;
-        const burstScale = 1 / zoom;
+        // When audio active, skip 1/zoom so sub-bass pulse doesn't shrink bursts
+        const burstScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
         const sizeScale = radialBurstSize / 100;
         const burstRadius = fitRadius * 0.7;
         // Audio reactivity: bass affects burst spread
@@ -3017,6 +3019,7 @@ export function InteractiveGradient() {
         }
         ctx.globalCompositeOperation = 'source-over';
         break;
+      }
 
       case 'freeform':
         // Freeform gradient with color pins
