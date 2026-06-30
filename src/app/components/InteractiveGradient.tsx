@@ -79,6 +79,7 @@ export function InteractiveGradient() {
   // Video recording state (shared between root and useVCRPlayback hook)
   const [isRecording, setIsRecording] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(false);
+  const [gradientTransitionOpacity, setGradientTransitionOpacity] = useState(1);
   
   const [gradientColors, setGradientColors] = useState<ColorRGB[]>(DEFAULT_COLORS);
   const [targetColors, setTargetColors] = useState<ColorRGB[]>(gradientColors);
@@ -233,9 +234,9 @@ export function InteractiveGradient() {
   const [plasmaSpeed, setPlasmaSpeed] = useState(1);
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
   const [plasmaZoomScale, setPlasmaZoomScale] = useState(1);
-  const [radialBurstCount, setRadialBurstCount] = useState(8);
-  const [radialBurstSpread, setRadialBurstSpread] = useState(71);
-  const [radialBurstSize, setRadialBurstSize] = useState(73);
+  const [radialBurstCount, setRadialBurstCount] = useState(12);
+  const [radialBurstSpread, setRadialBurstSpread] = useState(85);
+  const [radialBurstSize, setRadialBurstSize] = useState(80);
   
   // New dither, slit-scan, and diffusion effect parameters
   const [ditherType, setDitherType] = useState<'bayer' | 'floyd-steinberg'>('bayer');
@@ -253,9 +254,9 @@ export function InteractiveGradient() {
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
   const [conicalSpiralTurns, setConicalSpiralTurns] = useState(10);
   const [conicalSpiralTightness, setConicalSpiralTightness] = useState(2);
-  const [iridescentAngle, setIridescentAngle] = useState(0);
-  const [iridescentIntensity, setIridescentIntensity] = useState(0.5);
-  const [iridescentScale, setIridescentScale] = useState(3);
+  const [iridescentAngle, setIridescentAngle] = useState(45);
+  const [iridescentIntensity, setIridescentIntensity] = useState(0.8);
+  const [iridescentScale, setIridescentScale] = useState(5);
   const [waveDistortionStrength, setWaveDistortionStrength] = useState(100);
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
@@ -743,7 +744,7 @@ export function InteractiveGradient() {
     const animateRadar = () => {
       setRadarSweepAngle(prev => {
         const baseSpeed = isAutoMode || isVCRPlaying ? 2 * vcrPlaybackSpeed : 1.2;
-        const audioBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 3 : 0;
+        const audioBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 6 : 0;
         return (prev + baseSpeed + audioBoost) % 360;
       });
       rafId = requestAnimationFrame(animateRadar);
@@ -1155,8 +1156,14 @@ export function InteractiveGradient() {
     const usePreferences = highRatedResults.length >= 3 && Math.random() < blendProbability;
     
     if (usePreferences && highRatedResults.length > 0) {
-      // Blend with a high-rated result
-      const baseResult = highRatedResults[Math.floor(Math.random() * highRatedResults.length)];
+      // Weight by rating: higher-rated results are more likely to be picked
+      const totalWeight = highRatedResults.reduce((sum, r) => sum + r.rating, 0);
+      let pick = Math.random() * totalWeight;
+      let baseResult = highRatedResults[highRatedResults.length - 1];
+      for (const r of highRatedResults) {
+        pick -= r.rating;
+        if (pick <= 0) { baseResult = r; break; }
+      }
       const blendFactor = 0.3 + Math.random() * 0.4; // 30-70% blend
       
       // Use base result's gradient type and effects with some variation
@@ -2370,13 +2377,11 @@ export function InteractiveGradient() {
         break;
 
       case 'radial': {
-        // When audio is active, skip zoom so sub-bass pulse doesn't shrink the radial
+        const radialAudioActive = isAudioEnabled && isAudioReactive;
         const radialDampening = 0.2;
-        const dampenedRadialZoom = (isAudioEnabled && isAudioReactive) ? 1 : 1 + (zoom - 1) * radialDampening;
-        // Audio reactivity: bass affects radius pulsing
-        const audioRadiusScale = (isAudioEnabled && isAudioReactive) 
-          ? 1 + (audioGradientParam * 0.5) // Up to 50% larger radius
-          : 1;
+        const dampenedRadialZoom = radialAudioActive ? 1 : 1 + (zoom - 1) * radialDampening;
+        // Bass makes ring breathe — larger pulse on strong hits, decays between
+        const audioRadiusScale = radialAudioActive ? 1 + audioGradientParam * 0.8 : 1;
         const radialScale = (1 / dampenedRadialZoom) * audioRadiusScale;
         const radialCenterX = (displayWidth * angleCenterX) / 100;
         const radialCenterY = (displayHeight * angleCenterY) / 100;
@@ -2771,29 +2776,31 @@ export function InteractiveGradient() {
       }
 
       case 'fade': {
-        // Bass shifts color position; treble pulses brightness; mids add radial vignette pulse
+        const fadeAudioActive = isAudioEnabled && isAudioReactive;
         const totalColors = gradientColors.length;
-        const audioFadeShift = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.8 : 0;
         const normalizedAngle = gradientAngle / 360;
-        const exactPosition = (normalizedAngle + audioFadeShift) % totalColors;
-        const currentColorIndex = Math.floor(exactPosition);
+        // Treble shifts the blend midpoint between colors
+        const audioMidpointShift = fadeAudioActive ? audioColorShift * 0.6 : 0;
+        const exactPosition = (normalizedAngle * totalColors + audioMidpointShift) % totalColors;
+        const currentColorIndex = Math.floor(exactPosition) % totalColors;
         const nextColorIndex = (currentColorIndex + 1) % totalColors;
-        const blendAmount = exactPosition - currentColorIndex;
+        // Bass pulses the blend amount toward the next color
+        const baseBlend = exactPosition - Math.floor(exactPosition);
+        const blendAmount = fadeAudioActive ? Math.min(1, baseBlend + audioGradientParam * 0.4) : baseBlend;
 
         const currentColor = gradientColors[currentColorIndex];
         const nextColor = gradientColors[nextColorIndex];
         if (!currentColor || !nextColor) break;
 
-        const audioFadeBright = (isAudioEnabled && isAudioReactive) ? 1 + audioColorShift * 0.5 : 1;
-        const r = Math.min(255, (currentColor.r + (nextColor.r - currentColor.r) * blendAmount) * audioFadeBright);
-        const g = Math.min(255, (currentColor.g + (nextColor.g - currentColor.g) * blendAmount) * audioFadeBright);
-        const b = Math.min(255, (currentColor.b + (nextColor.b - currentColor.b) * blendAmount) * audioFadeBright);
+        const r = Math.round(currentColor.r + (nextColor.r - currentColor.r) * blendAmount);
+        const g = Math.round(currentColor.g + (nextColor.g - currentColor.g) * blendAmount);
+        const b = Math.round(currentColor.b + (nextColor.b - currentColor.b) * blendAmount);
 
         ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-        // Mids: radial pulse emanates from center
-        if (isAudioEnabled && isAudioReactive && audioEffectParam > 0.05) {
+        // Mids: radial pulse from center
+        if (fadeAudioActive && audioEffectParam > 0.05) {
           const pulseRadius = Math.min(displayWidth, displayHeight) * audioEffectParam * 0.7;
           const pulseGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseRadius);
           pulseGrad.addColorStop(0, `rgba(255,255,255,${audioEffectParam * 0.4})`);
@@ -3026,7 +3033,10 @@ export function InteractiveGradient() {
         const spiralData = spiralImageData.data;
         
         const conicalAudioActive = isAudioEnabled && isAudioReactive;
-        const audioConicalTightness = conicalAudioActive ? audioGradientParam * 2 : 0;
+        // Bass pulses tightness (spiral density)
+        const audioConicalTightness = conicalAudioActive ? audioGradientParam * 4 : 0;
+        // Mids change turn count
+        const audioConicalTurns = conicalAudioActive ? audioEffectParam * 3 : 0;
         const conicalZoom = conicalAudioActive ? 1 : zoom;
         // Treble shifts color palette; bass radial pulse
         const conicalColorShift = conicalAudioActive ? audioColorShift * 0.6 : 0;
@@ -3039,7 +3049,7 @@ export function InteractiveGradient() {
             const dy = sy - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const spiralAngle = Math.atan2(dy, dx);
-            const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * conicalSpiralTurns / conicalZoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
+            const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * (conicalSpiralTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
             const normalizedAngle = (finalAngle + Math.PI) / (Math.PI * 2);
 
             const shiftedAngle = (normalizedAngle + conicalColorShift) % 1;
@@ -3215,7 +3225,10 @@ export function InteractiveGradient() {
 
             const vdx = vx - centerX, vdy = vy - centerY;
             const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
-            const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
+            // Radial pulse + uniform flash on strong bass hits
+            const vRadialBoost = voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
+            const vFlash = voronoiAudioActive && audioGradientParam > 0.6 ? (audioGradientParam - 0.6) * 1.5 : 0;
+            const vBoost = 1 + vRadialBoost + vFlash;
 
             const idx = (vy * displayWidth + vx) * 4;
             voronoiData[idx]     = Math.min(255, Math.round(color.r * vBoost));
@@ -3382,8 +3395,10 @@ export function InteractiveGradient() {
         // Center circle
         circles.push({x: centerX, y: centerY, colorIndex: 0});
 
+        // Bass beats add an extra layer temporarily
+        const audioLayerBoost = (isAudioEnabled && isAudioReactive) && audioGradientParam > 0.65 ? 1 : 0;
         // Create hexagonal pattern of overlapping circles
-        const layers = flowerCircles;
+        const layers = flowerCircles + audioLayerBoost;
         for (let layer = 1; layer <= layers; layer++) {
           const circlesInLayer = layer * 6;
           const angleStep = (Math.PI * 2) / circlesInLayer;
@@ -4790,7 +4805,7 @@ export function InteractiveGradient() {
         onTouchMove={handleTouchMove}
         onWheel={handleWheel}
         className="w-full h-full"
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.15s ease-in-out' }}
       />
       
       {/* Freeform Pins Overlay */}
@@ -5227,7 +5242,13 @@ export function InteractiveGradient() {
             {FULL_GRADIENT_TYPES.map((type) => (
               <button
                 key={type}
-                onClick={() => setGradientType(type)}
+                onClick={() => {
+                  setGradientTransitionOpacity(0);
+                  setTimeout(() => {
+                    setGradientType(type);
+                    setGradientTransitionOpacity(1);
+                  }, 150);
+                }}
                 className={`px-0.5 py-0.5 rounded text-xs capitalize transition-all whitespace-nowrap ${
                   gradientType === type
                     ? 'bg-white text-black shadow-sm'
