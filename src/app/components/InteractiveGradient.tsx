@@ -3328,12 +3328,12 @@ export function InteractiveGradient() {
 
         ctx.save();
         // Treble spins the flower; bass pulses the radius; mids add extra layers
-        const audioFlowerRotationBoost = (isAudioEnabled && isAudioReactive) ? audioColorShift * 60 : 0;
+        const audioFlowerRotationBoost = (isAudioEnabled && isAudioReactive) ? audioColorShift * 8 : 0;
         ctx.translate(centerX, centerY);
         ctx.rotate(((flowerRotation + flowerAnimTime + audioFlowerRotationBoost) * Math.PI) / 180);
         ctx.translate(-centerX, -centerY);
 
-        const audioFlowerScale = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 0.5 : 1;
+        const audioFlowerScale = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 0.12 : 1;
         const baseRadius = Math.min(displayWidth, displayHeight) / 6 * flowerScale * audioFlowerScale;
         const circles: Array<{x: number, y: number, colorIndex: number}> = [];
 
