@@ -339,7 +339,7 @@ export function InteractiveGradient() {
     },
     setTargetColors,
     setGradientColors,
-    setTargetZoom,
+    setTargetZoom: (updater) => { if (gradientType !== 'spiral') setTargetZoom(updater); },
   });
 
   // Destructure audio hook values for use throughout this component
