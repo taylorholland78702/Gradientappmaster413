@@ -2838,17 +2838,15 @@ export function InteractiveGradient() {
         const noiseData = noiseImageData.data;
 
         const audioActive = isAudioEnabled && isAudioReactive;
-        // Bass: scale pulse
-        const audioNoiseScale = audioActive ? audioGradientParam * 0.005 : 0;
         const noiseZoom = audioActive ? 1 : zoom;
-        const baseNoiseScale = ((noiseScale + audioNoiseScale * 1000) * 0.001) / noiseZoom;
-        // Bass: rotation angle
-        const noiseAudioRotation = audioActive ? audioGradientParam * Math.PI * 0.5 : 0;
-        const noiseRotCos = Math.cos(noiseDirection * 0.01 + noiseAudioRotation);
-        const noiseRotSin = Math.sin(noiseDirection * 0.01 + noiseAudioRotation);
-        // Mids: flowing warp offset
-        const noiseWarpX = audioActive ? audioEffectParam * 300 : 0;
-        const noiseWarpY = audioActive ? audioEffectParam * 200 : 0;
+        // Bass: tighten/loosen the noise pattern (scale pulse, no movement)
+        const audioNoiseScale = audioActive ? audioGradientParam * 0.3 : 0;
+        const baseNoiseScale = (noiseScale * (1 + audioNoiseScale) * 0.001) / noiseZoom;
+        // Static orientation — no rotation or warp on audio
+        const noiseRotCos = Math.cos(noiseDirection * 0.01);
+        const noiseRotSin = Math.sin(noiseDirection * 0.01);
+        // Bass: brightness boost for color pulse
+        const noiseBrightnessBoost = audioActive ? audioGradientParam * 0.4 : 0;
 
         const noiseCX = displayWidth / 2;
         const noiseCY = displayHeight / 2;
@@ -2856,9 +2854,9 @@ export function InteractiveGradient() {
           for (let nx = 0; nx < displayWidth; nx++) {
             const ndx = nx - noiseCX;
             const ndy = ny - noiseCY;
-            // Rotate coordinate space around center
-            const rx = ndx * noiseRotCos - ndy * noiseRotSin + noiseWarpX;
-            const ry = ndx * noiseRotSin + ndy * noiseRotCos + noiseWarpY;
+            // Rotate coordinate space around center (no warp offset)
+            const rx = ndx * noiseRotCos - ndy * noiseRotSin;
+            const ry = ndx * noiseRotSin + ndy * noiseRotCos;
             // Multi-octave noise based on noiseOctaves setting
             let combinedNoise = 0;
             let amplitude = 1;
@@ -2886,9 +2884,10 @@ export function InteractiveGradient() {
             if (!color1 || !color2) continue;
             
             const idx = (ny * displayWidth + nx) * 4;
-            noiseData[idx] = Math.round(color1.r + (color2.r - color1.r) * colorFrac);
-            noiseData[idx + 1] = Math.round(color1.g + (color2.g - color1.g) * colorFrac);
-            noiseData[idx + 2] = Math.round(color1.b + (color2.b - color1.b) * colorFrac);
+            const boost = 1 + noiseBrightnessBoost;
+            noiseData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * boost));
+            noiseData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * boost));
+            noiseData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * boost));
             noiseData[idx + 3] = 255;
           }
         }
