@@ -73,7 +73,7 @@ export function InteractiveGradient() {
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
-  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => Math.min(window.devicePixelRatio || 1, 3));
+  const [resolutionMultiplier, setResolutionMultiplier] = useState(1);
   
   
   // Video recording state (shared between root and useVCRPlayback hook)
@@ -624,12 +624,6 @@ export function InteractiveGradient() {
   }, [panelPos]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
-  useEffect(() => {
-    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-    const handler = () => setResolutionMultiplier(Math.min(window.devicePixelRatio || 1, 3));
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
 
   // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
   useEffect(() => {
@@ -2399,9 +2393,8 @@ export function InteractiveGradient() {
     const gradientAngle = gradientAngleRef.current;
     const zoom = zoomRef.current;
 
-    // document.documentElement.clientWidth is the most reliable full-viewport measurement
-    const displayWidth = document.documentElement.clientWidth || window.innerWidth;
-    const displayHeight = document.documentElement.clientHeight || window.innerHeight;
+    const displayWidth = window.innerWidth;
+    const displayHeight = window.innerHeight;
     canvas.width = displayWidth * resolutionMultiplier;
     canvas.height = displayHeight * resolutionMultiplier;
     canvas.style.width = `${displayWidth}px`;
