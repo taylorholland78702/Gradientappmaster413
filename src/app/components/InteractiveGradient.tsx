@@ -1247,10 +1247,29 @@ export function InteractiveGradient() {
       const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(randomGradient);
 
-      // Flat effect selection — all effects equally likely during ratings phase
-      const shuffled = [...ALL_EFFECTS].sort(() => Math.random() - 0.5);
-      const numEffects = Math.random() < 0.35 ? 1 : Math.random() < 0.7 ? 2 : 3;
-      const selectedEffects: EffectType[] = shuffled.slice(0, numEffects);
+      // Effects during ratings phase: keep gradients legible so ratings are meaningful.
+      // Heavy shape-changers (kaleidoscope, fisheye, pixelate, etc.) mask the gradient entirely,
+      // making everything look the same. Only allow them when stacked with a light effect.
+      const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'fisheye', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
+      const LIGHT_FX: EffectType[] = ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
+      const roll = Math.random();
+      let selectedEffects: EffectType[];
+      if (roll < 0.30) {
+        selectedEffects = []; // no effects — raw gradient
+      } else if (roll < 0.65) {
+        // 1 light effect only
+        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
+        selectedEffects = [shuffledLight[0]];
+      } else if (roll < 0.85) {
+        // 1 shape-changer + 1 light effect so the gradient still shows through
+        const sc = SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)];
+        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
+        selectedEffects = [sc, shuffledLight[0]];
+      } else {
+        // 2 light effects
+        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
+        selectedEffects = shuffledLight.slice(0, 2);
+      }
 
       setActiveEffects(selectedEffects);
       setIsMultiFxMode(true);
