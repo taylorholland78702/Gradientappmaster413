@@ -2213,9 +2213,9 @@ export function InteractiveGradient() {
       
       // Different behavior for different gradient types
       if (gradientType === 'fade') {
-        setTargetColors(prev => 
-          prev.map((color, index) => 
-            applyColorShift(color, baseAIColors?.[index] || null, 30)
+        setTargetColors(prev =>
+          prev.map((color, index) =>
+            applyColorShift(color, baseAIColors?.[index] || null, 8)
           )
         );
       } else if (gradientType === 'waves' || gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
