@@ -1107,6 +1107,12 @@ export function InteractiveGradient() {
 
   // Randomize - randomize everything!
   const feelingLucky = useCallback(() => {
+    console.log('[Rating] feelingLucky called, setting showRatingUI in 800ms');
+    setShowRatingUI(false); // reset first in case already showing
+    setTimeout(() => {
+      console.log('[Rating] timeout fired');
+      setShowRatingUI(true);
+    }, 800);
     saveCurrentState();
 
     // If no gradient type is selected, select a random one
@@ -1441,11 +1447,7 @@ export function InteractiveGradient() {
     setColorPins(newPins);
     setSelectedPinId(null);
 
-    // Show rating UI after a short delay so the result renders first
-    setTimeout(() => {
-      console.log('[Rating] showing rating UI');
-      setShowRatingUI(true);
-    }, 800);
+    // (rating UI shown at top of feelingLucky)
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults]);
 
   // Capture current state for rating
