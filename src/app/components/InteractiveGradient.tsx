@@ -3512,9 +3512,13 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const auroraAudio = isAudioEnabled && isAudioReactive;
-        const auroraTime = auroraAnimTime * auroraWaveSpeed + gradientAngle * 0.01;
-        const auroraAudioBoost = auroraAudio ? 1 + audioGradientParam * 0.6 : 1;
-        const auroraColorShift = auroraAudio ? audioColorShift * 0.5 : 0;
+        const audioBassA = auroraAudio ? audioGradientParam / 5 : 0;   // 0-1
+        const audioMidsA = auroraAudio ? audioEffectParam / 5 : 0;
+        const auroraTime = auroraAnimTime * (auroraWaveSpeed + audioMidsA * 4) + gradientAngle * 0.01;
+        const auroraAudioBoost = 1 + audioBassA * 3.0;           // bands expand on bass
+        const auroraWaveAmp  = 1 + audioBassA * 2.5;             // wave ripples harder
+        const auroraAlphaBoost = 1 + audioBassA * 1.5;           // brightness flares
+        const auroraColorShift = auroraAudio ? audioColorShift * 0.8 : 0;
         const numBands = auroraBandCount;
         for (let b = 0; b < numBands; b++) {
           const bandY = (displayHeight * (b + 0.5)) / numBands;
@@ -3524,11 +3528,10 @@ export function InteractiveGradient() {
           if (!color) continue;
           for (let x = 0; x < displayWidth; x++) {
             const nx = x / displayWidth;
-            const wave = Math.sin(nx * 4 + auroraTime + b * 1.3) * 0.5 +
-                         Math.sin(nx * 7 - auroraTime * 1.4 + b * 0.9) * 0.25 +
+            const wave = Math.sin(nx * 4 + auroraTime + b * 1.3) * 0.5 * auroraWaveAmp +
+                         Math.sin(nx * 7 - auroraTime * 1.4 + b * 0.9) * 0.25 * auroraWaveAmp +
                          Math.sin(nx * 2 + auroraTime * 0.7) * 0.25;
             const cy = bandY + wave * bandHeight * 0.4;
-            // blend between this band's color and the next for richer palette use
             const nextColorIdx = ((colorIdx + 1) % gradientColors.length + gradientColors.length) % gradientColors.length;
             const nextColor = gradientColors[nextColorIdx] || color;
             const blend = (Math.sin(nx * Math.PI * 2 + auroraTime * 0.3 + b) * 0.5 + 0.5);
@@ -3536,7 +3539,7 @@ export function InteractiveGradient() {
             const mixG = Math.round(color.g + (nextColor.g - color.g) * blend);
             const mixB = Math.round(color.b + (nextColor.b - color.b) * blend);
             const grad = ctx.createLinearGradient(x, cy - bandHeight * 0.5, x, cy + bandHeight * 0.5);
-            const alpha = 0.55 + Math.abs(wave) * 0.3;
+            const alpha = Math.min(1, (0.55 + Math.abs(wave) * 0.3) * auroraAlphaBoost);
             grad.addColorStop(0, `rgba(${mixR},${mixG},${mixB},0)`);
             grad.addColorStop(0.4, `rgba(${mixR},${mixG},${mixB},${alpha})`);
             grad.addColorStop(0.6, `rgba(${mixR},${mixG},${mixB},${alpha})`);
@@ -3552,23 +3555,29 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000814';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const causticsAudio = isAudioEnabled && isAudioReactive;
+        const audioBassC = causticsAudio ? audioGradientParam / 5 : 0;   // 0-1
+        const audioMidsC = causticsAudio ? audioEffectParam / 5 : 0;
         const ct = causticsAnimTime + gradientAngle * 0.02;
-        const causticsAudioIntensity = causticsAudio ? 1 + audioGradientParam * 0.8 : 1;
-        const causticsColorShift = causticsAudio ? audioColorShift * 0.4 : 0;
+        // Bass drives brightness + freq distortion; mids warps phase
+        const causticsFreqBoost = 1 + audioBassC * 1.8;
+        const causticsBrightnessExp = Math.max(0.3, causticsBrightness - audioBassC * 1.2);
+        const causticsPhaseWarp = audioMidsC * 2.5;
+        const causticsColorShift = causticsAudio ? audioColorShift * 0.7 : 0;
+        const causticsLightFloor = 0.1 + audioBassC * 0.4;  // black areas light up on bass
         const imageData = ctx.createImageData(displayWidth, displayHeight);
         const d = imageData.data;
         const cScaleXY = causticsScale / displayWidth;
         const scaleX = cScaleXY * 4 / zoom;
         const scaleY = (causticsScale / displayHeight) * 4 / zoom;
-        const cFreq = causticsComplexity;
+        const cFreq = causticsComplexity * causticsFreqBoost;
         for (let y = 0; y < displayHeight; y++) {
           for (let x = 0; x < displayWidth; x++) {
             const nx = (x - centerX) * scaleX;
             const ny = (y - centerY) * scaleY;
-            const w1 = Math.sin(nx * 2.1 * cFreq + Math.sin(ny * 1.3 * cFreq + ct) + ct * 0.7);
-            const w2 = Math.sin(ny * 2.3 * cFreq + Math.sin(nx * 1.7 * cFreq - ct * 0.8) - ct * 0.5);
+            const w1 = Math.sin(nx * 2.1 * cFreq + Math.sin(ny * 1.3 * cFreq + ct + causticsPhaseWarp) + ct * 0.7);
+            const w2 = Math.sin(ny * 2.3 * cFreq + Math.sin(nx * 1.7 * cFreq - ct * 0.8 + causticsPhaseWarp) - ct * 0.5);
             const w3 = Math.sin((nx + ny) * 1.5 * cFreq + ct * 1.1);
-            const v = Math.pow(Math.abs(w1 + w2 + w3) / 3, causticsBrightness) * causticsAudioIntensity;
+            const v = Math.min(1, Math.pow(Math.abs(w1 + w2 + w3) / 3, causticsBrightnessExp) + causticsLightFloor);
             const tVal = (Math.sin(v * Math.PI) * 0.5 + 0.5 + causticsColorShift) % 1;
             const ci = Math.floor(tVal * (gradientColors.length - 1));
             const ci2 = (ci + 1) % gradientColors.length;
@@ -3590,12 +3599,17 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const lavaAudio = isAudioEnabled && isAudioReactive;
+        const audioBassL = lavaAudio ? audioGradientParam / 5 : 0;   // 0-1
+        const audioMidsL = lavaAudio ? audioEffectParam / 5 : 0;
         const lt = lavaAnimTime + gradientAngle * 0.02;
-        const lavaAudioScale = lavaAudio ? 1 + audioGradientParam * 0.4 : 1;
-        const lavaColorShift = lavaAudio ? audioColorShift * 0.5 : 0;
+        // Bass pulses blob size hard; mids speeds orbit; both boost brightness
+        const lavaAudioScale = 1 + audioBassL * 3.0;         // blobs expand on bass
+        const lavaOrbitBoost = 1 + audioMidsL * 3.0;         // orbit speed up on mids
+        const lavaBrightBoost = 1 + audioBassL * 2.0;        // brightness flares
+        const lavaColorShift = lavaAudio ? audioColorShift * 0.8 : 0;
         const imageData2 = ctx.createImageData(displayWidth, displayHeight);
         const d2 = imageData2.data;
-        const lavaTime = lt * lavaSpeed;
+        const lavaTime = lt * lavaSpeed * lavaOrbitBoost;
         const numBlobs = Math.max(2, Math.min(lavaBlobCount, 12));
         const blobs: Array<{x: number, y: number, r: number}> = [];
         for (let i = 0; i < numBlobs; i++) {
@@ -3628,7 +3642,7 @@ export function InteractiveGradient() {
               colorW += influence;
             }
             const t3 = Math.min(1, Math.max(0, (field - 0.7) * 3));
-            const brightness = t3 > 0 ? 1 : Math.min(1, field * 0.3);
+            const brightness = (t3 > 0 ? 1 : Math.min(1, field * 0.3)) * lavaBrightBoost;
             const idx2 = (y * displayWidth + x) * 4;
             const fr = colorW > 0 ? colorR / colorW : 0;
             const fg = colorW > 0 ? colorG / colorW : 0;
@@ -3648,8 +3662,14 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const marbleAudio = isAudioEnabled && isAudioReactive;
         const mt = marbleAnimTime + gradientAngle * 0.015;
-        const marbleAudioFreq = marbleAudio ? 1 + audioGradientParam * 0.5 : 1;
-        const marbleColorShift = marbleAudio ? audioColorShift * 0.4 : 0;
+        const audioBassM = marbleAudio ? audioGradientParam / 5 : 0;   // 0-1
+        const audioMidsM = marbleAudio ? audioEffectParam / 5 : 0;
+        // Bass cranks turbulence + vein frequency; mids boosts octave richness
+        const marbleAudioFreq = 1 + audioBassM * 2.5;
+        const marbleTurbBoost = 1 + audioBassM * 4.0;      // veins writhe on bass
+        const marbleVeinBoost = 1 + audioBassM * 3.0;      // vein spacing tightens
+        const marbleOctAmpBoost = 1 + audioMidsM * 2.0;    // richer texture on mids
+        const marbleColorShift = marbleAudio ? audioColorShift * 0.8 : 0;
         const imageData3 = ctx.createImageData(displayWidth, displayHeight);
         const d3 = imageData3.data;
         const mScale = (1 / zoom) * 3;
@@ -3662,12 +3682,12 @@ export function InteractiveGradient() {
             let freq = 1 * marbleAudioFreq;
             let amp = 1;
             for (let oct = 0; oct < mOctaves; oct++) {
-              turb += Math.sin(nx2 * freq + mt * 0.3) * Math.cos(ny2 * freq * 0.8 - mt * 0.2) * amp;
+              turb += Math.sin(nx2 * freq + mt * 0.3) * Math.cos(ny2 * freq * 0.8 - mt * 0.2) * amp * marbleOctAmpBoost;
               turb += Math.sin((nx2 + ny2) * freq * 0.7 + mt * 0.5) * amp * 0.5;
               freq *= 2.1;
               amp *= 0.5;
             }
-            const vein = Math.sin(nx2 * marbleVeinFreq + turb * marbleTurbulence + mt * 0.1) * 0.5 + 0.5;
+            const vein = Math.sin(nx2 * marbleVeinFreq * marbleVeinBoost + turb * marbleTurbulence * marbleTurbBoost + mt * 0.1) * 0.5 + 0.5;
             const tVal2 = (vein + marbleColorShift) % 1;
             const ci4 = Math.floor(tVal2 * (gradientColors.length - 1));
             const ci5 = (ci4 + 1) % gradientColors.length;
