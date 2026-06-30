@@ -251,7 +251,7 @@ export function InteractiveGradient() {
   const [voronoiDistortion, setVoronoiDistortion] = useState(100);
   const [voronoiMorphSpeed, setVoronoiMorphSpeed] = useState(1);
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
-  const [conicalSpiralTurns, setConicalSpiralTurns] = useState(20);
+  const [conicalSpiralTurns, setConicalSpiralTurns] = useState(10);
   const [conicalSpiralTightness, setConicalSpiralTightness] = useState(2);
   const [windmillBlades, setWindmillBlades] = useState(8);
   const [windmillRotation, setWindmillRotation] = useState(0);
