@@ -248,6 +248,15 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   }, []);
 
   useEffect(() => {
+    if (isAudioEnabled) {
+      setBassBeatSync(true);
+      setMidsBeatSync(true);
+      setTrebleBeatSync(true);
+      setSubBassBeatSync(true);
+    }
+  }, [isAudioEnabled]);
+
+  useEffect(() => {
     if (!bassBeatSync || !bassFlash) return;
     onBassFlash();
   }, [bassFlash, bassBeatSync]);
