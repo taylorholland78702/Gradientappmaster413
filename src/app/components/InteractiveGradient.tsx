@@ -3442,14 +3442,8 @@ export function InteractiveGradient() {
         const bladeSpan = (Math.PI * 2) / numBlades;
         const wmRadius = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2 + 10;
 
-        // Each blade has a unique speed offset; diverge factor modulates how much they differ
-        // Period: every 1080° (900 frames at 1.2°/frame ≈ 15s) blades re-sync to load state
-        const CYCLE_DEG = 1080;
-        const cyclePhase = ((windmillRotation || 0) % CYCLE_DEG) / CYCLE_DEG; // 0→1
-        const diverge = Math.sin(cyclePhase * Math.PI); // 0 at start/end, 1 at midpoint
-
-        // Speed offsets: blade 0 is baseline, others drift away by diverge amount
-        const speedOffsets = [0, 0.5, -0.3, 0.8, -0.6, 1.1, -0.4, 0.7];
+        // Each blade has its own constant speed multiplier — always moving, never pausing
+        const speedMultipliers = [1.0, 1.18, 0.82, 1.35, 0.68, 1.22, 0.88, 1.12];
 
         // Audio
         const wmColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.25 : 0;
@@ -3459,8 +3453,8 @@ export function InteractiveGradient() {
         ctx.globalCompositeOperation = 'screen'; // blades lighten where they overlap
 
         for (let i = 0; i < numBlades; i++) {
-          const offset = speedOffsets[i % speedOffsets.length] * diverge;
-          const bladeAngle = t * (1 + offset) + (i / numBlades) * Math.PI * 2;
+          const speed = speedMultipliers[i % speedMultipliers.length];
+          const bladeAngle = t * speed + (i / numBlades) * Math.PI * 2;
 
           const colorIdx = (i + Math.round(wmColorShift * gradientColors.length) + gradientColors.length) % gradientColors.length;
           const c = gradientColors[colorIdx];
