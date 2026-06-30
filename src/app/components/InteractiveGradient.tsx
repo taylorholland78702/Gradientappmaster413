@@ -1442,7 +1442,10 @@ export function InteractiveGradient() {
     setSelectedPinId(null);
 
     // Show rating UI after a short delay so the result renders first
-    setTimeout(() => setShowRatingUI(true), 800);
+    setTimeout(() => {
+      console.log('[Rating] showing rating UI');
+      setShowRatingUI(true);
+    }, 800);
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults]);
 
   // Capture current state for rating
@@ -4795,7 +4798,7 @@ export function InteractiveGradient() {
       
       {/* Rating UI overlay */}
       {showRatingUI && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto z-50 flex flex-col items-center gap-2">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto z-[9999] flex flex-col items-center gap-2">
           <div
             className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl"
             style={{ background: 'rgba(18,20,30,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
