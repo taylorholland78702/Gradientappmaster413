@@ -235,7 +235,7 @@ export function InteractiveGradient() {
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
   const [plasmaZoomScale, setPlasmaZoomScale] = useState(1);
   const [radialBurstCount, setRadialBurstCount] = useState(12);
-  const [radialBurstSpread, setRadialBurstSpread] = useState(85);
+  const [radialBurstSpread, setRadialBurstSpread] = useState(15);
   const [radialBurstSize, setRadialBurstSize] = useState(80);
   
   // New dither, slit-scan, and diffusion effect parameters
@@ -3226,9 +3226,7 @@ export function InteractiveGradient() {
             const vdx = vx - centerX, vdy = vy - centerY;
             const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
             // Radial pulse + uniform flash on strong bass hits
-            const vRadialBoost = voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
-            const vFlash = voronoiAudioActive && audioGradientParam > 0.6 ? (audioGradientParam - 0.6) * 1.5 : 0;
-            const vBoost = 1 + vRadialBoost + vFlash;
+            const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
 
             const idx = (vy * displayWidth + vx) * 4;
             voronoiData[idx]     = Math.min(255, Math.round(color.r * vBoost));
@@ -4793,7 +4791,7 @@ export function InteractiveGradient() {
   }, []);
   
   return (
-    <div className="fixed inset-0 overflow-hidden cursor-crosshair" ref={containerRef} style={{ touchAction: 'none' }}>
+    <div className="fixed inset-0 overflow-hidden cursor-crosshair bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}
@@ -4805,7 +4803,7 @@ export function InteractiveGradient() {
         onTouchMove={handleTouchMove}
         onWheel={handleWheel}
         className="w-full h-full"
-        style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.15s ease-in-out' }}
+        style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.1s ease-in-out' }}
       />
       
       {/* Freeform Pins Overlay */}
@@ -5247,7 +5245,7 @@ export function InteractiveGradient() {
                   setTimeout(() => {
                     setGradientType(type);
                     setGradientTransitionOpacity(1);
-                  }, 150);
+                  }, 100);
                 }}
                 className={`px-0.5 py-0.5 rounded text-xs capitalize transition-all whitespace-nowrap ${
                   gradientType === type
