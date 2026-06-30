@@ -330,16 +330,16 @@ export function InteractiveGradient() {
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => { if (gradientType !== 'spiral') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
-    onMidsFlash: () => { if (gradientType !== 'spiral') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
+    onBassFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
+    onMidsFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
     onTrebleFlash: () => {
-      if (gradientType === 'spiral') return;
+      if (gradientType === 'spiral' || gradientType === 'angle') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
     setTargetColors,
     setGradientColors,
-    setTargetZoom: (updater) => { if (gradientType !== 'spiral') setTargetZoom(updater); },
+    setTargetZoom: (updater) => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(updater); },
   });
 
   // Destructure audio hook values for use throughout this component
