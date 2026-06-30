@@ -3511,18 +3511,25 @@ export function InteractiveGradient() {
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           const tSz = Math.max(10, triangleSize + (isFirstEffect ? Math.floor(audioModulation * 40) : 0));
-          const cols = Math.ceil(displayWidth / tSz), rows = Math.ceil(displayHeight / tSz);
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-              const x = c * tSz, y = r * tSz;
-              const d1 = tCtx.getImageData(Math.min(x + tSz/2, displayWidth-1), Math.min(y + tSz/2, displayHeight-1), 1, 1).data;
+          // Center the grid so pattern emanates from canvas center
+          const tHalfCols = Math.ceil(displayWidth / tSz / 2) + 1;
+          const tHalfRows = Math.ceil(displayHeight / tSz / 2) + 1;
+          for (let r = -tHalfRows; r <= tHalfRows; r++) {
+            for (let c = -tHalfCols; c <= tHalfCols; c++) {
+              const x = centerX + c * tSz - tSz / 2;
+              const y = centerY + r * tSz - tSz / 2;
+              const sx1 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2));
+              const sy1 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2));
+              const d1 = tCtx.getImageData(sx1, sy1, 1, 1).data;
               ctx.fillStyle = `rgb(${d1[0]},${d1[1]},${d1[2]})`;
               ctx.beginPath();
               ctx.moveTo(x, y);
               ctx.lineTo(x + tSz, y);
               ctx.lineTo(x + tSz, y + tSz);
               ctx.fill();
-              const d2 = tCtx.getImageData(Math.min(x + tSz/3, displayWidth-1), Math.min(y + tSz/3, displayHeight-1), 1, 1).data;
+              const sx2 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3));
+              const sy2 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3));
+              const d2 = tCtx.getImageData(sx2, sy2, 1, 1).data;
               ctx.fillStyle = `rgb(${d2[0]},${d2[1]},${d2[2]})`;
               ctx.beginPath();
               ctx.moveTo(x, y);
@@ -3668,16 +3675,23 @@ export function InteractiveGradient() {
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           const sz = halftoneSize;
-          for (let y = 0; y < displayHeight; y += sz) {
-            for (let x = 0; x < displayWidth; x += sz) {
-              const pd = htCtx.getImageData(x, y, 1, 1).data;
+          // Center the dot grid so pattern emanates from canvas center
+          const htHalfCols = Math.ceil(displayWidth / sz / 2) + 1;
+          const htHalfRows = Math.ceil(displayHeight / sz / 2) + 1;
+          for (let hr = -htHalfRows; hr <= htHalfRows; hr++) {
+            for (let hc = -htHalfCols; hc <= htHalfCols; hc++) {
+              const x = centerX + hc * sz;
+              const y = centerY + hr * sz;
+              const sx = Math.max(0, Math.min(displayWidth - 1, x));
+              const sy = Math.max(0, Math.min(displayHeight - 1, y));
+              const pd = htCtx.getImageData(sx, sy, 1, 1).data;
               const br = (pd[0] + pd[1] + pd[2]) / 3;
               const s = Math.sin(x * 12.9898 + y * 78.233 + (halftoneMove ? halftoneTimeRef.current * 1000 : 0)) * 43758.5453;
               const vf = 1 + ((s - Math.floor(s)) - 0.5) * halftoneVariation;
               const r = (br / 255) * (sz / 2) * vf;
               ctx.fillStyle = `rgb(${pd[0]},${pd[1]},${pd[2]})`;
               ctx.beginPath();
-              ctx.arc(x + sz / 2, y + sz / 2, r, 0, Math.PI * 2);
+              ctx.arc(x, y, r, 0, Math.PI * 2);
               ctx.fill();
             }
           }
