@@ -5104,7 +5104,7 @@ export function InteractiveGradient() {
           </button>
           <button
             onClick={() => setIsAutoColor(prev => !prev)}
-            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center ${isAutoColor ? 'bg-white/60 text-white shadow-md' : 'bg-white/8 text-white/50 shadow-sm hover:bg-white/15 hover:text-white'}`}
+            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center ${isAutoColor ? 'bg-white/60 text-white shadow-md' : 'bg-white/8 text-white/50 shadow-sm hover:bg-white/15 hover:text-white line-through'}`}
             title="Auto color change"
           >
             AUTO
