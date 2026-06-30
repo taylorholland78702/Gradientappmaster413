@@ -4272,6 +4272,10 @@ export function InteractiveGradient() {
   }, [isDragging, gradientColors.length, baseAIColors, randomColor]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Self-animating gradients — drag interaction conflicts with their own animation
+    const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'conical-spiral'];
+    if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
+
     // In freeform mode, if not dragging a pin, clicking adds a new pin or changes interaction
     if (gradientType === 'freeform' && !isDraggingPin) {
       const canvas = canvasRef.current;
