@@ -685,6 +685,22 @@ export function InteractiveGradient() {
     return () => cancelAnimationFrame(rafId);
   }, [gradientType, isVCRPlaying, vcrPlaybackSpeed, shapesRotationDirection]);
 
+  // Continuous slow spin for windmill gradient
+  useEffect(() => {
+    if (gradientType !== 'windmill') return;
+    let rafId: number;
+    const animateWindmill = () => {
+      setWindmillRotation(prev => {
+        const baseSpeed = 0.15; // slow base spin
+        const audioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.4 : 0;
+        return (prev + baseSpeed + audioBoost) % 360;
+      });
+      rafId = requestAnimationFrame(animateWindmill);
+    };
+    rafId = requestAnimationFrame(animateWindmill);
+    return () => cancelAnimationFrame(rafId);
+  }, [gradientType, isAudioEnabled, isAudioReactive, audioGradientParam]);
+
   // Continuous animation for slit-scan effect
   useEffect(() => {
     if (!activeEffects.includes('slit-scan')) {
@@ -2685,14 +2701,14 @@ export function InteractiveGradient() {
         // Create concentric polygons with variable sides
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
-        // When audio active, don't let sub-bass zoom shrink shapes via 1/zoom
         const shapesScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
-        // Audio reactivity: bass affects ring width
-        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 100 // Up to 100 extra width
+        // Bass pulses ring width slightly; cap so count and rotate sliders stay effective
+        const audioShapeRingWidth = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 20
           : 0;
         const shapeRingWidth = (concentricRingWidth + audioShapeRingWidth) * shapesScale;
-        const numShapeRings = Math.min(shapesCount, Math.ceil(maxRadius / shapeRingWidth) + 2);
+        // Always respect shapesCount slider regardless of audio
+        const numShapeRings = shapesCount;
         
         for (let i = numShapeRings - 1; i >= 0; i--) {
           const radius = i * shapeRingWidth;
@@ -3132,7 +3148,7 @@ export function InteractiveGradient() {
         // Generate seed points with animated positions
         const voronoiSeeds: Array<{x: number, y: number, colorIndex: number}> = [];
         const audioVoronoiCount = (isAudioEnabled && isAudioReactive)
-          ? Math.floor(audioGradientParam * 10) // Up to 10 extra cells
+          ? Math.floor(audioGradientParam * 25) // Up to 25 extra cells
           : 0;
         const totalVoronoiCells = voronoiCellCount + audioVoronoiCount;
 
@@ -3141,9 +3157,10 @@ export function InteractiveGradient() {
           const baseX = voronoiSeed(i * 2) * displayWidth;
           const baseY = voronoiSeed(i * 2 + 1) * displayHeight;
 
-          // Add morphing offset based on time
-          const offsetX = Math.sin(voronoiAnimTime + i * 0.5) * displayWidth * 0.1;
-          const offsetY = Math.cos(voronoiAnimTime + i * 0.7) * displayHeight * 0.1;
+          // Add morphing offset based on time; audio accelerates cell movement
+          const audioMorphBoost = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 3 : 1;
+          const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5) * displayWidth * 0.15;
+          const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7) * displayHeight * 0.15;
 
           voronoiSeeds.push({
             x: baseX + offsetX,
@@ -3153,8 +3170,8 @@ export function InteractiveGradient() {
         }
         
         // Audio reactivity: bass affects distortion
-        const audioVoronoiDistortion = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 50 // Up to 50 extra distortion
+        const audioVoronoiDistortion = (isAudioEnabled && isAudioReactive)
+          ? audioGradientParam * 180 // Strong distortion warp on bass
           : 0;
         const totalVoronoiDistortion = (voronoiDistortion + audioVoronoiDistortion) * 0.01;
         
