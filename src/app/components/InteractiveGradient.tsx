@@ -685,6 +685,12 @@ export function InteractiveGradient() {
     return () => cancelAnimationFrame(rafId);
   }, [gradientType, isVCRPlaying, vcrPlaybackSpeed, shapesRotationDirection]);
 
+  // Refs so animation loops can read latest audio values without restarting
+  const audioGradientParamRef = useRef(audioGradientParam);
+  audioGradientParamRef.current = audioGradientParam;
+  const isAudioActiveRef = useRef(isAudioEnabled && isAudioReactive);
+  isAudioActiveRef.current = isAudioEnabled && isAudioReactive;
+
   // Continuous spin for windmill gradient
   useEffect(() => {
     if (gradientType !== 'windmill') return;
@@ -692,14 +698,14 @@ export function InteractiveGradient() {
     const animateWindmill = () => {
       setWindmillRotation(prev => {
         const baseSpeed = 30;
-        const audioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 60 : 0;
+        const audioBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 60 : 0;
         return (prev + baseSpeed + audioBoost) % 360;
       });
       rafId = requestAnimationFrame(animateWindmill);
     };
     rafId = requestAnimationFrame(animateWindmill);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, isAudioEnabled, isAudioReactive, audioGradientParam]);
+  }, [gradientType]); // refs keep audio values fresh without restarting the loop
 
   // Continuous animation for slit-scan effect
   useEffect(() => {
@@ -746,7 +752,7 @@ export function InteractiveGradient() {
     const animateRadar = () => {
       setRadarSweepAngle(prev => {
         const baseSpeed = isAutoMode || isVCRPlaying ? 2 * vcrPlaybackSpeed : 1.2;
-        const audioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 3 : 0;
+        const audioBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 3 : 0;
         return (prev + baseSpeed + audioBoost) % 360;
       });
       rafId = requestAnimationFrame(animateRadar);
@@ -754,7 +760,7 @@ export function InteractiveGradient() {
 
     rafId = requestAnimationFrame(animateRadar);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, isAudioEnabled, isAudioReactive, audioGradientParam]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   // Continuous rotation animation for Flower gradient — only when PLAY is active
   useEffect(() => {
