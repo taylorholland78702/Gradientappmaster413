@@ -330,10 +330,10 @@ export function InteractiveGradient() {
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => { if (gradientType !== 'windmill') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
-    onMidsFlash: () => { if (gradientType !== 'windmill') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
+    onBassFlash: () => { if (gradientType !== 'spiral') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
+    onMidsFlash: () => { if (gradientType !== 'spiral') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
     onTrebleFlash: () => {
-      if (gradientType === 'windmill') return;
+      if (gradientType === 'spiral') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
@@ -572,7 +572,7 @@ export function InteractiveGradient() {
 
   // When mic activates on windmill, freeze target colors so the lerp loop doesn't drift colors
   useEffect(() => {
-    if (isMicActive && gradientType === 'windmill') {
+    if (isMicActive && gradientType === 'spiral') {
       setTargetColors([...gradientColorsRef.current]);
     }
   }, [isMicActive, gradientType]);
@@ -2568,11 +2568,7 @@ export function InteractiveGradient() {
         const zoomDampening = 0.3; // Reduce zoom impact to 30% of original
         const dampenedZoom = 1 + (zoom - 1) * zoomDampening;
         const spiralScale = 1 / dampenedZoom;
-        // Audio reactivity: bass affects spiral tightness
-        const audioSpiralTightness = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 5 // Up to 5x tighter
-          : 0;
-        const spiralSegments = 60 * (spiralTightness + audioSpiralTightness) / 5; // More segments for tighter spirals
+        const spiralSegments = 60 * spiralTightness / 5; // More segments for tighter spirals
         const effectiveSpiralRotations = spiralRotations * spiralScale; // Number of rotations scales with dampened zoom
         
         for (let i = 0; i < spiralSegments; i++) {
