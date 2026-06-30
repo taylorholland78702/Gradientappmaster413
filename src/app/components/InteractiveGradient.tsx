@@ -31,7 +31,7 @@ interface ColorRGB {
   b: number;
 }
 
-type GradientType = 'radial' | 'angle' | 'spiral' | 'polygon-solid' | 'waves' | 'fade' | 'conical-spiral' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard';
+type GradientType = 'radial' | 'angle' | 'spiral' | 'polygon-solid' | 'waves' | 'fade' | 'conical-spiral' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble';
 
 interface ColorPin {
   id: string;
@@ -269,6 +269,10 @@ export function InteractiveGradient() {
   const [flowerSpread, setFlowerSpread] = useState(1);
   const [flowerRotation, setFlowerRotation] = useState(0);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
+  const [auroraAnimTime, setAuroraAnimTime] = useState(0);
+  const [causticsAnimTime, setCausticsAnimTime] = useState(0);
+  const [lavaAnimTime, setLavaAnimTime] = useState(0);
+  const [marbleAnimTime, setMarbleAnimTime] = useState(0);
 
   // Store base AI colors to keep them anchored
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
@@ -806,6 +810,30 @@ export function InteractiveGradient() {
     return () => cancelAnimationFrame(rafId);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
 
+  useEffect(() => {
+    if (gradientType !== 'aurora' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setAuroraAnimTime(t => t + 0.016 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
+  useEffect(() => {
+    if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
+  useEffect(() => {
+    if (gradientType !== 'lava-lamp' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setLavaAnimTime(t => t + 0.008 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
+  useEffect(() => {
+    if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setMarbleAnimTime(t => t + 0.01 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
   // Save current state for undo (defined early for use in other functions)
   const saveCurrentState = useCallback(() => {
     const snapshot = {
@@ -966,18 +994,19 @@ export function InteractiveGradient() {
     if (type === 'iridescent') return 'Iridescent';
     if (type === 'radar') return 'Radar';
     if (type === 'flower') return 'Flower';
+    if (type === 'lava-lamp') return 'Lava Lamp';
     return type;
   }, []);
 
   // Memoize full gradient type list for UI
   const FULL_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'],
+    ['angle', 'aurora', 'caustics', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'],
     []
   );
 
   // Gradient types for Randomize (excludes freeform and mesh)
   const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
+    ['angle', 'aurora', 'caustics', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
     []
   );
 
@@ -1160,7 +1189,7 @@ export function InteractiveGradient() {
 
   // Randomize - randomize everything!
   // All gradients are now audio-reactive
-  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polygon-solid'];
+  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polygon-solid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
   // Effects that pulse/react visibly with audio
   const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'brightness', 'film-grain', 'bokeh', 'fisheye'];
 
@@ -2317,11 +2346,13 @@ export function InteractiveGradient() {
     plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
-    fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity,
+    fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
+    auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
+    bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3356,6 +3387,176 @@ export function InteractiveGradient() {
         
         ctx.putImageData(iridescentImageData, 0, 0);
         break;
+
+      case 'aurora': {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const auroraAudio = isAudioEnabled && isAudioReactive;
+        const auroraTime = auroraAnimTime + gradientAngle * 0.01;
+        const auroraAudioBoost = auroraAudio ? 1 + audioGradientParam * 0.6 : 1;
+        const auroraColorShift = auroraAudio ? audioColorShift * 0.5 : 0;
+        const numBands = 6;
+        for (let b = 0; b < numBands; b++) {
+          const bandY = (displayHeight * (b + 0.5)) / numBands;
+          const bandHeight = (displayHeight / numBands) * 1.8 * auroraAudioBoost;
+          const colorIdx = ((b + Math.floor(auroraColorShift * gradientColors.length)) % gradientColors.length + gradientColors.length) % gradientColors.length;
+          const color = gradientColors[colorIdx] || gradientColors[0];
+          if (!color) continue;
+          for (let x = 0; x < displayWidth; x++) {
+            const nx = x / displayWidth;
+            const wave = Math.sin(nx * 4 + auroraTime + b * 1.3) * 0.5 +
+                         Math.sin(nx * 7 - auroraTime * 1.4 + b * 0.9) * 0.25 +
+                         Math.sin(nx * 2 + auroraTime * 0.7) * 0.25;
+            const cy = bandY + wave * bandHeight * 0.4;
+            const grad = ctx.createLinearGradient(x, cy - bandHeight * 0.5, x, cy + bandHeight * 0.5);
+            const alpha = 0.18 + Math.abs(wave) * 0.12;
+            grad.addColorStop(0, `rgba(${color.r},${color.g},${color.b},0)`);
+            grad.addColorStop(0.4, `rgba(${color.r},${color.g},${color.b},${alpha})`);
+            grad.addColorStop(0.6, `rgba(${color.r},${color.g},${color.b},${alpha})`);
+            grad.addColorStop(1, `rgba(${color.r},${color.g},${color.b},0)`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, cy - bandHeight * 0.5, 1, bandHeight);
+          }
+        }
+        break;
+      }
+
+      case 'caustics': {
+        ctx.fillStyle = '#000814';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const causticsAudio = isAudioEnabled && isAudioReactive;
+        const ct = causticsAnimTime + gradientAngle * 0.02;
+        const causticsScale = 1 / zoom;
+        const causticsAudioIntensity = causticsAudio ? 1 + audioGradientParam * 0.8 : 1;
+        const causticsColorShift = causticsAudio ? audioColorShift * 0.4 : 0;
+        const imageData = ctx.createImageData(displayWidth, displayHeight);
+        const d = imageData.data;
+        const scaleX = causticsScale * 4 / displayWidth;
+        const scaleY = causticsScale * 4 / displayHeight;
+        for (let y = 0; y < displayHeight; y++) {
+          for (let x = 0; x < displayWidth; x++) {
+            const nx = (x - centerX) * scaleX;
+            const ny = (y - centerY) * scaleY;
+            // Two sets of interfering waves
+            const w1 = Math.sin(nx * 2.1 + Math.sin(ny * 1.3 + ct) + ct * 0.7);
+            const w2 = Math.sin(ny * 2.3 + Math.sin(nx * 1.7 - ct * 0.8) - ct * 0.5);
+            const w3 = Math.sin((nx + ny) * 1.5 + ct * 1.1);
+            const v = Math.pow(Math.abs(w1 + w2 + w3) / 3, 2) * causticsAudioIntensity;
+            const tVal = (Math.sin(v * Math.PI) * 0.5 + 0.5 + causticsColorShift) % 1;
+            const ci = Math.floor(tVal * (gradientColors.length - 1));
+            const ci2 = (ci + 1) % gradientColors.length;
+            const lt = tVal * (gradientColors.length - 1) - ci;
+            const c1 = gradientColors[ci] || { r: 0, g: 100, b: 200 };
+            const c2 = gradientColors[ci2] || c1;
+            const idx = (y * displayWidth + x) * 4;
+            d[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * lt) * (0.3 + v * 0.7)));
+            d[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * lt) * (0.3 + v * 0.7)));
+            d[idx + 2] = Math.min(255, Math.round((c1.b + (c2.b - c1.b) * lt) * (0.3 + v * 0.7)));
+            d[idx + 3] = 255;
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        break;
+      }
+
+      case 'lava-lamp': {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const lavaAudio = isAudioEnabled && isAudioReactive;
+        const lt = lavaAnimTime + gradientAngle * 0.02;
+        const lavaAudioScale = lavaAudio ? 1 + audioGradientParam * 0.4 : 1;
+        const lavaColorShift = lavaAudio ? audioColorShift * 0.5 : 0;
+        const imageData2 = ctx.createImageData(displayWidth, displayHeight);
+        const d2 = imageData2.data;
+        // Define metaballs
+        const numBlobs = Math.min(gradientColors.length + 2, 8);
+        const blobs: Array<{x: number, y: number, r: number}> = [];
+        for (let i = 0; i < numBlobs; i++) {
+          const angle = (i / numBlobs) * Math.PI * 2 + lt * (0.3 + i * 0.07);
+          const orbitR = 0.25 + 0.15 * Math.sin(lt * 0.4 + i * 1.1);
+          blobs.push({
+            x: centerX + displayWidth * orbitR * Math.cos(angle),
+            y: centerY + displayHeight * orbitR * Math.sin(angle * 0.7 + lt * 0.2),
+            r: (Math.min(displayWidth, displayHeight) * 0.18 + Math.sin(lt + i) * 0.04 * displayWidth) * lavaAudioScale,
+          });
+        }
+        const scaleF = 1 / zoom;
+        for (let y = 0; y < displayHeight; y++) {
+          for (let x = 0; x < displayWidth; x++) {
+            const px2 = centerX + (x - centerX) * scaleF;
+            const py2 = centerY + (y - centerY) * scaleF;
+            let field = 0;
+            let colorR = 0, colorG = 0, colorB = 0, colorW = 0;
+            for (let b = 0; b < blobs.length; b++) {
+              const dx2 = px2 - blobs[b].x;
+              const dy2 = py2 - blobs[b].y;
+              const dist2 = dx2 * dx2 + dy2 * dy2;
+              const influence = (blobs[b].r * blobs[b].r) / (dist2 + 1);
+              field += influence;
+              const ci3 = ((b + Math.floor(lavaColorShift * gradientColors.length)) % gradientColors.length + gradientColors.length) % gradientColors.length;
+              const c = gradientColors[ci3] || { r: 255, g: 80, b: 20 };
+              colorR += c.r * influence;
+              colorG += c.g * influence;
+              colorB += c.b * influence;
+              colorW += influence;
+            }
+            const t3 = Math.min(1, Math.max(0, (field - 0.7) * 3));
+            const brightness = t3 > 0 ? 1 : Math.min(1, field * 0.3);
+            const idx2 = (y * displayWidth + x) * 4;
+            const fr = colorW > 0 ? colorR / colorW : 0;
+            const fg = colorW > 0 ? colorG / colorW : 0;
+            const fb = colorW > 0 ? colorB / colorW : 0;
+            d2[idx2]     = Math.round(fr * brightness);
+            d2[idx2 + 1] = Math.round(fg * brightness);
+            d2[idx2 + 2] = Math.round(fb * brightness);
+            d2[idx2 + 3] = 255;
+          }
+        }
+        ctx.putImageData(imageData2, 0, 0);
+        break;
+      }
+
+      case 'marble': {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const marbleAudio = isAudioEnabled && isAudioReactive;
+        const mt = marbleAnimTime + gradientAngle * 0.015;
+        const marbleAudioFreq = marbleAudio ? 1 + audioGradientParam * 0.5 : 1;
+        const marbleColorShift = marbleAudio ? audioColorShift * 0.4 : 0;
+        const imageData3 = ctx.createImageData(displayWidth, displayHeight);
+        const d3 = imageData3.data;
+        const mScale = (1 / zoom) * 3;
+        for (let y = 0; y < displayHeight; y++) {
+          for (let x = 0; x < displayWidth; x++) {
+            const nx2 = (x - centerX) / displayWidth * mScale;
+            const ny2 = (y - centerY) / displayHeight * mScale;
+            // Layered turbulence
+            let turb = 0;
+            let freq = 1 * marbleAudioFreq;
+            let amp = 1;
+            for (let oct = 0; oct < 5; oct++) {
+              turb += Math.sin(nx2 * freq + mt * 0.3) * Math.cos(ny2 * freq * 0.8 - mt * 0.2) * amp;
+              turb += Math.sin((nx2 + ny2) * freq * 0.7 + mt * 0.5) * amp * 0.5;
+              freq *= 2.1;
+              amp *= 0.5;
+            }
+            const vein = Math.sin(nx2 * 2 + turb * 1.5 + mt * 0.1) * 0.5 + 0.5;
+            const tVal2 = (vein + marbleColorShift) % 1;
+            const ci4 = Math.floor(tVal2 * (gradientColors.length - 1));
+            const ci5 = (ci4 + 1) % gradientColors.length;
+            const lt2 = tVal2 * (gradientColors.length - 1) - ci4;
+            const c4 = gradientColors[ci4] || { r: 200, g: 200, b: 200 };
+            const c5 = gradientColors[ci5] || c4;
+            const idx3 = (y * displayWidth + x) * 4;
+            d3[idx3]     = Math.round(c4.r + (c5.r - c4.r) * lt2);
+            d3[idx3 + 1] = Math.round(c4.g + (c5.g - c4.g) * lt2);
+            d3[idx3 + 2] = Math.round(c4.b + (c5.b - c4.b) * lt2);
+            d3[idx3 + 3] = 255;
+          }
+        }
+        ctx.putImageData(imageData3, 0, 0);
+        break;
+      }
 
       case 'radar': {
         // Radar sweep gradient - rotating scan line with fade trail
