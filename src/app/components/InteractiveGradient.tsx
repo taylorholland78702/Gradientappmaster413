@@ -2839,14 +2839,12 @@ export function InteractiveGradient() {
 
         const audioActive = isAudioEnabled && isAudioReactive;
         const noiseZoom = audioActive ? 1 : zoom;
-        // Bass: tighten/loosen the noise pattern (scale pulse, no movement)
-        const audioNoiseScale = audioActive ? audioGradientParam * 0.3 : 0;
-        const baseNoiseScale = (noiseScale * (1 + audioNoiseScale) * 0.001) / noiseZoom;
-        // Static orientation — no rotation or warp on audio
+        // Fully static spatial pattern — no scale or rotation changes on audio
+        const baseNoiseScale = (noiseScale * 0.001) / noiseZoom;
         const noiseRotCos = Math.cos(noiseDirection * 0.01);
         const noiseRotSin = Math.sin(noiseDirection * 0.01);
-        // Bass: brightness boost for color pulse
-        const noiseBrightnessBoost = audioActive ? audioGradientParam * 0.4 : 0;
+        // Only audio reaction: brightness pulse on bass
+        const noiseBrightnessBoost = audioActive ? audioGradientParam * 0.5 : 0;
 
         const noiseCX = displayWidth / 2;
         const noiseCY = displayHeight / 2;
