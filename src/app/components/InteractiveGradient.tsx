@@ -6096,6 +6096,20 @@ export function InteractiveGradient() {
         {gradientType === 'shapes' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-white">Scale:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="10"
+                  max="300"
+                  value={concentricRingWidth}
+                  onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-xs text-white w-10 text-right">{concentricRingWidth}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
