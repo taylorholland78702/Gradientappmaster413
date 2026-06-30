@@ -572,6 +572,36 @@ export function InteractiveGradient() {
   const isAutoColorRef = useRef(true);
   useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
+
+  // Auto-adapt panel light/dark based on canvas brightness behind the panel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+      const px = panelPos?.x ?? 16;
+      const py = panelPos?.y ?? 16;
+      const sampleW = Math.min(200, canvas.width - px);
+      const sampleH = Math.min(160, canvas.height - py);
+      if (sampleW <= 0 || sampleH <= 0) return;
+      try {
+        const data = ctx.getImageData(px, py, sampleW, sampleH).data;
+        let total = 0;
+        const step = 4 * 8; // sample every 8th pixel for performance
+        let count = 0;
+        for (let i = 0; i < data.length; i += step) {
+          // perceived luminance
+          total += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          count++;
+        }
+        const avgLuminance = count > 0 ? total / count : 128;
+        // Dark background → light panel; light background → dark panel
+        setIsPanelLight(avgLuminance < 140);
+      } catch (_) {}
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [panelPos]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
   // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
