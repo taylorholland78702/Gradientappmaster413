@@ -568,6 +568,8 @@ export function InteractiveGradient() {
   useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
   useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
   useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
+  const isAutoColorRef = useRef(true);
+  useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
@@ -2213,7 +2215,7 @@ export function InteractiveGradient() {
       };
       
       // Different behavior for different gradient types
-      if (isAutoColor) {
+      if (isAutoColorRef.current) {
         if (gradientType === 'fade') {
           setTargetColors(prev =>
             prev.map((color, index) =>
@@ -2256,7 +2258,7 @@ export function InteractiveGradient() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isAutoMode, isAutoColor, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
+  }, [isAutoMode, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
 
   // VCR recording/playback effects are now in useVCRPlayback hook
 
@@ -5101,7 +5103,7 @@ export function InteractiveGradient() {
           </button>
           <button
             onClick={() => setIsAutoColor(prev => !prev)}
-            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold shadow-sm flex items-center justify-center ${isAutoColor ? 'bg-white/30 text-white shadow-md' : 'bg-white/8 text-white shadow-sm hover:bg-white/15'}`}
+            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center ${isAutoColor ? 'bg-white/60 text-white shadow-md' : 'bg-white/8 text-white/50 shadow-sm hover:bg-white/15 hover:text-white'}`}
             title="Auto color change"
           >
             AUTO
