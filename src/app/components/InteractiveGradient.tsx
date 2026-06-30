@@ -690,7 +690,7 @@ export function InteractiveGradient() {
   const audioGradientParamRef = useRef(audioGradientParam);
   audioGradientParamRef.current = audioGradientParam;
 
-  // Continuous windmill spin — always rotating, refs prevent RAF restarts
+  // Windmill: unbounded time counter so the diverge/sync cycle works correctly
   const windmillBladesRef = useRef(windmillBlades);
   windmillBladesRef.current = windmillBlades;
 
@@ -698,7 +698,8 @@ export function InteractiveGradient() {
     if (gradientType !== 'windmill') return;
     let rafId: number;
     const animateWindmill = () => {
-      setWindmillRotation(prev => (prev + 2) % 360);
+      // No modulo — let time grow so the 1080° refresh cycle is preserved
+      setWindmillRotation(prev => prev + 1.2);
       rafId = requestAnimationFrame(animateWindmill);
     };
     rafId = requestAnimationFrame(animateWindmill);
@@ -2664,7 +2665,7 @@ export function InteractiveGradient() {
         const startOffset = Math.floor(numWavesForWave / 2);
         
         // Treble shifts which colors the waves use
-        const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioColorShift * gradientColors.length * 0.6 : 0;
+        const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioColorShift * gradientColors.length * 0.3 : 0;
 
         for (let i = -startOffset; i < numWavesForWave - startOffset; i++) {
           const baseX = i * waveWidth;
@@ -3433,40 +3434,58 @@ export function InteractiveGradient() {
       }
 
       case 'windmill': {
-        const wmImageData = ctx.createImageData(displayWidth, displayHeight);
-        const wmData = wmImageData.data;
-        const wmBlades = windmillBlades || 6;
-        const wmRotation = (windmillRotation || 0) * Math.PI / 180;
-        // Treble shifts which color each blade shows; bass brightens from center
-        const wmColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.5 : 0;
-        const wmBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
-        const wmMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-        for (let wy = 0; wy < displayHeight; wy++) {
-          for (let wx = 0; wx < displayWidth; wx++) {
-            const angle = Math.atan2(wy - centerY, wx - centerX) + wmRotation;
-            // Pure angle-based blades — no dist pinching so blades stay even as they spin
-            const bladeAngle = ((angle + Math.PI) / (Math.PI * 2)) * wmBlades;
-            const t = ((bladeAngle % 1) + wmColorShift) % 1;
+        const numBlades = windmillBlades || 6;
+        const t = (windmillRotation || 0) * Math.PI / 180; // base time in radians
+        const bladeSpan = (Math.PI * 2) / numBlades;
+        const wmRadius = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2 + 10;
 
-            const colorPos = t * (gradientColors.length - 1);
-            const colorIdx = Math.floor(colorPos);
-            const colorFrac = colorPos - colorIdx;
-            const c1 = gradientColors[colorIdx % gradientColors.length];
-            const c2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-            if (!c1 || !c2) continue;
+        // Each blade has a unique speed offset; diverge factor modulates how much they differ
+        // Period: every 1080° (900 frames at 1.2°/frame ≈ 15s) blades re-sync to load state
+        const CYCLE_DEG = 1080;
+        const cyclePhase = ((windmillRotation || 0) % CYCLE_DEG) / CYCLE_DEG; // 0→1
+        const diverge = Math.sin(cyclePhase * Math.PI); // 0 at start/end, 1 at midpoint
 
-            const dx = wx - centerX, dy = wy - centerY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const brightness = 1 + wmBassPulse * (1 - dist / wmMaxDist) * 0.8;
-            const idx = (wy * displayWidth + wx) * 4;
-            wmData[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * colorFrac) * brightness));
-            wmData[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * colorFrac) * brightness));
-            wmData[idx + 2] = Math.min(255, Math.round((c1.b + (c2.b - c1.b) * colorFrac) * brightness));
-            wmData[idx + 3] = 255;
-          }
+        // Speed offsets: blade 0 is baseline, others drift away by diverge amount
+        const speedOffsets = [0, 0.5, -0.3, 0.8, -0.6, 1.1, -0.4, 0.7];
+
+        // Audio
+        const wmColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.25 : 0;
+        const wmBass = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen'; // blades lighten where they overlap
+
+        for (let i = 0; i < numBlades; i++) {
+          const offset = speedOffsets[i % speedOffsets.length] * diverge;
+          const bladeAngle = t * (1 + offset) + (i / numBlades) * Math.PI * 2;
+
+          const colorIdx = (i + Math.round(wmColorShift * gradientColors.length) + gradientColors.length) % gradientColors.length;
+          const c = gradientColors[colorIdx];
+          if (!c) continue;
+
+          const brightness = 1 + wmBass * 0.5;
+          const r = Math.min(255, c.r * brightness);
+          const g = Math.min(255, c.g * brightness);
+          const b = Math.min(255, c.b * brightness);
+
+          // Radial gradient per blade: bright at center, fades to color at edge
+          const bladeGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, wmRadius);
+          bladeGrad.addColorStop(0, `rgba(${r},${g},${b},0.95)`);
+          bladeGrad.addColorStop(1, `rgba(${r},${g},${b},0.7)`);
+
+          ctx.fillStyle = bladeGrad;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.arc(centerX, centerY, wmRadius, bladeAngle, bladeAngle + bladeSpan);
+          ctx.closePath();
+          ctx.fill();
         }
-        ctx.putImageData(wmImageData, 0, 0);
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
         break;
       }
 
