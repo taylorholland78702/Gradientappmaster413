@@ -317,7 +317,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         subBassRaw = subBassAvgRaw * subBassMultiplier * masterSensitivity;
       }
       subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
-      const subBassValue = Math.min(1, subBassSmoothedRef.current);
+      const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
 
       // ---- BASS (bins 0–9) ----
       let bassSum = 0;
@@ -358,7 +358,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
       liveBassSmoothedRef.current = bassGradientValue;
-      setAudioGradientParam(bassGradientValue);
+      // Sub-bass drives Shape (audioGradientParam); bass drives Pulse/zoom
+      setAudioGradientParam(subBassGradientValue);
 
       // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
