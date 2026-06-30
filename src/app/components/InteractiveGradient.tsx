@@ -698,8 +698,9 @@ export function InteractiveGradient() {
     if (gradientType !== 'windmill') return;
     let rafId: number;
     const animateWindmill = () => {
-      // No modulo — let time grow so the 1080° refresh cycle is preserved
-      setWindmillRotation(prev => prev + 1.2);
+      // Bass boosts rotation speed via ref (no dep restart)
+      const audioSpeedBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 2.5 : 0;
+      setWindmillRotation(prev => prev + 1.2 + audioSpeedBoost);
       rafId = requestAnimationFrame(animateWindmill);
     };
     rafId = requestAnimationFrame(animateWindmill);
@@ -3442,38 +3443,37 @@ export function InteractiveGradient() {
         const bladeSpan = (Math.PI * 2) / numBlades;
         const wmRadius = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2 + 10;
 
-        // Each blade has its own constant speed multiplier — always moving, never pausing
-        const speedMultipliers = [1.0, 1.18, 0.82, 1.35, 0.68, 1.22, 0.88, 1.12];
+        // Base speed multipliers — blades always move, crossing over each other
+        const baseMultipliers = [1.0, 1.18, 0.82, 1.35, 0.68, 1.22, 0.88, 1.12];
 
-        // Audio
-        const wmColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.25 : 0;
-        const wmBass = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
+        const wmAudioActive = isAudioEnabled && isAudioReactive;
+        // Mids: tighten/loosen how much blade speeds differ from each other
+        const tightness = wmAudioActive ? 1 + audioEffectParam * 1.5 : 1;
+        // Treble: widen or narrow each blade's arc
+        const thicknessBoost = wmAudioActive ? audioColorShift * 0.6 : 0;
+        const effectiveBladeSpan = bladeSpan * (1 + thicknessBoost);
 
         ctx.save();
-        ctx.globalCompositeOperation = 'screen'; // blades lighten where they overlap
+        ctx.globalCompositeOperation = 'screen';
 
         for (let i = 0; i < numBlades; i++) {
-          const speed = speedMultipliers[i % speedMultipliers.length];
+          // Tightness pulls speed multipliers toward 1.0 (all same) or away (more chaos)
+          const base = baseMultipliers[i % baseMultipliers.length];
+          const speed = 1 + (base - 1) * tightness;
           const bladeAngle = t * speed + (i / numBlades) * Math.PI * 2;
 
-          const colorIdx = (i + Math.round(wmColorShift * gradientColors.length) + gradientColors.length) % gradientColors.length;
-          const c = gradientColors[colorIdx];
+          // Colors come straight from palette — no audio color shift
+          const c = gradientColors[i % gradientColors.length];
           if (!c) continue;
 
-          const brightness = 1 + wmBass * 0.5;
-          const r = Math.min(255, c.r * brightness);
-          const g = Math.min(255, c.g * brightness);
-          const b = Math.min(255, c.b * brightness);
-
-          // Radial gradient per blade: bright at center, fades to color at edge
           const bladeGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, wmRadius);
-          bladeGrad.addColorStop(0, `rgba(${r},${g},${b},0.95)`);
-          bladeGrad.addColorStop(1, `rgba(${r},${g},${b},0.7)`);
+          bladeGrad.addColorStop(0, `rgba(${c.r},${c.g},${c.b},0.95)`);
+          bladeGrad.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0.7)`);
 
           ctx.fillStyle = bladeGrad;
           ctx.beginPath();
           ctx.moveTo(centerX, centerY);
-          ctx.arc(centerX, centerY, wmRadius, bladeAngle, bladeAngle + bladeSpan);
+          ctx.arc(centerX, centerY, wmRadius, bladeAngle, bladeAngle + effectiveBladeSpan);
           ctx.closePath();
           ctx.fill();
         }
