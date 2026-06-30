@@ -2841,12 +2841,14 @@ export function InteractiveGradient() {
 
         const audioActive = isAudioEnabled && isAudioReactive;
         const noiseZoom = audioActive ? 1 : zoom;
-        // Fully static spatial pattern — no scale or rotation changes on audio
+        // Static spatial pattern — no positional changes on audio
         const baseNoiseScale = (noiseScale * 0.001) / noiseZoom;
         const noiseRotCos = Math.cos(noiseDirection * 0.01);
         const noiseRotSin = Math.sin(noiseDirection * 0.01);
-        // Only audio reaction: brightness pulse on bass
-        const noiseBrightnessBoost = audioActive ? audioGradientParam * 0.5 : 0;
+        // Audio: color shift cycles through palette, bass pulse brightens from center
+        const noiseColorShift = audioActive ? audioColorShift * 0.6 : 0; // treble shifts colors
+        const noiseBassBoost = audioActive ? audioGradientParam : 0;      // bass pulse intensity
+        const maxNoiseDist = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2;
 
         const noiseCX = displayWidth / 2;
         const noiseCY = displayHeight / 2;
@@ -2854,10 +2856,8 @@ export function InteractiveGradient() {
           for (let nx = 0; nx < displayWidth; nx++) {
             const ndx = nx - noiseCX;
             const ndy = ny - noiseCY;
-            // Rotate coordinate space around center (no warp offset)
             const rx = ndx * noiseRotCos - ndy * noiseRotSin;
             const ry = ndx * noiseRotSin + ndy * noiseRotCos;
-            // Multi-octave noise based on noiseOctaves setting
             let combinedNoise = 0;
             let amplitude = 1;
             let totalAmplitude = 0;
@@ -2873,18 +2873,23 @@ export function InteractiveGradient() {
             }
 
             combinedNoise = (combinedNoise / totalAmplitude + 1) / 2; // Normalize to 0-1
-            
-            // Interpolate between colors
-            const colorPos = combinedNoise * (gradientColors.length - 1);
+
+            // Shift color position with treble so palette rotates on audio
+            const shiftedPos = (combinedNoise + noiseColorShift) % 1;
+            const colorPos = shiftedPos * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
             const color1 = gradientColors[colorIdx % gradientColors.length];
             const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-            
+
             if (!color1 || !color2) continue;
-            
+
+            // Radial brightness pulse from center on bass
+            const dist = Math.sqrt(ndx * ndx + ndy * ndy);
+            const radialPulse = noiseBassBoost * (1 - dist / maxNoiseDist) * 0.8;
+            const boost = 1 + radialPulse;
+
             const idx = (ny * displayWidth + nx) * 4;
-            const boost = 1 + noiseBrightnessBoost;
             noiseData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * boost));
             noiseData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * boost));
             noiseData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * boost));
