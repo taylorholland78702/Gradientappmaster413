@@ -2632,9 +2632,10 @@ export function InteractiveGradient() {
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
         
-        // Calculate visible area in transformed space to ensure full coverage
-        const visibleWidth = (displayWidth * 3) / zoom; // Triple width for safety
-        const numWavesForWave = Math.ceil(visibleWidth / waveWidth) + 20; // Extra waves for infinite appearance
+        // Coverage must account for rotation (diagonal at 45°) and amplitude overshoot
+        const waveDiagonal = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight);
+        const visibleWidth = (waveDiagonal * 2) / waveZoom;
+        const numWavesForWave = Math.ceil(visibleWidth / waveWidth) + 4;
         const startOffset = Math.floor(numWavesForWave / 2);
         
         for (let i = -startOffset; i < numWavesForWave - startOffset; i++) {
