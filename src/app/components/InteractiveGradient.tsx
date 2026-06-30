@@ -274,7 +274,7 @@ export function InteractiveGradient() {
   // Preset management state is in usePresets hook (initialized below)
   
   // Rating system for Randomize
-  const [showRatingUI, setShowRatingUI] = useState(false);
+  const [showRatingUI, setShowRatingUI] = useState(true);
   const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
     try { return JSON.parse(localStorage.getItem('gradientRatings') || '[]'); } catch { return []; }
   });
