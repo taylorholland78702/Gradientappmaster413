@@ -4802,15 +4802,14 @@ export function InteractiveGradient() {
           >
             <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(star => (
+              {[['👎', 2, 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.4)'], ['😐', 6, 'rgba(234,179,8,0.2)', 'rgba(234,179,8,0.4)'], ['👍', 8, 'rgba(34,197,94,0.2)', 'rgba(34,197,94,0.4)'], ['🔥', 10, 'rgba(168,85,247,0.2)', 'rgba(168,85,247,0.4)']].map(([emoji, rating, bg, border]) => (
                 <button
-                  key={star}
-                  onClick={() => submitRating(star * 2)}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all hover:scale-110 active:scale-95"
-                  style={{ background: star <= 2 ? 'rgba(239,68,68,0.2)' : star === 3 ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.2)', border: star <= 2 ? '1px solid rgba(239,68,68,0.4)' : star === 3 ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(34,197,94,0.4)' }}
-                  title={`${star} star${star > 1 ? 's' : ''}`}
+                  key={String(rating)}
+                  onClick={() => submitRating(Number(rating))}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
+                  style={{ background: String(bg), border: `1px solid ${String(border)}` }}
                 >
-                  {'★'.repeat(star)}{'☆'.repeat(5 - star)}
+                  {emoji}
                 </button>
               ))}
             </div>
