@@ -233,6 +233,8 @@ export function InteractiveGradient() {
   const [gridVariation, setGridVariation] = useState(0);
   const [gridShapeSize, setGridShapeSize] = useState(25);
   const [kaleidoscopeReflections, setKaleidoscopeReflections] = useState(1);
+  const [kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed] = useState(0.5);
+  const [halftoneCMYK, setHalftoneCMYK] = useState(false);
   const [pixelateScaleDirection, setPixelateScaleDirection] = useState<'out' | 'in'>('out');
   const [scanType, setScanType] = useState<'horizontal' | 'vertical' | 'interlaced' | 'crt'>('horizontal');
   const [posterizeSolarize, setPosterizeSolarize] = useState(0);
@@ -251,7 +253,7 @@ export function InteractiveGradient() {
   const [ditherType, setDitherType] = useState<'bayer' | 'floyd-steinberg'>('bayer');
   const [ditherLevels, setDitherLevels] = useState(2); // Color depth levels
   const [slitScanIntensity, setSlitScanIntensity] = useState(0.5);
-  const [slitScanDirection, setSlitScanDirection] = useState<'horizontal' | 'vertical' | 'radial'>('horizontal');
+  const [slitScanDirection, setSlitScanDirection] = useState<'horizontal' | 'vertical' | 'radial' | 'circular'>('horizontal');
   const [slitScanAnimTrigger, setSlitScanAnimTrigger] = useState(0); // Animation trigger for continuous updates
   const [diffusionSpeed, setDiffusionSpeed] = useState(1);
   const [diffusionFeed, setDiffusionFeed] = useState(0.055);
@@ -331,6 +333,7 @@ export function InteractiveGradient() {
   
   // Slit-scan temporal buffer
   const slitScanBufferRef = useRef<ImageData[]>([]);
+  const kaleidoAngleRef = useRef(0);
   
   // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
@@ -2457,7 +2460,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3921,6 +3924,12 @@ export function InteractiveGradient() {
             const aps = (Math.PI * 2) / seg;
             // Use diagonal so segments always reach every corner
             const r = Math.sqrt(cx * cx + cy * cy) * 1.5;
+            // Accumulate rotation each frame
+            kaleidoAngleRef.current += (kaleidoscopeRotateSpeed / 200) * (1 + (isAudioReactive ? audioEffectParam * 3 : 0));
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(kaleidoAngleRef.current);
+            ctx.translate(-cx, -cy);
             for (let i = 0; i < seg; i++) {
               ctx.save();
               ctx.translate(cx, cy);
@@ -3938,6 +3947,7 @@ export function InteractiveGradient() {
               ctx.drawImage(tmp, -cx * scale, -cy * scale, displayWidth * scale, displayHeight * scale);
               ctx.restore();
             }
+            ctx.restore(); // undo kaleidoscope rotation
             ctx.imageSmoothingEnabled = true;
           }
           break;
@@ -4135,57 +4145,104 @@ export function InteractiveGradient() {
         
         case 'halftone': {
           if (!imageData) break;
-          const htCtx = document.createElement('canvas').getContext('2d');
-          if (!htCtx) break;
-          htCtx.canvas.width = canvas.width;
-          htCtx.canvas.height = canvas.height;
-          htCtx.putImageData(imageData, 0, 0);
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, displayWidth, displayHeight);
           const sz = halftoneSize;
-          // Center the dot grid so pattern emanates from canvas center
-          const htHalfCols = Math.ceil(displayWidth / sz / 2) + 1;
-          const htHalfRows = Math.ceil(displayHeight / sz / 2) + 1;
-          for (let hr = -htHalfRows; hr <= htHalfRows; hr++) {
-            for (let hc = -htHalfCols; hc <= htHalfCols; hc++) {
-              const x = centerX + hc * sz;
-              const y = centerY + hr * sz;
-              const sx = Math.max(0, Math.min(displayWidth - 1, x));
-              const sy = Math.max(0, Math.min(displayHeight - 1, y));
-              const pd = htCtx.getImageData(sx, sy, 1, 1).data;
-              const br = (pd[0] + pd[1] + pd[2]) / 3;
-              const s = Math.sin(x * 12.9898 + y * 78.233 + (halftoneMove ? halftoneTimeRef.current * 1000 : 0)) * 43758.5453;
-              const vf = 1 + ((s - Math.floor(s)) - 0.5) * halftoneVariation;
-              const r = (br / 255) * (sz / 2) * vf;
-              ctx.fillStyle = `rgb(${pd[0]},${pd[1]},${pd[2]})`;
-              ctx.beginPath();
-              ctx.arc(x, y, r, 0, Math.PI * 2);
-              ctx.fill();
+          const idat = imageData.data;
+          const getHTPixel = (px: number, py: number) => {
+            const ix = Math.max(0, Math.min(displayWidth - 1, Math.round(px)));
+            const iy = Math.max(0, Math.min(displayHeight - 1, Math.round(py)));
+            const idx = (iy * displayWidth + ix) * 4;
+            return [idat[idx], idat[idx+1], idat[idx+2]] as [number, number, number];
+          };
+
+          if (halftoneCMYK) {
+            // CMYK halftone: 4 rotated dot grids, multiply blend
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+            ctx.globalCompositeOperation = 'multiply';
+            const diag = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight) / 2 + sz * 2;
+            const steps = Math.ceil(diag * 2 / sz);
+            const cmykChannels = [
+              { angle: 15,  color: 'rgba(0,255,255,1)'   }, // Cyan
+              { angle: 75,  color: 'rgba(255,0,255,1)'   }, // Magenta
+              { angle: 0,   color: 'rgba(255,255,0,1)'   }, // Yellow
+              { angle: 45,  color: 'rgba(0,0,0,1)'       }, // Key (black)
+            ];
+            for (let ci = 0; ci < cmykChannels.length; ci++) {
+              const ch = cmykChannels[ci];
+              const angleRad = (ch.angle + (halftoneMove ? halftoneTimeRef.current * 5 : 0)) * Math.PI / 180;
+              const cosA = Math.cos(angleRad), sinA = Math.sin(angleRad);
+              ctx.fillStyle = ch.color;
+              for (let gi = -steps; gi <= steps; gi++) {
+                for (let gj = -steps; gj <= steps; gj++) {
+                  const rx = gi * sz, ry = gj * sz;
+                  const px = centerX + rx * cosA - ry * sinA;
+                  const py = centerY + rx * sinA + ry * cosA;
+                  if (px < -sz || px > displayWidth + sz || py < -sz || py > displayHeight + sz) continue;
+                  const [r, g, b] = getHTPixel(px, py);
+                  const rn = r/255, gn = g/255, bn = b/255;
+                  const k = 1 - Math.max(rn, gn, bn);
+                  const denom = k === 1 ? 1 : (1 - k);
+                  const c = k === 1 ? 0 : (1 - rn - k) / denom;
+                  const m = k === 1 ? 0 : (1 - gn - k) / denom;
+                  const y = k === 1 ? 0 : (1 - bn - k) / denom;
+                  const channelVal = ci === 0 ? c : ci === 1 ? m : ci === 2 ? y : k;
+                  const s2 = Math.sin(px * 12.9898 + py * 78.233) * 43758.5453;
+                  const vf = 1 + ((s2 - Math.floor(s2)) - 0.5) * halftoneVariation;
+                  const dotR = channelVal * (sz / 2) * 0.95 * vf;
+                  if (dotR < 0.3) continue;
+                  ctx.beginPath();
+                  ctx.arc(px, py, dotR, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              }
+            }
+            ctx.globalCompositeOperation = 'source-over';
+          } else {
+            // Standard halftone
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+            const htHalfCols = Math.ceil(displayWidth / sz / 2) + 1;
+            const htHalfRows = Math.ceil(displayHeight / sz / 2) + 1;
+            for (let hr = -htHalfRows; hr <= htHalfRows; hr++) {
+              for (let hc = -htHalfCols; hc <= htHalfCols; hc++) {
+                const x = centerX + hc * sz;
+                const y = centerY + hr * sz;
+                const [pr, pg, pb] = getHTPixel(x, y);
+                const br = (pr + pg + pb) / 3;
+                const s = Math.sin(x * 12.9898 + y * 78.233 + (halftoneMove ? halftoneTimeRef.current * 1000 : 0)) * 43758.5453;
+                const vf = 1 + ((s - Math.floor(s)) - 0.5) * halftoneVariation;
+                const dotR = (br / 255) * (sz / 2) * vf;
+                ctx.fillStyle = `rgb(${pr},${pg},${pb})`;
+                ctx.beginPath();
+                ctx.arc(x, y, dotR, 0, Math.PI * 2);
+                ctx.fill();
+              }
             }
           }
           break;
         }
 
-        case 'vhs-glitch':
-          // VHS effect with horizontal disruption - blurrier and more intense
+        case 'vhs-glitch': {
+          // VHS effect with horizontal disruption — spikes on bass beats
           if (canvas.width === 0 || canvas.height === 0) break;
-          
+          const bassBoost = isAudioReactive ? (audioGradientParam / 5) * 0.9 : 0;
+          const effectiveVhsIntensity = Math.min(1, vhsGlitchIntensity + bassBoost);
+
           // Apply horizontal blur first for VHS tape tracking blur
-          const blurStrength = Math.floor(2 + vhsGlitchIntensity * 3);
+          const blurStrength = Math.floor(2 + effectiveVhsIntensity * 3);
           ctx.filter = `blur(${blurStrength}px)`;
           ctx.drawImage(canvas, 0, 0);
           ctx.filter = 'none';
-          
+
           // More horizontal glitches with varying sizes
-          const numGlitches = Math.floor(15 + vhsGlitchIntensity * 50); // 15-65 glitches
+          const numGlitches = Math.floor(15 + effectiveVhsIntensity * 50);
           for (let i = 0; i < numGlitches; i++) {
             const y = Math.random() * displayHeight;
-            const h = Math.max(2, Math.min(60, Math.random() * 60 * vhsGlitchIntensity)); // Larger glitches
-            const offset = (Math.random() - 0.5) * 300 * vhsGlitchIntensity; // More displacement
+            const h = Math.max(2, Math.min(60, Math.random() * 60 * effectiveVhsIntensity));
+            const offset = (Math.random() - 0.5) * 300 * effectiveVhsIntensity;
             if (y >= 0 && y + h <= displayHeight && displayWidth > 0) {
               try {
                 const slice = ctx.getImageData(0, y, displayWidth, h);
-                // Apply additional blur to the displaced slice
                 ctx.filter = `blur(${blurStrength * 1.5}px)`;
                 putScaledImageData(slice, offset, y);
                 ctx.filter = 'none';
@@ -4194,10 +4251,10 @@ export function InteractiveGradient() {
               }
             }
           }
-          
+
           // Add strong RGB channel shift for VHS chromatic aberration
           if (imageData) {
-            const shiftAmount = Math.floor(vhsGlitchIntensity * 8); // Increased shift
+            const shiftAmount = Math.floor(effectiveVhsIntensity * 8);
             const data = imageData.data;
             const tempData = new Uint8ClampedArray(data);
             
@@ -4220,7 +4277,7 @@ export function InteractiveGradient() {
             putScaledImageData(imageData);
           }
           break;
-        
+        }
 
         case 'dust-scratches':
           // Texture overlay with dust noise and crackle lines
@@ -4279,10 +4336,14 @@ export function InteractiveGradient() {
             const waveData = ctx.getImageData(0, 0, displayWidth, displayHeight);
             const tempWave = ctx.createImageData(displayWidth, displayHeight);
             const angleRad = waveDistortionRotation * Math.PI / 180;
+            // Audio: bass boosts amplitude, mids boost frequency
+            const audioWaveAmp = isAudioReactive ? (audioGradientParam / 5) * 80 : 0;
+            const audioWaveFreqMult = isAudioReactive ? 1 + audioEffectParam * 3 : 1;
+            const effectiveWaveStrength = waveDistortionStrength + audioWaveAmp;
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               // Apply wave in the direction of rotation
-              const waveOffset = Math.sin((y * Math.cos(angleRad) + x * Math.sin(angleRad)) * 0.05) * waveDistortionStrength;
+              const waveOffset = Math.sin((y * Math.cos(angleRad) + x * Math.sin(angleRad)) * 0.05 * audioWaveFreqMult) * effectiveWaveStrength;
               const sourceX = x + waveOffset * Math.cos(angleRad);
               const sourceY = y + waveOffset * Math.sin(angleRad);
               // Wrap coordinates to prevent white gaps at edges
@@ -4613,13 +4674,29 @@ export function InteractiveGradient() {
                   out.data[i+3] = sf.data[i+3];
                 }
               }
-            } else {
+            } else if (slitScanDirection === 'radial') {
               const cx = displayWidth / 2, cy = displayHeight / 2;
               const md = Math.sqrt(cx*cx + cy*cy);
               for (let y = 0; y < displayHeight; y++) {
                 for (let x = 0; x < displayWidth; x++) {
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
                   const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * int), buf.length - 1);
+                  const sf = buf[fi];
+                  const i = (y * displayWidth + x) * 4;
+                  out.data[i] = sf.data[i];
+                  out.data[i+1] = sf.data[i+1];
+                  out.data[i+2] = sf.data[i+2];
+                  out.data[i+3] = sf.data[i+3];
+                }
+              }
+            } else {
+              // circular: sample frame based on angle around center
+              const cx = displayWidth / 2, cy = displayHeight / 2;
+              for (let y = 0; y < displayHeight; y++) {
+                for (let x = 0; x < displayWidth; x++) {
+                  const angle = Math.atan2(y - cy, x - cx); // -PI to PI
+                  const norm = (angle + Math.PI) / (Math.PI * 2); // 0..1
+                  const fi = Math.min(Math.floor(norm * (buf.length - 1) * int), buf.length - 1);
                   const sf = buf[fi];
                   const i = (y * displayWidth + x) * 4;
                   out.data[i] = sf.data[i];
@@ -6957,6 +7034,11 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap">Speed:</label>
+                    <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
+                    <span className="text-xs text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
+                  </div>
                 </>
               )}
               {activeEffects.includes('tile') && (
@@ -7321,18 +7403,33 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Move:</label>
-                    <button
-                      onClick={() => setHalftoneMove(!halftoneMove)}
-                      className={`px-2 py-1 text-xs rounded transition-all ${
-                        halftoneMove
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
-                      }`}
-                    >
-                      {halftoneMove ? 'ON' : 'OFF'}
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <label className="text-xs text-white whitespace-nowrap">Move:</label>
+                      <button
+                        onClick={() => setHalftoneMove(!halftoneMove)}
+                        className={`px-2 py-1 text-xs rounded transition-all ${
+                          halftoneMove
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {halftoneMove ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <label className="text-xs text-white whitespace-nowrap">CMYK:</label>
+                      <button
+                        onClick={() => setHalftoneCMYK(!halftoneCMYK)}
+                        className={`px-2 py-1 text-xs rounded transition-all ${
+                          halftoneCMYK
+                            ? 'bg-yellow-500 text-black'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {halftoneCMYK ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
@@ -8321,6 +8418,16 @@ export function InteractiveGradient() {
                         }`}
                       >
                         Radial
+                      </button>
+                      <button
+                        onClick={() => setSlitScanDirection('circular')}
+                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                          slitScanDirection === 'circular'
+                            ? 'bg-white text-black'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Circ
                       </button>
                     </div>
                   </div>
