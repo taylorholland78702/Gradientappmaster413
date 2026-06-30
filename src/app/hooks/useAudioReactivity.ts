@@ -355,7 +355,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       setAudioGradientParam(bassGradientValue);
 
       // Bass drives zoom — use raw unsmoothed value for instant punch
-      const bassRawForZoom = bassAboveThreshold ? bassAvgRaw * bassMultiplier * masterSensitivity : 0;
+      // Normalize to 0-1 range so higher bassMultiplier/bassMax don't explode zoom
+      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
       setTargetZoom(prev => {
         if (bassRawForZoom > 0.05) {
           const pulse = 1 + bassRawForZoom * (bassBeatSync ? 3.5 : 1.8);
