@@ -1106,8 +1106,8 @@ export function InteractiveGradient() {
   );
 
   // Randomize - randomize everything!
-  // Gradients that visually respond well to audio input
-  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid'];
+  // All gradients are now audio-reactive
+  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polygon-solid'];
   // Effects that pulse/react visibly with audio
   const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'brightness', 'film-grain', 'bokeh', 'fisheye'];
 
@@ -2374,19 +2374,22 @@ export function InteractiveGradient() {
         break;
       }
 
-      case 'angle':
-        // Save context and apply zoom transformation
-        // Clamp to >= 1 so audio pulses never shrink below full canvas coverage
+      case 'angle': {
         ctx.save();
-        const conicCenterX = (displayWidth * angleCenterX) / 100;
-        const conicCenterY = (displayHeight * angleCenterY) / 100;
+        // Bass shifts the conic start angle, treble shifts center position
+        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 2 : 0;
+        const audioConicCenterDX = (isAudioEnabled && isAudioReactive) ? (audioGradientParam - 0.5) * displayWidth * 0.3 : 0;
+        const audioConicCenterDY = (isAudioEnabled && isAudioReactive) ? audioEffectParam * displayHeight * 0.3 : 0;
+        const conicCenterX = (displayWidth * angleCenterX) / 100 + audioConicCenterDX;
+        const conicCenterY = (displayHeight * angleCenterY) / 100 + audioConicCenterDY;
         ctx.translate(centerX, centerY);
         const conicZoom = (isAudioEnabled && isAudioReactive) ? 1 : Math.max(1, zoom);
         ctx.scale(conicZoom, conicZoom);
         ctx.translate(-centerX, -centerY);
-        const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180;
+        const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180 + audioConicAngleOffset;
         gradient = ctx.createConicGradient(conicStartAngle, conicCenterX, conicCenterY);
         break;
+      }
 
 
 
@@ -2740,37 +2743,39 @@ export function InteractiveGradient() {
         break;
       }
 
-      case 'fade':
-        // Simple solid color that progressively fades through gradient colors
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        // Use continuous gradientAngle without modulo to avoid jumps
+      case 'fade': {
+        // Bass shifts color position; treble pulses brightness; mids add radial vignette pulse
         const totalColors = gradientColors.length;
+        const audioFadeShift = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.8 : 0;
         const normalizedAngle = gradientAngle / 360;
-        const exactPosition = normalizedAngle % totalColors;
+        const exactPosition = (normalizedAngle + audioFadeShift) % totalColors;
         const currentColorIndex = Math.floor(exactPosition);
         const nextColorIndex = (currentColorIndex + 1) % totalColors;
         const blendAmount = exactPosition - currentColorIndex;
-        
-        // Get current and next colors
+
         const currentColor = gradientColors[currentColorIndex];
         const nextColor = gradientColors[nextColorIndex];
-        
-        // Safety check
-        if (!currentColor || !nextColor) {
-          break;
-        }
-        
-        // Interpolate between the two colors smoothly
-        const r = currentColor.r + (nextColor.r - currentColor.r) * blendAmount;
-        const g = currentColor.g + (nextColor.g - currentColor.g) * blendAmount;
-        const b = currentColor.b + (nextColor.b - currentColor.b) * blendAmount;
-        
-        // Fill entire canvas with the interpolated color
+        if (!currentColor || !nextColor) break;
+
+        const audioFadeBright = (isAudioEnabled && isAudioReactive) ? 1 + audioColorShift * 0.5 : 1;
+        const r = Math.min(255, (currentColor.r + (nextColor.r - currentColor.r) * blendAmount) * audioFadeBright);
+        const g = Math.min(255, (currentColor.g + (nextColor.g - currentColor.g) * blendAmount) * audioFadeBright);
+        const b = Math.min(255, (currentColor.b + (nextColor.b - currentColor.b) * blendAmount) * audioFadeBright);
+
         ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+        // Mids: radial pulse emanates from center
+        if (isAudioEnabled && isAudioReactive && audioEffectParam > 0.05) {
+          const pulseRadius = Math.min(displayWidth, displayHeight) * audioEffectParam * 0.7;
+          const pulseGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseRadius);
+          pulseGrad.addColorStop(0, `rgba(255,255,255,${audioEffectParam * 0.4})`);
+          pulseGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = pulseGrad;
+          ctx.fillRect(0, 0, displayWidth, displayHeight);
+        }
         break;
+      }
       
       case 'mesh':
         // Multi-point gradient mesh - centered and sized to fit window on load
@@ -3262,10 +3267,15 @@ export function InteractiveGradient() {
         ctx.putImageData(iridescentImageData, 0, 0);
         break;
 
-      case 'radar':
+      case 'radar': {
         // Radar sweep gradient - rotating scan line with fade trail
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+        // Bass extends trail length; mids flash a bright ring at the sweep head
+        const audioRadarTrail = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 120 : 0;
+        const audioRadarFlash = (isAudioEnabled && isAudioReactive) ? audioEffectParam : 0;
+        const effectiveRadarFadeLength = Math.min(360, radarFadeLength + audioRadarTrail);
 
         const radarImageData = ctx.createImageData(displayWidth, displayHeight);
         const radarData = radarImageData.data;
@@ -3276,15 +3286,14 @@ export function InteractiveGradient() {
             const dy = ry - centerY;
             const pixelAngle = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
 
-            // Calculate how far behind the sweep this pixel is
             let angleDiff = (radarSweepAngle - pixelAngle + 360) % 360;
 
-            // Determine brightness based on proximity to sweep line
             let brightness = 0;
-            if (angleDiff <= radarFadeLength) {
-              // Fade trail: brightest at sweep line, fading behind it
-              brightness = 1 - (angleDiff / radarFadeLength);
+            if (angleDiff <= effectiveRadarFadeLength) {
+              brightness = 1 - (angleDiff / effectiveRadarFadeLength);
             }
+            // Mids: bright flash at the sweep head
+            if (angleDiff <= 3) brightness = Math.max(brightness, audioRadarFlash);
 
             // Get color from gradient
             const colorPos = (pixelAngle / 360) * (gradientColors.length - 1);
@@ -3309,18 +3318,22 @@ export function InteractiveGradient() {
 
         ctx.putImageData(radarImageData, 0, 0);
         break;
+      }
 
-      case 'flower':
+      case 'flower': {
         // Flower of Life - sacred geometry pattern with overlapping circles
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
         ctx.save();
+        // Treble spins the flower; bass pulses the radius; mids add extra layers
+        const audioFlowerRotationBoost = (isAudioEnabled && isAudioReactive) ? audioColorShift * 60 : 0;
         ctx.translate(centerX, centerY);
-        ctx.rotate(((flowerRotation + flowerAnimTime) * Math.PI) / 180);
+        ctx.rotate(((flowerRotation + flowerAnimTime + audioFlowerRotationBoost) * Math.PI) / 180);
         ctx.translate(-centerX, -centerY);
 
-        const baseRadius = Math.min(displayWidth, displayHeight) / 6 * flowerScale;
+        const audioFlowerScale = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 0.5 : 1;
+        const baseRadius = Math.min(displayWidth, displayHeight) / 6 * flowerScale * audioFlowerScale;
         const circles: Array<{x: number, y: number, colorIndex: number}> = [];
 
         // Center circle
@@ -3364,6 +3377,7 @@ export function InteractiveGradient() {
 
         ctx.restore();
         break;
+      }
 
       default:
         break;
