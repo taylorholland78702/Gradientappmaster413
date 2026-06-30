@@ -275,7 +275,9 @@ export function InteractiveGradient() {
   
   // Rating system for Randomize
   const [showRatingUI, setShowRatingUI] = useState(false);
-  const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>([]);
+  const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
+    try { return JSON.parse(localStorage.getItem('gradientRatings') || '[]'); } catch { return []; }
+  });
   const [pendingRatingState, setPendingRatingState] = useState<any>(null);
   
   // File input refs for uploads
@@ -1437,10 +1439,10 @@ export function InteractiveGradient() {
       });
     }
     setColorPins(newPins);
-    setSelectedPinId(null); // Clear selection
+    setSelectedPinId(null);
 
-    // Rating UI removed - keeping backend rating system for Randomize algorithm
-    // setShowRatingUI(true);
+    // Show rating UI after a short delay so the result renders first
+    setTimeout(() => setShowRatingUI(true), 800);
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults]);
 
   // Capture current state for rating
@@ -1583,12 +1585,18 @@ export function InteractiveGradient() {
     setPendingRatingState(null);
   }, []);
   
-  // Capture state when rating UI is shown
+  // Capture state when rating UI is shown (fallback if not already captured)
   useEffect(() => {
     if (showRatingUI && !pendingRatingState) {
       captureCurrentStateForRating();
     }
   }, [showRatingUI, pendingRatingState, captureCurrentStateForRating]);
+
+  // Save to presets from rating UI
+  const saveRatingAsPreset = useCallback(() => {
+    submitRating(10);
+    setIsPresetModalOpen(true);
+  }, [submitRating]);
 
   // Shuffle Effects - randomize only effects and their settings (1-15 effects)
   const shuffleEffects = useCallback(() => {
@@ -4782,6 +4790,48 @@ export function InteractiveGradient() {
         </div>
       )}
       
+      {/* Rating UI overlay */}
+      {showRatingUI && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto z-50 flex flex-col items-center gap-2">
+          <div
+            className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl"
+            style={{ background: 'rgba(18,20,30,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+          >
+            <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  onClick={() => submitRating(star * 2)}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all hover:scale-110 active:scale-95"
+                  style={{ background: star <= 2 ? 'rgba(239,68,68,0.2)' : star === 3 ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.2)', border: star <= 2 ? '1px solid rgba(239,68,68,0.4)' : star === 3 ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(34,197,94,0.4)' }}
+                  title={`${star} star${star > 1 ? 's' : ''}`}
+                >
+                  {'★'.repeat(star)}{'☆'.repeat(5 - star)}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={saveRatingAsPreset}
+                className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(to right, #9333ea, #ec4899, #facc15)' }}
+              >
+                ❤️ Save to Presets
+              </button>
+              <button
+                onClick={skipRating}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white/50 hover:text-white/80 transition-all"
+                style={{ background: 'rgba(255,255,255,0.06)' }}
+              >
+                Skip
+              </button>
+            </div>
+            <span className="text-white/30 text-[10px]">{ratedResults.length} rated · {ratedResults.filter(r => r.rating >= 7).length} favorites</span>
+          </div>
+        </div>
+      )}
+
       {/* Eye-off button when controls are hidden */}
       {!isControlsVisible && (
         <div className="absolute top-4 left-4 pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left">
