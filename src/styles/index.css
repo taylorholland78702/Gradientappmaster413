@@ -83,6 +83,11 @@
   background-color: rgba(0,0,0,0.82) !important;
   color: white !important;
 }
+/* BEAT active state in light mode */
+.control-panel.panel-light .beat-active {
+  background-color: rgba(0,0,0,0.75) !important;
+  color: white !important;
+}
 /* Hover states in light mode */
 .control-panel.panel-light button:not([class*="from-purple"]):hover {
   background-color: rgba(0,0,0,0.1) !important;
