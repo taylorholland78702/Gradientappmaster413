@@ -29,19 +29,21 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [audioGradientParam, setAudioGradientParam] = useState(0);
   const [audioEffectParam, setAudioEffectParam] = useState(0);
   const [audioColorShift, setAudioColorShift] = useState(0);
+  const [audioEnergy, setAudioEnergy] = useState(0);
+  const energySmoothedRef = useRef(0);
   const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
-  const [bassMultiplier, setBassMultiplier] = useState(2);
+  const [bassMultiplier, setBassMultiplier] = useState(3);
   const [midsMultiplier, setMidsMultiplier] = useState(2);
   const [trebleMultiplier, setTrebleMultiplier] = useState(1.5);
-  const [bassSmoothing, setBassSmoothing] = useState(0.5);
-  const [midsSmoothing, setMidsSmoothing] = useState(0.5);
-  const [trebleSmoothing, setTrebleSmoothing] = useState(0.5);
+  const [bassSmoothing, setBassSmoothing] = useState(0.2);
+  const [midsSmoothing, setMidsSmoothing] = useState(0.2);
+  const [trebleSmoothing, setTrebleSmoothing] = useState(0.2);
   const [bassThreshold, setBassThreshold] = useState(0);
   const [midsThreshold, setMidsThreshold] = useState(0);
   const [trebleThreshold, setTrebleThreshold] = useState(0);
   const [bassMin, setBassMin] = useState(0);
-  const [bassMax, setBassMax] = useState(2);
+  const [bassMax, setBassMax] = useState(5);
   const [midsMin, setMidsMin] = useState(0);
   const [midsMax, setMidsMax] = useState(2);
   const [trebleMin, setTrebleMin] = useState(0);
@@ -352,10 +354,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveBassSmoothedRef.current = bassGradientValue;
       setAudioGradientParam(bassGradientValue);
 
-      // Bass drives zoom
+      // Bass drives zoom — use raw unsmoothed value for instant punch
+      const bassRawForZoom = bassAboveThreshold ? bassAvgRaw * bassMultiplier * masterSensitivity : 0;
       setTargetZoom(prev => {
-        if (bassGradientValue > 0.05) {
-          const pulse = 1 + bassGradientValue * (bassBeatSync ? 3.0 : 1.5);
+        if (bassRawForZoom > 0.05) {
+          const pulse = 1 + bassRawForZoom * (bassBeatSync ? 3.5 : 1.8);
           return Math.min(prev * pulse, prev + (bassBeatSync ? 4.0 : 2.0));
         }
         return prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
@@ -406,6 +409,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
       }
       treblePrevRef.current = trebleAvgRaw;
+
+      // Global energy — average of all bands, drives brightness in renderers
+      const rawEnergy = (bassAvgRaw + midsAvgRaw + trebleAvgRaw) / 3;
+      energySmoothedRef.current = 0.25 * energySmoothedRef.current + 0.75 * rawEnergy;
+      setAudioEnergy(Math.min(1, energySmoothedRef.current * masterSensitivity * 2));
 
       requestAnimationFrame(analyzeAudio);
     };
@@ -490,6 +498,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioGradientParam, setAudioGradientParam,
     audioEffectParam, setAudioEffectParam,
     audioColorShift, setAudioColorShift,
+    audioEnergy,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,

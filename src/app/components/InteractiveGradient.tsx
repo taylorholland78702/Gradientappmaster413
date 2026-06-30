@@ -372,6 +372,7 @@ export function InteractiveGradient() {
     audioGradientParam, setAudioGradientParam,
     audioEffectParam, setAudioEffectParam,
     audioColorShift, setAudioColorShift,
+    audioEnergy,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
@@ -749,9 +750,11 @@ export function InteractiveGradient() {
     return () => cancelAnimationFrame(rafId);
   }, [gradientType, isVCRPlaying, vcrPlaybackSpeed, shapesRotationDirection]);
 
-  // Ref so animation loops can read latest bass value without restarting
+  // Refs so animation loops can read latest audio values without restarting
   const audioGradientParamRef = useRef(audioGradientParam);
   audioGradientParamRef.current = audioGradientParam;
+  const audioEffectParamRef = useRef(audioEffectParam);
+  audioEffectParamRef.current = audioEffectParam;
 
 
   // Continuous animation for slit-scan effect
@@ -2333,8 +2336,9 @@ export function InteractiveGradient() {
       } else {
         rotationAmount = rotationDirection === 'clockwise' ? 1.5 : -1.5;
       }
-      // Apply VCR speed control to rotation
-      setTargetAngle(prev => prev + (rotationAmount * vcrPlaybackSpeed));
+      // Mids boost rotation speed — more mid energy = faster spin
+      const midsBoost = isAudioActiveRef.current ? 1 + audioEffectParamRef.current * 4 : 1;
+      setTargetAngle(prev => prev + (rotationAmount * vcrPlaybackSpeed * midsBoost));
     }, 100);
 
     return () => clearInterval(interval);
@@ -2370,8 +2374,8 @@ export function InteractiveGradient() {
     bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
-    audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+    audioEffectParam, audioColorShift, audioEnergy,
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3738,6 +3742,16 @@ export function InteractiveGradient() {
 
     // Restore audio-reactive transformations before applying effects
     if (isAudioEnabled && isAudioReactive) {
+      ctx.restore();
+    }
+
+    // Global energy brightness overlay — flares canvas brighter with loudness
+    if (isAudioEnabled && isAudioReactive && audioEnergy > 0.04) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = audioEnergy * 0.45;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
       ctx.restore();
     }
 
