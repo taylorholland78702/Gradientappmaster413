@@ -270,9 +270,21 @@ export function InteractiveGradient() {
   const [flowerRotation, setFlowerRotation] = useState(0);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
   const [auroraAnimTime, setAuroraAnimTime] = useState(0);
+  const [auroraBandCount, setAuroraBandCount] = useState(6);
+  const [auroraWaveSpeed, setAuroraWaveSpeed] = useState(1);
+  const [auroraBandHeight, setAuroraBandHeight] = useState(1.8);
   const [causticsAnimTime, setCausticsAnimTime] = useState(0);
+  const [causticsComplexity, setCausticsComplexity] = useState(1);
+  const [causticsBrightness, setCausticsBrightness] = useState(2);
+  const [causticsScale, setCausticsScale] = useState(4);
   const [lavaAnimTime, setLavaAnimTime] = useState(0);
+  const [lavaBlobCount, setLavaBlobCount] = useState(6);
+  const [lavaBlobSize, setLavaBlobSize] = useState(0.18);
+  const [lavaSpeed, setLavaSpeed] = useState(1);
   const [marbleAnimTime, setMarbleAnimTime] = useState(0);
+  const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
+  const [marbleTurbulence, setMarbleTurbulence] = useState(1.5);
+  const [marbleOctaves, setMarbleOctaves] = useState(5);
 
   // Store base AI colors to keep them anchored
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
@@ -2350,12 +2362,15 @@ export function InteractiveGradient() {
     voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
     fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
-    auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
+    auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight,
+    causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale,
+    lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
+    marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3395,13 +3410,13 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const auroraAudio = isAudioEnabled && isAudioReactive;
-        const auroraTime = auroraAnimTime + gradientAngle * 0.01;
+        const auroraTime = auroraAnimTime * auroraWaveSpeed + gradientAngle * 0.01;
         const auroraAudioBoost = auroraAudio ? 1 + audioGradientParam * 0.6 : 1;
         const auroraColorShift = auroraAudio ? audioColorShift * 0.5 : 0;
-        const numBands = 6;
+        const numBands = auroraBandCount;
         for (let b = 0; b < numBands; b++) {
           const bandY = (displayHeight * (b + 0.5)) / numBands;
-          const bandHeight = (displayHeight / numBands) * 1.8 * auroraAudioBoost;
+          const bandHeight = (displayHeight / numBands) * auroraBandHeight * auroraAudioBoost;
           const colorIdx = ((b + Math.floor(auroraColorShift * gradientColors.length)) % gradientColors.length + gradientColors.length) % gradientColors.length;
           const color = gradientColors[colorIdx] || gradientColors[0];
           if (!color) continue;
@@ -3429,22 +3444,22 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const causticsAudio = isAudioEnabled && isAudioReactive;
         const ct = causticsAnimTime + gradientAngle * 0.02;
-        const causticsScale = 1 / zoom;
         const causticsAudioIntensity = causticsAudio ? 1 + audioGradientParam * 0.8 : 1;
         const causticsColorShift = causticsAudio ? audioColorShift * 0.4 : 0;
         const imageData = ctx.createImageData(displayWidth, displayHeight);
         const d = imageData.data;
-        const scaleX = causticsScale * 4 / displayWidth;
-        const scaleY = causticsScale * 4 / displayHeight;
+        const cScaleXY = causticsScale / displayWidth;
+        const scaleX = cScaleXY * 4 / zoom;
+        const scaleY = (causticsScale / displayHeight) * 4 / zoom;
+        const cFreq = causticsComplexity;
         for (let y = 0; y < displayHeight; y++) {
           for (let x = 0; x < displayWidth; x++) {
             const nx = (x - centerX) * scaleX;
             const ny = (y - centerY) * scaleY;
-            // Two sets of interfering waves
-            const w1 = Math.sin(nx * 2.1 + Math.sin(ny * 1.3 + ct) + ct * 0.7);
-            const w2 = Math.sin(ny * 2.3 + Math.sin(nx * 1.7 - ct * 0.8) - ct * 0.5);
-            const w3 = Math.sin((nx + ny) * 1.5 + ct * 1.1);
-            const v = Math.pow(Math.abs(w1 + w2 + w3) / 3, 2) * causticsAudioIntensity;
+            const w1 = Math.sin(nx * 2.1 * cFreq + Math.sin(ny * 1.3 * cFreq + ct) + ct * 0.7);
+            const w2 = Math.sin(ny * 2.3 * cFreq + Math.sin(nx * 1.7 * cFreq - ct * 0.8) - ct * 0.5);
+            const w3 = Math.sin((nx + ny) * 1.5 * cFreq + ct * 1.1);
+            const v = Math.pow(Math.abs(w1 + w2 + w3) / 3, causticsBrightness) * causticsAudioIntensity;
             const tVal = (Math.sin(v * Math.PI) * 0.5 + 0.5 + causticsColorShift) % 1;
             const ci = Math.floor(tVal * (gradientColors.length - 1));
             const ci2 = (ci + 1) % gradientColors.length;
@@ -3471,16 +3486,16 @@ export function InteractiveGradient() {
         const lavaColorShift = lavaAudio ? audioColorShift * 0.5 : 0;
         const imageData2 = ctx.createImageData(displayWidth, displayHeight);
         const d2 = imageData2.data;
-        // Define metaballs
-        const numBlobs = Math.min(gradientColors.length + 2, 8);
+        const lavaTime = lt * lavaSpeed;
+        const numBlobs = Math.max(2, Math.min(lavaBlobCount, 12));
         const blobs: Array<{x: number, y: number, r: number}> = [];
         for (let i = 0; i < numBlobs; i++) {
-          const angle = (i / numBlobs) * Math.PI * 2 + lt * (0.3 + i * 0.07);
-          const orbitR = 0.25 + 0.15 * Math.sin(lt * 0.4 + i * 1.1);
+          const angle = (i / numBlobs) * Math.PI * 2 + lavaTime * (0.3 + i * 0.07);
+          const orbitR = 0.25 + 0.15 * Math.sin(lavaTime * 0.4 + i * 1.1);
           blobs.push({
             x: centerX + displayWidth * orbitR * Math.cos(angle),
-            y: centerY + displayHeight * orbitR * Math.sin(angle * 0.7 + lt * 0.2),
-            r: (Math.min(displayWidth, displayHeight) * 0.18 + Math.sin(lt + i) * 0.04 * displayWidth) * lavaAudioScale,
+            y: centerY + displayHeight * orbitR * Math.sin(angle * 0.7 + lavaTime * 0.2),
+            r: (Math.min(displayWidth, displayHeight) * lavaBlobSize + Math.sin(lavaTime + i) * 0.04 * displayWidth) * lavaAudioScale,
           });
         }
         const scaleF = 1 / zoom;
@@ -3529,21 +3544,21 @@ export function InteractiveGradient() {
         const imageData3 = ctx.createImageData(displayWidth, displayHeight);
         const d3 = imageData3.data;
         const mScale = (1 / zoom) * 3;
+        const mOctaves = Math.round(marbleOctaves);
         for (let y = 0; y < displayHeight; y++) {
           for (let x = 0; x < displayWidth; x++) {
             const nx2 = (x - centerX) / displayWidth * mScale;
             const ny2 = (y - centerY) / displayHeight * mScale;
-            // Layered turbulence
             let turb = 0;
             let freq = 1 * marbleAudioFreq;
             let amp = 1;
-            for (let oct = 0; oct < 5; oct++) {
+            for (let oct = 0; oct < mOctaves; oct++) {
               turb += Math.sin(nx2 * freq + mt * 0.3) * Math.cos(ny2 * freq * 0.8 - mt * 0.2) * amp;
               turb += Math.sin((nx2 + ny2) * freq * 0.7 + mt * 0.5) * amp * 0.5;
               freq *= 2.1;
               amp *= 0.5;
             }
-            const vein = Math.sin(nx2 * 2 + turb * 1.5 + mt * 0.1) * 0.5 + 0.5;
+            const vein = Math.sin(nx2 * marbleVeinFreq + turb * marbleTurbulence + mt * 0.1) * 0.5 + 0.5;
             const tVal2 = (vein + marbleColorShift) % 1;
             const ci4 = Math.floor(tVal2 * (gradientColors.length - 1));
             const ci5 = (ci4 + 1) % gradientColors.length;
@@ -5782,6 +5797,82 @@ export function InteractiveGradient() {
           </div>
         )}
         
+        {/* Aurora Controls */}
+        {gradientType === 'aurora' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+            {[
+              { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
+              { label: 'Wave Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 4, step: 0.1 },
+              { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Caustics Controls */}
+        {gradientType === 'caustics' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+            {[
+              { label: 'Complexity', value: causticsComplexity, set: setCausticsComplexity, min: 0.2, max: 4, step: 0.1 },
+              { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
+              { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Lava Lamp Controls */}
+        {gradientType === 'lava-lamp' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+            {[
+              { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
+              { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
+              { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 4, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Marble Controls */}
+        {gradientType === 'marble' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+            {[
+              { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
+              { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
+              { label: 'Octaves', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
