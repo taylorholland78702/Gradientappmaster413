@@ -158,49 +158,49 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
               {/* Shape = Bass */}
               <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                <div className="w-full relative">
-                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                <div className="flex gap-1.5 w-full" style={{height: '64px'}}>
+                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                    <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
+                  <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} style={{writingMode: 'vertical-lr', direction: 'rtl', height: '64px', width: '18px', WebkitAppearance: 'slider-vertical', cursor: 'pointer', flexShrink: 0}} />
                 </div>
                 <span className="text-[10px] font-semibold text-white">Shape</span>
-                <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
                 <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Motion = Mids */}
               <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                <div className="w-full relative">
-                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                <div className="flex gap-1.5 w-full" style={{height: '64px'}}>
+                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                    <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
+                  <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} style={{writingMode: 'vertical-lr', direction: 'rtl', height: '64px', width: '18px', WebkitAppearance: 'slider-vertical', cursor: 'pointer', flexShrink: 0}} />
                 </div>
                 <span className="text-[10px] font-semibold text-white">Motion</span>
-                <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
                 <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Color = Treble */}
               <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                <div className="w-full relative">
-                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                <div className="flex gap-1.5 w-full" style={{height: '64px'}}>
+                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                    <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
+                  <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 51)); }} style={{writingMode: 'vertical-lr', direction: 'rtl', height: '64px', width: '18px', WebkitAppearance: 'slider-vertical', cursor: 'pointer', flexShrink: 0}} />
                 </div>
                 <span className="text-[10px] font-semibold text-white">Color</span>
-                <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
                 <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Pulse = Sub-bass */}
               <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                <div className="w-full relative">
-                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                <div className="flex gap-1.5 w-full" style={{height: '64px'}}>
+                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                    <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
+                  <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} style={{writingMode: 'vertical-lr', direction: 'rtl', height: '64px', width: '18px', WebkitAppearance: 'slider-vertical', cursor: 'pointer', flexShrink: 0}} />
                 </div>
                 <span className="text-[10px] font-semibold text-white">Pulse</span>
-                <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
                 <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
             </div>
