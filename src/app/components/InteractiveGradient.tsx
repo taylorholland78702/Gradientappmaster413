@@ -1196,44 +1196,76 @@ export function InteractiveGradient() {
       setTileCount(Math.floor(Math.random() * 5) + 1);
       setGrainIntensity(Math.random() * 0.5);
     } else {
-      // Full random generation (original logic)
-      setTargetColors(gradientColors.map(() => randomColor()));
-      
+      // Full random generation — curated ranges for better results
+
+      // Harmonious color generation: pick a base hue, generate analogous/complementary palette
+      const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
+        s /= 100; l /= 100;
+        const k = (n: number) => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+      };
+      const baseHue = Math.random() * 360;
+      const colorScheme = Math.random();
+      const harmonyColors = gradientColors.map((_, i) => {
+        let hue: number;
+        if (colorScheme < 0.4) {
+          // Analogous: tight cluster
+          hue = (baseHue + (i - 1) * 30 + (Math.random() * 20 - 10) + 360) % 360;
+        } else if (colorScheme < 0.7) {
+          // Complementary split
+          hue = (baseHue + (i % 2 === 0 ? 0 : 150 + Math.random() * 60) + (Math.random() * 20 - 10) + 360) % 360;
+        } else {
+          // Triadic
+          hue = (baseHue + i * 120 + (Math.random() * 30 - 15) + 360) % 360;
+        }
+        const sat = 55 + Math.random() * 40; // 55–95% saturation
+        const lit = 35 + Math.random() * 35; // 35–70% lightness
+        return hslToRgb(hue, sat, lit);
+      });
+      setTargetColors(harmonyColors);
+
       const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(randomGradient);
-      
-      // Generate between 1-8 effects
-      const numEffects = Math.floor(Math.random() * 8) + 1; // Random number from 1 to 8
+
+      // Weighted effect selection — preferred effects appear more often
+      const PREFERRED_FX: EffectType[] = ['blur', 'vignette', 'chromatic', 'film-grain', 'wave-distortion', 'color-shift', 'fisheye', 'bokeh', 'brightness'];
+      const STATEMENT_FX: EffectType[] = ['kaleidoscope', 'halftone', 'posterize', 'duotone', 'invert', 'pixelate'];
+      const ACCENT_FX: EffectType[] = ['vhs-glitch', 'dust-scratches', 'dither', 'triangulate', 'grid', 'slit-scan'];
+      const weightedPool: EffectType[] = [
+        ...PREFERRED_FX, ...PREFERRED_FX, ...PREFERRED_FX, // 3× weight
+        ...STATEMENT_FX, ...STATEMENT_FX,                   // 2× weight
+        ...ACCENT_FX,                                        // 1× weight
+      ];
+      const numEffects = Math.random() < 0.45 ? 1 : Math.random() < 0.75 ? 2 : 3; // skew toward fewer
       const selectedEffects: EffectType[] = [];
-      
-      for (let i = 0; i < numEffects; i++) {
-        const randomEffect = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
-        if (!selectedEffects.includes(randomEffect)) {
-          selectedEffects.push(randomEffect);
-        }
+      for (let i = 0; i < numEffects * 10 && selectedEffects.length < numEffects; i++) {
+        const pick = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+        if (!selectedEffects.includes(pick)) selectedEffects.push(pick);
       }
-      
+
       setActiveEffects(selectedEffects);
       setIsMultiFxMode(true);
-      
+
       setTargetAngle(Math.random() * 360);
       setTargetZoom(1);
       setZoom(1);
-      
-      const speedOptions = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      const randomSpeed = speedOptions[Math.floor(Math.random() * speedOptions.length)];
-      setVcrPlaybackSpeed(randomSpeed);
-      
+
+      // Speed: bias toward 1–4 range
+      const speedOptions = [0.5, 1, 1, 2, 2, 3, 3, 4, 5, 6, 8, 10];
+      setVcrPlaybackSpeed(speedOptions[Math.floor(Math.random() * speedOptions.length)]);
+
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
-      
-      setKaleidoscopeSegments(Math.floor(Math.random() * 20) + 3);
-      setTwistAmount(Math.random() * 5);
-      setPixelSize(Math.floor(Math.random() * 50) + 5);
-      setTriangleSize(Math.floor(Math.random() * 80) + 20);
-      setChromaticOffset(Math.floor(Math.random() * 20) + 1);
-      setFisheyeStrength(Math.random());
-      setTileCount(Math.floor(Math.random() * 5) + 1);
-      setGrainIntensity(Math.random() * 0.5);
+
+      setKaleidoscopeSegments(Math.floor(Math.random() * 16) + 4);  // 4–19
+      setTwistAmount(Math.random() * 3);                              // 0–3
+      setPixelSize(Math.floor(Math.random() * 30) + 8);              // 8–37
+      setTriangleSize(Math.floor(Math.random() * 60) + 20);          // 20–79
+      setChromaticOffset(Math.floor(Math.random() * 150) + 30);      // 30–179
+      setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
+      setTileCount(Math.floor(Math.random() * 4) + 1);               // 1–4
+      setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
     }
     
     setBaseAIColors(null);
@@ -1283,92 +1315,88 @@ export function InteractiveGradient() {
     // setTwistAmount(Math.random() * 5); // 0-5
     // setPixelSize(Math.floor(Math.random() * 50) + 5); // 5-54
     // setTriangleSize(Math.floor(Math.random() * 80) + 20); // 20-99
-    // setChromaticOffset(Math.floor(Math.random() * 20) + 1); // 1-20
-    // setFisheyeStrength(Math.random()); // 0-1
-    // setTileCount(Math.floor(Math.random() * 5) + 1); // 1-5
-    // setGrainIntensity(Math.random() * 0.5); // 0-0.5
-    setBlurMotionAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setBlurMotionDirection(Math.floor(Math.random() * 360)); // 0-360
-    setBlurGaussianAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setBlurRadialAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setPosterizeLevels(Math.floor(Math.random() * 14) + 2); // 2-15
-    setHalftoneSize(Math.floor(Math.random() * 198) + 2); // 2-200
-    setHalftoneVariation(Math.random()); // 0-1
-    setHalftoneMove(Math.random() > 0.5); // random true/false
-    setHalftoneMoveSpeed(Math.random() * 9 + 1); // 1-10
-    setVignetteStrength(Math.random()); // 0-1
-    setColorShiftHue(Math.floor(Math.random() * 360)); // 0-360
-    setBulgeStrength(Math.random()); // 0-1
-    setCharcoalIntensity(Math.random()); // 0-1
-    setColorBurnIntensity(Math.random()); // 0-1
-    setColorDodgeIntensity(Math.random()); // 0-1
-    setDigitalNoiseIntensity(Math.random()); // 0-1
-    setDuotoneIntensity(Math.random()); // 0-1
-    setDustIntensity(Math.random()); // 0-1
-    setDustCrackleIntensity(Math.random()); // 0-1
-    setGridSize(Math.floor(Math.random() * 40) + 10); // 10-49
-    setHexGridSize(Math.floor(Math.random() * 190) + 10); // 10-200
-    setLightLeakIntensity(Math.random()); // 0-1
-    setLensFlareIntensity(Math.random()); // 0-1
-    setLensFlareX(Math.random()); // 0-1
-    setLensFlareY(Math.random()); // 0-1
-    setLensFlareSize(Math.floor(Math.random() * 400) + 100); // 100-499
-    setLinesCount(Math.floor(Math.random() * 150) + 10); // 10-159
-    setLinesAngle(Math.floor(Math.random() * 360)); // 0-360
-    setLinesThickness(Math.floor(Math.random() * 49) + 1); // 1-50
-    setLiquifyStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-    setMandalaSegments(Math.floor(Math.random() * 20) + 4); // 4-23
-    setPinchStrength(Math.random()); // 0-1
-    setPolarAngle(Math.floor(Math.random() * 360)); // 0-360
-    setPolarRadius(Math.random() * 2 + 0.5); // 0.5-2.5
-    setPolarRotation(Math.floor(Math.random() * 360)); // 0-360
-    setScanLineSize(Math.floor(Math.random() * 15) + 2); // 2-16
-    setSepiaIntensity(Math.random()); // 0-1
-    setSolarizeThreshold(Math.floor(Math.random() * 255)); // 0-255
-    setTriGridSize(Math.floor(Math.random() * 50) + 10); // 10-59
-    setGridSides(Math.floor(Math.random() * 10) + 1); // 1-10 sides
-    setTritoneIntensity(Math.random()); // 0-1
-    setVhsGlitchIntensity(Math.random()); // 0-1
-    setGridRows(Math.floor(Math.random() * 50) + 1); // 1-50
-    setGridColumns(Math.floor(Math.random() * 50) + 1); // 1-50
-    setPolygonSides(Math.floor(Math.random() * 10) + 1); // 1-10
-    setPolygon2Sides(Math.floor(Math.random() * 10) + 1); // 1-10
-    setWaveDistortionStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-    
+    setBlurMotionAmount(Math.floor(Math.random() * 50) + 10);        // 10–59
+    setBlurMotionDirection(Math.floor(Math.random() * 360));           // 0–360
+    setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);        // 3–17
+    setBlurRadialAmount(Math.floor(Math.random() * 15) + 3);          // 3–17
+    setPosterizeLevels(Math.floor(Math.random() * 10) + 4);           // 4–13
+    setHalftoneSize(Math.floor(Math.random() * 25) + 5);              // 5–29
+    setHalftoneVariation(Math.random() * 0.5);                        // 0–0.5
+    setHalftoneMove(Math.random() > 0.6);
+    setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
+    setVignetteStrength(Math.random() * 0.6 + 0.2);                   // 0.2–0.8
+    setColorShiftHue(Math.floor(Math.random() * 120) + 5);            // 5–124
+    setBulgeStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
+    setCharcoalIntensity(Math.random() * 0.6 + 0.2);                  // 0.2–0.8
+    setColorBurnIntensity(Math.random() * 0.5 + 0.2);                 // 0.2–0.7
+    setColorDodgeIntensity(Math.random() * 0.5 + 0.1);                // 0.1–0.6
+    setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
+    setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
+    setDustIntensity(Math.random() * 0.4);                            // 0–0.4
+    setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3
+    setGridSize(Math.floor(Math.random() * 30) + 10);                 // 10–39
+    setHexGridSize(Math.floor(Math.random() * 80) + 15);              // 15–94
+    setLightLeakIntensity(Math.random() * 0.5 + 0.1);                 // 0.1–0.6
+    setLensFlareIntensity(Math.random() * 0.6 + 0.2);                 // 0.2–0.8
+    setLensFlareX(Math.random());
+    setLensFlareY(Math.random());
+    setLensFlareSize(Math.floor(Math.random() * 250) + 100);          // 100–349
+    setLinesCount(Math.floor(Math.random() * 80) + 10);               // 10–89
+    setLinesAngle(Math.floor(Math.random() * 360));
+    setLinesThickness(Math.floor(Math.random() * 20) + 1);            // 1–20
+    setLiquifyStrength(Math.floor(Math.random() * 60) + 10);          // 10–69
+    setMandalaSegments(Math.floor(Math.random() * 14) + 4);           // 4–17
+    setPinchStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
+    setPolarAngle(Math.floor(Math.random() * 360));
+    setPolarRadius(Math.random() * 1.5 + 0.5);                        // 0.5–2.0
+    setPolarRotation(Math.floor(Math.random() * 360));
+    setScanLineSize(Math.floor(Math.random() * 10) + 2);              // 2–11
+    setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
+    setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
+    setTriGridSize(Math.floor(Math.random() * 40) + 15);              // 15–54
+    setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
+    setTritoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
+    setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
+    setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
+    setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
+    setPolygonSides(Math.floor(Math.random() * 8) + 3);               // 3–10
+    setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
+    setWaveDistortionStrength(Math.floor(Math.random() * 80) + 20);   // 20–99
+
     // Randomize gradient-specific controls
     setSpiralTightness(Math.floor(Math.random() * 19) + 1); // 1-20
     setSpiralRotations(Math.floor(Math.random() * 9) + 1); // 1-10
     setSpiralThickness(Math.floor(Math.random() * 95) + 5); // 5-100
-    setSpiralZoom(Math.random() * 4.9 + 0.1); // 0.1-5
-    setShapesSides(Math.floor(Math.random() * 10) + 1); // 1-10
-    setShapesCount(Math.floor(Math.random() * 49) + 1); // 1-50
-    setConcentricRingWidth(Math.floor(Math.random() * 280) + 20); // 20-300
-    setConcentricRingCount(Math.floor(Math.random() * 29) + 1); // 1-30
-    setWaveAmplitude(Math.floor(Math.random() * 190) + 10); // 10-200
-    setWaveFrequency(Math.floor(Math.random() * 9) + 1); // 1-10
-    setWaveNumber(Math.floor(Math.random() * 19) + 1); // 1-20
-    setWaveRotation(Math.floor(Math.random() * 360)); // 0-360
-    setMeshGridSize(Math.floor(Math.random() * 9) + 1); // 1-10
-    setNoiseScale(Math.floor(Math.random() * 100) + 1); // 1-100
-    setNoiseOctaves(Math.floor(Math.random() * 7) + 1); // 1-8
-    setNoiseDirection(Math.floor(Math.random() * 360)); // 0-360
-    setPlasmaSpeed(Math.random() * 4.75 + 0.25); // 0.25-5
-    setPlasmaComplexity(Math.floor(Math.random() * 9) + 1); // 1-10
-    setRadialBurstCount(Math.floor(Math.random() * 19) + 2); // 2-20
-    setRadialBurstSpread(Math.floor(Math.random() * 91) + 10); // 10-100
-    setVoronoiCellCount(Math.floor(Math.random() * 41) + 5); // 5-45
-    setVoronoiDistortion(Math.floor(Math.random() * 51)); // 0-50
-    setConicalSpiralTurns(Math.floor(Math.random() * 14) + 1); // 1-15
-    setConicalSpiralTightness(Math.random() * 1.5 + 0.1); // 0.1-1.6
-    setWindmillBlades(Math.floor(Math.random() * 15) + 3); // 3-17
-    setWindmillRotation(Math.floor(Math.random() * 360)); // 0-360
-    setGridRotation(Math.floor(Math.random() * 360)); // 0-360
-    setAngleStartOffset(Math.floor(Math.random() * 360)); // 0-360
-    setAngleCenterX(Math.floor(Math.random() * 100)); // 0-100
-    setAngleCenterY(Math.floor(Math.random() * 100)); // 0-100
-    setIridescentAngle(Math.floor(Math.random() * 360)); // 0-360
-    setIridescentIntensity(Math.random() * 1.5 + 0.5); // 0.5-2.0
-    setIridescentScale(Math.random() * 2 + 0.5); // 0.5-2.5
+    setSpiralZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
+    setShapesSides(Math.floor(Math.random() * 8) + 3);                // 3–10
+    setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
+    setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
+    setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
+    setWaveAmplitude(Math.floor(Math.random() * 60) + 15);            // 15–74
+    setWaveFrequency(Math.floor(Math.random() * 8) + 1);              // 1–8
+    setWaveNumber(Math.floor(Math.random() * 18) + 5);                // 5–22
+    setWaveRotation(Math.floor(Math.random() * 360));
+    setMeshGridSize(Math.floor(Math.random() * 7) + 2);               // 2–8
+    setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
+    setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
+    setNoiseDirection(Math.floor(Math.random() * 360));
+    setPlasmaSpeed(Math.random() * 3 + 0.5);                          // 0.5–3.5
+    setPlasmaComplexity(Math.floor(Math.random() * 7) + 2);           // 2–8
+    setRadialBurstCount(Math.floor(Math.random() * 14) + 4);          // 4–17
+    setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
+    setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
+    setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
+    setConicalSpiralTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
+    setConicalSpiralTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
+    setWindmillBlades(Math.floor(Math.random() * 10) + 3);            // 3–12
+    setWindmillRotation(Math.floor(Math.random() * 360));
+    setGridRotation(Math.floor(Math.random() * 360));
+    setAngleStartOffset(Math.floor(Math.random() * 360));
+    setAngleCenterX(Math.floor(Math.random() * 100));
+    setAngleCenterY(Math.floor(Math.random() * 100));
+    setIridescentAngle(Math.floor(Math.random() * 360));
+    setIridescentIntensity(Math.random() * 1.2 + 0.5);                // 0.5–1.7
+    setIridescentScale(Math.random() * 1.5 + 0.5);                    // 0.5–2.0
     
     // Randomize tritone colors
     const randomHexColor = () => {
