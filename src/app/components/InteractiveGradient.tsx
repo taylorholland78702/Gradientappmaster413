@@ -73,7 +73,7 @@ export function InteractiveGradient() {
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
-  const [resolutionMultiplier, setResolutionMultiplier] = useState(1); // 1x, 2x, 3x, 4x
+  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => Math.min(window.devicePixelRatio || 1, 3));
   
   
   // Video recording state (shared between root and useVCRPlayback hook)
@@ -297,6 +297,7 @@ export function InteractiveGradient() {
     try { return JSON.parse(localStorage.getItem('gradientRatings') || '[]'); } catch { return []; }
   });
   const [pendingRatingState, setPendingRatingState] = useState<any>(null);
+  const [showFavorites, setShowFavorites] = useState(false);
   
   // File input refs for uploads
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -623,6 +624,13 @@ export function InteractiveGradient() {
     return () => clearInterval(interval);
   }, [panelPos]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    const handler = () => setResolutionMultiplier(Math.min(window.devicePixelRatio || 1, 3));
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
   useEffect(() => {
@@ -1713,6 +1721,18 @@ export function InteractiveGradient() {
     setPendingRatingState(null);
   }, [pendingRatingState, ratedResults]);
   
+  const restoreFavorite = useCallback((data: any) => {
+    const colors = data.gradientColors || [];
+    const targets = data.targetColors || colors;
+    setGradientColors(colors);
+    setTargetColors(targets);
+    setGradientType(data.gradientType);
+    setGradientAngle(data.gradientAngle ?? 45);
+    setZoom(data.zoom ?? 1);
+    setActiveEffects(data.activeEffects ?? []);
+    setShowFavorites(false);
+  }, []);
+
   // Skip rating
   const skipRating = useCallback(() => {
     setShowRatingUI(false);
@@ -5223,7 +5243,58 @@ export function InteractiveGradient() {
                 Skip
               </button>
             </div>
-            <span className="text-white/30 text-[10px]">{ratedResults.length} rated · {ratedResults.filter(r => r.rating >= 7).length} favorites</span>
+            <button
+              onClick={() => setShowFavorites(prev => !prev)}
+              className="text-white/50 text-[10px] hover:text-white/80 transition-colors"
+            >
+              {ratedResults.length} rated · ⭐ {ratedResults.filter(r => r.rating >= 7).length} favorites
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showFavorites && (
+        <div
+          className="absolute pointer-events-auto z-[9998]"
+          style={panelPos ? { left: panelPos.x + 290, top: panelPos.y } : { left: 306, top: 16 }}
+        >
+          <div
+            className="flex flex-col gap-2 p-3 rounded-2xl"
+            style={{ background: 'rgba(18,20,30,0.88)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', maxHeight: '70vh', overflowY: 'auto', width: 260 }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Favorites</span>
+              <button onClick={() => setShowFavorites(false)} className="text-white/40 hover:text-white/80 text-xs px-2 py-0.5 rounded hover:bg-white/10 transition-all">✕</button>
+            </div>
+            {ratedResults.filter(r => r.rating >= 7).length === 0 ? (
+              <span className="text-white/30 text-xs text-center py-4">No favorites yet — rate a result 👍 or 🔥</span>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {[...ratedResults].reverse().filter(r => r.rating >= 7).map((item, i) => {
+                  const colors: Array<{r: number, g: number, b: number}> = item.data?.gradientColors || [];
+                  const gradient = colors.length > 0
+                    ? `linear-gradient(135deg, ${colors.map((c, j) => `rgb(${c.r},${c.g},${c.b}) ${Math.round(j / Math.max(colors.length - 1, 1) * 100)}%`).join(', ')})`
+                    : 'linear-gradient(135deg, #333, #666)';
+                  const emoji = item.rating === 10 ? '🔥' : '👍';
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => restoreFavorite(item.data)}
+                      className="rounded-xl overflow-hidden relative group transition-transform hover:scale-105 active:scale-95"
+                      style={{ aspectRatio: '4/3' }}
+                      title={`${item.data?.gradientType ?? 'gradient'} — click to restore`}
+                    >
+                      <div className="absolute inset-0" style={{ background: gradient }} />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all" />
+                      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
+                        <span className="text-[9px] text-white/70 bg-black/40 rounded px-1 capitalize truncate">{item.data?.gradientType ?? ''}</span>
+                        <span className="text-[10px]">{emoji}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
