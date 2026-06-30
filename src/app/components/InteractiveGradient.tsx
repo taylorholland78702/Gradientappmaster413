@@ -3407,12 +3407,45 @@ export function InteractiveGradient() {
         break;
       }
 
+      case 'windmill': {
+        const wmImageData = ctx.createImageData(displayWidth, displayHeight);
+        const wmData = wmImageData.data;
+        const wmBlades = windmillBlades || 6;
+        const wmRotation = (windmillRotation || 0) * Math.PI / 180;
+        const wmAudioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.4 : 0;
+
+        for (let wy = 0; wy < displayHeight; wy++) {
+          for (let wx = 0; wx < displayWidth; wx++) {
+            const angle = Math.atan2(wy - centerY, wx - centerX) + wmRotation;
+            const dist = Math.sqrt((wx - centerX) ** 2 + (wy - centerY) ** 2);
+            const bladeAngle = ((angle + Math.PI) / (Math.PI * 2)) * wmBlades;
+            const t = ((bladeAngle % 1) + dist * 0.001 * (1 + wmAudioBoost)) % 1;
+
+            const colorPos = t * (gradientColors.length - 1);
+            const colorIdx = Math.floor(colorPos);
+            const colorFrac = colorPos - colorIdx;
+            const c1 = gradientColors[colorIdx % gradientColors.length];
+            const c2 = gradientColors[(colorIdx + 1) % gradientColors.length];
+            if (!c1 || !c2) continue;
+
+            const brightness = 1 + (isAudioEnabled && isAudioReactive ? audioGradientParam * 0.3 : 0);
+            const idx = (wy * displayWidth + wx) * 4;
+            wmData[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * colorFrac) * brightness));
+            wmData[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * colorFrac) * brightness));
+            wmData[idx + 2] = Math.min(255, Math.round((c1.b + (c2.b - c1.b) * colorFrac) * brightness));
+            wmData[idx + 3] = 255;
+          }
+        }
+        ctx.putImageData(wmImageData, 0, 0);
+        break;
+      }
+
       default:
         break;
     }
 
     // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'conical-spiral', 'radial-burst', 'freeform', 'flower', 'radar'];
+    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'conical-spiral', 'radial-burst', 'freeform', 'flower', 'radar', 'windmill'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
         addGradientStops(gradient, gradientColors);
