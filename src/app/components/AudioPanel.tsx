@@ -37,7 +37,6 @@ interface AudioPanelProps {
   startMicVisualization: (deviceId?: string) => void;
   stopMicVisualization: () => void;
   onAudioFileClick: () => void;
-  isMicOrAudioActive: boolean;
   zoomBeatEnabled: boolean; setZoomBeatEnabled: (v: boolean) => void;
   shakeBeatEnabled: boolean; setShakeBeatEnabled: (v: boolean) => void;
   contrastBeatEnabled: boolean; setContrastBeatEnabled: (v: boolean) => void;
@@ -83,19 +82,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
   startMicVisualization,
   stopMicVisualization,
   onAudioFileClick,
-  isMicOrAudioActive,
   zoomBeatEnabled, setZoomBeatEnabled,
   shakeBeatEnabled, setShakeBeatEnabled,
   contrastBeatEnabled, setContrastBeatEnabled,
   paletteBeatEnabled, setPaletteBeatEnabled,
 }) => {
-  const levels = [
-    { value: liveBassLevel, label: 'B' },
-    { value: liveMidsLevel, label: 'M' },
-    { value: liveTrebleLevel, label: 'T' },
-    { value: liveSubBassLevel, label: 'S' },
-  ];
-
   return (
     <>
       {/* Audiovisuals Section */}
@@ -140,25 +131,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
           <Plus className="w-4 h-4" />
         </button>
 
-        {/* Mini band meters — visible when audio is active and panel is collapsed */}
-        {isMicOrAudioActive && !isAudioControlsOpen && (
-          <div className="flex items-end gap-[3px] px-1.5 py-1 rounded-lg bg-white/8 backdrop-blur-sm">
-            {levels.map(({ value, label }) => (
-              <div key={label} className="flex flex-col items-center gap-[2px]">
-                <div className="w-3 bg-white/10 rounded-sm overflow-hidden flex flex-col justify-end" style={{ height: 20 }}>
-                  <div
-                    className="w-full rounded-sm transition-none"
-                    style={{
-                      height: `${Math.min(100, value * 250)}%`,
-                      background: 'linear-gradient(to top, #eab308, #a855f7)',
-                    }}
-                  />
-                </div>
-                <span className="text-[7px] text-white/50 font-bold">{label}</span>
-              </div>
-            ))}
-          </div>
-        )}
 
         <button
           onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
