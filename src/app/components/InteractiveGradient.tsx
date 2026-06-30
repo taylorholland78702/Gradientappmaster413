@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'radial-blur';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'radial-blur' | 'bloom' | 'feedback' | 'ripple';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -235,6 +235,16 @@ export function InteractiveGradient() {
   const [kaleidoscopeReflections, setKaleidoscopeReflections] = useState(1);
   const [kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed] = useState(0.5);
   const [halftoneCMYK, setHalftoneCMYK] = useState(false);
+  // Bloom
+  const [bloomIntensity, setBloomIntensity] = useState(0.7);
+  const [bloomRadius, setBloomRadius] = useState(12);
+  // Feedback / Trails
+  const [feedbackDecay, setFeedbackDecay] = useState(0.85);
+  const [feedbackZoom, setFeedbackZoom] = useState(1.0);
+  const [feedbackRotation, setFeedbackRotation] = useState(0);
+  // Ripple on beat
+  const [rippleAmplitude, setRippleAmplitude] = useState(20);
+  const [rippleFrequency, setRippleFrequency] = useState(0.015);
   const [pixelateScaleDirection, setPixelateScaleDirection] = useState<'out' | 'in'>('out');
   const [scanType, setScanType] = useState<'horizontal' | 'vertical' | 'interlaced' | 'crt'>('horizontal');
   const [posterizeSolarize, setPosterizeSolarize] = useState(0);
@@ -334,6 +344,9 @@ export function InteractiveGradient() {
   // Slit-scan temporal buffer
   const slitScanBufferRef = useRef<ImageData[]>([]);
   const kaleidoAngleRef = useRef(0);
+  const feedbackBufferRef = useRef<HTMLCanvasElement | null>(null);
+  const rippleRingsRef = useRef<{ phase: number; strength: number }[]>([]);
+  const prevBassForRippleRef = useRef(0);
   
   // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
@@ -2460,7 +2473,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3967,7 +3980,9 @@ export function InteractiveGradient() {
           
         case 'pixelate': {
           const pxTmp = document.createElement('canvas');
-          const pxSize = Math.max(1, pixelSize + (isFirstEffect ? Math.floor(audioModulation * 30) : 0));
+          // Audio makes pixels SMALLER on beat (more detail = louder signal)
+          const audioPixelReduction = isFirstEffect ? Math.floor(audioModulation * pixelSize * 0.85) : 0;
+          const pxSize = Math.max(1, pixelSize - audioPixelReduction);
           pxTmp.width = Math.max(1, Math.floor(displayWidth / pxSize));
           pxTmp.height = Math.max(1, Math.floor(displayHeight / pxSize));
           const pxCtx = pxTmp.getContext('2d');
@@ -4023,15 +4038,23 @@ export function InteractiveGradient() {
           if (displayWidth <= 1 || displayHeight <= 1) break;
           const src = ctx.getImageData(0, 0, displayWidth, displayHeight);
           const dst = ctx.createImageData(displayWidth, displayHeight);
-          const off = Math.min(Math.abs(chromaticOffset + (isFirstEffect ? Math.floor(audioModulation * 10) : 0)), Math.floor(displayWidth / 3));
+          // True 2D RGB split: R→upper-left, G stays, B→lower-right
+          // Spikes on treble via audioColorShift
+          const trebleSpike = isFirstEffect && isAudioReactive ? (audioColorShift / 90) * chromaticOffset * 1.5 : 0;
+          const off = Math.min(Math.abs(chromaticOffset) + trebleSpike, displayWidth / 3);
+          const offInt = Math.round(off);
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               const i = (y * displayWidth + x) * 4;
-              const rx = Math.max(0, Math.min(displayWidth - 1, x - off));
-              const bx = Math.max(0, Math.min(displayWidth - 1, x + off));
-              dst.data[i] = src.data[(y * displayWidth + rx) * 4];
-              dst.data[i + 1] = src.data[i + 1];
-              dst.data[i + 2] = src.data[(y * displayWidth + bx) * 4 + 2];
+              // R channel: shift upper-left (−offInt, −offInt)
+              const rx = Math.max(0, Math.min(displayWidth - 1, x - offInt));
+              const ry = Math.max(0, Math.min(displayHeight - 1, y - offInt));
+              // B channel: shift lower-right (+offInt, +offInt)
+              const bx = Math.max(0, Math.min(displayWidth - 1, x + offInt));
+              const by = Math.max(0, Math.min(displayHeight - 1, y + offInt));
+              dst.data[i]     = src.data[(ry * displayWidth + rx) * 4];
+              dst.data[i + 1] = src.data[i + 1]; // G unchanged
+              dst.data[i + 2] = src.data[(by * displayWidth + bx) * 4 + 2];
               dst.data[i + 3] = 255;
             }
           }
@@ -4321,12 +4344,34 @@ export function InteractiveGradient() {
           ctx.filter = 'none';
           break;
         
-        case 'radial-blur':
-          // Simplified radial blur
-          ctx.filter = `blur(${blurAmount}px)`;
-          ctx.drawImage(canvas, 0, 0);
-          ctx.filter = 'none';
+        case 'radial-blur': {
+          // True zoom blur: per-pixel multi-sample toward center (flying-toward-camera look)
+          if (canvas.width === 0 || canvas.height === 0) break;
+          try {
+            const zbSrc = ctx.getImageData(0, 0, displayWidth, displayHeight);
+            const zbDst = ctx.createImageData(displayWidth, displayHeight);
+            const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
+            const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioEffectParam * 2 : 1));
+            const zbSteps = 10;
+            for (let y = 0; y < displayHeight; y++) {
+              for (let x = 0; x < displayWidth; x++) {
+                let r = 0, g = 0, b = 0;
+                for (let s = 0; s < zbSteps; s++) {
+                  const t = 1 - zbAmt * (s / zbSteps);
+                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(zbCx + (x - zbCx) * t)));
+                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(zbCy + (y - zbCy) * t)));
+                  const si = (sy * displayWidth + sx) * 4;
+                  r += zbSrc.data[si]; g += zbSrc.data[si+1]; b += zbSrc.data[si+2];
+                }
+                const di = (y * displayWidth + x) * 4;
+                zbDst.data[di] = r / zbSteps; zbDst.data[di+1] = g / zbSteps;
+                zbDst.data[di+2] = b / zbSteps; zbDst.data[di+3] = 255;
+              }
+            }
+            putScaledImageData(zbDst);
+          } catch(e) { /* skip */ }
           break;
+        }
         
 
         case 'wave-distortion':
@@ -4709,6 +4754,119 @@ export function InteractiveGradient() {
             putScaledImageData(out);
           }
           break;
+
+        case 'bloom': {
+          // Blur a copy and composite back with screen blend — bright areas glow
+          const bloomTmp = document.createElement('canvas');
+          bloomTmp.width = displayWidth;
+          bloomTmp.height = displayHeight;
+          const bloomCtx = bloomTmp.getContext('2d');
+          if (bloomCtx) {
+            const audioBloomBoost = isAudioReactive ? audioGradientParam / 5 * 20 : 0;
+            const effectiveRadius = bloomRadius + audioBloomBoost;
+            bloomCtx.filter = `blur(${effectiveRadius}px)`;
+            bloomCtx.drawImage(canvas, 0, 0);
+            bloomCtx.filter = 'none';
+            const audioBloomAlpha = isAudioReactive ? Math.min(2, bloomIntensity + audioGradientParam / 5 * 0.5) : bloomIntensity;
+            ctx.save();
+            ctx.globalAlpha = Math.min(1, audioBloomAlpha);
+            ctx.globalCompositeOperation = 'screen';
+            ctx.drawImage(bloomTmp, 0, 0);
+            ctx.restore();
+          }
+          break;
+        }
+
+        case 'feedback': {
+          // Trails: composite previous frame (zoomed+rotated+faded) behind current
+          const fbTmp = document.createElement('canvas');
+          fbTmp.width = displayWidth;
+          fbTmp.height = displayHeight;
+          const fbTmpCtx = fbTmp.getContext('2d');
+          if (fbTmpCtx) fbTmpCtx.drawImage(canvas, 0, 0); // snapshot current
+
+          const fb = feedbackBufferRef.current;
+          if (fb && fb.width === displayWidth && fb.height === displayHeight) {
+            const audioFbDecay = isAudioReactive
+              ? Math.min(0.98, feedbackDecay + audioGradientParam / 5 * 0.08)
+              : feedbackDecay;
+            const audioFbZoom = feedbackZoom * (1 + (isAudioReactive ? audioGradientParam / 5 * 0.3 : 0));
+            // Clear canvas and draw feedback behind current frame
+            ctx.clearRect(0, 0, displayWidth, displayHeight);
+            ctx.save();
+            ctx.globalAlpha = Math.min(0.98, audioFbDecay);
+            ctx.translate(centerX, centerY);
+            ctx.rotate(feedbackRotation * 0.005);
+            const zs = 1 + audioFbZoom * 0.005;
+            ctx.scale(zs, zs);
+            ctx.translate(-centerX, -centerY);
+            ctx.drawImage(fb, 0, 0);
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.drawImage(fbTmp, 0, 0);
+          }
+          // Update feedback buffer
+          if (!feedbackBufferRef.current || feedbackBufferRef.current.width !== displayWidth) {
+            feedbackBufferRef.current = document.createElement('canvas');
+            feedbackBufferRef.current.width = displayWidth;
+            feedbackBufferRef.current.height = displayHeight;
+          }
+          const updateCtx = feedbackBufferRef.current.getContext('2d');
+          if (updateCtx) { updateCtx.clearRect(0, 0, displayWidth, displayHeight); updateCtx.drawImage(canvas, 0, 0); }
+          break;
+        }
+
+        case 'ripple': {
+          // Beat-triggered expanding circular wave distortion
+          if (canvas.width === 0 || canvas.height === 0) break;
+          try {
+            const bassSig = isAudioReactive ? audioGradientParam / 5 : 0;
+            const bassThreshold = 0.35;
+            if (bassSig > bassThreshold && prevBassForRippleRef.current <= bassThreshold) {
+              rippleRingsRef.current.push({ phase: 0, strength: bassSig });
+              if (rippleRingsRef.current.length > 6) rippleRingsRef.current.shift();
+            }
+            prevBassForRippleRef.current = bassSig;
+            rippleRingsRef.current.forEach(r => { r.phase += 0.018; });
+            rippleRingsRef.current = rippleRingsRef.current.filter(r => r.phase < 1.0);
+
+            if (rippleRingsRef.current.length === 0) break;
+            const ripSrc = ctx.getImageData(0, 0, displayWidth, displayHeight);
+            const ripOut = ctx.createImageData(displayWidth, displayHeight);
+            const ripCx = displayWidth / 2, ripCy = displayHeight / 2;
+            const ripMaxR = Math.sqrt(ripCx * ripCx + ripCy * ripCy);
+            for (let y = 0; y < displayHeight; y++) {
+              for (let x = 0; x < displayWidth; x++) {
+                const dx = x - ripCx, dy = y - ripCy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const norm = dist / ripMaxR;
+                let totalOffset = 0;
+                for (const ring of rippleRingsRef.current) {
+                  const ringDist = norm - ring.phase;
+                  const ringWidth = 0.1;
+                  if (Math.abs(ringDist) < ringWidth) {
+                    const profile = Math.cos((ringDist / ringWidth) * Math.PI * 0.5);
+                    totalOffset += profile * ring.strength * rippleAmplitude * (1 - ring.phase * 0.9);
+                  }
+                }
+                let srcX = x, srcY = y;
+                if (totalOffset !== 0 && dist > 1) {
+                  srcX = x + (dx / dist) * totalOffset;
+                  srcY = y + (dy / dist) * totalOffset;
+                }
+                const clampedX = Math.max(0, Math.min(displayWidth - 1, Math.round(srcX)));
+                const clampedY = Math.max(0, Math.min(displayHeight - 1, Math.round(srcY)));
+                const di = (y * displayWidth + x) * 4;
+                const si = (clampedY * displayWidth + clampedX) * 4;
+                ripOut.data[di] = ripSrc.data[si]; ripOut.data[di+1] = ripSrc.data[si+1];
+                ripOut.data[di+2] = ripSrc.data[si+2]; ripOut.data[di+3] = 255;
+              }
+            }
+            putScaledImageData(ripOut);
+          } catch(e) { /* skip */ }
+          break;
+        }
+
       } } catch (err) {
         console.error(`Effect "${effectType}" failed:`, err);
         ctx.restore();
@@ -6960,10 +7118,14 @@ export function InteractiveGradient() {
               { value: 'film-grain', label: 'Grain' },
               { value: 'grid', label: 'Grid' },
               { value: 'halftone', label: 'Halftone' },
+              { value: 'bloom', label: 'Bloom' },
+              { value: 'feedback', label: 'Feedback' },
               { value: 'invert', label: 'Invert' },
               { value: 'kaleidoscope', label: 'Kaleidoscope' },
               { value: 'pixelate', label: 'Pixelate' },
               { value: 'posterize', label: 'Posterize' },
+              { value: 'radial-blur', label: 'Radial Blur' },
+              { value: 'ripple', label: 'Ripple' },
               { value: 'color-shift', label: 'Shift' },
               { value: 'slit-scan', label: 'Slit-Scan' },
               { value: 'triangulate', label: 'Triangulate' },
@@ -7167,14 +7329,55 @@ export function InteractiveGradient() {
                 </div>
               )}
               {activeEffects.includes('bloom') && (
+                <>
+                  <div className="flex items-center gap-1 mt-1">
+                    {activeEffects.length > 1 ? (
+                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    )}
+                    <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap">Radius:</label>
+                    <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
+                    <span className="text-xs text-white w-8 text-right">{bloomRadius}</span>
+                  </div>
+                </>
+              )}
+              {activeEffects.includes('feedback') && (
+                <>
+                  <div className="flex items-center gap-1 mt-1">
+                    {activeEffects.length > 1 ? (
+                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Feedback</span>
+                    ) : (
+                      <label className="text-xs text-white whitespace-nowrap">Decay:</label>
+                    )}
+                    <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
+                    <span className="text-xs text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap">Zoom:</label>
+                    <input type="range" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="flex-1" />
+                    <span className="text-xs text-white w-8 text-right">{feedbackZoom.toFixed(1)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-white whitespace-nowrap">Spin:</label>
+                    <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
+                    <span className="text-xs text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
+                  </div>
+                </>
+              )}
+              {activeEffects.includes('radial-blur') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
+                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Zoom Blur</span>
                   ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-xs text-white whitespace-nowrap">Amount:</label>
                   )}
-                  <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
+                  <span className="text-xs text-white w-8 text-right">{blurRadialAmount}</span>
                 </div>
               )}
               {activeEffects.includes('vignette') && (
