@@ -252,6 +252,8 @@ export function InteractiveGradient() {
   const [noiseScale, setNoiseScale] = useState(25);
   const [noiseOctaves, setNoiseOctaves] = useState(2);
   const [noiseDirection, setNoiseDirection] = useState(0);
+  const [noiseWarp, setNoiseWarp] = useState(0);
+  const [noiseType, setNoiseType] = useState<'smooth' | 'ridged' | 'turbulence'>('smooth');
   const [plasmaSpeed, setPlasmaSpeed] = useState(1);
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
   const [plasmaZoomScale, setPlasmaZoomScale] = useState(1);
@@ -2460,7 +2462,7 @@ export function InteractiveGradient() {
     digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize,
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
     spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
-    waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed,
+    waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
     plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
@@ -2473,7 +2475,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3059,18 +3061,28 @@ export function InteractiveGradient() {
         const noiseRotCos = Math.cos(noiseDirection * 0.01);
         const noiseRotSin = Math.sin(noiseDirection * 0.01);
         // Audio: color shift cycles through palette, bass pulse brightens from center
-        const noiseColorShift = audioActive ? audioColorShift * 0.6 : 0; // treble shifts colors
-        const noiseBassBoost = audioActive ? audioGradientParam : 0;      // bass pulse intensity
+        const noiseColorShift = audioActive ? audioColorShift * 0.6 : 0;
+        const noiseBassBoost = audioActive ? audioGradientParam : 0;
         const maxNoiseDist = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2;
 
         const noiseCX = displayWidth / 2;
         const noiseCY = displayHeight / 2;
+        const warpStrength = noiseWarp * baseNoiseScale * 300;
+
         for (let ny = 0; ny < displayHeight; ny++) {
           for (let nx = 0; nx < displayWidth; nx++) {
             const ndx = nx - noiseCX;
             const ndy = ny - noiseCY;
-            const rx = ndx * noiseRotCos - ndy * noiseRotSin;
-            const ry = ndx * noiseRotSin + ndy * noiseRotCos;
+            let rx = ndx * noiseRotCos - ndy * noiseRotSin;
+            let ry = ndx * noiseRotSin + ndy * noiseRotCos;
+
+            // Domain warp: displace coordinates by a low-frequency noise layer
+            if (noiseWarp > 0) {
+              const ws = baseNoiseScale * 0.7;
+              rx += warpStrength * Math.sin(rx * ws + ry * ws * 0.3);
+              ry += warpStrength * Math.cos(rx * ws * 0.3 + ry * ws);
+            }
+
             let combinedNoise = 0;
             let amplitude = 1;
             let totalAmplitude = 0;
@@ -3078,14 +3090,20 @@ export function InteractiveGradient() {
             for (let octave = 0; octave < noiseOctaves; octave++) {
               const frequency = Math.pow(2, octave);
               const scale = baseNoiseScale * frequency;
-              const noise = Math.sin(rx * scale + noiseDirection * 0.1 * frequency) *
-                           Math.cos(ry * scale + noiseDirection * 0.1 * frequency);
-              combinedNoise += noise * amplitude;
+              const raw = Math.sin(rx * scale + noiseDirection * 0.1 * frequency) *
+                          Math.cos(ry * scale + noiseDirection * 0.1 * frequency);
+              const n = noiseType === 'ridged'      ? 1 - Math.abs(raw)
+                      : noiseType === 'turbulence'  ? Math.abs(raw)
+                      : raw;
+              combinedNoise += n * amplitude;
               totalAmplitude += amplitude;
               amplitude *= 0.5;
             }
 
-            combinedNoise = (combinedNoise / totalAmplitude + 1) / 2; // Normalize to 0-1
+            // Normalize to 0-1 (ridged/turbulence already 0-1 range, smooth is -1 to 1)
+            combinedNoise = noiseType === 'smooth'
+              ? (combinedNoise / totalAmplitude + 1) / 2
+              : combinedNoise / totalAmplitude;
 
             // Shift color position with treble so palette rotates on audio
             const shiftedPos = (combinedNoise + noiseColorShift) % 1;
@@ -6677,30 +6695,31 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={noiseDirection}
-                  onChange={(e) => setNoiseDirection(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={noiseDirection}
-                  onChange={(e) => setNoiseDirection(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                />
+                <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-white">Warp:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
+                <span className="text-xs text-white w-10 text-right">{noiseWarp.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-white whitespace-nowrap">Type:</label>
+              <div className="flex gap-1 flex-1">
+                {(['smooth', 'ridged', 'turbulence'] as const).map(t => (
+                  <button key={t} onClick={() => setNoiseType(t)} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-white/8 text-white hover:bg-white/15'}`}>{t}</button>
+                ))}
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
