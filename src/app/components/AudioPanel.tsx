@@ -140,8 +140,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
           <Plus className="w-4 h-4" />
         </button>
 
-        {/* Mini band meters — always visible when audio is active */}
-        {isMicOrAudioActive && (
+        {/* Mini band meters — visible when audio is active and panel is collapsed */}
+        {isMicOrAudioActive && !isAudioControlsOpen && (
           <div className="flex items-end gap-[3px] px-1.5 py-1 rounded-lg bg-white/8 backdrop-blur-sm">
             {levels.map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center gap-[2px]">
