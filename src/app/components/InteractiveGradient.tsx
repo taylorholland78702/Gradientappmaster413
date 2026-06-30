@@ -2667,9 +2667,13 @@ export function InteractiveGradient() {
         const numWavesForWave = Math.ceil(visibleWidth / waveWidth) + 4;
         const startOffset = Math.floor(numWavesForWave / 2);
         
+        // Treble shifts which colors the waves use
+        const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioColorShift * gradientColors.length * 0.6 : 0;
+
         for (let i = -startOffset; i < numWavesForWave - startOffset; i++) {
           const baseX = i * waveWidth;
-          const colorIndex = ((i % gradientColors.length) + gradientColors.length) % gradientColors.length;
+          const shiftedI = i + waveColorShiftAmt;
+          const colorIndex = ((Math.floor(shiftedI) % gradientColors.length) + gradientColors.length) % gradientColors.length;
           const color = gradientColors[colorIndex];
           const nextColor = gradientColors[(colorIndex + 1) % gradientColors.length];
           
@@ -2706,8 +2710,19 @@ export function InteractiveGradient() {
           ctx.closePath();
           ctx.fill();
         }
-        
+
         ctx.restore();
+
+        // Bass radial brightness pulse — drawn on top after restoring transform
+        if (isAudioEnabled && isAudioReactive && audioGradientParam > 0.05) {
+          const waveMaxR = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2;
+          const pulseR = waveMaxR * (1 - audioGradientParam * 0.3);
+          const waveGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseR);
+          waveGlow.addColorStop(0, `rgba(255,255,255,${audioGradientParam * 0.35})`);
+          waveGlow.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = waveGlow;
+          ctx.fillRect(0, 0, displayWidth, displayHeight);
+        }
         break;
 
       case 'shapes': {
@@ -2904,12 +2919,14 @@ export function InteractiveGradient() {
         const plasmaImageData = ctx.createImageData(displayWidth, displayHeight);
         const plasmaData = plasmaImageData.data;
 
-        // Audio reactivity: bass affects plasma complexity
-        const audioPlasmaComplexity = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 50 // Up to 50 extra complexity
-          : 0;
-        const plasmaZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        const plasmaAudioActive = isAudioEnabled && isAudioReactive;
+        const audioPlasmaComplexity = plasmaAudioActive ? audioGradientParam * 50 : 0;
+        const plasmaZoom = plasmaAudioActive ? 1 : zoom;
         const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / plasmaZoom;
+        // Treble shifts color palette; bass radial pulse from center
+        const plasmaColorShift = plasmaAudioActive ? audioColorShift * 0.6 : 0;
+        const plasmaBassPulse = plasmaAudioActive ? audioGradientParam : 0;
+        const plasmaMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
 
         const plasmaCX = displayWidth / 2;
         const plasmaCY = displayHeight / 2;
@@ -2923,24 +2940,21 @@ export function InteractiveGradient() {
               Math.sin((px + py) * plasmaScale * 0.75) +
               Math.sin(Math.sqrt(dx * dx + dy * dy) * plasmaScale + gradientAngle * 0.05)
             ) / 4 + 0.5;
-            
-            // Interpolate between colors
-            const colorPos = value * (gradientColors.length - 1);
+
+            const shiftedValue = (value + plasmaColorShift) % 1;
+            const colorPos = shiftedValue * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
             const color1 = gradientColors[colorIdx % gradientColors.length];
             const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-            
             if (!color1 || !color2) continue;
-            
-            const r = Math.round(color1.r + (color2.r - color1.r) * colorFrac);
-            const g = Math.round(color1.g + (color2.g - color1.g) * colorFrac);
-            const b = Math.round(color1.b + (color2.b - color1.b) * colorFrac);
-            
+
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const radialBoost = 1 + plasmaBassPulse * (1 - dist / plasmaMaxDist) * 0.8;
             const idx = (py * displayWidth + px) * 4;
-            plasmaData[idx] = r;
-            plasmaData[idx + 1] = g;
-            plasmaData[idx + 2] = b;
+            plasmaData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
+            plasmaData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
+            plasmaData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
             plasmaData[idx + 3] = 255;
           }
         }
@@ -3025,11 +3039,13 @@ export function InteractiveGradient() {
         const spiralImageData = ctx.createImageData(displayWidth, displayHeight);
         const spiralData = spiralImageData.data;
         
-        // Audio reactivity: bass gently varies tightness; bypass zoom when audio active
-        const audioConicalTightness = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 2 // Subtle tightness pulse
-          : 0;
-        const conicalZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        const conicalAudioActive = isAudioEnabled && isAudioReactive;
+        const audioConicalTightness = conicalAudioActive ? audioGradientParam * 2 : 0;
+        const conicalZoom = conicalAudioActive ? 1 : zoom;
+        // Treble shifts color palette; bass radial pulse
+        const conicalColorShift = conicalAudioActive ? audioColorShift * 0.6 : 0;
+        const conicalBassPulse = conicalAudioActive ? audioGradientParam : 0;
+        const conicalMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
 
         for (let sy = 0; sy < displayHeight; sy++) {
           for (let sx = 0; sx < displayWidth; sx++) {
@@ -3038,21 +3054,21 @@ export function InteractiveGradient() {
             const dist = Math.sqrt(dx * dx + dy * dy);
             const spiralAngle = Math.atan2(dy, dx);
             const finalAngle = (spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * conicalSpiralTurns / conicalZoom + gradientAngle * DEG_TO_RAD) % TWO_PI;
-            const normalizedAngle = (finalAngle + Math.PI) / (Math.PI * 2); // 0 to 1
-            
-            // Interpolate between colors
-            const colorPos = normalizedAngle * (gradientColors.length - 1);
+            const normalizedAngle = (finalAngle + Math.PI) / (Math.PI * 2);
+
+            const shiftedAngle = (normalizedAngle + conicalColorShift) % 1;
+            const colorPos = shiftedAngle * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
             const color1 = gradientColors[colorIdx % gradientColors.length];
             const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-            
             if (!color1 || !color2) continue;
-            
+
+            const radialBoost = 1 + conicalBassPulse * (1 - dist / conicalMaxDist) * 0.8;
             const pixelIndex = (sy * displayWidth + sx) * 4;
-            spiralData[pixelIndex] = Math.round(color1.r + (color2.r - color1.r) * colorFrac);
-            spiralData[pixelIndex + 1] = Math.round(color1.g + (color2.g - color1.g) * colorFrac);
-            spiralData[pixelIndex + 2] = Math.round(color1.b + (color2.b - color1.b) * colorFrac);
+            spiralData[pixelIndex]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
+            spiralData[pixelIndex + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
+            spiralData[pixelIndex + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
             spiralData[pixelIndex + 3] = 255;
           }
         }
@@ -3209,13 +3225,26 @@ export function InteractiveGradient() {
               }
             });
             
-            const color = gradientColors[nearestSeed.colorIndex];
-            if (!color) continue;
-            
+            // Treble shifts which color each cell picks; bass pulses brightness from center
+            const voronoiColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.6 : 0;
+            const shiftedIdx = (nearestSeed.colorIndex / gradientColors.length + voronoiColorShift) % 1;
+            const vColorPos = shiftedIdx * (gradientColors.length - 1);
+            const vColorIdx = Math.floor(vColorPos);
+            const vColorFrac = vColorPos - vColorIdx;
+            const vc1 = gradientColors[vColorIdx % gradientColors.length];
+            const vc2 = gradientColors[(vColorIdx + 1) % gradientColors.length];
+            if (!vc1 || !vc2) continue;
+
+            const vdx = vx - centerX, vdy = vy - centerY;
+            const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
+            const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
+            const voronoiBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
+            const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.8;
+
             const idx = (vy * displayWidth + vx) * 4;
-            voronoiData[idx] = color.r;
-            voronoiData[idx + 1] = color.g;
-            voronoiData[idx + 2] = color.b;
+            voronoiData[idx]     = Math.min(255, Math.round((vc1.r + (vc2.r - vc1.r) * vColorFrac) * vBoost));
+            voronoiData[idx + 1] = Math.min(255, Math.round((vc1.g + (vc2.g - vc1.g) * vColorFrac) * vBoost));
+            voronoiData[idx + 2] = Math.min(255, Math.round((vc1.b + (vc2.b - vc1.b) * vColorFrac) * vBoost));
             voronoiData[idx + 3] = 255;
           }
         }
@@ -3275,22 +3304,27 @@ export function InteractiveGradient() {
             else if (h >= 4 && h < 5) { r = x; g = 0; b = c; }
             else if (h >= 5 && h < 6) { r = c; g = 0; b = x; }
             
-            // Blend with gradient colors
-            const colorPos = ((interference + 1) * 0.5) * (gradientColors.length - 1);
+            // Treble shifts color palette; bass radial pulse from center
+            const iriColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.6 : 0;
+            const iriBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
+            const iriMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
+            const iriDist2 = Math.sqrt(dx * dx + dy * dy);
+            const iriRadialBoost = 1 + iriBassPulse * (1 - iriDist2 / iriMaxDist) * 0.8;
+
+            const rawColorPos = ((interference + 1) * 0.5 + iriColorShift) % 1;
+            const colorPos = rawColorPos * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
             const color1 = gradientColors[colorIdx % gradientColors.length];
             const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-            
             if (!color1 || !color2) continue;
-            
-            // Mix spectral effect with gradient colors
-            const baseR = color1.r + (color2.r - color1.r) * colorFrac;
-            const baseG = color1.g + (color2.g - color1.g) * colorFrac;
-            const baseB = color1.b + (color2.b - color1.b) * colorFrac;
-            
+
+            const baseR = (color1.r + (color2.r - color1.r) * colorFrac) * iriRadialBoost;
+            const baseG = (color1.g + (color2.g - color1.g) * colorFrac) * iriRadialBoost;
+            const baseB = (color1.b + (color2.b - color1.b) * colorFrac) * iriRadialBoost;
+
             const idx = (iy * displayWidth + ix) * 4;
-            iridescentData[idx] = Math.min(255, baseR * (1 - totalIridescentIntensity * 0.5) + r * 255 * totalIridescentIntensity);
+            iridescentData[idx]     = Math.min(255, baseR * (1 - totalIridescentIntensity * 0.5) + r * 255 * totalIridescentIntensity);
             iridescentData[idx + 1] = Math.min(255, baseG * (1 - totalIridescentIntensity * 0.5) + g * 255 * totalIridescentIntensity);
             iridescentData[idx + 2] = Math.min(255, baseB * (1 - totalIridescentIntensity * 0.5) + b * 255 * totalIridescentIntensity);
             iridescentData[idx + 3] = 255;
