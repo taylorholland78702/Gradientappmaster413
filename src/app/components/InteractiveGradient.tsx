@@ -135,26 +135,26 @@ export function InteractiveGradient() {
   const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
   
   // Effect parameters
-  const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(8);
+  const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(10);
   const [twistAmount, setTwistAmount] = useState(2);
   const [pixelSize, setPixelSize] = useState(20);
   const [triangleSize, setTriangleSize] = useState(40);
-  const [chromaticOffset, setChromaticOffset] = useState(5);
+  const [chromaticOffset, setChromaticOffset] = useState(100);
   const [fisheyeStrength, setFisheyeStrength] = useState(0.5);
   const [tileCount, setTileCount] = useState(2);
-  const [grainIntensity, setGrainIntensity] = useState(0.3);
-  const [blurMotionAmount, setBlurMotionAmount] = useState(5);
-  const [blurMotionDirection, setBlurMotionDirection] = useState(0); // 0-360 degrees
-  const [blurGaussianAmount, setBlurGaussianAmount] = useState(5);
+  const [grainIntensity, setGrainIntensity] = useState(0.1);
+  const [blurMotionAmount, setBlurMotionAmount] = useState(40);
+  const [blurMotionDirection, setBlurMotionDirection] = useState(250);
+  const [blurGaussianAmount, setBlurGaussianAmount] = useState(7);
   const [blurRadialAmount, setBlurRadialAmount] = useState(5);
   const [blurType, setBlurType] = useState<'gaussian' | 'motion' | 'radial'>('gaussian');
-  const [posterizeLevels, setPosterizeLevels] = useState(8);
-  const [halftoneSize, setHalftoneSize] = useState(4);
+  const [posterizeLevels, setPosterizeLevels] = useState(10);
+  const [halftoneSize, setHalftoneSize] = useState(10);
   const [halftoneVariation, setHalftoneVariation] = useState(0);
   const [halftoneMove, setHalftoneMove] = useState(false);
   const [halftoneMoveSpeed, setHalftoneMoveSpeed] = useState(1);
   const [vignetteStrength, setVignetteStrength] = useState(0.5);
-  const [colorShiftHue, setColorShiftHue] = useState(0);
+  const [colorShiftHue, setColorShiftHue] = useState(5);
   const [bulgeStrength, setBulgeStrength] = useState(0.5);
   const [charcoalIntensity, setCharcoalIntensity] = useState(0.5);
   const [colorBurnIntensity, setColorBurnIntensity] = useState(0.5);
@@ -162,7 +162,7 @@ export function InteractiveGradient() {
   const [digitalNoiseIntensity, setDigitalNoiseIntensity] = useState(0.3);
   const [duotoneIntensity, setDuotoneIntensity] = useState(1);
   const [dustIntensity, setDustIntensity] = useState(0.5);
-  const [dustCrackleIntensity, setDustCrackleIntensity] = useState(0.5);
+  const [dustCrackleIntensity, setDustCrackleIntensity] = useState(0.3);
   const [gridSize, setGridSize] = useState(20);
   const [hexGridSize, setHexGridSize] = useState(20);
   const [lightLeakIntensity, setLightLeakIntensity] = useState(0.5);
@@ -180,16 +180,16 @@ export function InteractiveGradient() {
   const [sepiaIntensity, setSepiaIntensity] = useState(1);
   const [solarizeThreshold, setSolarizeThreshold] = useState(128);
   const [triGridSize, setTriGridSize] = useState(30);
-  const [gridSides, setGridSides] = useState(6);
+  const [gridSides, setGridSides] = useState(4);
   const [tritoneIntensity, setTritoneIntensity] = useState(1);
   const [tritoneColor1, setTritoneColor1] = useState('#000033'); // Dark blue
   const [tritoneColor2, setTritoneColor2] = useState('#FF6B35'); // Orange
   const [tritoneColor3, setTritoneColor3] = useState('#F7F7FF'); // Near white
   const [duotoneColor1, setDuotoneColor1] = useState('#000033'); // Dark blue
   const [duotoneColor2, setDuotoneColor2] = useState('#FF6B35'); // Orange
-  const [vhsGlitchIntensity, setVhsGlitchIntensity] = useState(0.5);
-  const [gridRows, setGridRows] = useState(20);
-  const [gridColumns, setGridColumns] = useState(3);
+  const [vhsGlitchIntensity, setVhsGlitchIntensity] = useState(0.2);
+  const [gridRows, setGridRows] = useState(8);
+  const [gridColumns, setGridColumns] = useState(11);
   const [gridRotation, setGridRotation] = useState(0);
   const [gridRotationDirection, setGridRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
   const [shapesRotation, setShapesRotation] = useState(0);
@@ -215,13 +215,13 @@ export function InteractiveGradient() {
   
   // New effect parameters
   const [brightnessAmount, setBrightnessAmount] = useState(0);
-  const [bokehSize, setBokehSize] = useState(20);
-  const [bokehIntensity, setBokehIntensity] = useState(0.5);
-  const [bokehColorize, setBokehColorize] = useState(0);
+  const [bokehSize, setBokehSize] = useState(30);
+  const [bokehIntensity, setBokehIntensity] = useState(1);
+  const [bokehColorize, setBokehColorize] = useState(1);
   const [dustSize, setDustSize] = useState(5);
   const [grainType, setGrainType] = useState<'fine' | 'medium' | 'coarse' | 'film'>('medium');
   const [gridVariation, setGridVariation] = useState(0);
-  const [gridShapeSize, setGridShapeSize] = useState(20);
+  const [gridShapeSize, setGridShapeSize] = useState(25);
   const [kaleidoscopeReflections, setKaleidoscopeReflections] = useState(1);
   const [pixelateScaleDirection, setPixelateScaleDirection] = useState<'out' | 'in'>('out');
   const [scanType, setScanType] = useState<'horizontal' | 'vertical' | 'interlaced' | 'crt'>('horizontal');
@@ -257,8 +257,8 @@ export function InteractiveGradient() {
   const [iridescentAngle, setIridescentAngle] = useState(0);
   const [iridescentIntensity, setIridescentIntensity] = useState(0.5);
   const [iridescentScale, setIridescentScale] = useState(3);
-  const [waveDistortionStrength, setWaveDistortionStrength] = useState(20);
-  const [waveDistortionRotation, setWaveDistortionRotation] = useState(0);
+  const [waveDistortionStrength, setWaveDistortionStrength] = useState(100);
+  const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
   const [radarFadeLength, setRadarFadeLength] = useState(90);
   const [fadeSpeed, setFadeSpeed] = useState(1);
@@ -3450,28 +3450,47 @@ export function InteractiveGradient() {
         }
           
         case 'fisheye': {
-          const src = ctx.getImageData(0, 0, displayWidth, displayHeight);
-          const dst = ctx.createImageData(displayWidth, displayHeight);
-          const cx = displayWidth / 2, cy = displayHeight / 2;
-          const md = Math.sqrt(cx * cx + cy * cy);
-          const str = fisheyeStrength + (isFirstEffect ? audioModulation : 0);
-          for (let y = 0; y < displayHeight; y++) {
-            for (let x = 0; x < displayWidth; x++) {
-              const dx = x - cx, dy = y - cy;
-              const d = Math.sqrt(dx * dx + dy * dy);
-              const di = (y * displayWidth + x) * 4;
-              if (d < md) {
-                const dd = Math.pow(d / md, 1 + str) * md;
-                const a = Math.atan2(dy, dx);
-                const sx = Math.floor(cx + Math.cos(a) * dd);
-                const sy = Math.floor(cy + Math.sin(a) * dd);
-                if (sx >= 0 && sx < displayWidth && sy >= 0 && sy < displayHeight) {
-                  const si = (sy * displayWidth + sx) * 4;
-                  dst.data[di] = src.data[si];
-                  dst.data[di + 1] = src.data[si + 1];
-                  dst.data[di + 2] = src.data[si + 2];
-                  dst.data[di + 3] = 255;
-                }
+          const w = displayWidth, h = displayHeight;
+          const src = ctx.getImageData(0, 0, w, h);
+          const dst = ctx.createImageData(w, h);
+          const cx = w / 2, cy = h / 2;
+          const R = Math.min(cx, cy);
+          const str = Math.max(0.01, fisheyeStrength + (isFirstEffect ? audioModulation : 0));
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const nx = (x - cx) / R, ny = (y - cy) / R;
+              const r = Math.sqrt(nx * nx + ny * ny);
+              if (r >= 1) {
+                // Outside lens — copy original pixel
+                const si = (y * w + x) * 4;
+                const di = si;
+                dst.data[di] = src.data[si];
+                dst.data[di + 1] = src.data[si + 1];
+                dst.data[di + 2] = src.data[si + 2];
+                dst.data[di + 3] = 255;
+                continue;
+              }
+              // Spherical fisheye remap
+              const theta = Math.atan2(ny, nx);
+              const rDist = Math.pow(r, 1 + str);
+              const sxf = cx + rDist * Math.cos(theta) * R;
+              const syf = cy + rDist * Math.sin(theta) * R;
+              // Bilinear interpolation
+              const x0 = Math.floor(sxf), y0 = Math.floor(syf);
+              const x1 = x0 + 1, y1 = y0 + 1;
+              const fx = sxf - x0, fy = syf - y0;
+              const di = (y * w + x) * 4;
+              if (x0 >= 0 && x1 < w && y0 >= 0 && y1 < h) {
+                const i00 = (y0 * w + x0) * 4;
+                const i10 = (y0 * w + x1) * 4;
+                const i01 = (y1 * w + x0) * 4;
+                const i11 = (y1 * w + x1) * 4;
+                const w00 = (1 - fx) * (1 - fy), w10 = fx * (1 - fy);
+                const w01 = (1 - fx) * fy,       w11 = fx * fy;
+                dst.data[di]     = w00*src.data[i00]   + w10*src.data[i10]   + w01*src.data[i01]   + w11*src.data[i11];
+                dst.data[di + 1] = w00*src.data[i00+1] + w10*src.data[i10+1] + w01*src.data[i01+1] + w11*src.data[i11+1];
+                dst.data[di + 2] = w00*src.data[i00+2] + w10*src.data[i10+2] + w01*src.data[i01+2] + w11*src.data[i11+2];
+                dst.data[di + 3] = 255;
               }
             }
           }
