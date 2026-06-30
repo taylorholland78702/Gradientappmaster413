@@ -986,16 +986,19 @@ export function InteractiveGradient() {
 
   // Memoize gradient name mapping
   const getGradientDisplayName = useCallback((type: GradientType): string => {
-    if (type === 'spiral') return 'Windmill';
-    if (type === 'polygon-solid') return 'Polar Grid';
-    if (type === 'shapes') return 'Shapes';
-    if (type === 'voronoi') return 'Voronoi';
-    if (type === 'mesh') return 'Mesh';
-    if (type === 'iridescent') return 'Iridescent';
-    if (type === 'radar') return 'Radar';
-    if (type === 'flower') return 'Flower';
-    if (type === 'lava-lamp') return 'Lava Lamp';
-    return type;
+    const names: Record<string, string> = {
+      angle: 'Angle', aurora: 'Aurora', caustics: 'Caustics',
+      'conical-spiral': 'Conical Spiral', fade: 'Fade', flower: 'Flower',
+      freeform: 'Freeform', grid: 'Grid', iridescent: 'Iridescent',
+      'lava-lamp': 'Lava Lamp', linear: 'Linear', marble: 'Marble',
+      mesh: 'Mesh', noise: 'Noise', plasma: 'Plasma',
+      polygon: 'Polygon', 'polygon-solid': 'Polar Grid',
+      radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
+      shapes: 'Shapes', spiral: 'Windmill', star: 'Star',
+      starburst: 'Starburst', checkerboard: 'Checkerboard',
+      voronoi: 'Voronoi', waves: 'Waves',
+    };
+    return names[type] ?? type;
   }, []);
 
   // Memoize full gradient type list for UI
@@ -5477,7 +5480,7 @@ export function InteractiveGradient() {
         {/* Gradient Type Buttons - 2 Column Grid */}
         {isGradientsOpen && (
         <div className="w-full mb-0.5">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(8, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(10, auto)' }}>
             {FULL_GRADIENT_TYPES.map((type) => (
               <button
                 key={type}
