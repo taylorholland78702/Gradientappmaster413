@@ -1106,6 +1106,11 @@ export function InteractiveGradient() {
   );
 
   // Randomize - randomize everything!
+  // Gradients that visually respond well to audio input
+  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid'];
+  // Effects that pulse/react visibly with audio
+  const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'brightness', 'film-grain', 'bokeh', 'fisheye'];
+
   const feelingLucky = useCallback(() => {
     console.log('[Rating] feelingLucky called, setting showRatingUI in 800ms');
     setShowRatingUI(false); // reset first in case already showing
@@ -1115,16 +1120,22 @@ export function InteractiveGradient() {
     }, 800);
     saveCurrentState();
 
+    const audioActive = isAudioEnabled && isAudioReactive;
+
     // If no gradient type is selected, select a random one
     let currentGradientType = gradientType;
     if (currentGradientType === null) {
-      const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
+      const pool = audioActive ? AUDIO_GRADIENTS : FEELING_LUCKY_GRADIENT_TYPES;
+      const randomGradient = pool[Math.floor(Math.random() * pool.length)];
       setGradientType(randomGradient);
       currentGradientType = randomGradient;
     }
 
     // Get high-rated results (7+) to use as preference guidance
-    const highRatedResults = ratedResults.filter(r => r.rating >= 7);
+    // When audio is active, prefer results that were also rated with audio on
+    const allHighRated = ratedResults.filter(r => r.rating >= 7);
+    const audioHighRated = allHighRated.filter(r => r.data.audioWasActive);
+    const highRatedResults = audioActive && audioHighRated.length >= 2 ? audioHighRated : allHighRated;
     // Scale blend probability with pool size so early favorites don't dominate
     const blendProbability = Math.min(0.6, highRatedResults.length * 0.08);
     const usePreferences = highRatedResults.length >= 3 && Math.random() < blendProbability;
@@ -1244,24 +1255,30 @@ export function InteractiveGradient() {
       });
       setTargetColors(harmonyColors);
 
-      const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
+      // When audio is active, bias toward audio-reactive gradients (70% chance)
+      const gradientPool = (audioActive && Math.random() < 0.7)
+        ? AUDIO_GRADIENTS
+        : FEELING_LUCKY_GRADIENT_TYPES;
+      const randomGradient = gradientPool[Math.floor(Math.random() * gradientPool.length)];
       setGradientType(randomGradient);
 
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
-      // Heavy shape-changers (kaleidoscope, fisheye, pixelate, etc.) mask the gradient entirely,
-      // making everything look the same. Only allow them when stacked with a light effect.
+      // Heavy shape-changers mask the gradient entirely; only allow them stacked with a light effect.
       const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'fisheye', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
-      const LIGHT_FX: EffectType[] = ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
+      // When audio is active, prefer effects that visibly react to audio
+      const LIGHT_FX: EffectType[] = audioActive
+        ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
+        : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
       const roll = Math.random();
       let selectedEffects: EffectType[];
-      if (roll < 0.30) {
+      if (roll < 0.25) {
         selectedEffects = []; // no effects — raw gradient
       } else if (roll < 0.65) {
-        // 1 light effect only
+        // 1 light/audio effect
         const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
         selectedEffects = [shuffledLight[0]];
-      } else if (roll < 0.85) {
-        // 1 shape-changer + 1 light effect so the gradient still shows through
+      } else if (roll < 0.82) {
+        // 1 shape-changer + 1 light effect so gradient still shows through
         const sc = SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)];
         const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
         selectedEffects = [sc, shuffledLight[0]];
@@ -1458,7 +1475,7 @@ export function InteractiveGradient() {
     setSelectedPinId(null);
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS]);
 
   // Capture current state for rating
   const captureCurrentStateForRating = useCallback(() => {
@@ -1466,6 +1483,7 @@ export function InteractiveGradient() {
       gradientColors,
       gradientType,
       activeEffects,
+      audioWasActive: isAudioEnabled && isAudioReactive,
       gradientAngle,
       zoom,
       vcrPlaybackSpeed,
@@ -1580,6 +1598,7 @@ export function InteractiveGradient() {
     voronoiCellCount, voronoiDistortion, conicalSpiralTurns, conicalSpiralTightness, windmillBlades,
     windmillRotation, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
+    isAudioEnabled, isAudioReactive,
   ]);
   
   // Submit rating for current result
@@ -4818,7 +4837,10 @@ export function InteractiveGradient() {
             className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl"
             style={{ background: 'rgba(18,20,30,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
           >
-            <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
+              {isAudioEnabled && isAudioReactive && <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-semibold">🎤 Audio</span>}
+            </div>
             <div className="flex gap-2">
               {[['👎', 2, 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.4)'], ['😐', 6, 'rgba(234,179,8,0.2)', 'rgba(234,179,8,0.4)'], ['👍', 8, 'rgba(34,197,94,0.2)', 'rgba(34,197,94,0.4)'], ['🔥', 10, 'rgba(168,85,247,0.2)', 'rgba(168,85,247,0.4)']].map(([emoji, rating, bg, border]) => (
                 <button
