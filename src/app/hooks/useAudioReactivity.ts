@@ -355,10 +355,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // Bass drives zoom
       setTargetZoom(prev => {
         if (bassGradientValue > 0.05) {
-          const pulse = 1 + bassGradientValue * (bassBeatSync ? 1.4 : 0.7);
-          return Math.min(prev * pulse, prev + (bassBeatSync ? 2.0 : 1.0));
+          const pulse = 1 + bassGradientValue * (bassBeatSync ? 3.0 : 1.5);
+          return Math.min(prev * pulse, prev + (bassBeatSync ? 4.0 : 2.0));
         }
-        return prev + (1 - prev) * (bassBeatSync ? 0.3 : 0.12);
+        return prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
       });
 
       // ---- MIDS (bins 10–49) ----
