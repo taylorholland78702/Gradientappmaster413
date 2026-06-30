@@ -1125,7 +1125,9 @@ export function InteractiveGradient() {
 
     // Get high-rated results (7+) to use as preference guidance
     const highRatedResults = ratedResults.filter(r => r.rating >= 7);
-    const usePreferences = highRatedResults.length > 0 && Math.random() < 0.7; // 70% chance to use preferences
+    // Scale blend probability with pool size so early favorites don't dominate
+    const blendProbability = Math.min(0.6, highRatedResults.length * 0.08);
+    const usePreferences = highRatedResults.length >= 3 && Math.random() < blendProbability;
     
     if (usePreferences && highRatedResults.length > 0) {
       // Blend with a high-rated result
