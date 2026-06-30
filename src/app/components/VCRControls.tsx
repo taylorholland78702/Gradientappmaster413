@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Square, Play, Pause, FastForward, Rewind, RotateCw, RotateCcw, Camera } from 'lucide-react';
+import { Circle, Play, Pause, FastForward, Rewind, RotateCw, RotateCcw, Camera } from 'lucide-react';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -11,7 +11,7 @@ interface VCRControlsProps {
   setVcrPlaybackSpeed: (speed: number) => void;
   setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
-  handleStop: () => void;
+
   toggleVCRPlayback: () => void;
   exportAsPNG: () => void;
 }
@@ -26,7 +26,6 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   setVcrPlaybackSpeed,
   setRotationDirection,
   toggleVCRRecording,
-  handleStop,
   toggleVCRPlayback,
   exportAsPNG,
 }) => {
@@ -53,14 +52,6 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           title="Record Video"
         >
           <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
-        </button>
-
-        <button
-          onClick={handleStop}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
-          title="Stop"
-        >
-          <Square className="w-4 h-4" />
         </button>
 
         <button
