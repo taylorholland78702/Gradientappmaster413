@@ -3426,12 +3426,19 @@ export function InteractiveGradient() {
                          Math.sin(nx * 7 - auroraTime * 1.4 + b * 0.9) * 0.25 +
                          Math.sin(nx * 2 + auroraTime * 0.7) * 0.25;
             const cy = bandY + wave * bandHeight * 0.4;
+            // blend between this band's color and the next for richer palette use
+            const nextColorIdx = ((colorIdx + 1) % gradientColors.length + gradientColors.length) % gradientColors.length;
+            const nextColor = gradientColors[nextColorIdx] || color;
+            const blend = (Math.sin(nx * Math.PI * 2 + auroraTime * 0.3 + b) * 0.5 + 0.5);
+            const mixR = Math.round(color.r + (nextColor.r - color.r) * blend);
+            const mixG = Math.round(color.g + (nextColor.g - color.g) * blend);
+            const mixB = Math.round(color.b + (nextColor.b - color.b) * blend);
             const grad = ctx.createLinearGradient(x, cy - bandHeight * 0.5, x, cy + bandHeight * 0.5);
-            const alpha = 0.18 + Math.abs(wave) * 0.12;
-            grad.addColorStop(0, `rgba(${color.r},${color.g},${color.b},0)`);
-            grad.addColorStop(0.4, `rgba(${color.r},${color.g},${color.b},${alpha})`);
-            grad.addColorStop(0.6, `rgba(${color.r},${color.g},${color.b},${alpha})`);
-            grad.addColorStop(1, `rgba(${color.r},${color.g},${color.b},0)`);
+            const alpha = 0.55 + Math.abs(wave) * 0.3;
+            grad.addColorStop(0, `rgba(${mixR},${mixG},${mixB},0)`);
+            grad.addColorStop(0.4, `rgba(${mixR},${mixG},${mixB},${alpha})`);
+            grad.addColorStop(0.6, `rgba(${mixR},${mixG},${mixB},${alpha})`);
+            grad.addColorStop(1, `rgba(${mixR},${mixG},${mixB},0)`);
             ctx.fillStyle = grad;
             ctx.fillRect(x, cy - bandHeight * 0.5, 1, bandHeight);
           }
