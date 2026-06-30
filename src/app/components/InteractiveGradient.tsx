@@ -3745,16 +3745,6 @@ export function InteractiveGradient() {
       ctx.restore();
     }
 
-    // Global energy brightness overlay — flares canvas brighter with loudness
-    if (isAudioEnabled && isAudioReactive && audioEnergy > 0.04) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-      ctx.globalAlpha = audioEnergy * 0.45;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, displayWidth, displayHeight);
-      ctx.restore();
-    }
-
     // Apply visual effects after gradient is rendered
     // Apply each active effect in sequence
     // Guard against invalid canvas dimensions
