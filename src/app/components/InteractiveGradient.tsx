@@ -73,7 +73,7 @@ export function InteractiveGradient() {
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
-  const [resolutionMultiplier, setResolutionMultiplier] = useState(1);
+  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => window.devicePixelRatio || 1);
 
   // Per-effect beat toggles
   const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
