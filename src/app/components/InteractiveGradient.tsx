@@ -689,25 +689,20 @@ export function InteractiveGradient() {
   const audioGradientParamRef = useRef(audioGradientParam);
   audioGradientParamRef.current = audioGradientParam;
 
-  // Oscillating windmill — bars sweep together then apart
+  // Continuous windmill spin — always rotating, refs prevent RAF restarts
   const windmillBladesRef = useRef(windmillBlades);
   windmillBladesRef.current = windmillBlades;
 
   useEffect(() => {
     if (gradientType !== 'windmill') return;
     let rafId: number;
-    let t = 0;
     const animateWindmill = () => {
-      t += 0.018; // oscillation speed (~3s per cycle at 60fps)
-      const bladeWidth = 360 / windmillBladesRef.current;
-      const amplitude = bladeWidth; // full blade-width swing: spread → together → spread
-      const audioBoost = isAudioActiveRef.current ? 1 + audioGradientParamRef.current * 1.5 : 1;
-      setWindmillRotation(amplitude * Math.sin(t * audioBoost));
+      setWindmillRotation(prev => (prev + 2) % 360);
       rafId = requestAnimationFrame(animateWindmill);
     };
     rafId = requestAnimationFrame(animateWindmill);
     return () => cancelAnimationFrame(rafId);
-  }, [gradientType]); // refs keep audio/blade values fresh without restarting
+  }, [gradientType]);
 
   // Continuous animation for slit-scan effect
   useEffect(() => {
