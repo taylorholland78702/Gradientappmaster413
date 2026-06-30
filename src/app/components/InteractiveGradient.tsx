@@ -232,6 +232,7 @@ export function InteractiveGradient() {
   const [noiseDirection, setNoiseDirection] = useState(0);
   const [plasmaSpeed, setPlasmaSpeed] = useState(1);
   const [plasmaComplexity, setPlasmaComplexity] = useState(5);
+  const [plasmaZoomScale, setPlasmaZoomScale] = useState(1);
   const [radialBurstCount, setRadialBurstCount] = useState(8);
   const [radialBurstSpread, setRadialBurstSpread] = useState(71);
   const [radialBurstSize, setRadialBurstSize] = useState(73);
@@ -1618,7 +1619,7 @@ export function InteractiveGradient() {
     vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
     spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
-    noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread,
+    noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
     voronoiCellCount, voronoiDistortion, conicalSpiralTurns, conicalSpiralTightness, windmillBlades,
     windmillRotation, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
@@ -2291,7 +2292,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
     audioEffectParam, audioColorShift,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, windmillBlades, windmillRotation, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerRotation, flowerAnimTime, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2651,7 +2652,7 @@ export function InteractiveGradient() {
         const waveWidth = (displayWidth / waveNumberRef.current) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
         const audioWaveAmplitude = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 20 // Subtle amplitude nudge on bass
+          ? audioGradientParam * 8 // Very subtle amplitude nudge on bass
           : 0;
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
@@ -2917,7 +2918,7 @@ export function InteractiveGradient() {
         const plasmaAudioActive = isAudioEnabled && isAudioReactive;
         const audioPlasmaComplexity = plasmaAudioActive ? audioGradientParam * 50 : 0;
         const plasmaZoom = plasmaAudioActive ? 1 : zoom;
-        const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / plasmaZoom;
+        const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / (plasmaZoom * plasmaZoomScale);
         // Treble shifts color palette; bass radial pulse from center
         const plasmaColorShift = plasmaAudioActive ? audioColorShift * 0.6 : 0;
         const plasmaBassPulse = plasmaAudioActive ? audioGradientParam : 0;
@@ -3186,11 +3187,11 @@ export function InteractiveGradient() {
           const baseX = voronoiSeed(i * 2) * displayWidth;
           const baseY = voronoiSeed(i * 2 + 1) * displayHeight;
 
-          // Bass accelerates morph speed, mids add extra lateral displacement
-          const audioMorphBoost = voronoiAudioActive ? 1 + audioGradientParam * 8 : 1;
-          const audioMidShift = voronoiAudioActive ? audioEffectParam * 0.25 : 0;
-          const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5 + audioMidShift) * displayWidth * 0.3;
-          const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7 + audioMidShift) * displayHeight * 0.3;
+          // Bass gently accelerates morph, mids add subtle extra movement
+          const audioMorphBoost = voronoiAudioActive ? 1 + audioGradientParam * 3 : 1;
+          const audioMidShift = voronoiAudioActive ? audioEffectParam * 0.1 : 0;
+          const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5 + audioMidShift) * displayWidth * 0.18;
+          const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7 + audioMidShift) * displayHeight * 0.18;
 
           voronoiSeeds.push({
             x: baseX + offsetX,
@@ -3199,7 +3200,7 @@ export function InteractiveGradient() {
           });
         }
 
-        const audioVoronoiDistortion = voronoiAudioActive ? audioGradientParam * 250 : 0;
+        const audioVoronoiDistortion = voronoiAudioActive ? audioGradientParam * 80 : 0;
         const totalVoronoiDistortion = (voronoiDistortion + audioVoronoiDistortion) * 0.01;
         const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
         const voronoiBassPulse = voronoiAudioActive ? audioGradientParam : 0;
@@ -3436,19 +3437,18 @@ export function InteractiveGradient() {
         const wmData = wmImageData.data;
         const wmBlades = windmillBlades || 6;
         const wmRotation = (windmillRotation || 0) * Math.PI / 180;
-        // High dist factor creates sharp spikes that pinch at center (like the reference images)
+        // Treble shifts which color each blade shows; bass brightens from center
+        const wmColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.5 : 0;
+        const wmBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
         const wmMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
-        const wmAudioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.3 : 0;
 
         for (let wy = 0; wy < displayHeight; wy++) {
           for (let wx = 0; wx < displayWidth; wx++) {
             const angle = Math.atan2(wy - centerY, wx - centerX) + wmRotation;
-            const dist = Math.sqrt((wx - centerX) ** 2 + (wy - centerY) ** 2);
+            // Pure angle-based blades — no dist pinching so blades stay even as they spin
             const bladeAngle = ((angle + Math.PI) / (Math.PI * 2)) * wmBlades;
-            // dist factor controls spike sharpness — higher = narrower spikes toward center
-            const t = ((bladeAngle % 1) + (dist / wmMaxDist) * 0.5) % 1;
+            const t = ((bladeAngle % 1) + wmColorShift) % 1;
 
-            // Map t through color palette; values near 0/1 boundaries create dark gaps
             const colorPos = t * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
@@ -3456,7 +3456,9 @@ export function InteractiveGradient() {
             const c2 = gradientColors[(colorIdx + 1) % gradientColors.length];
             if (!c1 || !c2) continue;
 
-            const brightness = 1 + wmAudioBoost;
+            const dx = wx - centerX, dy = wy - centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const brightness = 1 + wmBassPulse * (1 - dist / wmMaxDist) * 0.8;
             const idx = (wy * displayWidth + wx) * 4;
             wmData[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * colorFrac) * brightness));
             wmData[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * colorFrac) * brightness));
@@ -5974,25 +5976,18 @@ export function InteractiveGradient() {
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={plasmaComplexity}
-                  onChange={(e) => setPlasmaComplexity(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={plasmaComplexity}
-                  onChange={(e) => setPlasmaComplexity(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
-                />
+                <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Scale:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
