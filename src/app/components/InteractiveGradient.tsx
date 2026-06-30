@@ -570,6 +570,13 @@ export function InteractiveGradient() {
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
+  // When mic activates on windmill, freeze target colors so the lerp loop doesn't drift colors
+  useEffect(() => {
+    if (isMicActive && gradientType === 'windmill') {
+      setTargetColors([...gradientColorsRef.current]);
+    }
+  }, [isMicActive, gradientType]);
+
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
   // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
   // Skips the draw entirely when nothing is animating and values have converged.
