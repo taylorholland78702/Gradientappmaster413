@@ -700,7 +700,7 @@ export function InteractiveGradient() {
     const animateWindmill = () => {
       t += 0.018; // oscillation speed (~3s per cycle at 60fps)
       const bladeWidth = 360 / windmillBladesRef.current;
-      const amplitude = bladeWidth / 2; // swing exactly half a blade-width each way
+      const amplitude = bladeWidth; // full blade-width swing: spread → together → spread
       const audioBoost = isAudioActiveRef.current ? 1 + audioGradientParamRef.current * 1.5 : 1;
       setWindmillRotation(amplitude * Math.sin(t * audioBoost));
       rafId = requestAnimationFrame(animateWindmill);
@@ -3417,15 +3417,19 @@ export function InteractiveGradient() {
         const wmData = wmImageData.data;
         const wmBlades = windmillBlades || 6;
         const wmRotation = (windmillRotation || 0) * Math.PI / 180;
-        const wmAudioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.4 : 0;
+        // High dist factor creates sharp spikes that pinch at center (like the reference images)
+        const wmMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
+        const wmAudioBoost = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 0.3 : 0;
 
         for (let wy = 0; wy < displayHeight; wy++) {
           for (let wx = 0; wx < displayWidth; wx++) {
             const angle = Math.atan2(wy - centerY, wx - centerX) + wmRotation;
             const dist = Math.sqrt((wx - centerX) ** 2 + (wy - centerY) ** 2);
             const bladeAngle = ((angle + Math.PI) / (Math.PI * 2)) * wmBlades;
-            const t = ((bladeAngle % 1) + dist * 0.001 * (1 + wmAudioBoost)) % 1;
+            // dist factor controls spike sharpness — higher = narrower spikes toward center
+            const t = ((bladeAngle % 1) + (dist / wmMaxDist) * 0.5) % 1;
 
+            // Map t through color palette; values near 0/1 boundaries create dark gaps
             const colorPos = t * (gradientColors.length - 1);
             const colorIdx = Math.floor(colorPos);
             const colorFrac = colorPos - colorIdx;
@@ -3433,7 +3437,7 @@ export function InteractiveGradient() {
             const c2 = gradientColors[(colorIdx + 1) % gradientColors.length];
             if (!c1 || !c2) continue;
 
-            const brightness = 1 + (isAudioEnabled && isAudioReactive ? audioGradientParam * 0.3 : 0);
+            const brightness = 1 + wmAudioBoost;
             const idx = (wy * displayWidth + wx) * 4;
             wmData[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * colorFrac) * brightness));
             wmData[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * colorFrac) * brightness));
