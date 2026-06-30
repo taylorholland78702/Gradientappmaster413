@@ -698,9 +698,7 @@ export function InteractiveGradient() {
     if (gradientType !== 'windmill') return;
     let rafId: number;
     const animateWindmill = () => {
-      // Bass boosts rotation speed via ref (no dep restart)
-      const audioSpeedBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 2.5 : 0;
-      setWindmillRotation(prev => prev + 1.2 + audioSpeedBoost);
+      setWindmillRotation(prev => prev + 1.2);
       rafId = requestAnimationFrame(animateWindmill);
     };
     rafId = requestAnimationFrame(animateWindmill);
@@ -3446,12 +3444,8 @@ export function InteractiveGradient() {
         // Base speed multipliers — blades always move, crossing over each other
         const baseMultipliers = [1.0, 1.18, 0.82, 1.35, 0.68, 1.22, 0.88, 1.12];
 
-        const wmAudioActive = isAudioEnabled && isAudioReactive;
-        // Mids: tighten/loosen how much blade speeds differ from each other
-        const tightness = wmAudioActive ? 1 + audioEffectParam * 1.5 : 1;
-        // Treble: widen or narrow each blade's arc
-        const thicknessBoost = wmAudioActive ? audioColorShift * 0.6 : 0;
-        const effectiveBladeSpan = bladeSpan * (1 + thicknessBoost);
+        const tightness = 1;
+        const effectiveBladeSpan = bladeSpan;
 
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
