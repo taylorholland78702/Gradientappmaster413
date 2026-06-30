@@ -330,9 +330,10 @@ export function InteractiveGradient() {
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)),
-    onMidsFlash: () => setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'),
+    onBassFlash: () => { if (gradientType !== 'windmill') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
+    onMidsFlash: () => { if (gradientType !== 'windmill') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
     onTrebleFlash: () => {
+      if (gradientType === 'windmill') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
