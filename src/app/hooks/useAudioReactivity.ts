@@ -13,9 +13,11 @@ export interface UseAudioReactivityParams {
   setTargetColors: (updater: (prev: ColorRGB[]) => ColorRGB[]) => void;
   setGradientColors: (updater: (prev: ColorRGB[]) => ColorRGB[]) => void;
   setTargetZoom: (updater: (prev: number) => number) => void;
+  zoomBeatEnabled: boolean;
 }
 
 export function useAudioReactivity(params: UseAudioReactivityParams) {
+  const { zoomBeatEnabled } = params;
   const { onBassFlash, onMidsFlash, onTrebleFlash, setTargetColors, setGradientColors, setTargetZoom } = params;
 
   // State
@@ -32,6 +34,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [audioEnergy, setAudioEnergy] = useState(0);
   const energySmoothedRef = useRef(0);
   const [subBassOnsetTick, setSubBassOnsetTick] = useState(0);
+  const [bassOnsetTick, setBassOnsetTick] = useState(0);
   const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
   const [bassMultiplier, setBassMultiplier] = useState(3);
@@ -333,6 +336,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
           setBpm(Math.round(60000 / avgInterval));
         }
         lastBeatTimeRef.current = now;
+        setBassOnsetTick(t => t + 1);
         if (bassBeatSync) bassBeatPulseRef.current = 1.0;
         if (midsBeatSync) midsBeatPulseRef.current = 1.0;
         if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
@@ -360,7 +364,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
       setTargetZoom(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
-        if (bassRawForZoom > 0.05) {
+        if (zoomBeatEnabled && bassRawForZoom > 0.05) {
           const spike = bassRawForZoom * (bassBeatSync ? 2.5 : 1.2);
           return Math.min(decayed + spike, 1 + (bassBeatSync ? 2.5 : 1.2));
         }
@@ -426,7 +430,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom, zoomBeatEnabled]);
 
   // Poll live level refs at ~15fps to drive the bar graph (every 4th frame)
   useEffect(() => {
@@ -503,6 +507,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioColorShift, setAudioColorShift,
     audioEnergy,
     subBassOnsetTick,
+    bassOnsetTick,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,

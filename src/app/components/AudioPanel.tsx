@@ -37,7 +37,15 @@ interface AudioPanelProps {
   startMicVisualization: (deviceId?: string) => void;
   stopMicVisualization: () => void;
   onAudioFileClick: () => void;
+  isMicOrAudioActive: boolean;
+  zoomBeatEnabled: boolean; setZoomBeatEnabled: (v: boolean) => void;
+  shakeBeatEnabled: boolean; setShakeBeatEnabled: (v: boolean) => void;
+  contrastBeatEnabled: boolean; setContrastBeatEnabled: (v: boolean) => void;
+  paletteBeatEnabled: boolean; setPaletteBeatEnabled: (v: boolean) => void;
 }
+
+const BEAT_BTN = (active: boolean) =>
+  `flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${active ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`;
 
 const AudioPanelInner: React.FC<AudioPanelProps> = ({
   isMicActive,
@@ -75,7 +83,19 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
   startMicVisualization,
   stopMicVisualization,
   onAudioFileClick,
+  isMicOrAudioActive,
+  zoomBeatEnabled, setZoomBeatEnabled,
+  shakeBeatEnabled, setShakeBeatEnabled,
+  contrastBeatEnabled, setContrastBeatEnabled,
+  paletteBeatEnabled, setPaletteBeatEnabled,
 }) => {
+  const levels = [
+    { value: liveBassLevel, label: 'B' },
+    { value: liveMidsLevel, label: 'M' },
+    { value: liveTrebleLevel, label: 'T' },
+    { value: liveSubBassLevel, label: 'S' },
+  ];
+
   return (
     <>
       {/* Audiovisuals Section */}
@@ -119,6 +139,27 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
         >
           <Plus className="w-4 h-4" />
         </button>
+
+        {/* Mini band meters — always visible when audio is active */}
+        {isMicOrAudioActive && (
+          <div className="flex items-end gap-[3px] px-1.5 py-1 rounded-lg bg-white/8 backdrop-blur-sm">
+            {levels.map(({ value, label }) => (
+              <div key={label} className="flex flex-col items-center gap-[2px]">
+                <div className="w-3 bg-white/10 rounded-sm overflow-hidden flex flex-col justify-end" style={{ height: 20 }}>
+                  <div
+                    className="w-full rounded-sm transition-none"
+                    style={{
+                      height: `${Math.min(100, value * 250)}%`,
+                      background: 'linear-gradient(to top, #eab308, #a855f7)',
+                    }}
+                  />
+                </div>
+                <span className="text-[7px] text-white/50 font-bold">{label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <button
           onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
           className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between gap-1"
@@ -133,73 +174,84 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
         <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
           <div className="flex flex-col gap-3">
 
-            {/* Intensity — always visible */}
+            {/* Intensity */}
             <div className="flex items-center gap-2">
               <label className="text-xs text-white whitespace-nowrap flex-shrink-0">Intensity</label>
               <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
               <span className="text-xs text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
 
+            {/* Band columns */}
             <div className="flex gap-2 items-start overflow-hidden">
 
-                {/* Shape = Bass */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                  <div className="w-full relative">
-                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                      <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                    </div>
+              {/* Shape = Bass */}
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+                <div className="w-full relative">
+                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
                   </div>
-                  <span className="text-[10px] font-semibold text-white">Shape</span>
-                  <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
                 </div>
-
-                {/* Motion = Mids */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                  <div className="w-full relative">
-                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                      <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-white">Motion</span>
-                  <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
-                </div>
-
-                {/* Color = Treble */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                  <div className="w-full relative">
-                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                      <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-white">Color</span>
-                  <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
-                  <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
-                </div>
-
-                {/* Pulse = Sub-bass */}
-                <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
-                  <div className="w-full relative">
-                    <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
-                      <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-white">Pulse</span>
-                  <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
-                  <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
-                </div>
+                <span className="text-[10px] font-semibold text-white">Shape</span>
+                <input type="range" min="0" max="2" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} className="w-full" />
+                <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
+
+              {/* Motion = Mids */}
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+                <div className="w-full relative">
+                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold text-white">Motion</span>
+                <input type="range" min="0" max="2" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} className="w-full" />
+                <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+              </div>
+
+              {/* Color = Treble */}
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+                <div className="w-full relative">
+                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold text-white">Color</span>
+                <input type="range" min="0" max="2" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 127.5)); }} className="w-full" />
+                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+              </div>
+
+              {/* Pulse = Sub-bass */}
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+                <div className="w-full relative">
+                  <div className="w-full bg-white/8 rounded overflow-hidden" style={{height: '40px'}}>
+                    <div className="w-full rounded transition-none absolute bottom-0" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: `linear-gradient(to top, #eab308, #a855f7)`}} />
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold text-white">Pulse</span>
+                <input type="range" min="0" max="2" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} className="w-full" />
+                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+              </div>
+            </div>
+
+            {/* FX on Beat row */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">FX on Beat</span>
+              <div className="flex gap-1.5">
+                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} className={BEAT_BTN(zoomBeatEnabled)}>ZOOM</button>
+                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} className={BEAT_BTN(shakeBeatEnabled)}>SHAKE</button>
+                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} className={BEAT_BTN(contrastBeatEnabled)}>CONTRAST</button>
+                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} className={BEAT_BTN(paletteBeatEnabled)}>PALETTE</button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* Audio Waveform Display - shown when audio file is loaded */}
+      {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
         <div className="w-full mb-0.5 bg-white/5 backdrop-blur-sm rounded-lg px-1.5 py-3">
-          {/* Waveform Visualization */}
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
-            {/* Center line */}
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-white/20"></div>
             </div>
@@ -207,10 +259,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
               const height = Math.max(1, amplitude * 17.5);
               const hue = (index / waveformData.length) * 360;
               return (
-                <div
-                  key={index}
-                  className="flex-1 relative flex items-center justify-center"
-                >
+                <div key={index} className="flex-1 relative flex items-center justify-center">
                   <div
                     className="w-full rounded-sm"
                     style={{
@@ -223,13 +272,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
               );
             })}
           </div>
-
-          {/* Audio File Info */}
           <div className="flex items-center justify-between gap-1">
             <div className="flex-1 min-w-0">
-              <div className="text-white text-[9px] font-semibold truncate leading-tight">
-                {audioFileName}
-              </div>
+              <div className="text-white text-[9px] font-semibold truncate leading-tight">{audioFileName}</div>
               {audioFileMetadata && (
                 <div className="text-white/60 text-[8px] leading-tight">
                   {(audioFileMetadata.sampleRate / 1000).toFixed(1)} kHz • {Math.floor(audioFileMetadata.duration / 60)}:{String(Math.floor(audioFileMetadata.duration % 60)).padStart(2, '0')}

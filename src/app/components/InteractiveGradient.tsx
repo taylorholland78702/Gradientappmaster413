@@ -74,6 +74,12 @@ export function InteractiveGradient() {
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
   const [resolutionMultiplier, setResolutionMultiplier] = useState(1);
+
+  // Per-effect beat toggles
+  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
+  const [shakeBeatEnabled, setShakeBeatEnabled] = useState(true);
+  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(true);
+  const [paletteBeatEnabled, setPaletteBeatEnabled] = useState(false);
   
   
   // Video recording state (shared between root and useVCRPlayback hook)
@@ -358,6 +364,7 @@ export function InteractiveGradient() {
     setTargetColors: (updater) => { if (isAutoColorRef.current) setTargetColors(updater); },
     setGradientColors: (updater) => { if (isAutoColorRef.current) setGradientColors(updater); },
     setTargetZoom: (updater) => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(updater); },
+    zoomBeatEnabled,
   });
 
   // Destructure audio hook values for use throughout this component
@@ -374,6 +381,7 @@ export function InteractiveGradient() {
     audioColorShift, setAudioColorShift,
     audioEnergy,
     subBassOnsetTick,
+    bassOnsetTick,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
@@ -1916,7 +1924,7 @@ export function InteractiveGradient() {
 
   // Contrast + saturation pulse — bass hits spike both, decay via RAF
   useEffect(() => {
-    if (!isAudioEnabled || !isAudioReactive) return;
+    if (!isAudioEnabled || !isAudioReactive || !contrastBeatEnabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     let rafId: number;
@@ -1936,11 +1944,11 @@ export function InteractiveGradient() {
       rafId = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(rafId);
-  }, [audioGradientParam, isAudioEnabled, isAudioReactive]);
+  }, [audioGradientParam, isAudioEnabled, isAudioReactive, contrastBeatEnabled]);
 
   // Canvas shake — sub-bass onset triggers a quick x/y rumble
   useEffect(() => {
-    if (!isAudioEnabled || !isAudioReactive || subBassOnsetTick === 0) return;
+    if (!isAudioEnabled || !isAudioReactive || !shakeBeatEnabled || subBassOnsetTick === 0) return;
     const wrapper = shakeWrapperRef.current;
     if (!wrapper) return;
     let rafId: number;
@@ -1957,7 +1965,27 @@ export function InteractiveGradient() {
     };
     rafId = requestAnimationFrame(animate);
     return () => { cancelAnimationFrame(rafId); wrapper.style.transform = ''; };
-  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive]);
+  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive, shakeBeatEnabled]);
+
+  // Palette snap — on bass beat, jump to a vivid complementary palette instantly
+  useEffect(() => {
+    if (!paletteBeatEnabled || !isAudioEnabled || !isAudioReactive || bassOnsetTick === 0) return;
+    const hslToRgb = (h: number, s: number, l: number) => {
+      s /= 100; l /= 100;
+      const k = (n: number) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) => Math.round((l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))) * 255);
+      return { r: f(0), g: f(8), b: f(4) };
+    };
+    const count = gradientColors.length || 4;
+    const baseHue = Math.random() * 360;
+    const newColors = Array.from({ length: count }, (_, i) => {
+      const hue = (baseHue + (360 / count) * i + (Math.random() * 20 - 10)) % 360;
+      return hslToRgb(hue, 85 + Math.random() * 15, 48 + Math.random() * 14);
+    });
+    setGradientColors(() => newColors);
+    setTargetColors(() => newColors);
+  }, [bassOnsetTick, paletteBeatEnabled, isAudioEnabled, isAudioReactive, gradientColors.length]);
 
   // Helper function to adjust color array to target length
   const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
@@ -8356,6 +8384,11 @@ export function InteractiveGradient() {
           startMicVisualization={startMicVisualization}
           stopMicVisualization={stopMicVisualization}
           onAudioFileClick={handleAudioFileClick}
+          isMicOrAudioActive={isMicActive || !!audioFileName}
+          zoomBeatEnabled={zoomBeatEnabled} setZoomBeatEnabled={setZoomBeatEnabled}
+          shakeBeatEnabled={shakeBeatEnabled} setShakeBeatEnabled={setShakeBeatEnabled}
+          contrastBeatEnabled={contrastBeatEnabled} setContrastBeatEnabled={setContrastBeatEnabled}
+          paletteBeatEnabled={paletteBeatEnabled} setPaletteBeatEnabled={setPaletteBeatEnabled}
         />
         
         {/* Presets Panel */}
