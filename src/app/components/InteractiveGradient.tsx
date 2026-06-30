@@ -2744,10 +2744,15 @@ export function InteractiveGradient() {
         const spiralSegments = 60 * spiralTightness / 5;
         const effectiveSpiralRotations = spiralRotations * spiralScale;
 
+        // spiralZoom scales the whole pattern — higher = zoomed in (fewer bands visible)
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(spiralZoom, spiralZoom);
+        ctx.translate(-centerX, -centerY);
+
         for (let i = 0; i < spiralSegments; i++) {
           const t = i / spiralSegments;
           const angle = (t * 360 * effectiveSpiralRotations + gradientAngle + audioAngleOffset) * DEG_TO_RAD;
-          const radius = t * maxRadius * spiralScale * spiralZoom;
 
           // 4. Shift color index by treble amount
           const shiftedT = ((t * (gradientColors.length - 1) + audioColorCycle) % (gradientColors.length - 1 || 1));
@@ -2770,6 +2775,7 @@ export function InteractiveGradient() {
           ctx.fillRect(-maxRadius, -audioThickness / 2, maxRadius * 2, audioThickness);
           ctx.restore();
         }
+        ctx.restore(); // undo spiralZoom scale
         break;
       }
 
