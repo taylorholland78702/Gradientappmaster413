@@ -3177,23 +3177,29 @@ export function InteractiveGradient() {
         const burstScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
         const sizeScale = radialBurstSize / 100;
         const burstRadius = fitRadius * 0.7;
-        // Audio reactivity: bass affects burst spread
-        const audioBurstSpread = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 100 // Up to 100 extra spread
-          : 0;
+        const isAudioActive = isAudioEnabled && isAudioReactive;
+        const audioBass = isAudioActive ? audioGradientParam : 0;
+        const audioMids = isAudioActive ? audioEffectParam : 0;
+        // Bass expands spread, mids boost brightness, both scale burst size
+        const audioBurstSpread = audioBass * 120;
         const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
+        const audioSizeBoost = 1 + audioBass * 1.2 + audioMids * 0.4;
+        const audioBrightness = 1 + audioBass * 1.5 + audioMids * 0.8;
 
         for (let i = 0; i < burstCount; i++) {
           const burstAngle = (i * 360 / burstCount + gradientAngle) * DEG_TO_RAD;
           const offsetDist = fitRadius * spreadFactor * burstScale * sizeScale;
           const burstX = centerX + Math.cos(burstAngle) * offsetDist;
           const burstY = centerY + Math.sin(burstAngle) * offsetDist;
-          const burstRadiusValue = Math.max(0, burstRadius * burstScale * sizeScale);
+          const burstRadiusValue = Math.max(0, burstRadius * burstScale * sizeScale * audioSizeBoost);
           const burstGrad = ctx.createRadialGradient(burstX, burstY, 0, burstX, burstY, burstRadiusValue);
           const burstColor = gradientColors[i % gradientColors.length];
           if (!burstColor) continue;
-          burstGrad.addColorStop(0, `rgb(${burstColor.r}, ${burstColor.g}, ${burstColor.b})`);
-          burstGrad.addColorStop(0.5, `rgba(${burstColor.r}, ${burstColor.g}, ${burstColor.b}, 0.6)`);
+          const br = Math.min(255, Math.round(burstColor.r * audioBrightness));
+          const bg = Math.min(255, Math.round(burstColor.g * audioBrightness));
+          const bb = Math.min(255, Math.round(burstColor.b * audioBrightness));
+          burstGrad.addColorStop(0, `rgb(${br}, ${bg}, ${bb})`);
+          burstGrad.addColorStop(0.5, `rgba(${br}, ${bg}, ${bb}, 0.6)`);
           burstGrad.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = burstGrad;
           ctx.globalCompositeOperation = 'lighter';
