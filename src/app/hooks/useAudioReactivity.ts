@@ -312,15 +312,6 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
       const subBassValue = Math.min(1, subBassSmoothedRef.current);
 
-      setTargetZoom(prev => {
-        if (subBassValue > 0.05) {
-          const pulse = 1 + subBassValue * (subBassBeatSync ? 1.4 : 0.7);
-          return Math.min(prev * pulse, prev + (subBassBeatSync ? 2.0 : 1.0));
-        }
-        // Snap back faster so next hit lands clean
-        return prev + (1 - prev) * (subBassBeatSync ? 0.3 : 0.12);
-      });
-
       // ---- BASS (bins 0–9) ----
       let bassSum = 0;
       for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
@@ -360,6 +351,15 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
       liveBassSmoothedRef.current = bassGradientValue;
       setAudioGradientParam(bassGradientValue);
+
+      // Bass drives zoom
+      setTargetZoom(prev => {
+        if (bassGradientValue > 0.05) {
+          const pulse = 1 + bassGradientValue * (bassBeatSync ? 1.4 : 0.7);
+          return Math.min(prev * pulse, prev + (bassBeatSync ? 2.0 : 1.0));
+        }
+        return prev + (1 - prev) * (bassBeatSync ? 0.3 : 0.12);
+      });
 
       // ---- MIDS (bins 10–49) ----
       let midsSum = 0;
