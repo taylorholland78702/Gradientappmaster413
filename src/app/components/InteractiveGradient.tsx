@@ -334,12 +334,13 @@ export function InteractiveGradient() {
     onBassFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
     onMidsFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
     onTrebleFlash: () => {
+      if (!isAutoColorRef.current) return;
       if (gradientType === 'spiral' || gradientType === 'angle') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
-    setTargetColors,
-    setGradientColors,
+    setTargetColors: (updater) => { if (isAutoColorRef.current) setTargetColors(updater); },
+    setGradientColors: (updater) => { if (isAutoColorRef.current) setGradientColors(updater); },
     setTargetZoom: (updater) => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(updater); },
   });
 
