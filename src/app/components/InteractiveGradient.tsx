@@ -2394,7 +2394,7 @@ export function InteractiveGradient() {
       case 'angle': {
         ctx.save();
         // Very subtle audio: slight angle shimmer, no center drift
-        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 0.015 : 0;
+        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 0.0015 : 0;
         const audioConicCenterDX = 0;
         const audioConicCenterDY = 0;
         const conicCenterX = (displayWidth * angleCenterX) / 100 + audioConicCenterDX;
