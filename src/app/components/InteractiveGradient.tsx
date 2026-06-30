@@ -327,10 +327,7 @@ export function InteractiveGradient() {
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => setTargetZoom(prev => {
-      const pulseZoom = 0.8 + Math.random() * 1.6;
-      return pulseZoom !== prev ? pulseZoom : pulseZoom + 0.1;
-    }),
+    onBassFlash: () => setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)),
     onMidsFlash: () => setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'),
     onTrebleFlash: () => {
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
@@ -1175,7 +1172,8 @@ export function InteractiveGradient() {
       };
       
       setTargetAngle(blendValue(baseResult.data.gradientAngle || 0, 0, 360));
-      setTargetZoom(blendValue(baseResult.data.zoom || 1, 0.5, 3));
+      setTargetZoom(1);
+      setZoom(1);
       
       const speedOptions = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const randomSpeed = speedOptions[Math.floor(Math.random() * speedOptions.length)];
@@ -1219,7 +1217,8 @@ export function InteractiveGradient() {
       setIsMultiFxMode(true);
       
       setTargetAngle(Math.random() * 360);
-      setTargetZoom(0.5 + Math.random() * 2.5);
+      setTargetZoom(1);
+      setZoom(1);
       
       const speedOptions = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const randomSpeed = speedOptions[Math.floor(Math.random() * speedOptions.length)];

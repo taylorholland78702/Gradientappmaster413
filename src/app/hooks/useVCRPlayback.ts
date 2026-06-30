@@ -121,6 +121,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         } else {
           setIsVCRPlaying(false);
           setVcrPlaybackIndex(0);
+          setTargetZoom(() => 1);
           return;
         }
       }
@@ -233,6 +234,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       setIsVCRPlaying(false);
       setVcrPlaybackIndex(0);
       setIsAutoMode(false);
+      setTargetZoom(() => 1);
     } else {
       if (vcrRecordedFrames.length > 0) {
         setIsVCRRecording(false);
@@ -250,6 +252,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
     setVcrPlaybackIndex(0);
+    setTargetZoom(() => 1);
     stopRecording();
     if (audioRef.current) {
       audioRef.current.pause();

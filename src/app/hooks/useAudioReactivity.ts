@@ -296,19 +296,21 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let subBassRaw: number;
       if (subBassBeatSync) {
         subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * masterSensitivity;
-        subBassBeatPulseRef.current *= 0.80;
+        subBassBeatPulseRef.current *= 0.68; // faster decay = snappier pulse
       } else {
         subBassRaw = subBassAvgRaw * subBassMultiplier * masterSensitivity;
       }
-      subBassSmoothedRef.current = 0.6 * subBassSmoothedRef.current + 0.4 * subBassRaw;
+      subBassSmoothedRef.current = 0.5 * subBassSmoothedRef.current + 0.5 * subBassRaw;
       const subBassValue = Math.min(1, subBassSmoothedRef.current);
 
-      if (subBassValue > 0.05) {
-        setTargetZoom(prev => {
-          const pulse = 1 + subBassValue * 0.35;
-          return Math.min(prev * pulse, prev + 0.6);
-        });
-      }
+      setTargetZoom(prev => {
+        if (subBassValue > 0.05) {
+          const pulse = 1 + subBassValue * (subBassBeatSync ? 0.7 : 0.35);
+          return Math.min(prev * pulse, prev + (subBassBeatSync ? 1.2 : 0.6));
+        }
+        // Decay back toward 1 between beats
+        return prev + (1 - prev) * (subBassBeatSync ? 0.18 : 0.08);
+      });
 
       // ---- BASS (bins 0–9) ----
       let bassSum = 0;
