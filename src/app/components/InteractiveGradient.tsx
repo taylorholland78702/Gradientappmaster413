@@ -8350,6 +8350,47 @@ export function InteractiveGradient() {
           onAudioFileClick={handleAudioFileClick}
         />
         
+        {/* Favorites row */}
+        {ratedResults.filter(r => r.rating >= 7).length > 0 && (
+          <div className="w-full mb-0.5">
+            <button
+              onClick={() => setShowFavorites(prev => !prev)}
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-all ${showFavorites ? 'bg-white/15 text-white' : 'bg-white/8 text-white/70 hover:bg-white/12 hover:text-white'}`}
+            >
+              <span className="font-semibold">⭐ Favorites</span>
+              <span className="text-white/40">{ratedResults.filter(r => r.rating >= 7).length} saved</span>
+            </button>
+            {showFavorites && (
+              <div className="mt-1 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[...ratedResults].reverse().filter(r => r.rating >= 7).map((item, i) => {
+                    const colors: Array<{r: number, g: number, b: number}> = item.data?.gradientColors || [];
+                    const gradient = colors.length > 0
+                      ? `linear-gradient(135deg, ${colors.map((c, j) => `rgb(${c.r},${c.g},${c.b}) ${Math.round(j / Math.max(colors.length - 1, 1) * 100)}%`).join(', ')})`
+                      : 'linear-gradient(135deg, #333, #666)';
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => restoreFavorite(item.data)}
+                        className="rounded-lg overflow-hidden relative group transition-transform hover:scale-105 active:scale-95"
+                        style={{ aspectRatio: '4/3' }}
+                        title={`${item.data?.gradientType ?? 'gradient'} — tap to restore`}
+                      >
+                        <div className="absolute inset-0" style={{ background: gradient }} />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg" />
+                        <div className="absolute bottom-0.5 left-0.5 right-0.5 flex items-center justify-between">
+                          <span className="text-[8px] text-white/70 bg-black/40 rounded px-0.5 capitalize truncate">{item.data?.gradientType ?? ''}</span>
+                          <span className="text-[9px]">{item.rating === 10 ? '🔥' : '👍'}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Presets Panel */}
         <PresetsPanel
           isPresetsDropdownOpen={isPresetsDropdownOpen}
