@@ -2354,7 +2354,8 @@ export function InteractiveGradient() {
         const conicCenterX = (displayWidth * angleCenterX) / 100;
         const conicCenterY = (displayHeight * angleCenterY) / 100;
         ctx.translate(centerX, centerY);
-        ctx.scale(Math.max(1, zoom), Math.max(1, zoom));
+        const conicZoom = (isAudioEnabled && isAudioReactive) ? 1 : Math.max(1, zoom);
+        ctx.scale(conicZoom, conicZoom);
         ctx.translate(-centerX, -centerY);
         const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180;
         gradient = ctx.createConicGradient(conicStartAngle, conicCenterX, conicCenterY);
@@ -2592,10 +2593,11 @@ export function InteractiveGradient() {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate((waveRotationRef.current * Math.PI) / 180);
-        ctx.scale(zoom, zoom);
+        const waveZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        ctx.scale(waveZoom, waveZoom);
         ctx.translate(-centerX, -centerY);
 
-        const waveScaleForWave = 1 / zoom;
+        const waveScaleForWave = 1 / waveZoom;
         const waveWidth = (displayWidth / waveNumberRef.current) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
         const audioWaveAmplitude = (isAudioEnabled && isAudioReactive) 
@@ -2890,7 +2892,8 @@ export function InteractiveGradient() {
 
         ctx.save();
         ctx.translate(centerX, centerY);
-        ctx.scale(zoom, zoom);
+        const gridZoom = (isAudioEnabled && isAudioReactive) ? 1 : zoom;
+        ctx.scale(gridZoom, gridZoom);
         ctx.translate(-centerX, -centerY);
 
         // Audio reactivity: bass affects gradient animation in cells
@@ -2898,7 +2901,7 @@ export function InteractiveGradient() {
           ? audioGradientParam * 360 : 0;
 
         // Expand draw area to cover canvas when zoomed out
-        const gridOverdraw = Math.max(1, 1 / zoom);
+        const gridOverdraw = Math.max(1, 1 / gridZoom);
         const gridDrawW = displayWidth * gridOverdraw;
         const gridDrawH = displayHeight * gridOverdraw;
         const gridOffX = (displayWidth - gridDrawW) / 2;
