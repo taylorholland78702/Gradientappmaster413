@@ -2536,45 +2536,53 @@ export function InteractiveGradient() {
 
 
 
-      case 'spiral':
-        // Create a spiral gradient
+      case 'spiral': {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        // Dampen zoom effect for smoother, less dramatic changes
-        const zoomDampening = 0.3; // Reduce zoom impact to 30% of original
+
+        const spiralAudioActive = isAudioEnabled && isAudioReactive;
+
+        // 1. Bass pulses blade thickness
+        const audioThickness = spiralAudioActive ? spiralThickness + audioGradientParam * spiralThickness * 1.2 : spiralThickness;
+        // 2. Mids boost rotation speed (angle offset accumulates via gradientAngle state externally; here we add a per-frame visual offset)
+        const audioAngleOffset = spiralAudioActive ? audioEffectParam * 120 : 0;
+        // 4. Treble cycles color palette position
+        const audioColorCycle = spiralAudioActive ? audioColorShift * gradientColors.length : 0;
+
+        const zoomDampening = 0.3;
         const dampenedZoom = 1 + (zoom - 1) * zoomDampening;
         const spiralScale = 1 / dampenedZoom;
-        const spiralSegments = 60 * spiralTightness / 5; // More segments for tighter spirals
-        const effectiveSpiralRotations = spiralRotations * spiralScale; // Number of rotations scales with dampened zoom
-        
+        const spiralSegments = 60 * spiralTightness / 5;
+        const effectiveSpiralRotations = spiralRotations * spiralScale;
+
         for (let i = 0; i < spiralSegments; i++) {
           const t = i / spiralSegments;
-          const angle = (t * 360 * effectiveSpiralRotations + gradientAngle) * DEG_TO_RAD;
+          const angle = (t * 360 * effectiveSpiralRotations + gradientAngle + audioAngleOffset) * DEG_TO_RAD;
           const radius = t * maxRadius * spiralScale * spiralZoom;
-          
-          const colorIndex = Math.floor(t * (gradientColors.length - 1));
-          const nextColorIndex = Math.min(colorIndex + 1, gradientColors.length - 1);
-          const localT = (t * (gradientColors.length - 1)) - colorIndex;
-          
+
+          // 4. Shift color index by treble amount
+          const shiftedT = ((t * (gradientColors.length - 1) + audioColorCycle) % (gradientColors.length - 1 || 1));
+          const colorIndex = Math.floor(shiftedT) % gradientColors.length;
+          const nextColorIndex = (colorIndex + 1) % gradientColors.length;
+          const localT = shiftedT - Math.floor(shiftedT);
+
           const color = gradientColors[colorIndex];
           const nextColor = gradientColors[nextColorIndex];
-          
-          // Safety check
           if (!color || !nextColor) continue;
-          
+
           const r = color.r + (nextColor.r - color.r) * localT;
           const g = color.g + (nextColor.g - color.g) * localT;
           const b = color.b + (nextColor.b - color.b) * localT;
-          
+
           ctx.save();
           ctx.translate(centerX, centerY);
           ctx.rotate(angle);
           ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-          ctx.fillRect(-maxRadius, -spiralThickness / 2, maxRadius * 2, spiralThickness);
+          ctx.fillRect(-maxRadius, -audioThickness / 2, maxRadius * 2, audioThickness);
           ctx.restore();
         }
         break;
+      }
 
       case 'starburst':
         // Create a starburst/sunburst gradient - centered and sized to fit window on load
