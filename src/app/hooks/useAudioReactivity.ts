@@ -434,7 +434,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
   // Poll live level refs at ~15fps to drive the bar graph (every 4th frame)
   useEffect(() => {
-    if (!isAudioEnabled || !isAudioReactive) return;
+    if (!isAudioEnabled) return;
     let rafId: number;
     let frame = 0;
     const poll = () => {
@@ -448,7 +448,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     };
     rafId = requestAnimationFrame(poll);
     return () => cancelAnimationFrame(rafId);
-  }, [isAudioEnabled, isAudioReactive]);
+  }, [isAudioEnabled]);
 
   // Auto-reactive colors - change colors based on audio
   useEffect(() => {
