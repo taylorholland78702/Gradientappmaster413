@@ -31,6 +31,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [audioColorShift, setAudioColorShift] = useState(0);
   const [audioEnergy, setAudioEnergy] = useState(0);
   const energySmoothedRef = useRef(0);
+  const [subBassOnsetTick, setSubBassOnsetTick] = useState(0);
   const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
   const [bassMultiplier, setBassMultiplier] = useState(3);
@@ -299,6 +300,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
       const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.08;
       if (subBassOnset && now - lastSubBeatTimeRef.current > 150) {
+        setSubBassOnsetTick(t => t + 1);
         lastSubBeatTimeRef.current = now;
         if (subBassBeatSync) subBassBeatPulseRef.current = 1.0;
       }
@@ -500,6 +502,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioEffectParam, setAudioEffectParam,
     audioColorShift, setAudioColorShift,
     audioEnergy,
+    subBassOnsetTick,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,

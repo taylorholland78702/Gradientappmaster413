@@ -373,6 +373,7 @@ export function InteractiveGradient() {
     audioEffectParam, setAudioEffectParam,
     audioColorShift, setAudioColorShift,
     audioEnergy,
+    subBassOnsetTick,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
@@ -755,6 +756,11 @@ export function InteractiveGradient() {
   audioGradientParamRef.current = audioGradientParam;
   const audioEffectParamRef = useRef(audioEffectParam);
   audioEffectParamRef.current = audioEffectParam;
+
+  // Refs for contrast pulse and canvas shake
+  const contrastPulseRef = useRef(0);
+  const shakeRef = useRef({ x: 0, y: 0 });
+  const shakeWrapperRef = useRef<HTMLDivElement>(null);
 
 
   // Continuous animation for slit-scan effect
@@ -1906,6 +1912,47 @@ export function InteractiveGradient() {
       gradient.addColorStop(i * step, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
     }
   }, [isAudioEnabled, isAudioReactive, audioColorShift]);
+
+  // Contrast pulse — bass hits spike canvas contrast then decay via RAF
+  useEffect(() => {
+    if (!isAudioEnabled || !isAudioReactive) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    let rafId: number;
+    const animate = () => {
+      contrastPulseRef.current *= 0.82; // decay
+      const contrast = 1 + contrastPulseRef.current * 2.5;
+      canvas.style.filter = contrast > 1.01 ? `contrast(${contrast.toFixed(2)})` : '';
+      if (contrastPulseRef.current > 0.01) rafId = requestAnimationFrame(animate);
+    };
+    // Spike on audioGradientParam (bass)
+    if (audioGradientParam > 0.3) {
+      contrastPulseRef.current = Math.min(1, audioGradientParam / 5);
+      rafId = requestAnimationFrame(animate);
+    }
+    return () => cancelAnimationFrame(rafId);
+  }, [audioGradientParam, isAudioEnabled, isAudioReactive]);
+
+  // Canvas shake — sub-bass onset triggers a quick x/y rumble
+  useEffect(() => {
+    if (!isAudioEnabled || !isAudioReactive || subBassOnsetTick === 0) return;
+    const wrapper = shakeWrapperRef.current;
+    if (!wrapper) return;
+    let rafId: number;
+    shakeRef.current = { x: (Math.random() - 0.5) * 12, y: (Math.random() - 0.5) * 8 };
+    const animate = () => {
+      shakeRef.current.x *= 0.65;
+      shakeRef.current.y *= 0.65;
+      if (Math.abs(shakeRef.current.x) < 0.3 && Math.abs(shakeRef.current.y) < 0.3) {
+        wrapper.style.transform = '';
+        return;
+      }
+      wrapper.style.transform = `translate(${shakeRef.current.x.toFixed(1)}px, ${shakeRef.current.y.toFixed(1)}px)`;
+      rafId = requestAnimationFrame(animate);
+    };
+    rafId = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(rafId); wrapper.style.transform = ''; };
+  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive]);
 
   // Helper function to adjust color array to target length
   const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
@@ -5076,19 +5123,21 @@ export function InteractiveGradient() {
   
   return (
     <div className="fixed inset-0 overflow-hidden cursor-crosshair bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
-      <canvas
-        ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchMove}
-        onWheel={handleWheel}
-        className="w-full h-full"
-        style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.1s ease-in-out' }}
-      />
+      <div ref={shakeWrapperRef} className="w-full h-full">
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
+          onWheel={handleWheel}
+          className="w-full h-full"
+          style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.1s ease-in-out' }}
+        />
+      </div>
       
       {/* Freeform Pins Overlay */}
       {gradientType === 'freeform' && (
