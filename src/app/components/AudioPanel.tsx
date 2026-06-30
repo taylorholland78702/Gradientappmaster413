@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Mic, MicOff, Plus, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Mic, MicOff, Plus } from 'lucide-react';
 
 interface AudioPanelProps {
   isMicActive: boolean;
@@ -117,7 +117,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
           className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center gap-1"
           title="Load Audio File"
         >
-          <span>Upload</span>
           <Plus className="w-4 h-4" />
         </button>
         <button
@@ -125,7 +124,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
           className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between gap-1"
           title="Audio Controls"
         >
-          <span className="flex items-center gap-1">Controls <SlidersHorizontal className="w-3.5 h-3.5" /></span>
+          <span>Audio Controls</span>
           <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
