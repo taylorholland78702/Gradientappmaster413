@@ -5692,9 +5692,10 @@ export function InteractiveGradient() {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
             }}
-            className={`relative px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow${isWavHolding ? ' wav-wave-active' : ' overflow-hidden'}`}
+            className={`relative px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow overflow-hidden${isWavHolding ? ' wav-wave-active' : ' wav-hue-drift'}`}
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
           >
+            {isWavHolding && <span className="wav-fill" />}
             {isWavHolding && <span className="wav-light-flash" />}
             {isControlsVisible ? (
               <span className="relative text-[22px] tracking-tight leading-none wav-label" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>

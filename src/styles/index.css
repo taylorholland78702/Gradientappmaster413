@@ -113,7 +113,32 @@
   }
 }
 
-/* Glassy specular highlight traveling with the wave */
+/* Slow hue rotation on idle — makes the gradient feel alive */
+@keyframes wav-hue-drift {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.wav-hue-drift {
+  animation: wav-hue-drift 6s linear infinite;
+}
+
+/* Liquid fill rising from bottom over the hold duration */
+@keyframes wav-fill-rise {
+  0%   { transform: translateY(100%); }
+  100% { transform: translateY(0%); }
+}
+
+.wav-fill {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(100%);
+  animation: wav-fill-rise 0.4s linear forwards;
+}
+
+/* Glassy specular highlight sweeping across */
 @keyframes wav-light-sweep {
   0%   { transform: translateX(-200%); opacity: 0; }
   10%  { opacity: 1; }
@@ -121,7 +146,7 @@
   100% { transform: translateX(300%);  opacity: 0; }
 }
 
-/* Applied to the button itself while held — no shape deformation, stripe only */
+/* Applied to the button itself while held */
 .wav-wave-active {
   z-index: 1;
 }
