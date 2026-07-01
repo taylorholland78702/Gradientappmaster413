@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Play, Pause, FastForward, Rewind, RotateCw, RotateCcw, Camera } from 'lucide-react';
+import { Circle, Play, Pause, FastForward, Rewind, RotateCw, RotateCcw } from 'lucide-react';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -11,9 +11,8 @@ interface VCRControlsProps {
   setVcrPlaybackSpeed: (speed: number) => void;
   setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
-
+  handleStop: () => void;
   toggleVCRPlayback: () => void;
-  exportAsPNG: () => void;
 }
 
 const VCRControlsInner: React.FC<VCRControlsProps> = ({
@@ -27,25 +26,10 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   setRotationDirection,
   toggleVCRRecording,
   toggleVCRPlayback,
-  exportAsPNG,
 }) => {
   return (
-    <div className="flex items-center bg-white/8 backdrop-blur-sm rounded-lg p-0.5 mb-0.5 w-full">
-      {/* Camera zone — fixed width so icon is centered between left edge and divider */}
-      <div className="flex items-center justify-center w-9 flex-shrink-0">
-        <button
-          onClick={exportAsPNG}
-          className="w-7 h-7 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title="Save PNG"
-        >
-          <Camera className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
-
-      {/* Main controls — fill remaining space, centered */}
-      <div className="flex-1 flex items-center justify-around">
+    <div className="flex items-center bg-white/8 backdrop-blur-sm rounded-lg px-2 py-0.5 mb-0.5 w-full">
+      <div className="flex-1 flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
           className="p-1 rounded hover:bg-white/15 text-white transition-all"
@@ -80,7 +64,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           <Rewind className="w-4 h-4" />
         </button>
 
-        <span className="text-xs text-white text-center">{vcrPlaybackSpeed}x</span>
+        <span className="text-xs text-white text-center w-6">{vcrPlaybackSpeed}x</span>
 
         <button
           onClick={() => {
