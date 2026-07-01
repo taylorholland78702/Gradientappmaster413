@@ -5829,16 +5829,12 @@ export function InteractiveGradient() {
         
         {/* Tab Bar */}
         <div className="flex items-stretch w-full mb-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
-          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Blend className="w-3.5 h-3.5" /><span>Gradients</span>
+          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Blend className="w-3.5 h-3.5" /><span>GRADIENT</span>
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
             <Wand2 className="w-3.5 h-3.5" /><span>FX</span>
-          </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Palette className="w-3.5 h-3.5" /><span>Color</span>
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
@@ -5851,14 +5847,18 @@ export function InteractiveGradient() {
                 setActiveTab('audio');
               }
             }}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${(activeTab === 'audio' || isMicActive) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+            className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${(activeTab === 'audio' || isMicActive) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
           >
             {isMicActive ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
-            <span>Audio</span>
+            <span>AUDIO</span>
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Plus className="w-3.5 h-3.5" /><span>Presets</span>
+          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Palette className="w-3.5 h-3.5" /><span>COLOR</span>
+          </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Plus className="w-3.5 h-3.5" /><span>PRESETS</span>
           </button>
         </div>
 
