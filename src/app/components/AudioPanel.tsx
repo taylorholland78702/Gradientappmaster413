@@ -89,23 +89,22 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 }) => {
   return (
     <>
-      {/* Audiovisuals Section */}
-      <div className="w-full mb-0.5 flex gap-[3.5px]">
-        {/* Audio group: label + mic toggle + device dropdown + upload */}
-        <div className="flex items-center justify-between flex-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden px-1">
-          <span className="px-1 text-xs font-semibold text-white flex-shrink-0">Audio</span>
-          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
+      {/* Audiovisuals Section — single pill */}
+      <div className="w-full mb-0.5 flex">
+        <div className="flex items-center justify-between flex-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
+          {/* Mic toggle */}
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center flex-shrink-0"
+            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
           >
             {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
           </button>
+          {/* Device dropdown */}
           {audioInputDevices.length > 0 && (
             <>
               <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-              <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all">
+              <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
                 <select
                   value={selectedAudioDeviceId}
                   onChange={(e) => {
@@ -131,22 +130,22 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
           {/* Upload */}
           <button
             onClick={onAudioFileClick}
-            className="px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center flex-shrink-0"
+            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Load Audio File"
           >
             <Plus className="w-4 h-4" />
           </button>
+          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
+          {/* Parameters toggle */}
+          <button
+            onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
+            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
+            title="Audio Parameters"
+          >
+            <SlidersHorizontal className="w-4 h-4 flex-shrink-0" />
+            <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
+          </button>
         </div>
-
-        {/* Parameters toggle */}
-        <button
-          onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-          className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center gap-1"
-          title="Audio Parameters"
-        >
-          <SlidersHorizontal className="w-4 h-4 flex-shrink-0" />
-          <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
-        </button>
       </div>
 
       {isAudioControlsOpen && (

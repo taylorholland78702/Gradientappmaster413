@@ -84,6 +84,10 @@
   background-image: linear-gradient(to right, #9333ea, #ec4899, #facc15) !important;
   color: white !important;
 }
+.control-panel.panel-light [class*="from-purple"] * {
+  background-image: none !important;
+  color: white !important;
+}
 /* Active states (currently bg-white text-black) → invert to dark bg white text */
 .control-panel.panel-light .text-black {
   background-color: rgba(0,0,0,0.82) !important;

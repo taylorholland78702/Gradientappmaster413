@@ -43,7 +43,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
           className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between"
         >
-          <span>Presets</span>
+          <span>Saved</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 

@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw, Palette, Layers, Wand2, Music2, Bookmark } from 'lucide-react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -139,6 +139,7 @@ export function InteractiveGradient() {
   const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
   const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
   
@@ -5469,8 +5470,8 @@ export function InteractiveGradient() {
         </div>
       )}
       
-      {/* Rating UI overlay */}
-      {showRatingUI && (
+      {/* Rating UI overlay — temporarily hidden */}
+      {false && showRatingUI && (
         <div
           className="absolute pointer-events-auto z-[9999]"
           style={panelPos ? { left: panelPos.x + 290, top: panelPos.y } : { left: 306, top: 16 }}
@@ -5518,24 +5519,27 @@ export function InteractiveGradient() {
 
       {/* Eye-off button when controls are hidden */}
       {!isControlsVisible && (
-        <div className="absolute top-4 left-4 pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left">
+        <div
+          className="absolute pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left"
+          style={panelPos ? { left: panelPos.x + 6, top: panelPos.y + 22 } : { top: 38, left: 22 }}
+        >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-white/70 backdrop-blur-md text-black border border-black/15 shadow-md hover:bg-white/90 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white border border-white/15 shadow-md hover:bg-white/15 flex items-center justify-center"
             title="Show Controls"
           >
             <EyeOff className="w-4 h-4" />
           </button>
           <button
             onClick={feelingLucky}
-            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white border border-white/30 shadow-md hover:shadow-lg flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-md hover:shadow-lg flex items-center justify-center"
             title="Randomize"
           >
-            <Shuffle className="w-4 h-4" />
+            <Shuffle className="w-4 h-4 text-white" />
           </button>
           <button
             onClick={() => setIsPresetModalOpen(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-xl transition-all bg-white/70 backdrop-blur-md text-black border border-black/15 shadow-md hover:bg-white/90 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white border border-white/15 shadow-md hover:bg-white/15 flex items-center justify-center"
             title="Add Preset"
           >
             <Plus className="w-4 h-4" />
@@ -5555,7 +5559,7 @@ export function InteractiveGradient() {
             ? '0 8px 40px rgba(0,0,0,0.1), inset 0 1.5px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(255,255,255,0.4), inset 1px 0 0 rgba(255,255,255,0.5), inset -1px 0 0 rgba(255,255,255,0.3)'
             : '0 4px 32px rgba(0,0,0,0.5)',
         }}
-        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[240px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/15'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[290px] max-h-[calc(100vh-2rem)] overflow-y-auto border rounded-xl p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light border-black/10' : 'border-white/15'} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* Drag handle */}
         <div
@@ -5596,7 +5600,7 @@ export function InteractiveGradient() {
             onClick={feelingLucky}
             className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-1 flex items-center justify-center"
           >
-            <Shuffle className="w-4 h-4" />
+            {isControlsVisible ? <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span> : <Shuffle className="w-4 h-4 text-white" />}
           </button>
           <button
             onClick={undoLastChange}
@@ -5638,33 +5642,43 @@ export function InteractiveGradient() {
           exportAsPNG={exportAsPNG}
         />
         
-        {/* Color Picker (AI) button */}
-        <div className="flex gap-[3.5px] w-full mb-0.5">
-          <button
-            onClick={() => setIsAIColorPickerOpen(!isAIColorPickerOpen)}
-            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between"
-          >
-            <span>Color</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
+        {/* Tab Bar */}
+        <div className="flex items-stretch w-full mb-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
+          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Layers className="w-3.5 h-3.5" /><span>Gradients</span>
           </button>
-          <button
-            onClick={() => setIsAutoColor(prev => !prev)}
-            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-white/8 text-white/50 hover:bg-white/15 hover:text-white line-through'}`}
-            title="Auto color change"
-          >
-            AUTO
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Wand2 className="w-3.5 h-3.5" /><span>Effects</span>
           </button>
-          <button
-            onClick={() => {
-              saveCurrentState();
-              setTargetColors(gradientColors.map(() => randomColor()));
-            }}
-            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
-            title="Shuffle Colors"
-          >
-            <Shuffle className="w-4 h-4" />
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Palette className="w-3.5 h-3.5" /><span>Color</span>
+          </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Music2 className="w-3.5 h-3.5" /><span>Audio</span>
+          </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+            <Bookmark className="w-3.5 h-3.5" /><span>Presets</span>
           </button>
         </div>
+
+        {/* ── Color Tab ── */}
+        {activeTab === 'color' && (<>
+          <div className="flex gap-[3.5px] w-full mb-0.5">
+            <button
+              onClick={() => setIsAutoColor(prev => !prev)}
+              className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all backdrop-blur-sm font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-white/8 text-white/50 hover:bg-white/15 hover:text-white line-through'}`}
+              title="Auto color change"
+            >AUTO PLAY</button>
+            <button
+              onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
+              className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
+              title="Shuffle Colors"
+            ><Shuffle className="w-4 h-4" /></button>
+          </div>
         {submittedAIPrompt && (
           <div className="flex items-center gap-1 mb-0.5">
             <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-white/8 backdrop-blur-sm/50 rounded text-center truncate">
@@ -5684,8 +5698,7 @@ export function InteractiveGradient() {
           </div>
         )}
         
-        {/* AI Color Picker Dropdown */}
-        {isAIColorPickerOpen && (
+        {/* AI Color Picker */}
           <div className="w-full mb-0.5 bg-white/8 backdrop-blur-sm rounded-lg p-2">
             {/* Selected keyword chips */}
             {aiPrompt.split(' ').filter(Boolean).length > 0 && (
@@ -5704,7 +5717,7 @@ export function InteractiveGradient() {
                 type="text"
                 value=""
                 readOnly
-                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords selected' : 'Click to browse keywords (up to 8)'}
+                placeholder={aiPrompt.split(' ').filter(Boolean).length >= 8 ? 'Max 8 keywords selected' : 'Palette Picker: Select up to 8'}
                 onFocus={() => setIsKeywordHelpOpen(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAIPromptSubmit();
@@ -5767,28 +5780,12 @@ export function InteractiveGradient() {
               </button>
             </div>
           </div>
-        )}
-        
-        {/* Gradients Header */}
-        <div className="w-full mb-0.5 flex gap-[3.5px]">
-          <button
-            onClick={() => setIsGradientsOpen(!isGradientsOpen)}
-            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between"
-          >
-            <span>Gradients</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isGradientsOpen ? 'rotate-180' : ''}`} />
-          </button>
-          <button
-            onClick={shuffleGradientType}
-            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
-            title="Shuffle Gradient Type"
-          >
-            <Shuffle className="w-4 h-4" />
-          </button>
-        </div>
-        
+        </>)}
+
+        {/* ── Gradients Tab ── */}
+        {activeTab === 'gradients' && (<>
+
         {/* Gradient Type Buttons - 2 Column Grid */}
-        {isGradientsOpen && (
         <div className="w-full mb-0.5">
           <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(10, auto)' }}>
             {FULL_GRADIENT_TYPES.map((type) => (
@@ -5812,11 +5809,8 @@ export function InteractiveGradient() {
             ))}
           </div>
         </div>
-        )}
-        
-        {/* Gradient-specific Controls - only show when Gradients dropdown is open */}
-        {isGradientsOpen && (
-        <>
+
+        {/* Gradient-specific Controls */}
         {/* Grid Controls */}
         {gradientType === 'grid' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
@@ -6947,62 +6941,25 @@ export function InteractiveGradient() {
           </div>
         )}
 
-        </>
+        </>)}
 
-        )}
-        
-        {/* Effects Header */}
-        <div className="w-full mb-0.5 flex gap-[3.5px]">
-          <button
-            onClick={() => setIsEffectsOpen(!isEffectsOpen)}
-            className="px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex-1 flex items-center justify-between"
-          >
-            <span>Effects</span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isEffectsOpen ? 'rotate-180' : ''}`} />
-          </button>
-          <button
-            onClick={randomizeEffects}
-            className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
-            title="Shuffle Effects"
-          >
-            <Shuffle className="w-4 h-4" />
-          </button>
-        </div>
-        
-        {/* Effect Type Buttons - 2 Column Grid */}
-        {isEffectsOpen && (
-        <>
-        {/* Top row with NO FX and MULTI FX */}
+        {/* ── Effects Tab ── */}
+        {activeTab === 'effects' && (<>
+        {/* Top row: CLEAR + MULTI + Shuffle */}
         <div className="w-full mb-0.5 flex gap-0.5">
           <button
-            onClick={() => {
-              setActiveEffects([]);
-              setIsMultiFxMode(false);
-            }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm active:scale-100 ${
-              activeEffects.length === 0 && !isMultiFxMode
-                ? 'bg-white text-black'
-                : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
-            }`}
-          >
-            NO FX
-          </button>
+            onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
+            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
+          >CLEAR</button>
           <button
-            onClick={() => {
-              setIsMultiFxMode(!isMultiFxMode);
-              // When enabling MULTI FX mode, ensure NO FX is deactivated
-              if (!isMultiFxMode && activeEffects.length === 0) {
-                // Add a default effect or do nothing, just ensure it's not in NO FX state
-              }
-            }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm active:scale-100 ${
-              isMultiFxMode
-                ? 'bg-white text-black'
-                : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
-            }`}
-          >
-            MULTI FX
-          </button>
+            onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
+            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
+          >MULTI</button>
+          <button
+            onClick={randomizeEffects}
+            className="flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 shadow-sm flex items-center justify-center"
+            title="Shuffle Effects"
+          ><Shuffle className="w-3.5 h-3.5" /></button>
         </div>
         <div className="w-full">
           <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
@@ -8105,10 +8062,10 @@ export function InteractiveGradient() {
           </div>
         )}
         
-</>
-        )}
+        </>)}
 
-        {/* Audio Panel */}
+        {/* ── Audio Tab ── */}
+        {activeTab === 'audio' && (
         <AudioPanel
           isMicActive={isMicActive}
           audioInputDevices={audioInputDevices}
@@ -8151,8 +8108,10 @@ export function InteractiveGradient() {
           contrastBeatEnabled={contrastBeatEnabled} setContrastBeatEnabled={setContrastBeatEnabled}
           paletteBeatEnabled={paletteBeatEnabled} setPaletteBeatEnabled={setPaletteBeatEnabled}
         />
-        
-        {/* Presets Panel */}
+        )}
+
+        {/* ── Presets Tab ── */}
+        {activeTab === 'presets' && (
         <PresetsPanel
           isPresetsDropdownOpen={isPresetsDropdownOpen}
           savedPresets={savedPresets}
@@ -8167,7 +8126,8 @@ export function InteractiveGradient() {
           renamePreset={renamePreset}
           updatePreset={updatePreset}
         />
-        
+        )}
+
       </div>
       {audioFile && (
         <audio
