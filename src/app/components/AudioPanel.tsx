@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Mic, MicOff, Plus, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
 
 interface AudioPanelProps {
   isMicActive: boolean;
@@ -42,6 +42,7 @@ interface AudioPanelProps {
   contrastBeatEnabled: boolean; setContrastBeatEnabled: (v: boolean) => void;
   paletteBeatEnabled: boolean; setPaletteBeatEnabled: (v: boolean) => void;
 }
+
 
 const BEAT_BTN = (active: boolean) =>
   `flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${active ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`;
@@ -92,40 +93,27 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
       {/* Audiovisuals Section — single pill */}
       <div className="w-full mb-0.5 flex">
         <div className="flex items-center justify-between flex-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
-          {/* Mic toggle */}
-          <button
-            onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title={isMicActive ? 'Microphone ON' : 'Microphone OFF'}
-          >
-            {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-          </button>
           {/* Device dropdown */}
-          {audioInputDevices.length > 0 && (
-            <>
-              <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-              <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
-                <select
-                  value={selectedAudioDeviceId}
-                  onChange={(e) => {
-                    setSelectedAudioDeviceId(e.target.value);
-                    if (isMicActive) {
-                      stopMicVisualization();
-                      setTimeout(() => startMicVisualization(e.target.value), 100);
-                    }
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                >
-                  {audioInputDevices.map(d => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 pointer-events-none" />
-              </div>
-            </>
-          )}
+          <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
+            <select
+              value={selectedAudioDeviceId}
+              onChange={(e) => {
+                setSelectedAudioDeviceId(e.target.value);
+                if (isMicActive) {
+                  stopMicVisualization();
+                  setTimeout(() => startMicVisualization(e.target.value), 100);
+                }
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+            >
+              {audioInputDevices.map(d => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 pointer-events-none" />
+          </div>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Upload */}
           <button
