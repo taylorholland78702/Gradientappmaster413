@@ -5604,17 +5604,12 @@ export function InteractiveGradient() {
             }}
             onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) evolveState(); }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
-            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg text-white shadow-md hover:shadow-lg flex items-center justify-center select-none"
-            style={{
-              background: 'linear-gradient(to right, #7c3aed, #ec4899, #7c3aed, #ec4899, #eab308)',
-              backgroundSize: '250% 100%',
-              backgroundPosition: isWavHolding ? '100% 0' : '0% 0',
-              transition: isWavHolding ? 'background-position 0.4s linear' : 'background-position 0.15s ease-out',
-            }}
+            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none"
+            style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
             title="Tap: evolve · Hold: new mood"
           >
-            <span className="absolute bottom-0 left-0 h-[2px] bg-white/70 rounded-full" style={{ width: isWavHolding ? '100%' : '0%', transition: isWavHolding ? 'width 0.4s linear' : 'width 0.1s ease-out' }} />
-            <Shuffle className="w-4 h-4 text-white" />
+            <span className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)', transform: isWavHolding ? 'translateX(150%)' : 'translateX(-150%)', transition: isWavHolding ? 'transform 0.4s linear' : 'transform 0s' }} />
+            <Shuffle className="relative w-4 h-4 text-white" />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
@@ -5702,25 +5697,21 @@ export function InteractiveGradient() {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
             }}
-            className="relative overflow-hidden px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow text-white"
-            style={{
-              background: 'linear-gradient(to right, #7c3aed, #ec4899, #7c3aed, #ec4899, #eab308)',
-              backgroundSize: '250% 100%',
-              backgroundPosition: isWavHolding ? '100% 0' : '0% 0',
-              transition: isWavHolding ? 'background-position 0.4s linear' : 'background-position 0.15s ease-out',
-            }}
+            className="relative overflow-hidden px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow"
+            style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
           >
-            {/* Progress bar along the bottom */}
+            {/* Flash sweep overlay */}
             <span
-              className="absolute bottom-0 left-0 h-[2.5px] bg-white/70 rounded-full"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                width: isWavHolding ? '100%' : '0%',
-                transition: isWavHolding ? 'width 0.4s linear' : 'width 0.1s ease-out',
+                background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)',
+                transform: isWavHolding ? 'translateX(150%)' : 'translateX(-150%)',
+                transition: isWavHolding ? 'transform 0.4s linear' : 'transform 0s',
               }}
             />
             {isControlsVisible ? (
-              <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
-            ) : <Shuffle className="w-4 h-4 text-white" />}
+              <span className="relative text-[22px] tracking-tight leading-none text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900 }}>WĀV</span>
+            ) : <Shuffle className="relative w-4 h-4 text-white" />}
           </button>
           <button
             onClick={undoLastChange}
