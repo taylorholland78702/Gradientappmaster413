@@ -87,6 +87,17 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   );
 }
 
+const WAV_MOODS = [
+  { name: 'dark',       hues: [260, 280, 220],  sat: [40, 65]  as [number,number],  lit: [20, 38]  as [number,number],  effects: ['vignette', 'film-grain'] as EffectType[],  gradients: ['radial', 'noise', 'mesh', 'aurora'] as GradientType[] },
+  { name: 'pastel',     hues: [300, 180, 60],   sat: [35, 60]  as [number,number],  lit: [72, 88]  as [number,number],  effects: ['blur', 'chromatic'] as EffectType[],       gradients: ['radial', 'shapes', 'fade', 'iridescent'] as GradientType[] },
+  { name: 'neon',       hues: [300, 180, 60],   sat: [90, 100] as [number,number],  lit: [45, 58]  as [number,number],  effects: ['chromatic', 'bloom'] as EffectType[],      gradients: ['radial', 'plasma', 'waves', 'radial-burst'] as GradientType[] },
+  { name: 'warm',       hues: [10, 30, 50],     sat: [70, 95]  as [number,number],  lit: [45, 65]  as [number,number],  effects: ['vignette', 'film-grain'] as EffectType[],  gradients: ['radial', 'fade', 'spiral', 'conical-spiral'] as GradientType[] },
+  { name: 'cool',       hues: [200, 220, 240],  sat: [55, 85]  as [number,number],  lit: [40, 62]  as [number,number],  effects: ['blur', 'bokeh'] as EffectType[],            gradients: ['radial', 'noise', 'waves', 'voronoi'] as GradientType[] },
+  { name: 'monochrome', hues: [220, 220, 220],  sat: [5,  20]  as [number,number],  lit: [20, 80]  as [number,number],  effects: ['film-grain', 'vignette'] as EffectType[],  gradients: ['radial', 'concentric', 'noise', 'shapes'] as GradientType[] },
+  { name: 'sunset',     hues: [0,   20,  40],   sat: [80, 100] as [number,number],  lit: [50, 68]  as [number,number],  effects: ['chromatic', 'vignette'] as EffectType[],   gradients: ['radial', 'fade', 'iridescent', 'angle'] as GradientType[] },
+  { name: 'forest',     hues: [100, 140, 160],  sat: [45, 75]  as [number,number],  lit: [30, 52]  as [number,number],  effects: ['film-grain', 'blur'] as EffectType[],       gradients: ['radial', 'noise', 'mesh', 'voronoi'] as GradientType[] },
+];
+
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -130,6 +141,8 @@ export function InteractiveGradient() {
   const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
   const drawParamsDirtyRef = useRef(true); // true until first draw
+  const wavLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wavLongPressFired = useRef(false);
   const waveNumberRef = useRef<number>(20);
   const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
@@ -1541,6 +1554,101 @@ export function InteractiveGradient() {
 
     // (rating UI shown at top of feelingLucky)
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS]);
+
+  // ─── Evolve: small mutations of the current state ───────────────────────────
+  const evolveState = useCallback(() => {
+    saveCurrentState();
+
+    const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
+      s /= 100; l /= 100;
+      const k = (n: number) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+    };
+    const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      if (max === min) return [0, 0, l * 100];
+      const d = max - min;
+      const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      let h = 0;
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+      else if (max === g) h = ((b - r) / d + 2) / 6;
+      else h = ((r - g) / d + 4) / 6;
+      return [h * 360, s * 100, l * 100];
+    };
+
+    // Shift each color slightly in hue, saturation, lightness
+    const drift = 20;
+    const evolvedColors = gradientColors.map(c => {
+      const [h, s, l] = rgbToHsl(c.r, c.g, c.b);
+      const nh = (h + (Math.random() * drift * 2 - drift) + 360) % 360;
+      const ns = Math.max(40, Math.min(95, s + (Math.random() * 20 - 10)));
+      const nl = Math.max(35, Math.min(75, l + (Math.random() * 16 - 8)));
+      return hslToRgb(nh, ns, nl);
+    });
+    setTargetColors(evolvedColors);
+    setGradientColors(evolvedColors);
+
+    // Nudge angle slightly
+    setTargetAngle((gradientAngle + (Math.random() * 60 - 30) + 360) % 360);
+
+    // Maybe swap one effect parameter
+    if (activeEffects.length > 0 && Math.random() < 0.5) {
+      const eff = activeEffects[Math.floor(Math.random() * activeEffects.length)];
+      if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.floor(Math.random() * 16) + 4);
+      else if (eff === 'chromatic') setChromaticOffset(Math.floor(Math.random() * 150) + 30);
+      else if (eff === 'vignette') setVignetteStrength(Math.random() * 0.6 + 0.2);
+      else if (eff === 'blur') setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);
+      else if (eff === 'film-grain') setGrainIntensity(Math.random() * 0.3);
+      else if (eff === 'wave-distortion') setWaveDistortionStrength(Math.floor(Math.random() * 80) + 20);
+    }
+
+    setBaseAIColors(null);
+    setSubmittedAIPrompt('');
+  }, [gradientColors, gradientAngle, activeEffects, saveCurrentState]);
+
+  // ─── Jump to Mood: curated full-state replacement ────────────────────────────
+  const jumpToMood = useCallback(() => {
+    saveCurrentState();
+    const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
+      s /= 100; l /= 100;
+      const k = (n: number) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+    };
+
+    const mood = WAV_MOODS[Math.floor(Math.random() * WAV_MOODS.length)];
+    const baseHue = mood.hues[Math.floor(Math.random() * mood.hues.length)];
+
+    const moodColors = gradientColors.map((_, i) => {
+      const hue = (baseHue + i * 25 + (Math.random() * 30 - 15) + 360) % 360;
+      const sat = mood.sat[0] + Math.random() * (mood.sat[1] - mood.sat[0]);
+      const lit = mood.lit[0] + Math.random() * (mood.lit[1] - mood.lit[0]);
+      return hslToRgb(hue, sat, lit);
+    });
+    setTargetColors(moodColors);
+    setGradientColors(moodColors);
+
+    const g = mood.gradients[Math.floor(Math.random() * mood.gradients.length)];
+    setGradientType(g);
+    setTargetAngle(Math.random() * 360);
+    setTargetZoom(1);
+    setZoom(1);
+    setActiveEffects([...mood.effects]);
+    setIsMultiFxMode(true);
+    setVcrPlaybackSpeed([1, 1, 2, 2, 3][Math.floor(Math.random() * 5)]);
+    setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
+    setVignetteStrength(0.3 + Math.random() * 0.4);
+    setGrainIntensity(Math.random() * 0.3);
+    setBlurGaussianAmount(Math.floor(Math.random() * 12) + 3);
+    setChromaticOffset(Math.floor(Math.random() * 100) + 20);
+    setBaseAIColors(null);
+    setSubmittedAIPrompt('');
+  }, [gradientColors, saveCurrentState]);
 
   // Capture current state for rating
   const captureCurrentStateForRating = useCallback(() => {
@@ -5485,9 +5593,14 @@ export function InteractiveGradient() {
             <EyeOff className="w-4 h-4" />
           </button>
           <button
-            onClick={feelingLucky}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-md hover:shadow-lg flex items-center justify-center"
-            title="Randomize"
+            onPointerDown={() => {
+              wavLongPressFired.current = false;
+              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; jumpToMood(); }, 400);
+            }}
+            onPointerUp={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) evolveState(); }}
+            onPointerLeave={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-md hover:shadow-lg flex items-center justify-center select-none"
+            title="Tap: evolve · Hold: new mood"
           >
             <Shuffle className="w-4 h-4 text-white" />
           </button>
@@ -5559,8 +5672,21 @@ export function InteractiveGradient() {
           </button>
 
           <button
-            onClick={feelingLucky}
-            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[3] flex items-center justify-center"
+            onPointerDown={() => {
+              wavLongPressFired.current = false;
+              wavLongPressTimer.current = setTimeout(() => {
+                wavLongPressFired.current = true;
+                jumpToMood();
+              }, 400);
+            }}
+            onPointerUp={() => {
+              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+              if (!wavLongPressFired.current) evolveState();
+            }}
+            onPointerLeave={() => {
+              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+            }}
+            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[3] flex items-center justify-center select-none"
           >
             {isControlsVisible ? (
               <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
