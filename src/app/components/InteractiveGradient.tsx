@@ -669,8 +669,8 @@ export function InteractiveGradient() {
         const avgLuminance = count > 0 ? total / count : 128;
         // Hysteresis: only switch when luminance crosses wide thresholds
         setIsPanelLight(prev => {
-          if (!prev && avgLuminance > 175) return true;  // was dark, bg got bright → go light (dark text)
-          if (prev && avgLuminance < 90) return false;   // was light, bg got dark → go dark (white text)
+          if (!prev && avgLuminance > 130) return true;  // was dark, bg got bright → go light (dark text)
+          if (prev && avgLuminance < 80) return false;   // was light, bg got dark → go dark (white text)
           return prev; // hysteresis: stay put in the middle range
         });
       } catch (_) {}
