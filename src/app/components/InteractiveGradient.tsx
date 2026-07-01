@@ -5564,9 +5564,9 @@ export function InteractiveGradient() {
           >
             {isControlsVisible ? (
               <span className="flex items-center gap-0.5">
-                <span className="text-[11px] leading-none" style={{ color: 'rgba(255,255,255,0.7)' }}>˜</span>
+                <span className="leading-none" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', transform: 'translateY(2px)', display: 'inline-block' }}>˜</span>
                 <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
-                <span className="text-[11px] leading-none" style={{ color: 'rgba(255,255,255,0.7)' }}>˜</span>
+                <span className="leading-none" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', transform: 'translateY(2px)', display: 'inline-block' }}>˜</span>
               </span>
             ) : <Shuffle className="w-4 h-4 text-white" />}
           </button>
