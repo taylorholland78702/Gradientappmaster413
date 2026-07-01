@@ -5704,8 +5704,10 @@ export function InteractiveGradient() {
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
           background: isPanelLight ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-          backdropFilter: 'blur(120px)',
+          backdropFilter: 'blur(40px)',
           borderRadius: 14,
+          WebkitMaskImage: 'radial-gradient(ellipse 92% 96% at 50% 50%, black 55%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 92% 96% at 50% 50%, black 55%, transparent 100%)',
         }}
         className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[290px] max-h-[calc(100vh-2rem)] overflow-y-auto p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light' : ''} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
