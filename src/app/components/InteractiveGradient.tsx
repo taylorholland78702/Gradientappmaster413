@@ -161,6 +161,7 @@ export function InteractiveGradient() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
   const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
+  const [isWavHolding, setIsWavHolding] = useState(false);
   const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
@@ -5597,14 +5598,22 @@ export function InteractiveGradient() {
           </button>
           <button
             onPointerDown={() => {
+              setIsWavHolding(true);
               wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; jumpToMood(); }, 400);
+              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); jumpToMood(); }, 400);
             }}
-            onPointerUp={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) evolveState(); }}
-            onPointerLeave={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-md hover:shadow-lg flex items-center justify-center select-none"
+            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) evolveState(); }}
+            onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
+            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg text-white shadow-md hover:shadow-lg flex items-center justify-center select-none"
+            style={{
+              background: 'linear-gradient(to right, #7c3aed, #ec4899, #7c3aed, #ec4899, #eab308)',
+              backgroundSize: '250% 100%',
+              backgroundPosition: isWavHolding ? '100% 0' : '0% 0',
+              transition: isWavHolding ? 'background-position 0.4s linear' : 'background-position 0.15s ease-out',
+            }}
             title="Tap: evolve · Hold: new mood"
           >
+            <span className="absolute bottom-0 left-0 h-[2px] bg-white/70 rounded-full" style={{ width: isWavHolding ? '100%' : '0%', transition: isWavHolding ? 'width 0.4s linear' : 'width 0.1s ease-out' }} />
             <Shuffle className="w-4 h-4 text-white" />
           </button>
           <button
@@ -5676,21 +5685,39 @@ export function InteractiveGradient() {
 
           <button
             onPointerDown={() => {
+              setIsWavHolding(true);
               wavLongPressFired.current = false;
               wavLongPressTimer.current = setTimeout(() => {
                 wavLongPressFired.current = true;
+                setIsWavHolding(false);
                 jumpToMood();
               }, 400);
             }}
             onPointerUp={() => {
+              setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
               if (!wavLongPressFired.current) evolveState();
             }}
             onPointerLeave={() => {
+              setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
             }}
-            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[3] flex items-center justify-center select-none"
+            className="relative overflow-hidden px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow text-white"
+            style={{
+              background: 'linear-gradient(to right, #7c3aed, #ec4899, #7c3aed, #ec4899, #eab308)',
+              backgroundSize: '250% 100%',
+              backgroundPosition: isWavHolding ? '100% 0' : '0% 0',
+              transition: isWavHolding ? 'background-position 0.4s linear' : 'background-position 0.15s ease-out',
+            }}
           >
+            {/* Progress bar along the bottom */}
+            <span
+              className="absolute bottom-0 left-0 h-[2.5px] bg-white/70 rounded-full"
+              style={{
+                width: isWavHolding ? '100%' : '0%',
+                transition: isWavHolding ? 'width 0.4s linear' : 'width 0.1s ease-out',
+              }}
+            />
             {isControlsVisible ? (
               <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
             ) : <Shuffle className="w-4 h-4 text-white" />}
