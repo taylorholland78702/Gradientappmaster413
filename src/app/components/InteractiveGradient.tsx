@@ -1251,6 +1251,8 @@ export function InteractiveGradient() {
       setTargetAngle(blendValue(baseResult.data.gradientAngle || 0, 0, 360));
       setTargetZoom(1);
       setZoom(1);
+      setAngleCenterX(50);
+      setAngleCenterY(50);
       
       const speedOptions = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const randomSpeed = speedOptions[Math.floor(Math.random() * speedOptions.length)];
@@ -1475,8 +1477,8 @@ export function InteractiveGradient() {
     setConicalSpiralTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
     setGridRotation(Math.floor(Math.random() * 360));
     setAngleStartOffset(Math.floor(Math.random() * 360));
-    setAngleCenterX(Math.floor(Math.random() * 100));
-    setAngleCenterY(Math.floor(Math.random() * 100));
+    setAngleCenterX(50);
+    setAngleCenterY(50);
     setIridescentAngle(Math.floor(Math.random() * 360));
     setIridescentIntensity(Math.random() * 1.2 + 0.5);                // 0.5–1.7
     setIridescentScale(Math.random() * 1.5 + 0.5);                    // 0.5–2.0
@@ -2400,7 +2402,7 @@ export function InteractiveGradient() {
     // canvas to CSS-pixel resolution so effects always capture the complete image.
     const getDisplayImageData = (): ImageData => {
       if (resolutionMultiplier === 1) {
-        return getDisplayImageData();
+        return ctx.getImageData(0, 0, displayWidth, displayHeight);
       }
       const tmp = new OffscreenCanvas(displayWidth, displayHeight);
       (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).drawImage(canvas, 0, 0, displayWidth, displayHeight);
@@ -2439,12 +2441,8 @@ export function InteractiveGradient() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-    // Apply audio-reactive transformations when audio is enabled
-    if (isAudioEnabled && isAudioReactive) {
-      ctx.save();
-      // Audio transformations will be applied to specific gradient/effect parameters
-      // rather than global canvas transformations
-    }
+    // Audio transformations are applied to specific gradient/effect parameters
+    // rather than global canvas transformations
 
     let gradient: CanvasGradient | undefined;
 
