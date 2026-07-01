@@ -5753,7 +5753,7 @@ export function InteractiveGradient() {
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Bookmark className="w-3.5 h-3.5" /><span>Presets</span>
+            <Plus className="w-3.5 h-3.5" /><span>Presets</span>
           </button>
         </div>
 
@@ -8140,6 +8140,7 @@ export function InteractiveGradient() {
           updatePreset={updatePreset}
           savePresetWithName={savePresetWithName}
         />
+
         )}
 
       </div>

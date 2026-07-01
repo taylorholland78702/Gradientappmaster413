@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, Plus, Save, Pencil, Minus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Pencil, Minus } from 'lucide-react';
 
 interface Preset {
   name: string;
@@ -22,11 +22,9 @@ interface PresetsPanelProps {
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
-  isPresetsDropdownOpen,
   savedPresets,
   renamingPresetIndex,
   renamingPresetValue,
-  setIsPresetsDropdownOpen,
   setRenamingPresetIndex,
   setRenamingPresetValue,
   loadPreset,
@@ -35,14 +33,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   updatePreset,
   savePresetWithName,
 }) => {
-  const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
+  const [isAddingPreset, setIsAddingPreset] = useState(true);
 
-  const handleAdd = () => {
-    setIsPresetsDropdownOpen(true);
+  // Show the new-preset input whenever the panel mounts
+  useEffect(() => {
     setIsAddingPreset(true);
     setNewPresetName('');
-  };
+  }, []);
 
   const confirmAdd = () => {
     if (newPresetName.trim()) {
@@ -57,113 +55,96 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     setNewPresetName('');
   };
 
+  const handleLoadPreset = (preset: Preset) => {
+    setIsAddingPreset(false);
+    setNewPresetName('');
+    loadPreset(preset);
+  };
+
   return (
-    <>
-      {/* Presets Controls */}
-      <div className="flex gap-[3.5px] w-full mb-0.5">
-        <button
-          onClick={() => setIsPresetsDropdownOpen(!isPresetsDropdownOpen)}
-          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between"
-        >
-          <span>Saved</span>
-          <ChevronDown className={`w-4 h-4 transition-transform ${isPresetsDropdownOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        <button
-          onClick={handleAdd}
-          className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
-          title="Add Preset"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Presets Dropdown Content */}
-      {isPresetsDropdownOpen && (
-        <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
-          {savedPresets.length === 0 && !isAddingPreset ? (
-            <div className="px-4 py-2 text-xs text-white/50 italic">
-              No saved presets
-            </div>
-          ) : (
-            savedPresets.map((preset, index) => (
-              <div key={index} className="flex items-center w-full group">
-                {renamingPresetIndex === index ? (
-                  <input
-                    autoFocus
-                    value={renamingPresetValue}
-                    onChange={(e) => setRenamingPresetValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }
-                      if (e.key === 'Escape') setRenamingPresetIndex(null);
-                    }}
-                    onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
-                    className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none border-b border-white/40"
-                  />
-                ) : (
-                  <button
-                    onClick={() => { loadPreset(preset); setIsPresetsDropdownOpen(false); }}
-                    className="flex-1 px-4 py-2 text-xs text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
-                  >
-                    {preset.name}
-                  </button>
-                )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); updatePreset(index); }}
-                  className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
-                  title="Save current settings to this preset"
-                >
-                  <Save className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setRenamingPresetIndex(index); setRenamingPresetValue(preset.name); }}
-                  className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
-                  title="Rename preset"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
-                  className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
-                  title="Delete preset"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-              </div>
-            ))
+    <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg overflow-hidden mb-0.5">
+      {/* New preset input — shown on open, dismissed on load or explicit cancel */}
+      {isAddingPreset && (
+        <div className="flex items-center border-b border-white/10">
+          <input
+            autoFocus
+            value={newPresetName}
+            onChange={(e) => setNewPresetName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') confirmAdd();
+              if (e.key === 'Escape') cancelAdd();
+            }}
+            placeholder="New preset name..."
+            className="flex-1 px-4 py-2 text-xs bg-transparent text-white placeholder-white/30 focus:outline-none"
+          />
+          {newPresetName.trim() && (
+            <button
+              onClick={confirmAdd}
+              className="px-3 py-2 text-xs text-green-400 hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+            >
+              Save
+            </button>
           )}
-
-          {/* Inline new preset input */}
-          {isAddingPreset && (
-            <div className="flex items-center w-full border-t border-white/10">
-              <input
-                autoFocus
-                value={newPresetName}
-                onChange={(e) => setNewPresetName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') confirmAdd();
-                  if (e.key === 'Escape') cancelAdd();
-                }}
-                placeholder="Preset name..."
-                className="flex-1 px-4 py-2 text-xs bg-white/5 text-white placeholder-white/30 focus:outline-none"
-              />
-              <button
-                onClick={confirmAdd}
-                className="px-3 py-2 text-xs text-green-400 hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
-              >
-                Save
-              </button>
-              <button
-                onClick={cancelAdd}
-                className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+          <button
+            onClick={cancelAdd}
+            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+          >
+            ✕
+          </button>
         </div>
       )}
-    </>
+
+      {/* Saved presets list */}
+      {savedPresets.length === 0 && !isAddingPreset ? (
+        <div className="px-4 py-2 text-xs text-white/50 italic">No saved presets</div>
+      ) : (
+        savedPresets.map((preset, index) => (
+          <div key={index} className="flex items-center w-full group border-t border-white/5 first:border-t-0">
+            {renamingPresetIndex === index ? (
+              <input
+                autoFocus
+                value={renamingPresetValue}
+                onChange={(e) => setRenamingPresetValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }
+                  if (e.key === 'Escape') setRenamingPresetIndex(null);
+                }}
+                onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
+                className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none"
+              />
+            ) : (
+              <button
+                onClick={() => handleLoadPreset(preset)}
+                className="flex-1 px-4 py-2 text-xs text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
+              >
+                {preset.name}
+              </button>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); updatePreset(index); }}
+              className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
+              title="Save current settings to this preset"
+            >
+              <Save className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setRenamingPresetIndex(index); setRenamingPresetValue(preset.name); }}
+              className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
+              title="Rename preset"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
+              className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
+              title="Delete preset"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+          </div>
+        ))
+      )}
+    </div>
   );
 };
 
