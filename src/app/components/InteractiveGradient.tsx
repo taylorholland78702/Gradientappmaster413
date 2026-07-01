@@ -7173,7 +7173,7 @@ export function InteractiveGradient() {
           ><Shuffle className="w-3.5 h-3.5" /></button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
             {([
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
@@ -7191,7 +7191,6 @@ export function InteractiveGradient() {
               { value: 'invert',         label: 'Invert' },
               { value: 'kaleidoscope',   label: 'Kaleidoscope' },
               { value: 'mirror',         label: 'Mirror' },
-              { value: 'motion-blur',    label: 'Motion Blur' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
               { value: 'ripple',         label: 'Ripple' },
