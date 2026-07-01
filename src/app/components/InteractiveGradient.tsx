@@ -1580,30 +1580,33 @@ export function InteractiveGradient() {
       return [h * 360, s * 100, l * 100];
     };
 
-    // Shift each color slightly in hue, saturation, lightness
-    const drift = 20;
+    // Shift each color substantially in hue, with strong sat/lit variation
+    const hueDrift = 80;
     const evolvedColors = gradientColors.map(c => {
       const [h, s, l] = rgbToHsl(c.r, c.g, c.b);
-      const nh = (h + (Math.random() * drift * 2 - drift) + 360) % 360;
-      const ns = Math.max(40, Math.min(95, s + (Math.random() * 20 - 10)));
-      const nl = Math.max(35, Math.min(75, l + (Math.random() * 16 - 8)));
+      const nh = (h + (Math.random() * hueDrift * 2 - hueDrift) + 360) % 360;
+      const ns = Math.max(40, Math.min(95, s + (Math.random() * 40 - 20)));
+      const nl = Math.max(30, Math.min(78, l + (Math.random() * 36 - 18)));
       return hslToRgb(nh, ns, nl);
     });
     setTargetColors(evolvedColors);
     setGradientColors(evolvedColors);
 
-    // Nudge angle slightly
-    setTargetAngle((gradientAngle + (Math.random() * 60 - 30) + 360) % 360);
+    // Rotate angle substantially
+    setTargetAngle((gradientAngle + (Math.random() * 150 - 75) + 360) % 360);
 
-    // Maybe swap one effect parameter
-    if (activeEffects.length > 0 && Math.random() < 0.5) {
-      const eff = activeEffects[Math.floor(Math.random() * activeEffects.length)];
+    // Re-randomize all active effect params
+    for (const eff of activeEffects) {
       if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.floor(Math.random() * 16) + 4);
       else if (eff === 'chromatic') setChromaticOffset(Math.floor(Math.random() * 150) + 30);
       else if (eff === 'vignette') setVignetteStrength(Math.random() * 0.6 + 0.2);
       else if (eff === 'blur') setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);
-      else if (eff === 'film-grain') setGrainIntensity(Math.random() * 0.3);
+      else if (eff === 'film-grain') setGrainIntensity(Math.random() * 0.4);
       else if (eff === 'wave-distortion') setWaveDistortionStrength(Math.floor(Math.random() * 80) + 20);
+      else if (eff === 'pixelate') setPixelSize(Math.floor(Math.random() * 40) + 8);
+      else if (eff === 'bokeh') setChromaticOffset(Math.floor(Math.random() * 60) + 10);
+      else if (eff === 'color-shift') setColorShiftHue(Math.floor(Math.random() * 180) + 10);
+      else if (eff === 'twist') setTwistAmount(Math.random() * 4);
     }
 
     setBaseAIColors(null);
