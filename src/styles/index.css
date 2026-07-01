@@ -41,11 +41,12 @@
   z-index: 10;
 }
 
-/* ── WĀV label: always white regardless of panel mode ── */
+/* ── WĀV label: always white, never shadowed ── */
 .wav-label,
 .control-panel .wav-label,
 .control-panel.panel-light .wav-label {
   color: #ffffff !important;
+  text-shadow: none !important;
 }
 
 /* ── WĀV button: wave ripple animation ── */
