@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw, Palette, Layers, Wand2, Music2, Bookmark } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw, Palette, Blend, Wand2, Music2, Bookmark } from 'lucide-react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -5599,7 +5599,7 @@ export function InteractiveGradient() {
         {/* Tab Bar */}
         <div className="flex items-stretch w-full mb-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
           <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Layers className="w-3.5 h-3.5" /><span>Gradients</span>
+            <Blend className="w-3.5 h-3.5" /><span>Gradients</span>
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
