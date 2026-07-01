@@ -135,7 +135,7 @@
   pointer-events: none;
   background: rgba(255, 255, 255, 0.22);
   transform: translateY(100%);
-  animation: wav-fill-rise 0.1s linear forwards;
+  animation: wav-fill-rise 0.8s linear forwards;
 }
 
 /* Glassy specular highlight sweeping across */
