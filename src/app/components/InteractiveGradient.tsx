@@ -5595,9 +5595,9 @@ export function InteractiveGradient() {
               setIsWavHolding(true);
               wavPressStartTime.current = Date.now();
               wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 1500);
+              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 100);
             }}
-            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 1500, 1); evolveWithFactor(factor); } }}
+            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 100, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
@@ -5682,13 +5682,13 @@ export function InteractiveGradient() {
                 wavLongPressFired.current = true;
                 setIsWavHolding(false);
                 evolveWithFactor(1);
-              }, 1500);
+              }, 100);
             }}
             onPointerUp={() => {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
               if (!wavLongPressFired.current) {
-                const factor = Math.min((Date.now() - wavPressStartTime.current) / 1500, 1);
+                const factor = Math.min((Date.now() - wavPressStartTime.current) / 100, 1);
                 evolveWithFactor(factor);
               }
             }}
