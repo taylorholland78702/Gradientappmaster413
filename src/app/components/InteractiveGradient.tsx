@@ -1603,10 +1603,16 @@ export function InteractiveGradient() {
     const angleDrift = 10 + factor * 165;
     setTargetAngle((gradientAngle + (Math.random() * angleDrift * 2 - angleDrift) + 360) % 360);
 
-    // Speed: starts changing at factor > 0.3
-    if (factor > 0.3) {
+    // Speed: starts changing at factor > 0.1
+    if (factor > 0.1) {
       const speedOptions = [0.5, 1, 1, 2, 2, 3, 3, 4, 5, 6];
       setVcrPlaybackSpeed(speedOptions[Math.floor(Math.random() * speedOptions.length)]);
+    }
+
+    // Zoom: nudges in at factor > 0.4
+    if (factor > 0.4) {
+      const zoomDrift = factor * 0.4;
+      setZoom(Math.max(0.7, Math.min(2.0, zoom + (Math.random() * zoomDrift * 2 - zoomDrift))));
     }
 
     // Rotation direction: 50% chance at full factor
@@ -1640,7 +1646,7 @@ export function InteractiveGradient() {
 
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
-  }, [gradientColors, gradientAngle, activeEffects, saveCurrentState, feelingLucky, FEELING_LUCKY_GRADIENT_TYPES]);
+  }, [gradientColors, gradientAngle, zoom, activeEffects, saveCurrentState, feelingLucky, FEELING_LUCKY_GRADIENT_TYPES]);
 
   // Capture current state for rating
   const captureCurrentStateForRating = useCallback(() => {
@@ -5589,9 +5595,9 @@ export function InteractiveGradient() {
               setIsWavHolding(true);
               wavPressStartTime.current = Date.now();
               wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 400);
+              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 1500);
             }}
-            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 400, 1); evolveWithFactor(factor); } }}
+            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 1500, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
@@ -5676,13 +5682,13 @@ export function InteractiveGradient() {
                 wavLongPressFired.current = true;
                 setIsWavHolding(false);
                 evolveWithFactor(1);
-              }, 400);
+              }, 1500);
             }}
             onPointerUp={() => {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
               if (!wavLongPressFired.current) {
-                const factor = Math.min((Date.now() - wavPressStartTime.current) / 400, 1);
+                const factor = Math.min((Date.now() - wavPressStartTime.current) / 1500, 1);
                 evolveWithFactor(factor);
               }
             }}
