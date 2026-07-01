@@ -5621,7 +5621,7 @@ export function InteractiveGradient() {
       <div
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
-          background: isPanelLight ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)',
+          background: isPanelLight ? 'rgba(255,255,255,0.45)' : 'rgba(15,15,15,0.50)',
           backdropFilter: 'blur(24px)',
           borderRadius: 14,
         }}
