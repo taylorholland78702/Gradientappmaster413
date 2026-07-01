@@ -143,6 +143,7 @@ export function InteractiveGradient() {
   const drawParamsDirtyRef = useRef(true); // true until first draw
   const wavLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wavLongPressFired = useRef(false);
+  const wavPressStartTime = useRef<number>(0);
   const waveNumberRef = useRef<number>(20);
   const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
@@ -1556,8 +1557,11 @@ export function InteractiveGradient() {
     // (rating UI shown at top of feelingLucky)
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS]);
 
-  // ─── Evolve: small mutations of the current state ───────────────────────────
-  const evolveState = useCallback(() => {
+  // ─── Unified evolve: factor 0 = subtle nudge, 1 = full random ───────────────
+  const evolveWithFactor = useCallback((factor: number) => {
+    // At full factor, hand off to feelingLucky for true randomness
+    if (factor >= 1) { feelingLucky(); return; }
+
     saveCurrentState();
 
     const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
@@ -1581,78 +1585,68 @@ export function InteractiveGradient() {
       return [h * 360, s * 100, l * 100];
     };
 
-    // Shift each color substantially in hue, with strong sat/lit variation
-    const hueDrift = 80;
+    // Scale color drift: ±15° at factor=0, ±160° at factor=1
+    const hueDrift = 15 + factor * 145;
+    const satDrift = 8 + factor * 30;
+    const litDrift = 6 + factor * 22;
     const evolvedColors = gradientColors.map(c => {
       const [h, s, l] = rgbToHsl(c.r, c.g, c.b);
       const nh = (h + (Math.random() * hueDrift * 2 - hueDrift) + 360) % 360;
-      const ns = Math.max(40, Math.min(95, s + (Math.random() * 40 - 20)));
-      const nl = Math.max(30, Math.min(78, l + (Math.random() * 36 - 18)));
+      const ns = Math.max(35, Math.min(95, s + (Math.random() * satDrift * 2 - satDrift)));
+      const nl = Math.max(28, Math.min(80, l + (Math.random() * litDrift * 2 - litDrift)));
       return hslToRgb(nh, ns, nl);
     });
     setTargetColors(evolvedColors);
     setGradientColors(evolvedColors);
 
-    // Rotate angle substantially
-    setTargetAngle((gradientAngle + (Math.random() * 150 - 75) + 360) % 360);
+    // Scale angle drift: ±10° → ±175°
+    const angleDrift = 10 + factor * 165;
+    setTargetAngle((gradientAngle + (Math.random() * angleDrift * 2 - angleDrift) + 360) % 360);
 
-    // Re-randomize all active effect params
-    for (const eff of activeEffects) {
-      if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.floor(Math.random() * 16) + 4);
-      else if (eff === 'chromatic') setChromaticOffset(Math.floor(Math.random() * 150) + 30);
-      else if (eff === 'vignette') setVignetteStrength(Math.random() * 0.6 + 0.2);
-      else if (eff === 'blur') setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);
-      else if (eff === 'film-grain') setGrainIntensity(Math.random() * 0.4);
-      else if (eff === 'wave-distortion') setWaveDistortionStrength(Math.floor(Math.random() * 80) + 20);
-      else if (eff === 'pixelate') setPixelSize(Math.floor(Math.random() * 40) + 8);
-      else if (eff === 'bokeh') setChromaticOffset(Math.floor(Math.random() * 60) + 10);
-      else if (eff === 'color-shift') setColorShiftHue(Math.floor(Math.random() * 180) + 10);
-      else if (eff === 'twist') setTwistAmount(Math.random() * 4);
+    // Gradient type: increasingly likely to switch at higher factors
+    if (Math.random() < factor * 0.85) {
+      const pool = FEELING_LUCKY_GRADIENT_TYPES;
+      setGradientType(pool[Math.floor(Math.random() * pool.length)]);
     }
 
+    // Speed: starts changing at factor > 0.3
+    if (factor > 0.3) {
+      const speedOptions = [0.5, 1, 1, 2, 2, 3, 3, 4, 5, 6];
+      setVcrPlaybackSpeed(speedOptions[Math.floor(Math.random() * speedOptions.length)]);
+    }
+
+    // Rotation direction: 50% chance at full factor
+    if (Math.random() < factor * 0.5) {
+      setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
+    }
+
+    // Effect params — always nudged, range scales with factor
+    const rng = (min: number, max: number) => min + Math.random() * (max - min) * (0.3 + factor * 0.7);
+    for (const eff of activeEffects) {
+      if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.round(rng(3, 20)));
+      else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(10, 180)));
+      else if (eff === 'vignette') setVignetteStrength(rng(0.1, 0.9));
+      else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(2, 18)));
+      else if (eff === 'film-grain') setGrainIntensity(rng(0, 0.5));
+      else if (eff === 'wave-distortion') setWaveDistortionStrength(Math.round(rng(10, 100)));
+      else if (eff === 'pixelate') setPixelSize(Math.round(rng(5, 50)));
+      else if (eff === 'color-shift') setColorShiftHue(Math.round(rng(5, 180)));
+      else if (eff === 'twist') setTwistAmount(rng(0, 5));
+      else if (eff === 'bokeh') setChromaticOffset(Math.round(rng(5, 80)));
+    }
+
+    // Gradient-specific params — scale range with factor
+    setSpiralTightness(Math.round(rng(1, 20)));
+    setWaveAmplitude(Math.round(rng(10, 80)));
+    setWaveFrequency(Math.round(rng(1, 8)));
+    setNoiseScale(Math.round(rng(10, 70)));
+    setPlasmaSpeed(rng(0.5, 3.5));
+    setKaleidoscopeSegments(Math.round(rng(3, 20)));
+    setConcentricRingWidth(Math.round(rng(20, 180)));
+
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
-  }, [gradientColors, gradientAngle, activeEffects, saveCurrentState]);
-
-  // ─── Jump to Mood: curated full-state replacement ────────────────────────────
-  const jumpToMood = useCallback(() => {
-    saveCurrentState();
-    const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
-      s /= 100; l /= 100;
-      const k = (n: number) => (n + h / 30) % 12;
-      const a = s * Math.min(l, 1 - l);
-      const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-      return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
-    };
-
-    const mood = WAV_MOODS[Math.floor(Math.random() * WAV_MOODS.length)];
-    const baseHue = mood.hues[Math.floor(Math.random() * mood.hues.length)];
-
-    const moodColors = gradientColors.map((_, i) => {
-      const hue = (baseHue + i * 25 + (Math.random() * 30 - 15) + 360) % 360;
-      const sat = mood.sat[0] + Math.random() * (mood.sat[1] - mood.sat[0]);
-      const lit = mood.lit[0] + Math.random() * (mood.lit[1] - mood.lit[0]);
-      return hslToRgb(hue, sat, lit);
-    });
-    setTargetColors(moodColors);
-    setGradientColors(moodColors);
-
-    const g = mood.gradients[Math.floor(Math.random() * mood.gradients.length)];
-    setGradientType(g);
-    setTargetAngle(Math.random() * 360);
-    setTargetZoom(1);
-    setZoom(1);
-    setActiveEffects([...mood.effects]);
-    setIsMultiFxMode(true);
-    setVcrPlaybackSpeed([1, 1, 2, 2, 3][Math.floor(Math.random() * 5)]);
-    setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
-    setVignetteStrength(0.3 + Math.random() * 0.4);
-    setGrainIntensity(Math.random() * 0.3);
-    setBlurGaussianAmount(Math.floor(Math.random() * 12) + 3);
-    setChromaticOffset(Math.floor(Math.random() * 100) + 20);
-    setBaseAIColors(null);
-    setSubmittedAIPrompt('');
-  }, [gradientColors, saveCurrentState]);
+  }, [gradientColors, gradientAngle, activeEffects, saveCurrentState, feelingLucky, FEELING_LUCKY_GRADIENT_TYPES]);
 
   // Capture current state for rating
   const captureCurrentStateForRating = useCallback(() => {
@@ -5599,10 +5593,11 @@ export function InteractiveGradient() {
           <button
             onPointerDown={() => {
               setIsWavHolding(true);
+              wavPressStartTime.current = Date.now();
               wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); jumpToMood(); }, 400);
+              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 400);
             }}
-            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) evolveState(); }}
+            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 400, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none"
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
@@ -5681,17 +5676,21 @@ export function InteractiveGradient() {
           <button
             onPointerDown={() => {
               setIsWavHolding(true);
+              wavPressStartTime.current = Date.now();
               wavLongPressFired.current = false;
               wavLongPressTimer.current = setTimeout(() => {
                 wavLongPressFired.current = true;
                 setIsWavHolding(false);
-                jumpToMood();
+                evolveWithFactor(1);
               }, 400);
             }}
             onPointerUp={() => {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-              if (!wavLongPressFired.current) evolveState();
+              if (!wavLongPressFired.current) {
+                const factor = Math.min((Date.now() - wavPressStartTime.current) / 400, 1);
+                evolveWithFactor(factor);
+              }
             }}
             onPointerLeave={() => {
               setIsWavHolding(false);
