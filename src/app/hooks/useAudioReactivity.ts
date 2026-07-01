@@ -28,9 +28,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [waveformData, setWaveformData] = useState<number[]>([]);
   const [isAudioReactive, setIsAudioReactive] = useState(false);
   const [isMicActive, setIsMicActive] = useState(false);
-  const [audioGradientParam, setAudioGradientParam] = useState(0);
-  const [audioEffectParam, setAudioEffectParam] = useState(0);
-  const [audioColorShift, setAudioColorShift] = useState(0);
+  const [audioSubBassLevel, setAudioSubBassLevel] = useState(0);
+  const [audioMidsLevel, setAudioMidsLevel] = useState(0);
+  const [audioTrebleLevel, setAudioTrebleLevel] = useState(0);
   const [audioEnergy, setAudioEnergy] = useState(0);
   const energySmoothedRef = useRef(0);
   const [subBassOnsetTick, setSubBassOnsetTick] = useState(0);
@@ -358,8 +358,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
       liveBassSmoothedRef.current = bassGradientValue;
-      // Sub-bass drives Shape (audioGradientParam); bass drives Pulse/zoom
-      setAudioGradientParam(subBassGradientValue);
+      // Sub-bass drives Shape (audioSubBassLevel); bass drives Pulse/zoom
+      setAudioSubBassLevel(subBassGradientValue);
 
       // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
@@ -389,7 +389,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
       const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
       liveMidsSmoothedRef.current = midsEffectValue;
-      setAudioEffectParam(midsEffectValue);
+      setAudioMidsLevel(midsEffectValue);
 
       // ---- TREBLE (bins 50–119) ----
       let trebleSum = 0;
@@ -408,7 +408,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
       const trebleColorValue = Math.max(trebleMin * 90, Math.min(trebleMax * 90, trebleSmoothedRef.current));
       liveTrebleSmoothedRef.current = trebleColorValue;
-      setAudioColorShift(trebleColorValue);
+      setAudioTrebleLevel(trebleColorValue);
 
       // Treble onset detection for Color BEAT — only update target so lerp eases in smoothly
       const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
@@ -503,9 +503,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     waveformData, setWaveformData,
     isAudioReactive, setIsAudioReactive,
     isMicActive, setIsMicActive,
-    audioGradientParam, setAudioGradientParam,
-    audioEffectParam, setAudioEffectParam,
-    audioColorShift, setAudioColorShift,
+    audioSubBassLevel, setAudioSubBassLevel,
+    audioMidsLevel, setAudioMidsLevel,
+    audioTrebleLevel, setAudioTrebleLevel,
     audioEnergy,
     subBassOnsetTick,
     bassOnsetTick,

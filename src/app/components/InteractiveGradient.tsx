@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Circle, Square, Play, Pause, SkipBack, FastForward, Rewind, Repeat, RotateCw, RotateCcw, Mic, MicOff, Eye, EyeOff, Undo, Shuffle, Maximize, Minimize, Plus, RefreshCw, SlidersHorizontal, Camera } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw } from 'lucide-react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'radial-blur' | 'bloom' | 'feedback' | 'ripple';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -149,7 +149,6 @@ export function InteractiveGradient() {
   const [triangleSize, setTriangleSize] = useState(40);
   const [chromaticOffset, setChromaticOffset] = useState(100);
   const [fisheyeStrength, setFisheyeStrength] = useState(0.5);
-  const [tileCount, setTileCount] = useState(2);
   const [grainIntensity, setGrainIntensity] = useState(0.1);
   const [blurMotionAmount, setBlurMotionAmount] = useState(40);
   const [blurMotionDirection, setBlurMotionDirection] = useState(250);
@@ -163,21 +162,13 @@ export function InteractiveGradient() {
   const [halftoneMoveSpeed, setHalftoneMoveSpeed] = useState(1);
   const [vignetteStrength, setVignetteStrength] = useState(0.5);
   const [colorShiftHue, setColorShiftHue] = useState(5);
-  const [bulgeStrength, setBulgeStrength] = useState(0.5);
   const [charcoalIntensity, setCharcoalIntensity] = useState(0.5);
-  const [colorBurnIntensity, setColorBurnIntensity] = useState(0.5);
-  const [colorDodgeIntensity, setColorDodgeIntensity] = useState(0.5);
   const [digitalNoiseIntensity, setDigitalNoiseIntensity] = useState(0.3);
   const [duotoneIntensity, setDuotoneIntensity] = useState(1);
   const [dustIntensity, setDustIntensity] = useState(0.5);
   const [dustCrackleIntensity, setDustCrackleIntensity] = useState(0.3);
-  const [gridSize, setGridSize] = useState(20);
   const [hexGridSize, setHexGridSize] = useState(20);
   const [lightLeakIntensity, setLightLeakIntensity] = useState(0.5);
-  const [lensFlareIntensity, setLensFlareIntensity] = useState(0.5);
-  const [lensFlareX, setLensFlareX] = useState(0.5); // 0-1 normalized position
-  const [lensFlareY, setLensFlareY] = useState(0.5); // 0-1 normalized position
-  const [lensFlareSize, setLensFlareSize] = useState(300); // radius in pixels
   const [linesCount, setLinesCount] = useState(50);
   const [linesAngle, setLinesAngle] = useState(0); // 0-360 degrees
   const [linesThickness, setLinesThickness] = useState(1);
@@ -187,7 +178,6 @@ export function InteractiveGradient() {
   const [scanLineOffset, setScanLineOffset] = useState(0);
   const [sepiaIntensity, setSepiaIntensity] = useState(1);
   const [solarizeThreshold, setSolarizeThreshold] = useState(128);
-  const [triGridSize, setTriGridSize] = useState(30);
   const [gridSides, setGridSides] = useState(4);
   const [tritoneIntensity, setTritoneIntensity] = useState(1);
   const [tritoneColor1, setTritoneColor1] = useState('#000033'); // Dark blue
@@ -284,24 +274,22 @@ export function InteractiveGradient() {
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
   const [radarFadeLength, setRadarFadeLength] = useState(90);
-  const [fadeSpeed, setFadeSpeed] = useState(1);
-  const [radarSpeed, setRadarSpeed] = useState(2);
-  const [flowerCircles, setFlowerCircles] = useState(1);
-  const [flowerScale, setFlowerScale] = useState(1);
-  const [flowerSpread, setFlowerSpread] = useState(1);
+  const [flowerCircles, setFlowerCircles] = useState(4);
+  const [flowerScale, setFlowerScale] = useState(0.8);
+  const [flowerSpread, setFlowerSpread] = useState(0.55);
   const [flowerRotation, setFlowerRotation] = useState(0);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
   const [auroraAnimTime, setAuroraAnimTime] = useState(0);
-  const [auroraBandCount, setAuroraBandCount] = useState(6);
+  const [auroraBandCount, setAuroraBandCount] = useState(7);
   const [auroraWaveSpeed, setAuroraWaveSpeed] = useState(1);
-  const [auroraBandHeight, setAuroraBandHeight] = useState(1.8);
+  const [auroraBandHeight, setAuroraBandHeight] = useState(2);
   const [causticsAnimTime, setCausticsAnimTime] = useState(0);
-  const [causticsComplexity, setCausticsComplexity] = useState(1);
-  const [causticsBrightness, setCausticsBrightness] = useState(2);
-  const [causticsScale, setCausticsScale] = useState(4);
+  const [causticsComplexity, setCausticsComplexity] = useState(2);
+  const [causticsBrightness, setCausticsBrightness] = useState(1);
+  const [causticsScale, setCausticsScale] = useState(2.5);
   const [lavaAnimTime, setLavaAnimTime] = useState(0);
-  const [lavaBlobCount, setLavaBlobCount] = useState(6);
-  const [lavaBlobSize, setLavaBlobSize] = useState(0.18);
+  const [lavaBlobCount, setLavaBlobCount] = useState(5);
+  const [lavaBlobSize, setLavaBlobSize] = useState(0.15);
   const [lavaSpeed, setLavaSpeed] = useState(1);
   const [marbleAnimTime, setMarbleAnimTime] = useState(0);
   const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
@@ -396,9 +384,9 @@ export function InteractiveGradient() {
     waveformData, setWaveformData,
     isAudioReactive, setIsAudioReactive,
     isMicActive, setIsMicActive,
-    audioGradientParam, setAudioGradientParam,
-    audioEffectParam, setAudioEffectParam,
-    audioColorShift, setAudioColorShift,
+    audioSubBassLevel, setAudioSubBassLevel,
+    audioMidsLevel, setAudioMidsLevel,
+    audioTrebleLevel, setAudioTrebleLevel,
     audioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
@@ -506,7 +494,6 @@ export function InteractiveGradient() {
       triangleSize,
       chromaticOffset,
       fisheyeStrength,
-      tileCount,
       grainIntensity,
       blurMotionAmount,
       blurMotionDirection,
@@ -536,7 +523,6 @@ export function InteractiveGradient() {
       setTriangleSize(data.triangleSize || 40);
       setChromaticOffset(data.chromaticOffset || 5);
       setFisheyeStrength(data.fisheyeStrength || 0.5);
-      setTileCount(data.tileCount || 2);
       setGrainIntensity(data.grainIntensity || 0.1);
       setBlurMotionAmount(data.blurMotionAmount || 5);
       setBlurMotionDirection(data.blurMotionDirection || 0);
@@ -626,10 +612,10 @@ export function InteractiveGradient() {
       if (!canvas) return;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
-      const px = panelPos?.x ?? 16;
-      const py = panelPos?.y ?? 16;
-      const sampleW = Math.min(200, canvas.width - px);
-      const sampleH = Math.min(160, canvas.height - py);
+      const px = (panelPos?.x ?? 16) * resolutionMultiplier;
+      const py = (panelPos?.y ?? 16) * resolutionMultiplier;
+      const sampleW = Math.min(200 * resolutionMultiplier, canvas.width - px);
+      const sampleH = Math.min(160 * resolutionMultiplier, canvas.height - py);
       if (sampleW <= 0 || sampleH <= 0) return;
       try {
         const data = ctx.getImageData(px, py, sampleW, sampleH).data;
@@ -651,7 +637,7 @@ export function InteractiveGradient() {
       } catch (_) {}
     }, 1000);
     return () => clearInterval(interval);
-  }, [panelPos]);
+  }, [panelPos, resolutionMultiplier]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
 
@@ -665,6 +651,39 @@ export function InteractiveGradient() {
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
   // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
   // Skips the draw entirely when nothing is animating and values have converged.
+  // Refs so animation loops can read latest audio values without restarting
+  const audioSubBassLevelRef = useRef(audioSubBassLevel);
+  audioSubBassLevelRef.current = audioSubBassLevel;
+  const audioMidsLevelRef = useRef(audioMidsLevel);
+  audioMidsLevelRef.current = audioMidsLevel;
+
+  // Refs for contrast/saturation pulse and canvas shake
+  const contrastPulseRef = useRef(0);
+  const saturationPulseRef = useRef(0);
+  const shakeRef = useRef({ x: 0, y: 0 });
+  const shakeWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Refs so the consolidated master RAF loop can read latest gating state without restarting
+  const activeEffectsRef = useRef(activeEffects);
+  activeEffectsRef.current = activeEffects;
+  const halftoneMoveRef = useRef(halftoneMove);
+  halftoneMoveRef.current = halftoneMove;
+  const gridRotationDirectionRef = useRef(gridRotationDirection);
+  gridRotationDirectionRef.current = gridRotationDirection;
+  const gradientTypeRef = useRef(gradientType);
+  gradientTypeRef.current = gradientType;
+  const shapesRotationDirectionRef = useRef(shapesRotationDirection);
+  shapesRotationDirectionRef.current = shapesRotationDirection;
+  const isMicActiveRef = useRef(isMicActive);
+  isMicActiveRef.current = isMicActive;
+
+  // Clear slit-scan buffer when the effect is turned off
+  useEffect(() => {
+    if (!activeEffects.includes('slit-scan')) {
+      slitScanBufferRef.current = [];
+    }
+  }, [activeEffects]);
+
   useEffect(() => {
     let rafId: number;
     const loop = () => {
@@ -710,6 +729,57 @@ export function InteractiveGradient() {
         setZoom(zoomRef.current);
       }
 
+      // Halftone Move animation
+      if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
+        halftoneTimeRef.current += 0.5 * spd;
+        setHalftoneAnimTrigger(prev => prev + 1);
+      }
+
+      // Grid rotation animation
+      if (activeEffectsRef.current.includes('grid') && gridRotationDirectionRef.current !== 'none') {
+        setGridRotation(prev => {
+          const increment = gridRotationDirectionRef.current === 'clockwise' ? 2 : -2;
+          return (prev + increment) % 360;
+        });
+      }
+
+      // Shapes rotation animation — VCR playing OR manual direction set
+      const shouldRotateShapes = gradientTypeRef.current === 'shapes' &&
+        (isVCRPlayingRef.current || shapesRotationDirectionRef.current !== 'none');
+      if (shouldRotateShapes) {
+        setShapesRotation(prev => {
+          const increment = isVCRPlayingRef.current ? 2 * spd :
+            (shapesRotationDirectionRef.current === 'clockwise' ? 2 : -2);
+          return (prev + increment) % 360;
+        });
+      }
+
+      // Slit-scan animation
+      if (activeEffectsRef.current.includes('slit-scan')) {
+        setSlitScanAnimTrigger(prev => prev + 1);
+      }
+
+      const isPlayActive = isAutoModeRef.current || isVCRPlayingRef.current || isMicActiveRef.current;
+
+      // Voronoi morphing — PLAY or mic active
+      if (gradientTypeRef.current === 'voronoi' && isPlayActive) {
+        setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1));
+      }
+
+      // Radar sweep — PLAY or mic active
+      if (gradientTypeRef.current === 'radar' && isPlayActive) {
+        setRadarSweepAngle(prev => {
+          const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
+          const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
+          return (prev + baseSpeed + audioBoost) % 360;
+        });
+      }
+
+      // Flower rotation — only when PLAY is active
+      if (gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+        setFlowerAnimTime(prev => prev + 0.5 * spd);
+      }
+
       rafId = requestAnimationFrame(loop);
     };
     rafId = requestAnimationFrame(loop);
@@ -723,143 +793,7 @@ export function InteractiveGradient() {
     b: Math.floor(Math.random() * 256),
   }), []);
 
-  // Continuous animation for halftone when Move is enabled
   const [halftoneAnimTrigger, setHalftoneAnimTrigger] = useState(0);
-  useEffect(() => {
-    if (!activeEffects.includes('halftone') || !halftoneMove) return;
-    
-    let rafId: number;
-    const animateHalftone = () => {
-      // Update time directly in the animation loop with VCR speed control
-      halftoneTimeRef.current += 0.5 * vcrPlaybackSpeed;
-      setHalftoneAnimTrigger(prev => prev + 1);
-      rafId = requestAnimationFrame(animateHalftone);
-    };
-    
-    rafId = requestAnimationFrame(animateHalftone);
-    return () => cancelAnimationFrame(rafId);
-  }, [activeEffects, halftoneMove, vcrPlaybackSpeed]);
-
-  // Continuous animation for grid rotation
-  useEffect(() => {
-    if (!activeEffects.includes('grid') || gridRotationDirection === 'none') return;
-    
-    let rafId: number;
-    const animateGridRotation = () => {
-      setGridRotation(prev => {
-        const increment = gridRotationDirection === 'clockwise' ? 2 : -2;
-        return (prev + increment) % 360;
-      });
-      rafId = requestAnimationFrame(animateGridRotation);
-    };
-    
-    rafId = requestAnimationFrame(animateGridRotation);
-    return () => cancelAnimationFrame(rafId);
-  }, [activeEffects, gridRotationDirection]);
-
-  // Continuous animation for shapes rotation
-  useEffect(() => {
-    // Rotate shapes when VCR is playing OR when manual rotation is enabled
-    const shouldRotate = (gradientType === 'shapes' && isVCRPlaying) ||
-                        (gradientType === 'shapes' && shapesRotationDirection !== 'none');
-    if (!shouldRotate) return;
-
-    let rafId: number;
-    const animateShapesRotation = () => {
-      setShapesRotation(prev => {
-        // If VCR is playing, rotate clockwise; otherwise use manual direction
-        const increment = isVCRPlaying ? 2 * vcrPlaybackSpeed :
-                         (shapesRotationDirection === 'clockwise' ? 2 : -2);
-        return (prev + increment) % 360;
-      });
-      rafId = requestAnimationFrame(animateShapesRotation);
-    };
-
-    rafId = requestAnimationFrame(animateShapesRotation);
-    return () => cancelAnimationFrame(rafId);
-  }, [gradientType, isVCRPlaying, vcrPlaybackSpeed, shapesRotationDirection]);
-
-  // Refs so animation loops can read latest audio values without restarting
-  const audioGradientParamRef = useRef(audioGradientParam);
-  audioGradientParamRef.current = audioGradientParam;
-  const audioEffectParamRef = useRef(audioEffectParam);
-  audioEffectParamRef.current = audioEffectParam;
-
-  // Refs for contrast/saturation pulse and canvas shake
-  const contrastPulseRef = useRef(0);
-  const saturationPulseRef = useRef(0);
-  const shakeRef = useRef({ x: 0, y: 0 });
-  const shakeWrapperRef = useRef<HTMLDivElement>(null);
-
-
-  // Continuous animation for slit-scan effect
-  useEffect(() => {
-    if (!activeEffects.includes('slit-scan')) {
-      // Clear buffer when effect is disabled
-      slitScanBufferRef.current = [];
-      return;
-    }
-
-    let rafId: number;
-    const animateSlitScan = () => {
-      setSlitScanAnimTrigger(prev => prev + 1);
-      rafId = requestAnimationFrame(animateSlitScan);
-    };
-
-    rafId = requestAnimationFrame(animateSlitScan);
-    return () => {
-      cancelAnimationFrame(rafId);
-      // Clear buffer on cleanup
-      slitScanBufferRef.current = [];
-    };
-  }, [activeEffects]);
-
-  // Continuous animation for Voronoi morphing — PLAY or mic active
-  useEffect(() => {
-    if (gradientType !== 'voronoi' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-
-    let rafId: number;
-    const animateVoronoi = () => {
-      setVoronoiAnimTime(prev => prev + 0.01 * (isAutoMode || isVCRPlaying ? vcrPlaybackSpeed : 1));
-      rafId = requestAnimationFrame(animateVoronoi);
-    };
-
-    rafId = requestAnimationFrame(animateVoronoi);
-    return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  // Continuous animation for Radar sweep — when PLAY is active OR mic is on
-  useEffect(() => {
-    if (gradientType !== 'radar') return;
-    if (!isAutoMode && !isVCRPlaying && !isMicActive) return;
-
-    let rafId: number;
-    const animateRadar = () => {
-      setRadarSweepAngle(prev => {
-        const baseSpeed = isAutoMode || isVCRPlaying ? 2 * vcrPlaybackSpeed : 1.2;
-        const audioBoost = isAudioActiveRef.current ? audioGradientParamRef.current * 6 : 0;
-        return (prev + baseSpeed + audioBoost) % 360;
-      });
-      rafId = requestAnimationFrame(animateRadar);
-    };
-
-    rafId = requestAnimationFrame(animateRadar);
-    return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  // Continuous rotation animation for Flower gradient — only when PLAY is active
-  useEffect(() => {
-    if (gradientType !== 'flower' || (!isAutoMode && !isVCRPlaying)) return;
-
-    let rafId: number;
-    const animateFlower = () => {
-      setFlowerAnimTime(prev => prev + 0.5 * vcrPlaybackSpeed);
-      rafId = requestAnimationFrame(animateFlower);
-    };
-
-    rafId = requestAnimationFrame(animateFlower);
-    return () => cancelAnimationFrame(rafId);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying]);
 
   useEffect(() => {
     if (gradientType !== 'aurora' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
@@ -903,7 +837,6 @@ export function InteractiveGradient() {
       triangleSize,
       chromaticOffset,
       fisheyeStrength,
-      tileCount,
       grainIntensity,
       blurMotionAmount,
       blurMotionDirection,
@@ -917,23 +850,15 @@ export function InteractiveGradient() {
       halftoneMoveSpeed,
       vignetteStrength,
       colorShiftHue,
-      bulgeStrength,
       charcoalIntensity,
-      colorBurnIntensity,
-      colorDodgeIntensity,
       digitalNoiseIntensity,
       duotoneIntensity,
       duotoneColor1,
       duotoneColor2,
       dustIntensity,
       dustCrackleIntensity,
-      gridSize,
       hexGridSize,
       lightLeakIntensity,
-      lensFlareIntensity,
-      lensFlareX,
-      lensFlareY,
-      lensFlareSize,
       linesCount,
       linesAngle,
       linesThickness,
@@ -942,7 +867,6 @@ export function InteractiveGradient() {
       scanLineSize,
       sepiaIntensity,
       solarizeThreshold,
-      triGridSize,
       gridSides,
       gridRows,
       gridColumns,
@@ -997,13 +921,12 @@ export function InteractiveGradient() {
     setUndoDepth(undoIndexRef.current);
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
       activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, 
-      chromaticOffset, fisheyeStrength, tileCount, grainIntensity, blurMotionAmount, 
+      chromaticOffset, fisheyeStrength, grainIntensity, blurMotionAmount, 
       blurMotionDirection, blurGaussianAmount, blurRadialAmount, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, 
-      vignetteStrength, colorShiftHue, bulgeStrength, charcoalIntensity, colorBurnIntensity, 
-      colorDodgeIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, 
-      dustCrackleIntensity, gridSize, hexGridSize, lightLeakIntensity, lensFlareIntensity, lensFlareX, lensFlareY, lensFlareSize, linesCount, linesAngle, 
+      vignetteStrength, colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, 
+      dustCrackleIntensity, hexGridSize, lightLeakIntensity, linesCount, linesAngle, 
       linesThickness, liquifyStrength, pinchStrength,
-      scanLineSize, sepiaIntensity, solarizeThreshold, triGridSize, gridSides, gridRows, gridColumns,
+      scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
       tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, vhsGlitchIntensity, 
       polygonSides, polygon2Sides, waveDistortionStrength,
       spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
@@ -1122,7 +1045,6 @@ export function InteractiveGradient() {
     setTriangleSize(snapshot.triangleSize);
     setChromaticOffset(snapshot.chromaticOffset);
     setFisheyeStrength(snapshot.fisheyeStrength);
-    setTileCount(snapshot.tileCount);
     setGrainIntensity(snapshot.grainIntensity);
     setBlurMotionAmount(snapshot.blurMotionAmount);
     setBlurMotionDirection(snapshot.blurMotionDirection);
@@ -1136,23 +1058,15 @@ export function InteractiveGradient() {
     setHalftoneMoveSpeed(snapshot.halftoneMoveSpeed);
     setVignetteStrength(snapshot.vignetteStrength);
     setColorShiftHue(snapshot.colorShiftHue);
-    setBulgeStrength(snapshot.bulgeStrength);
     setCharcoalIntensity(snapshot.charcoalIntensity);
-    setColorBurnIntensity(snapshot.colorBurnIntensity);
-    setColorDodgeIntensity(snapshot.colorDodgeIntensity);
     setDigitalNoiseIntensity(snapshot.digitalNoiseIntensity);
     setDuotoneIntensity(snapshot.duotoneIntensity);
     setDuotoneColor1(snapshot.duotoneColor1);
     setDuotoneColor2(snapshot.duotoneColor2);
     setDustIntensity(snapshot.dustIntensity);
     setDustCrackleIntensity(snapshot.dustCrackleIntensity);
-    setGridSize(snapshot.gridSize);
     setHexGridSize(snapshot.hexGridSize);
     setLightLeakIntensity(snapshot.lightLeakIntensity);
-    setLensFlareIntensity(snapshot.lensFlareIntensity);
-    setLensFlareX(snapshot.lensFlareX);
-    setLensFlareY(snapshot.lensFlareY);
-    setLensFlareSize(snapshot.lensFlareSize);
     setLinesCount(snapshot.linesCount);
     setLinesAngle(snapshot.linesAngle);
     setLinesThickness(snapshot.linesThickness);
@@ -1161,7 +1075,6 @@ export function InteractiveGradient() {
     setScanLineSize(snapshot.scanLineSize);
     setSepiaIntensity(snapshot.sepiaIntensity);
     setSolarizeThreshold(snapshot.solarizeThreshold);
-    setTriGridSize(snapshot.triGridSize);
     setGridSides(snapshot.gridSides);
     setTritoneIntensity(snapshot.tritoneIntensity);
     setTritoneColor1(snapshot.tritoneColor1);
@@ -1356,7 +1269,7 @@ export function InteractiveGradient() {
       setTriangleSize(Math.floor(Math.random() * 80) + 20);
       setChromaticOffset(Math.floor(Math.random() * 20) + 1);
       setFisheyeStrength(Math.random());
-      setTileCount(Math.floor(Math.random() * 5) + 1);
+
       setGrainIntensity(Math.random() * 0.5);
     } else {
       // Full random generation — curated ranges for better results
@@ -1449,7 +1362,6 @@ export function InteractiveGradient() {
       setTriangleSize(Math.floor(Math.random() * 60) + 20);          // 20–79
       setChromaticOffset(Math.floor(Math.random() * 150) + 30);      // 30–179
       setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
-      setTileCount(Math.floor(Math.random() * 4) + 1);               // 1–4
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
     }
     
@@ -1511,34 +1423,21 @@ export function InteractiveGradient() {
     setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
     setVignetteStrength(Math.random() * 0.6 + 0.2);                   // 0.2–0.8
     setColorShiftHue(Math.floor(Math.random() * 120) + 5);            // 5–124
-    setBulgeStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
     setCharcoalIntensity(Math.random() * 0.6 + 0.2);                  // 0.2–0.8
-    setColorBurnIntensity(Math.random() * 0.5 + 0.2);                 // 0.2–0.7
-    setColorDodgeIntensity(Math.random() * 0.5 + 0.1);                // 0.1–0.6
     setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
     setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
     setDustIntensity(Math.random() * 0.4);                            // 0–0.4
     setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3
-    setGridSize(Math.floor(Math.random() * 30) + 10);                 // 10–39
     setHexGridSize(Math.floor(Math.random() * 80) + 15);              // 15–94
     setLightLeakIntensity(Math.random() * 0.5 + 0.1);                 // 0.1–0.6
-    setLensFlareIntensity(Math.random() * 0.6 + 0.2);                 // 0.2–0.8
-    setLensFlareX(Math.random());
-    setLensFlareY(Math.random());
-    setLensFlareSize(Math.floor(Math.random() * 250) + 100);          // 100–349
     setLinesCount(Math.floor(Math.random() * 80) + 10);               // 10–89
     setLinesAngle(Math.floor(Math.random() * 360));
     setLinesThickness(Math.floor(Math.random() * 20) + 1);            // 1–20
     setLiquifyStrength(Math.floor(Math.random() * 60) + 10);          // 10–69
-    setMandalaSegments(Math.floor(Math.random() * 14) + 4);           // 4–17
     setPinchStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
-    setPolarAngle(Math.floor(Math.random() * 360));
-    setPolarRadius(Math.random() * 1.5 + 0.5);                        // 0.5–2.0
-    setPolarRotation(Math.floor(Math.random() * 360));
     setScanLineSize(Math.floor(Math.random() * 10) + 2);              // 2–11
     setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
     setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
-    setTriGridSize(Math.floor(Math.random() * 40) + 15);              // 15–54
     setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
     setTritoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
     setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
@@ -1573,8 +1472,6 @@ export function InteractiveGradient() {
     setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
     setConicalSpiralTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
     setConicalSpiralTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
-    setWindmillBlades(Math.floor(Math.random() * 10) + 3);            // 3–12
-    setWindmillRotation(Math.floor(Math.random() * 360));
     setGridRotation(Math.floor(Math.random() * 360));
     setAngleStartOffset(Math.floor(Math.random() * 360));
     setAngleCenterX(Math.floor(Math.random() * 100));
@@ -1636,7 +1533,6 @@ export function InteractiveGradient() {
       triangleSize,
       chromaticOffset,
       fisheyeStrength,
-      tileCount,
       grainIntensity,
       blurMotionAmount,
       blurMotionDirection,
@@ -1649,23 +1545,15 @@ export function InteractiveGradient() {
       halftoneMoveSpeed,
       vignetteStrength,
       colorShiftHue,
-      bulgeStrength,
       charcoalIntensity,
-      colorBurnIntensity,
-      colorDodgeIntensity,
       digitalNoiseIntensity,
       duotoneIntensity,
       duotoneColor1,
       duotoneColor2,
       dustIntensity,
       dustCrackleIntensity,
-      gridSize,
       hexGridSize,
       lightLeakIntensity,
-      lensFlareIntensity,
-      lensFlareX,
-      lensFlareY,
-      lensFlareSize,
       linesCount,
       linesAngle,
       linesThickness,
@@ -1674,7 +1562,6 @@ export function InteractiveGradient() {
       scanLineSize,
       sepiaIntensity,
       solarizeThreshold,
-      triGridSize,
       gridSides,
       tritoneIntensity,
       tritoneColor1,
@@ -1723,14 +1610,12 @@ export function InteractiveGradient() {
   }, [
     gradientColors, gradientType, activeEffects, gradientAngle, zoom, vcrPlaybackSpeed, rotationDirection,
     kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
-    tileCount, grainIntensity, blurMotionAmount, blurMotionDirection, blurGaussianAmount, blurRadialAmount,
+    grainIntensity, blurMotionAmount, blurMotionDirection, blurGaussianAmount, blurRadialAmount,
     posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, vignetteStrength,
-    colorShiftHue, bulgeStrength, charcoalIntensity, colorBurnIntensity, colorDodgeIntensity,
-    digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, dustCrackleIntensity,
-    gridSize, hexGridSize, lightLeakIntensity, lensFlareIntensity, lensFlareX, lensFlareY, lensFlareSize,
-    linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
+    colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, dustCrackleIntensity,
+    hexGridSize, lightLeakIntensity, linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
     scanLineSize, sepiaIntensity, solarizeThreshold,
-    triGridSize, gridSides, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3,
+    gridSides, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3,
     vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
     spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
@@ -1793,7 +1678,6 @@ export function InteractiveGradient() {
     setTriangleSize(Math.floor(Math.random() * 80) + 20); // 20-99
     setChromaticOffset(Math.floor(Math.random() * 20) + 1); // 1-20
     setFisheyeStrength(Math.random()); // 0-1
-    setTileCount(Math.floor(Math.random() * 5) + 1); // 1-5
     setGrainIntensity(Math.random() * 0.5); // 0-0.5
     setBlurMotionAmount(Math.floor(Math.random() * 20) + 1); // 1-20
     setBlurMotionDirection(Math.floor(Math.random() * 360)); // 0-360
@@ -1806,34 +1690,21 @@ export function InteractiveGradient() {
     setHalftoneMoveSpeed(Math.random() * 9 + 1); // 1-10
     setVignetteStrength(Math.random()); // 0-1
     setColorShiftHue(Math.floor(Math.random() * 360)); // 0-360
-    setBulgeStrength(Math.random()); // 0-1
     setCharcoalIntensity(Math.random()); // 0-1
-    setColorBurnIntensity(Math.random()); // 0-1
-    setColorDodgeIntensity(Math.random()); // 0-1
     setDigitalNoiseIntensity(Math.random()); // 0-1
     setDuotoneIntensity(Math.random()); // 0-1
     setDustIntensity(Math.random()); // 0-1
     setDustCrackleIntensity(Math.random()); // 0-1
-    setGridSize(Math.floor(Math.random() * 40) + 10); // 10-49
     setHexGridSize(Math.floor(Math.random() * 190) + 10); // 10-200
     setLightLeakIntensity(Math.random()); // 0-1
-    setLensFlareIntensity(Math.random()); // 0-1
-    setLensFlareX(Math.random()); // 0-1
-    setLensFlareY(Math.random()); // 0-1
-    setLensFlareSize(Math.floor(Math.random() * 400) + 100); // 100-499
     setLinesCount(Math.floor(Math.random() * 150) + 10); // 10-159
     setLinesAngle(Math.floor(Math.random() * 360)); // 0-360
     setLinesThickness(Math.floor(Math.random() * 49) + 1); // 1-50
     setLiquifyStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-    setMandalaSegments(Math.floor(Math.random() * 20) + 4); // 4-23
     setPinchStrength(Math.random()); // 0-1
-    setPolarAngle(Math.floor(Math.random() * 360)); // 0-360
-    setPolarRadius(Math.random() * 2 + 0.5); // 0.5-2.5
-    setPolarRotation(Math.floor(Math.random() * 360)); // 0-360
     setScanLineSize(Math.floor(Math.random() * 15) + 2); // 2-16
     setSepiaIntensity(Math.random()); // 0-1
     setSolarizeThreshold(Math.floor(Math.random() * 255)); // 0-255
-    setTriGridSize(Math.floor(Math.random() * 50) + 10); // 10-59
     setGridSides(Math.floor(Math.random() * 10) + 1); // 1-10 sides
     setTritoneIntensity(Math.random()); // 0-1
     setVhsGlitchIntensity(Math.random()); // 0-1
@@ -1875,7 +1746,7 @@ export function InteractiveGradient() {
     });
     
     // Apply hue shift if audio is reactive
-    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioColorShift > 0;
+    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioTrebleLevel > 0;
     
     const applyHueShift = (color: ColorRGB): ColorRGB => {
       if (!shouldApplyHueShift) return color;
@@ -1899,7 +1770,7 @@ export function InteractiveGradient() {
       }
       
       // Apply hue shift (in 0-1 range)
-      h = (h + audioColorShift / 360) % 1;
+      h = (h + audioTrebleLevel / 360) % 1;
       
       // Convert back to RGB
       const hue2rgb = (p: number, q: number, t: number) => {
@@ -1940,7 +1811,7 @@ export function InteractiveGradient() {
       const shifted = applyHueShift(validColors[i]);
       gradient.addColorStop(i * step, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
     }
-  }, [isAudioEnabled, isAudioReactive, audioColorShift]);
+  }, [isAudioEnabled, isAudioReactive, audioTrebleLevel]);
 
   // Contrast + saturation pulse — bass hits spike both, decay via RAF
   useEffect(() => {
@@ -1957,14 +1828,14 @@ export function InteractiveGradient() {
       canvas.style.filter = active ? `contrast(${contrast.toFixed(2)}) saturate(${saturate.toFixed(2)})` : '';
       if (active) rafId = requestAnimationFrame(animate);
     };
-    if (audioGradientParam > 0.3) {
-      const strength = Math.min(1, audioGradientParam / 5);
+    if (audioSubBassLevel > 0.3) {
+      const strength = Math.min(1, audioSubBassLevel / 5);
       contrastPulseRef.current = strength;
       saturationPulseRef.current = strength;
       rafId = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(rafId);
-  }, [audioGradientParam, isAudioEnabled, isAudioReactive, contrastBeatEnabled]);
+  }, [audioSubBassLevel, isAudioEnabled, isAudioReactive, contrastBeatEnabled]);
 
   // Canvas shake — sub-bass onset triggers a quick x/y rumble
   useEffect(() => {
@@ -2437,7 +2308,7 @@ export function InteractiveGradient() {
         rotationAmount = rotationDirection === 'clockwise' ? 1.5 : -1.5;
       }
       // Mids boost rotation speed — more mid energy = faster spin
-      const midsBoost = isAudioActiveRef.current ? 1 + audioEffectParamRef.current * 4 : 1;
+      const midsBoost = isAudioActiveRef.current ? 1 + audioMidsLevelRef.current * 4 : 1;
       setTargetAngle(prev => prev + (rotationAmount * vcrPlaybackSpeed * midsBoost));
     }, 100);
 
@@ -2450,32 +2321,30 @@ export function InteractiveGradient() {
   // useEffect only does a single reference comparison per render instead of 150+.
   const drawParams = useMemo(() => ({
     resolutionMultiplier, gradientType, activeEffects,
-    kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
-    tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
+    kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
+    grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
     blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
-    halftoneMoveSpeed, halftoneAnimTrigger, vignetteStrength, colorShiftHue, bulgeStrength,
-    pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness,
+    halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness,
     dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
     waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity,
-    tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity,
-    digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize,
+    tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize,
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
     spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
-    waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
-    plasmaComplexity, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
+    waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
+    plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
-    fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
+    flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
     auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight,
     causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale,
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
-    slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam,
-    audioEffectParam, audioColorShift, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, tileCount, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, bulgeStrength, pinchStrength, scanLineSize, triGridSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, colorDodgeIntensity, colorBurnIntensity, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, fadeSpeed, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioGradientParam, audioEffectParam, audioColorShift, audioEnergy]);
+    slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
+    audioMidsLevel, audioTrebleLevel, audioEnergy,
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2522,6 +2391,21 @@ export function InteractiveGradient() {
       }
     };
 
+    // ctx.getImageData ignores transforms and reads physical pixels.
+    // On Retina (2× DPI), getImageData(0,0,displayWidth,displayHeight) captures only
+    // the top-left quarter of the physical canvas — centering the gradient at the
+    // captured region's bottom-right edge, which maps to the canvas bottom-right corner
+    // after putScaledImageData upscales it. This helper downsamples the full physical
+    // canvas to CSS-pixel resolution so effects always capture the complete image.
+    const getDisplayImageData = (): ImageData => {
+      if (resolutionMultiplier === 1) {
+        return getDisplayImageData();
+      }
+      const tmp = new OffscreenCanvas(displayWidth, displayHeight);
+      (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).drawImage(canvas, 0, 0, displayWidth, displayHeight);
+      return (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).getImageData(0, 0, displayWidth, displayHeight);
+    };
+
     // Safety check: require a gradient type to be selected
     if (!gradientType) {
       // Clear canvas and show nothing until Randomize is clicked
@@ -2543,7 +2427,7 @@ export function InteractiveGradient() {
     
     // Apply audio reactivity to gradient angle if enabled
     const audioAdjustedAngle = (isAudioEnabled && isAudioReactive) 
-      ? gradientAngle + (audioGradientParam * 360) // Bass affects angle by up to 360 degrees
+      ? gradientAngle + (audioSubBassLevel * 360) // Bass affects angle by up to 360 degrees
       : gradientAngle;
     
     const angleRad = audioAdjustedAngle * DEG_TO_RAD;
@@ -2582,7 +2466,7 @@ export function InteractiveGradient() {
         const radialDampening = 0.2;
         const dampenedRadialZoom = radialAudioActive ? 1 : 1 + (zoom - 1) * radialDampening;
         // Bass makes ring breathe — larger pulse on strong hits, decays between
-        const audioRadiusScale = radialAudioActive ? 1 + audioGradientParam * 0.8 : 1;
+        const audioRadiusScale = radialAudioActive ? 1 + audioSubBassLevel * 0.8 : 1;
         const radialScale = (1 / dampenedRadialZoom) * audioRadiusScale * radialSizeScale;
         const radialCenterX = (displayWidth * angleCenterX) / 100;
         const radialCenterY = (displayHeight * angleCenterY) / 100;
@@ -2594,7 +2478,7 @@ export function InteractiveGradient() {
       case 'angle': {
         ctx.save();
         // Very subtle audio: slight angle shimmer, no center drift
-        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioColorShift * Math.PI * 0.004 : 0;
+        const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * Math.PI * 0.004 : 0;
         const audioConicCenterDX = 0;
         const audioConicCenterDY = 0;
         const conicCenterX = (displayWidth * angleCenterX) / 100 + audioConicCenterDX;
@@ -2662,7 +2546,7 @@ export function InteractiveGradient() {
         const audioRadialBoost = 0;
         const audioRingBoost = 0;
         const audioRotation = (isAudioEnabled && isAudioReactive)
-          ? audioColorShift * 5 // Treble barely rotates (±5°)
+          ? audioTrebleLevel * 5 // Treble barely rotates (±5°)
           : 0;
 
         const solidSides = Math.max(1, polygon2Sides + audioRadialBoost); // Use polygon2Sides for this gradient type
@@ -2750,11 +2634,11 @@ export function InteractiveGradient() {
         const spiralAudioActive = isAudioEnabled && isAudioReactive;
 
         // 1. Bass pulses blade thickness
-        const audioThickness = spiralAudioActive ? spiralThickness + audioGradientParam * spiralThickness * 1.2 : spiralThickness;
+        const audioThickness = spiralAudioActive ? spiralThickness + audioSubBassLevel * spiralThickness * 1.2 : spiralThickness;
         // 2. Mids boost rotation speed (angle offset accumulates via gradientAngle state externally; here we add a per-frame visual offset)
-        const audioAngleOffset = spiralAudioActive ? audioEffectParam * 120 : 0;
+        const audioAngleOffset = spiralAudioActive ? audioMidsLevel * 120 : 0;
         // 4. Treble cycles color palette position
-        const audioColorCycle = spiralAudioActive ? audioColorShift * gradientColors.length : 0;
+        const audioColorCycle = spiralAudioActive ? audioTrebleLevel * gradientColors.length : 0;
 
         const zoomDampening = 0.3;
         const dampenedZoom = 1 + (zoom - 1) * zoomDampening;
@@ -2854,7 +2738,7 @@ export function InteractiveGradient() {
         const waveWidth = (displayWidth / waveNumberRef.current) * waveScaleForWave;
         // Audio reactivity: bass affects wave amplitude
         const audioWaveAmplitude = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 8 // Very subtle amplitude nudge on bass
+          ? audioSubBassLevel * 8 // Very subtle amplitude nudge on bass
           : 0;
         const amplitude = (waveAmplitude + audioWaveAmplitude) * waveScaleForWave;
         const frequency = waveFrequency * 0.0033;
@@ -2866,7 +2750,7 @@ export function InteractiveGradient() {
         const startOffset = Math.floor(numWavesForWave / 2);
         
         // Treble shifts which colors the waves use
-        const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioColorShift * gradientColors.length * 0.3 : 0;
+        const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * gradientColors.length * 0.3 : 0;
 
         for (let i = -startOffset; i < numWavesForWave - startOffset; i++) {
           const baseX = i * waveWidth;
@@ -2912,11 +2796,11 @@ export function InteractiveGradient() {
         ctx.restore();
 
         // Bass radial brightness pulse — drawn on top after restoring transform
-        if (isAudioEnabled && isAudioReactive && audioGradientParam > 0.05) {
+        if (isAudioEnabled && isAudioReactive && audioSubBassLevel > 0.05) {
           const waveMaxR = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2;
-          const pulseR = waveMaxR * (1 - audioGradientParam * 0.3);
+          const pulseR = waveMaxR * (1 - audioSubBassLevel * 0.3);
           const waveGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseR);
-          waveGlow.addColorStop(0, `rgba(255,255,255,${audioGradientParam * 0.35})`);
+          waveGlow.addColorStop(0, `rgba(255,255,255,${audioSubBassLevel * 0.35})`);
           waveGlow.addColorStop(1, 'rgba(255,255,255,0)');
           ctx.fillStyle = waveGlow;
           ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -2930,7 +2814,7 @@ export function InteractiveGradient() {
         const shapesScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
         // Bass pulses ring width slightly; cap so count and rotate sliders stay effective
         const audioShapeRingWidth = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 20
+          ? audioSubBassLevel * 20
           : 0;
         const shapeRingWidth = (concentricRingWidth + audioShapeRingWidth) * shapesScale;
         // Always respect shapesCount slider regardless of audio
@@ -2987,13 +2871,13 @@ export function InteractiveGradient() {
         const totalColors = gradientColors.length;
         const normalizedAngle = gradientAngle / 360;
         // Treble shifts the blend midpoint between colors
-        const audioMidpointShift = fadeAudioActive ? audioColorShift * 0.6 : 0;
+        const audioMidpointShift = fadeAudioActive ? audioTrebleLevel * 0.6 : 0;
         const exactPosition = (normalizedAngle * totalColors + audioMidpointShift) % totalColors;
         const currentColorIndex = Math.floor(exactPosition) % totalColors;
         const nextColorIndex = (currentColorIndex + 1) % totalColors;
         // Bass pulses the blend amount toward the next color
         const baseBlend = exactPosition - Math.floor(exactPosition);
-        const blendAmount = fadeAudioActive ? Math.min(1, baseBlend + audioGradientParam * 0.4) : baseBlend;
+        const blendAmount = fadeAudioActive ? Math.min(1, baseBlend + audioSubBassLevel * 0.4) : baseBlend;
 
         const currentColor = gradientColors[currentColorIndex];
         const nextColor = gradientColors[nextColorIndex];
@@ -3007,10 +2891,10 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
         // Mids: radial pulse from center
-        if (fadeAudioActive && audioEffectParam > 0.05) {
-          const pulseRadius = Math.min(displayWidth, displayHeight) * audioEffectParam * 0.7;
+        if (fadeAudioActive && audioMidsLevel > 0.05) {
+          const pulseRadius = Math.min(displayWidth, displayHeight) * audioMidsLevel * 0.7;
           const pulseGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseRadius);
-          pulseGrad.addColorStop(0, `rgba(255,255,255,${audioEffectParam * 0.4})`);
+          pulseGrad.addColorStop(0, `rgba(255,255,255,${audioMidsLevel * 0.4})`);
           pulseGrad.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = pulseGrad;
           ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -3026,7 +2910,7 @@ export function InteractiveGradient() {
         const meshScale = 1 / zoom;
         // Audio reactivity: bass affects mesh point spread
         const audioMeshScale = (isAudioEnabled && isAudioReactive) 
-          ? 1 + (audioGradientParam * 0.5) // Up to 50% larger spread
+          ? 1 + (audioSubBassLevel * 0.5) // Up to 50% larger spread
           : 1;
         for (let i = 0; i < meshPoints; i++) {
           const meshAngle = (i * 360 / meshPoints + gradientAngle) * DEG_TO_RAD;
@@ -3061,8 +2945,8 @@ export function InteractiveGradient() {
         const noiseRotCos = Math.cos(noiseDirection * 0.01);
         const noiseRotSin = Math.sin(noiseDirection * 0.01);
         // Audio: color shift cycles through palette, bass pulse brightens from center
-        const noiseColorShift = audioActive ? audioColorShift * 0.6 : 0;
-        const noiseBassBoost = audioActive ? audioGradientParam : 0;
+        const noiseColorShift = audioActive ? audioTrebleLevel * 0.6 : 0;
+        const noiseBassBoost = audioActive ? audioSubBassLevel : 0;
         const maxNoiseDist = Math.sqrt(displayWidth ** 2 + displayHeight ** 2) / 2;
 
         const noiseCX = displayWidth / 2;
@@ -3136,12 +3020,12 @@ export function InteractiveGradient() {
         const plasmaData = plasmaImageData.data;
 
         const plasmaAudioActive = isAudioEnabled && isAudioReactive;
-        const audioPlasmaComplexity = plasmaAudioActive ? audioGradientParam * 50 : 0;
+        const audioPlasmaComplexity = plasmaAudioActive ? audioSubBassLevel * 50 : 0;
         const plasmaZoom = plasmaAudioActive ? 1 : zoom;
         const plasmaScale = ((plasmaComplexity + audioPlasmaComplexity) * 0.004) / (plasmaZoom * plasmaZoomScale);
         // Treble shifts color palette; bass radial pulse from center
-        const plasmaColorShift = plasmaAudioActive ? audioColorShift * 0.6 : 0;
-        const plasmaBassPulse = plasmaAudioActive ? audioGradientParam : 0;
+        const plasmaColorShift = plasmaAudioActive ? audioTrebleLevel * 0.6 : 0;
+        const plasmaBassPulse = plasmaAudioActive ? audioSubBassLevel : 0;
         const plasmaMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
 
         const plasmaCX = displayWidth / 2;
@@ -3190,7 +3074,7 @@ export function InteractiveGradient() {
 
         // Audio reactivity: bass affects gradient animation in cells
         const audioGridOffset = (isAudioEnabled && isAudioReactive)
-          ? audioGradientParam * 360 : 0;
+          ? audioSubBassLevel * 360 : 0;
 
         // Expand draw area to cover canvas when zoomed out
         const gridOverdraw = Math.max(1, 1 / gridZoom);
@@ -3257,13 +3141,13 @@ export function InteractiveGradient() {
         
         const conicalAudioActive = isAudioEnabled && isAudioReactive;
         // Bass pulses tightness (spiral density)
-        const audioConicalTightness = conicalAudioActive ? audioGradientParam * 4 : 0;
+        const audioConicalTightness = conicalAudioActive ? audioSubBassLevel * 4 : 0;
         // Mids change turn count
-        const audioConicalTurns = conicalAudioActive ? audioEffectParam * 3 : 0;
+        const audioConicalTurns = conicalAudioActive ? audioMidsLevel * 3 : 0;
         const conicalZoom = conicalAudioActive ? 1 : zoom;
         // Treble shifts color palette; bass radial pulse
-        const conicalColorShift = conicalAudioActive ? audioColorShift * 0.6 : 0;
-        const conicalBassPulse = conicalAudioActive ? audioGradientParam : 0;
+        const conicalColorShift = conicalAudioActive ? audioTrebleLevel * 0.6 : 0;
+        const conicalBassPulse = conicalAudioActive ? audioSubBassLevel : 0;
         const conicalMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
 
         for (let sy = 0; sy < displayHeight; sy++) {
@@ -3305,8 +3189,8 @@ export function InteractiveGradient() {
         const sizeScale = radialBurstSize / 100;
         const burstRadius = fitRadius * 0.7;
         const isAudioActive = isAudioEnabled && isAudioReactive;
-        const audioBass = isAudioActive ? audioGradientParam : 0;
-        const audioMids = isAudioActive ? audioEffectParam : 0;
+        const audioBass = isAudioActive ? audioSubBassLevel : 0;
+        const audioMids = isAudioActive ? audioMidsLevel : 0;
         // Bass expands spread, mids boost brightness, both scale burst size
         const audioBurstSpread = audioBass * 120;
         const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
@@ -3343,7 +3227,7 @@ export function InteractiveGradient() {
         
         // Audio reactivity: bass affects pin radius
         const audioFreeformRadius = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 200 // Up to 200 extra radius
+          ? audioSubBassLevel * 200 // Up to 200 extra radius
           : 0;
         
         // Create a pixel-based blend using distance to each pin
@@ -3406,11 +3290,11 @@ export function InteractiveGradient() {
         const voronoiSeeds: Array<{x: number, y: number, colorIndex: number}> = [];
         const voronoiAudioActive = isAudioEnabled && isAudioReactive;
         // Bass adds extra cells, treble shifts color assignment, mids add extra movement
-        const audioVoronoiCount = voronoiAudioActive ? Math.floor(audioGradientParam * 15) : 0;
+        const audioVoronoiCount = voronoiAudioActive ? Math.floor(audioSubBassLevel * 15) : 0;
         const totalVoronoiCells = voronoiCellCount + audioVoronoiCount;
         // Treble: integer offset into palette so each beat can assign different colors
         const voronoiColorOffset = voronoiAudioActive
-          ? Math.floor(audioColorShift * gradientColors.length * 3) % gradientColors.length
+          ? Math.floor(audioTrebleLevel * gradientColors.length * 3) % gradientColors.length
           : 0;
 
         for (let i = 0; i < totalVoronoiCells; i++) {
@@ -3418,8 +3302,8 @@ export function InteractiveGradient() {
           const baseY = voronoiSeed(i * 2 + 1) * displayHeight;
 
           // Bass gently accelerates morph, mids add subtle extra movement
-          const audioMorphBoost = voronoiAudioActive ? 1 + audioGradientParam * 3 : 1;
-          const audioMidShift = voronoiAudioActive ? audioEffectParam * 0.1 : 0;
+          const audioMorphBoost = voronoiAudioActive ? 1 + audioSubBassLevel * 3 : 1;
+          const audioMidShift = voronoiAudioActive ? audioMidsLevel * 0.1 : 0;
           const offsetX = Math.sin(voronoiAnimTime * audioMorphBoost + i * 0.5 + audioMidShift) * displayWidth * 0.18;
           const offsetY = Math.cos(voronoiAnimTime * audioMorphBoost + i * 0.7 + audioMidShift) * displayHeight * 0.18;
 
@@ -3430,10 +3314,10 @@ export function InteractiveGradient() {
           });
         }
 
-        const audioVoronoiDistortion = voronoiAudioActive ? audioGradientParam * 80 : 0;
+        const audioVoronoiDistortion = voronoiAudioActive ? audioSubBassLevel * 80 : 0;
         const totalVoronoiDistortion = (voronoiDistortion + audioVoronoiDistortion) * 0.01;
         const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
-        const voronoiBassPulse = voronoiAudioActive ? audioGradientParam : 0;
+        const voronoiBassPulse = voronoiAudioActive ? audioSubBassLevel : 0;
 
         for (let vy = 0; vy < displayHeight; vy++) {
           for (let vx = 0; vx < displayWidth; vx++) {
@@ -3479,13 +3363,13 @@ export function InteractiveGradient() {
         
         // Audio reactivity: bass affects interference angle
         const audioIridescentAngle = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 180 // Up to 180 degree shift
+          ? audioSubBassLevel * 180 // Up to 180 degree shift
           : 0;
         const totalIridescentAngle = (iridescentAngle + gradientAngle + audioIridescentAngle) * DEG_TO_RAD;
         
         // Audio reactivity: mids affect intensity
         const audioIridescentIntensity = (isAudioEnabled && isAudioReactive) 
-          ? audioGradientParam * 0.5 // Up to 0.5 extra intensity
+          ? audioSubBassLevel * 0.5 // Up to 0.5 extra intensity
           : 0;
         const totalIridescentIntensity = iridescentIntensity + audioIridescentIntensity;
         
@@ -3522,8 +3406,8 @@ export function InteractiveGradient() {
             else if (h >= 5 && h < 6) { r = c; g = 0; b = x; }
             
             // Treble shifts color palette; bass radial pulse from center
-            const iriColorShift = (isAudioEnabled && isAudioReactive) ? audioColorShift * 0.6 : 0;
-            const iriBassPulse = (isAudioEnabled && isAudioReactive) ? audioGradientParam : 0;
+            const iriColorShift = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * 0.6 : 0;
+            const iriBassPulse = (isAudioEnabled && isAudioReactive) ? audioSubBassLevel : 0;
             const iriMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
             const iriDist2 = Math.sqrt(dx * dx + dy * dy);
             const iriRadialBoost = 1 + iriBassPulse * (1 - iriDist2 / iriMaxDist) * 0.8;
@@ -3555,13 +3439,13 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const auroraAudio = isAudioEnabled && isAudioReactive;
-        const audioBassA = auroraAudio ? audioGradientParam / 5 : 0;   // 0-1
-        const audioMidsA = auroraAudio ? audioEffectParam / 5 : 0;
+        const audioBassA = auroraAudio ? audioSubBassLevel / 5 : 0;   // 0-1
+        const audioMidsA = auroraAudio ? audioMidsLevel / 5 : 0;
         const auroraTime = auroraAnimTime * (auroraWaveSpeed + audioMidsA * 4) + gradientAngle * 0.01;
         const auroraAudioBoost = 1 + audioBassA * 3.0;           // bands expand on bass
         const auroraWaveAmp  = 1 + audioBassA * 2.5;             // wave ripples harder
         const auroraAlphaBoost = 1 + audioBassA * 1.5;           // brightness flares
-        const auroraColorShift = auroraAudio ? audioColorShift * 0.8 : 0;
+        const auroraColorShift = auroraAudio ? audioTrebleLevel * 0.8 : 0;
         const numBands = auroraBandCount;
         for (let b = 0; b < numBands; b++) {
           const bandY = (displayHeight * (b + 0.5)) / numBands;
@@ -3598,14 +3482,14 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000814';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const causticsAudio = isAudioEnabled && isAudioReactive;
-        const audioBassC = causticsAudio ? audioGradientParam / 5 : 0;   // 0-1
-        const audioMidsC = causticsAudio ? audioEffectParam / 5 : 0;
+        const audioBassC = causticsAudio ? audioSubBassLevel / 5 : 0;   // 0-1
+        const audioMidsC = causticsAudio ? audioMidsLevel / 5 : 0;
         const ct = causticsAnimTime + gradientAngle * 0.02;
         // Bass drives brightness + freq distortion; mids warps phase
         const causticsFreqBoost = 1 + audioBassC * 1.8;
         const causticsBrightnessExp = Math.max(0.3, causticsBrightness - audioBassC * 1.2);
         const causticsPhaseWarp = audioMidsC * 2.5;
-        const causticsColorShift = causticsAudio ? audioColorShift * 0.7 : 0;
+        const causticsColorShift = causticsAudio ? audioTrebleLevel * 0.7 : 0;
         const causticsLightFloor = 0.1 + audioBassC * 0.4;  // black areas light up on bass
         const imageData = ctx.createImageData(displayWidth, displayHeight);
         const d = imageData.data;
@@ -3642,14 +3526,14 @@ export function InteractiveGradient() {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const lavaAudio = isAudioEnabled && isAudioReactive;
-        const audioBassL = lavaAudio ? audioGradientParam / 5 : 0;   // 0-1
-        const audioMidsL = lavaAudio ? audioEffectParam / 5 : 0;
+        const audioBassL = lavaAudio ? audioSubBassLevel / 5 : 0;   // 0-1
+        const audioMidsL = lavaAudio ? audioMidsLevel / 5 : 0;
         const lt = lavaAnimTime + gradientAngle * 0.02;
         // Bass pulses blob size hard; mids speeds orbit; both boost brightness
         const lavaAudioScale = 1 + audioBassL * 3.0;         // blobs expand on bass
         const lavaOrbitBoost = 1 + audioMidsL * 3.0;         // orbit speed up on mids
         const lavaBrightBoost = 1 + audioBassL * 2.0;        // brightness flares
-        const lavaColorShift = lavaAudio ? audioColorShift * 0.8 : 0;
+        const lavaColorShift = lavaAudio ? audioTrebleLevel * 0.8 : 0;
         const imageData2 = ctx.createImageData(displayWidth, displayHeight);
         const d2 = imageData2.data;
         const lavaTime = lt * lavaSpeed * lavaOrbitBoost;
@@ -3705,14 +3589,14 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         const marbleAudio = isAudioEnabled && isAudioReactive;
         const mt = marbleAnimTime + gradientAngle * 0.015;
-        const audioBassM = marbleAudio ? audioGradientParam / 5 : 0;   // 0-1
-        const audioMidsM = marbleAudio ? audioEffectParam / 5 : 0;
+        const audioBassM = marbleAudio ? audioSubBassLevel / 5 : 0;   // 0-1
+        const audioMidsM = marbleAudio ? audioMidsLevel / 5 : 0;
         // Bass cranks turbulence + vein frequency; mids boosts octave richness
         const marbleAudioFreq = 1 + audioBassM * 2.5;
         const marbleTurbBoost = 1 + audioBassM * 4.0;      // veins writhe on bass
         const marbleVeinBoost = 1 + audioBassM * 3.0;      // vein spacing tightens
         const marbleOctAmpBoost = 1 + audioMidsM * 2.0;    // richer texture on mids
-        const marbleColorShift = marbleAudio ? audioColorShift * 0.8 : 0;
+        const marbleColorShift = marbleAudio ? audioTrebleLevel * 0.8 : 0;
         const imageData3 = ctx.createImageData(displayWidth, displayHeight);
         const d3 = imageData3.data;
         const mScale = (1 / zoom) * 3;
@@ -3754,8 +3638,8 @@ export function InteractiveGradient() {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
         // Bass extends trail length; mids flash a bright ring at the sweep head
-        const audioRadarTrail = (isAudioEnabled && isAudioReactive) ? audioGradientParam * 120 : 0;
-        const audioRadarFlash = (isAudioEnabled && isAudioReactive) ? audioEffectParam : 0;
+        const audioRadarTrail = (isAudioEnabled && isAudioReactive) ? audioSubBassLevel * 120 : 0;
+        const audioRadarFlash = (isAudioEnabled && isAudioReactive) ? audioMidsLevel : 0;
         const effectiveRadarFadeLength = Math.min(360, radarFadeLength + audioRadarTrail);
 
         const radarImageData = ctx.createImageData(displayWidth, displayHeight);
@@ -3808,12 +3692,12 @@ export function InteractiveGradient() {
 
         ctx.save();
         // Treble spins the flower; bass pulses the radius; mids add extra layers
-        const audioFlowerRotationBoost = (isAudioEnabled && isAudioReactive) ? audioColorShift * 8 : 0;
+        const audioFlowerRotationBoost = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * 8 : 0;
         ctx.translate(centerX, centerY);
         ctx.rotate(((flowerRotation + flowerAnimTime + audioFlowerRotationBoost) * Math.PI) / 180);
         ctx.translate(-centerX, -centerY);
 
-        const audioFlowerScale = (isAudioEnabled && isAudioReactive) ? 1 + audioGradientParam * 0.12 : 1;
+        const audioFlowerScale = (isAudioEnabled && isAudioReactive) ? 1 + audioSubBassLevel * 0.12 : 1;
         const baseRadius = Math.min(displayWidth, displayHeight) / 6 * flowerScale * audioFlowerScale;
         const circles: Array<{x: number, y: number, colorIndex: number}> = [];
 
@@ -3821,7 +3705,7 @@ export function InteractiveGradient() {
         circles.push({x: centerX, y: centerY, colorIndex: 0});
 
         // Bass beats add an extra layer temporarily
-        const audioLayerBoost = (isAudioEnabled && isAudioReactive) && audioGradientParam > 0.65 ? 1 : 0;
+        const audioLayerBoost = (isAudioEnabled && isAudioReactive) && audioSubBassLevel > 0.65 ? 1 : 0;
         // Create hexagonal pattern of overlapping circles
         const layers = flowerCircles + audioLayerBoost;
         for (let layer = 1; layer <= layers; layer++) {
@@ -3889,8 +3773,8 @@ export function InteractiveGradient() {
     }
 
     // Vocal shimmer — treble energy scatters bright sparkle pixels
-    if (isAudioEnabled && isAudioReactive && audioColorShift > 4) {
-      const shimmer = Math.min(1, audioColorShift / 90);
+    if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 4) {
+      const shimmer = Math.min(1, audioTrebleLevel / 90);
       const count = Math.floor(shimmer * shimmer * 400);
       ctx.save();
       for (let i = 0; i < count; i++) {
@@ -3898,7 +3782,7 @@ export function InteractiveGradient() {
         const sy = Math.random() * displayHeight;
         const alpha = (0.4 + Math.random() * 0.6) * shimmer;
         const size = Math.random() < 0.75 ? 1 : 2;
-        const hue = (Math.random() * 60 + audioColorShift * 3) % 360;
+        const hue = (Math.random() * 60 + audioTrebleLevel * 3) % 360;
         ctx.globalAlpha = alpha;
         ctx.fillStyle = `hsl(${hue}, 100%, 88%)`;
         ctx.fillRect(sx, sy, size, size);
@@ -3923,16 +3807,16 @@ export function InteractiveGradient() {
       // Check if this is the first effect and audio reactivity is enabled
       const isFirstEffect = index === 0;
       const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect) 
-        ? audioEffectParam 
+        ? audioMidsLevel 
         : 0;
       
       // Get imageData only for effects that need it
-      const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'crackle', 'dust-scratches', 'color-shift', 'duotone', 'tritone', 'gradient-map'].includes(effectType);
+      const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'dust-scratches', 'color-shift', 'duotone', 'tritone'].includes(effectType);
       let imageData: ImageData | null = null;
       
       if (needsImageData) {
         try {
-          imageData = ctx.getImageData(0, 0, displayWidth, displayHeight);
+          imageData = getDisplayImageData();
         } catch (e) {
           console.error('Failed to get image data:', e);
           return;
@@ -3956,7 +3840,7 @@ export function InteractiveGradient() {
             // Use diagonal so segments always reach every corner
             const r = Math.sqrt(cx * cx + cy * cy) * 1.5;
             // Accumulate rotation each frame
-            kaleidoAngleRef.current += (kaleidoscopeRotateSpeed / 200) * (1 + (isAudioReactive ? audioEffectParam * 3 : 0));
+            kaleidoAngleRef.current += (kaleidoscopeRotateSpeed / 200) * (1 + (isAudioReactive ? audioMidsLevel * 3 : 0));
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(kaleidoAngleRef.current);
@@ -4054,11 +3938,11 @@ export function InteractiveGradient() {
           
         case 'chromatic': {
           if (displayWidth <= 1 || displayHeight <= 1) break;
-          const src = ctx.getImageData(0, 0, displayWidth, displayHeight);
+          const src = getDisplayImageData();
           const dst = ctx.createImageData(displayWidth, displayHeight);
           // True 2D RGB split: R→upper-left, G stays, B→lower-right
-          // Spikes on treble via audioColorShift
-          const trebleSpike = isFirstEffect && isAudioReactive ? (audioColorShift / 90) * chromaticOffset * 1.5 : 0;
+          // Spikes on treble via audioTrebleLevel
+          const trebleSpike = isFirstEffect && isAudioReactive ? (audioTrebleLevel / 90) * chromaticOffset * 1.5 : 0;
           const off = Math.min(Math.abs(chromaticOffset) + trebleSpike, displayWidth / 3);
           const offInt = Math.round(off);
           for (let y = 0; y < displayHeight; y++) {
@@ -4266,7 +4150,7 @@ export function InteractiveGradient() {
         case 'vhs-glitch': {
           // VHS effect with horizontal disruption — spikes on bass beats
           if (canvas.width === 0 || canvas.height === 0) break;
-          const bassBoost = isAudioReactive ? (audioGradientParam / 5) * 0.9 : 0;
+          const bassBoost = isAudioReactive ? (audioSubBassLevel / 5) * 0.9 : 0;
           const effectiveVhsIntensity = Math.min(1, vhsGlitchIntensity + bassBoost);
 
           // Apply horizontal blur first for VHS tape tracking blur
@@ -4362,14 +4246,14 @@ export function InteractiveGradient() {
           ctx.filter = 'none';
           break;
         
-        case 'radial-blur': {
+        case 'zoom-blur': {
           // True zoom blur: per-pixel multi-sample toward center (flying-toward-camera look)
           if (canvas.width === 0 || canvas.height === 0) break;
           try {
-            const zbSrc = ctx.getImageData(0, 0, displayWidth, displayHeight);
+            const zbSrc = getDisplayImageData();
             const zbDst = ctx.createImageData(displayWidth, displayHeight);
             const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
-            const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioEffectParam * 2 : 1));
+            const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
             const zbSteps = 10;
             for (let y = 0; y < displayHeight; y++) {
               for (let x = 0; x < displayWidth; x++) {
@@ -4396,12 +4280,12 @@ export function InteractiveGradient() {
           // Wave distortion with rotation and wrapped edges to prevent white gaps
           if (canvas.width === 0 || canvas.height === 0) break;
           try {
-            const waveData = ctx.getImageData(0, 0, displayWidth, displayHeight);
+            const waveData = getDisplayImageData();
             const tempWave = ctx.createImageData(displayWidth, displayHeight);
             const angleRad = waveDistortionRotation * Math.PI / 180;
             // Audio: bass boosts amplitude, mids boost frequency
-            const audioWaveAmp = isAudioReactive ? (audioGradientParam / 5) * 80 : 0;
-            const audioWaveFreqMult = isAudioReactive ? 1 + audioEffectParam * 3 : 1;
+            const audioWaveAmp = isAudioReactive ? (audioSubBassLevel / 5) * 80 : 0;
+            const audioWaveFreqMult = isAudioReactive ? 1 + audioMidsLevel * 3 : 1;
             const effectiveWaveStrength = waveDistortionStrength + audioWaveAmp;
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
@@ -4661,7 +4545,7 @@ export function InteractiveGradient() {
         
         case 'dither':
           // Dither effect
-          const ditherImageData = ctx.getImageData(0, 0, displayWidth, displayHeight);
+          const ditherImageData = getDisplayImageData();
           const ditherData = ditherImageData.data;
           
           const bayer = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
@@ -4704,7 +4588,7 @@ export function InteractiveGradient() {
 
         case 'slit-scan':
           // Temporal pixel stretching
-          const ssImg = ctx.getImageData(0, 0, displayWidth, displayHeight);
+          const ssImg = getDisplayImageData();
           slitScanBufferRef.current.push(ssImg);
           if (slitScanBufferRef.current.length > 60) slitScanBufferRef.current.shift();
 
@@ -4780,12 +4664,12 @@ export function InteractiveGradient() {
           bloomTmp.height = displayHeight;
           const bloomCtx = bloomTmp.getContext('2d');
           if (bloomCtx) {
-            const audioBloomBoost = isAudioReactive ? audioGradientParam / 5 * 20 : 0;
+            const audioBloomBoost = isAudioReactive ? audioSubBassLevel / 5 * 20 : 0;
             const effectiveRadius = bloomRadius + audioBloomBoost;
             bloomCtx.filter = `blur(${effectiveRadius}px)`;
             bloomCtx.drawImage(canvas, 0, 0);
             bloomCtx.filter = 'none';
-            const audioBloomAlpha = isAudioReactive ? Math.min(2, bloomIntensity + audioGradientParam / 5 * 0.5) : bloomIntensity;
+            const audioBloomAlpha = isAudioReactive ? Math.min(2, bloomIntensity + audioSubBassLevel / 5 * 0.5) : bloomIntensity;
             ctx.save();
             ctx.globalAlpha = Math.min(1, audioBloomAlpha);
             ctx.globalCompositeOperation = 'screen';
@@ -4806,9 +4690,9 @@ export function InteractiveGradient() {
           const fb = feedbackBufferRef.current;
           if (fb && fb.width === displayWidth && fb.height === displayHeight) {
             const audioFbDecay = isAudioReactive
-              ? Math.min(0.98, feedbackDecay + audioGradientParam / 5 * 0.08)
+              ? Math.min(0.98, feedbackDecay + audioSubBassLevel / 5 * 0.08)
               : feedbackDecay;
-            const audioFbZoom = feedbackZoom * (1 + (isAudioReactive ? audioGradientParam / 5 * 0.3 : 0));
+            const audioFbZoom = feedbackZoom * (1 + (isAudioReactive ? audioSubBassLevel / 5 * 0.3 : 0));
             // Clear canvas and draw feedback behind current frame
             ctx.clearRect(0, 0, displayWidth, displayHeight);
             ctx.save();
@@ -4838,7 +4722,7 @@ export function InteractiveGradient() {
           // Beat-triggered expanding circular wave distortion
           if (canvas.width === 0 || canvas.height === 0) break;
           try {
-            const bassSig = isAudioReactive ? audioGradientParam / 5 : 0;
+            const bassSig = isAudioReactive ? audioSubBassLevel / 5 : 0;
             const bassThreshold = 0.35;
             if (bassSig > bassThreshold && prevBassForRippleRef.current <= bassThreshold) {
               rippleRingsRef.current.push({ phase: 0, strength: bassSig });
@@ -4849,7 +4733,7 @@ export function InteractiveGradient() {
             rippleRingsRef.current = rippleRingsRef.current.filter(r => r.phase < 1.0);
 
             if (rippleRingsRef.current.length === 0) break;
-            const ripSrc = ctx.getImageData(0, 0, displayWidth, displayHeight);
+            const ripSrc = getDisplayImageData();
             const ripOut = ctx.createImageData(displayWidth, displayHeight);
             const ripCx = displayWidth / 2, ripCy = displayHeight / 2;
             const ripMaxR = Math.sqrt(ripCx * ripCx + ripCy * ripCy);
@@ -5758,14 +5642,14 @@ export function InteractiveGradient() {
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsAIColorPickerOpen(!isAIColorPickerOpen)}
-            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm hover:shadow flex items-center justify-between"
+            className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-between"
           >
-            <span>Color Palette</span>
+            <span>Color</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${isAIColorPickerOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={() => setIsAutoColor(prev => !prev)}
-            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center ${isAutoColor ? 'bg-white/60 text-white shadow-md' : 'bg-white/8 text-white/50 shadow-sm hover:bg-white/15 hover:text-white line-through'}`}
+            className={`w-[40px] px-1 py-1 rounded-lg text-[10px] transition-all backdrop-blur-sm font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-white/8 text-white/50 hover:bg-white/15 hover:text-white line-through'}`}
             title="Auto color change"
           >
             AUTO
@@ -6188,7 +6072,7 @@ export function InteractiveGradient() {
                 <input
                   type="range"
                   min="0.1"
-                  max="3"
+                  max="10"
                   step="0.1"
                   value={iridescentScale}
                   onChange={(e) => setIridescentScale(Number(e.target.value))}
@@ -6197,7 +6081,7 @@ export function InteractiveGradient() {
                 <input
                   type="number"
                   min="0.1"
-                  max="3"
+                  max="10"
                   step="0.1"
                   value={iridescentScale}
                   onChange={(e) => setIridescentScale(Number(e.target.value))}
@@ -6213,7 +6097,6 @@ export function InteractiveGradient() {
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
             {[
               { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
-              { label: 'Wave Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 4, step: 0.1 },
               { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
@@ -6252,7 +6135,6 @@ export function InteractiveGradient() {
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
-              { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 4, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
@@ -6712,7 +6594,7 @@ export function InteractiveGradient() {
             <div className="flex items-center gap-2">
               <label className="text-xs text-white whitespace-nowrap">Type:</label>
               <div className="flex gap-1 flex-1">
-                {(['smooth', 'ridged', 'turbulence'] as const).map(t => (
+                {(['smooth', 'ridged'] as const).map(t => (
                   <button key={t} onClick={() => setNoiseType(t)} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-white/8 text-white hover:bg-white/15'}`}>{t}</button>
                 ))}
               </div>
@@ -7123,7 +7005,7 @@ export function InteractiveGradient() {
           </button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
             {([
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
@@ -7140,17 +7022,19 @@ export function InteractiveGradient() {
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
               { value: 'kaleidoscope',   label: 'Kaleidoscope' },
+              { value: 'motion-blur',    label: 'Motion Blur' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
-              { value: 'radial-blur',    label: 'Radial Blur' },
               { value: 'ripple',         label: 'Ripple' },
               { value: 'charcoal',       label: 'Saturate' },
               { value: 'color-shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
               { value: 'triangulate',    label: 'Triangulate' },
+              { value: 'tritone',        label: 'Tritone' },
               { value: 'vhs-glitch',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave-distortion',label: 'Wave' },
+              { value: 'zoom-blur',      label: 'Zoom Blur' },
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none').map((effect) => (
               <button
                 key={effect.value}
@@ -7219,35 +7103,6 @@ export function InteractiveGradient() {
                     <label className="text-xs text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <span className="text-xs text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
-                  </div>
-                </>
-              )}
-              {activeEffects.includes('tile') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Tile</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Tiles:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="1"
-                        max="64"
-                        value={tileCount}
-                        onChange={(e) => setTileCount(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="64"
-                        value={tileCount}
-                        onChange={(e) => setTileCount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
                   </div>
                 </>
               )}
@@ -7388,7 +7243,7 @@ export function InteractiveGradient() {
                   </div>
                 </>
               )}
-              {activeEffects.includes('radial-blur') && (
+              {activeEffects.includes('zoom-blur') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
                     <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Zoom Blur</span>
@@ -7655,17 +7510,6 @@ export function InteractiveGradient() {
                   </div>
                 </>
               )}
-              {activeEffects.includes('bulge') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Bulge</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                  )}
-                  <input type="range" min="0" max="1" step="0.05" value={bulgeStrength} onChange={(e) => setBulgeStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={bulgeStrength} onChange={(e) => setBulgeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
               {activeEffects.includes('charcoal') && (
                 <div className="flex items-center gap-1 mt-1">
                   {activeEffects.length > 1 ? (
@@ -7679,41 +7523,8 @@ export function InteractiveGradient() {
               )}
               
               
-              {activeEffects.includes('crackle') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Crackle</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  )}
-                  <input type="range" min="0" max="1" step="0.05" value={crackleIntensity} onChange={(e) => setCrackleIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={crackleIntensity} onChange={(e) => setCrackleIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
 
-              {activeEffects.includes('crystallize') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Crystallize</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  )}
-                  <input type="range" min="5" max="50" value={crystallizeSize} onChange={(e) => setCrystallizeSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="50" value={crystallizeSize} onChange={(e) => setCrystallizeSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
               
-              {activeEffects.includes('displacement') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Displace</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                  )}
-                  <input type="range" min="5" max="50" value={displacementStrength} onChange={(e) => setDisplacementStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="50" value={displacementStrength} onChange={(e) => setDisplacementStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
               {activeEffects.includes('duotone') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
@@ -7780,39 +7591,6 @@ export function InteractiveGradient() {
                     </div>
                   </div>
                 </>
-              )}
-              {activeEffects.includes('fabric-weave') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Fabric</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Scale:</label>
-                  )}
-                  <input type="range" min="5" max="30" value={fabricScale} onChange={(e) => setFabricScale(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="30" value={fabricScale} onChange={(e) => setFabricScale(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
-              {activeEffects.includes('gradient-map') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Grad Map</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  )}
-                  <input type="range" min="0" max="1" step="0.05" value={gradientMapIntensity} onChange={(e) => setGradientMapIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={gradientMapIntensity} onChange={(e) => setGradientMapIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
-              )}
-              {activeEffects.includes('grid-overlay') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Grid Over</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  )}
-                  <input type="range" min="10" max="100" value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="10" max="100" value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
               )}
               {activeEffects.includes('grid') && (
                 <>
@@ -7966,390 +7744,11 @@ export function InteractiveGradient() {
                   </div>
                 </>
               )}
-              {activeEffects.includes('impressionist') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Impressn</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Brush Size:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="2"
-                      max="15"
-                      value={impressionistBrushSize}
-                      onChange={(e) => setImpressionistBrushSize(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="2"
-                        max="15"
-                        value={impressionistBrushSize}
-                        onChange={(e) => setImpressionistBrushSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
-              {activeEffects.includes('ink-wash') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Ink Wash</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={inkWashIntensity}
-                      onChange={(e) => setInkWashIntensity(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={inkWashIntensity}
-                        onChange={(e) => setInkWashIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
-              {activeEffects.includes('lens-flare') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Lens Flare</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={lensFlareIntensity}
-                        onChange={(e) => setLensFlareIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={lensFlareIntensity}
-                        onChange={(e) => setLensFlareIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="50"
-                        max="800"
-                        step="10"
-                        value={lensFlareSize}
-                        onChange={(e) => setLensFlareSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="50"
-                        max="800"
-                        step="10"
-                        value={lensFlareSize}
-                        onChange={(e) => setLensFlareSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs text-white whitespace-nowrap">Position:</label>
-                    <button
-                      onClick={() => {
-                        // Click to reposition the lens flare - similar to freeform pins
-                        const canvas = canvasRef.current;
-                        if (!canvas) return;
-                        
-                        const handleClick = (e: MouseEvent) => {
-                          e.stopPropagation();
-                          const rect = canvas.getBoundingClientRect();
-                          const x = (e.clientX - rect.left) / rect.width;
-                          const y = (e.clientY - rect.top) / rect.height;
-                          setLensFlareX(Math.max(0, Math.min(1, x)));
-                          setLensFlareY(Math.max(0, Math.min(1, y)));
-                          canvas.removeEventListener('click', handleClick);
-                          canvas.style.cursor = 'grab';
-                        };
-                        
-                        canvas.style.cursor = 'crosshair';
-                        canvas.addEventListener('click', handleClick, { once: true });
-                      }}
-                      className="px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-xs text-white flex-1"
-                    >
-                      Click to Position
-                    </button>
-                  </div>
-                </>
-              )}
 
-              {activeEffects.includes('mosaic') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Mosaic</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                    <input
-                      type="range"
-                      min="5"
-                      max="40"
-                      value={mosaicSize}
-                      onChange={(e) => setMosaicSize(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="5"
-                        max="40"
-                        value={mosaicSize}
-                        onChange={(e) => setMosaicSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
-              {activeEffects.includes('palette-knife') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Palette</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="15"
-                        value={paletteKnifeSize}
-                        onChange={(e) => setPaletteKnifeSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="15"
-                        value={paletteKnifeSize}
-                        onChange={(e) => setPaletteKnifeSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-              {activeEffects.includes('paper-texture') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Paper Tex</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={paperTextureIntensity}
-                      onChange={(e) => setPaperTextureIntensity(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={paperTextureIntensity}
-                        onChange={(e) => setPaperTextureIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
-              {activeEffects.includes('pastel') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Pastel</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={pastelIntensity}
-                      onChange={(e) => setPastelIntensity(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={pastelIntensity}
-                        onChange={(e) => setPastelIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                  </div>
-                </div>
-                </>
-              )}
               
               
               
-              {activeEffects.includes('shatter') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Shatter</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="10"
-                        max="100"
-                        value={shatterSize}
-                        onChange={(e) => setShatterSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="10"
-                        max="100"
-                        value={shatterSize}
-                        onChange={(e) => setShatterSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
               
-              {activeEffects.includes('stipple') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Stipple</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={stippleSize}
-                        onChange={(e) => setStippleSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={stippleSize}
-                        onChange={(e) => setStippleSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-              {activeEffects.includes('swirl') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Swirl</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="3"
-                        step="0.1"
-                        value={swirlStrength}
-                        onChange={(e) => setSwirlStrength(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="3"
-                        step="0.1"
-                        value={swirlStrength}
-                        onChange={(e) => setSwirlStrength(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-              {activeEffects.includes('triangular-grid') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Tri Grid</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                    )}
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="10"
-                        max="80"
-                        value={triGridSize}
-                        onChange={(e) => setTriGridSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="10"
-                        max="80"
-                        value={triGridSize}
-                        onChange={(e) => setTriGridSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
               {activeEffects.includes('tritone') && (
                 <>
                   <div className="flex items-center gap-1 mt-1">
@@ -8426,37 +7825,6 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={vhsGlitchIntensity}
                         onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-              {activeEffects.includes('tape-hiss') && (
-                <>
-                  <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Tape Hiss</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Tape Hiss:</label>
-                    )}
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={tapeHissIntensity}
-                        onChange={(e) => setTapeHissIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={tapeHissIntensity}
-                        onChange={(e) => setTapeHissIntensity(Number(e.target.value))}
                         className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
                       />
                     </div>

@@ -51,7 +51,7 @@ export interface GradientConfig {
   iridescentScale?: number;
   
   // Audio reactivity
-  audioGradientParam?: number;
+  audioSubBassLevel?: number;
   isAudioReactive?: boolean;
 }
 

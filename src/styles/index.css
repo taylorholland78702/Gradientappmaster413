@@ -65,8 +65,14 @@
   filter: none !important;
   color: rgba(0,0,0,0.7) !important;
 }
-/* Frosted glass elements → dark tint */
-.control-panel.panel-light [class*="bg-white"] {
+/* Frosted glass elements → dark tint (only explicit base bg classes, not hover variants) */
+.control-panel.panel-light :is(
+  [class~="bg-white/5"],
+  [class~="bg-white/8"],
+  [class~="bg-white/15"],
+  [class~="bg-white/20"],
+  [class~="bg-white/30"]
+) {
   background-color: rgba(0,0,0,0.06) !important;
 }
 /* Section bg containers */
