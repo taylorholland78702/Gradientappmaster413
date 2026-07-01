@@ -7156,12 +7156,8 @@ export function InteractiveGradient() {
 
         {/* ── Effects Tab ── */}
         {activeTab === 'effects' && (<>
-        {/* Top row: CLEAR + MULTI + Shuffle */}
+        {/* Top row: MULTI + Shuffle + RESET */}
         <div className="w-full mb-0.5 flex gap-0.5">
-          <button
-            onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
-          >RESET</button>
           <button
             onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
             className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
@@ -7171,6 +7167,10 @@ export function InteractiveGradient() {
             className="flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 shadow-sm flex items-center justify-center"
             title="Shuffle Effects"
           ><Shuffle className="w-3.5 h-3.5" /></button>
+          <button
+            onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
+            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
+          >RESET</button>
         </div>
         <div className="w-full">
           <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
