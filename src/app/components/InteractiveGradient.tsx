@@ -3969,7 +3969,7 @@ export function InteractiveGradient() {
           
         case 'fisheye': {
           const w = displayWidth, h = displayHeight;
-          const src = ctx.getImageData(0, 0, w, h);
+          const src = getDisplayImageData();
           const dst = ctx.createImageData(w, h);
           const cx = w / 2, cy = h / 2;
           const R = Math.min(cx, cy);
@@ -4159,23 +4159,34 @@ export function InteractiveGradient() {
           // Apply horizontal blur first for VHS tape tracking blur
           const blurStrength = Math.floor(2 + effectiveVhsIntensity * 3);
           ctx.filter = `blur(${blurStrength}px)`;
-          ctx.drawImage(canvas, 0, 0);
+          // Explicit CSS destination size avoids the physical-pixel intrinsic size
+          // being scaled up 4× by ctx.scale on Retina displays
+          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.filter = 'none';
 
           // More horizontal glitches with varying sizes
+          // Capture one CSS-pixel snapshot so slice extraction works at CSS coords
+          const vhsFullImg = getDisplayImageData();
           const numGlitches = Math.floor(15 + effectiveVhsIntensity * 50);
           for (let i = 0; i < numGlitches; i++) {
             const y = Math.random() * displayHeight;
             const h = Math.max(2, Math.min(60, Math.random() * 60 * effectiveVhsIntensity));
             const offset = (Math.random() - 0.5) * 300 * effectiveVhsIntensity;
-            if (y >= 0 && y + h <= displayHeight && displayWidth > 0) {
+            const yInt = Math.floor(y);
+            const hInt = Math.max(2, Math.ceil(h));
+            if (yInt >= 0 && yInt + hInt <= displayHeight && displayWidth > 0) {
               try {
-                const slice = ctx.getImageData(0, y, displayWidth, h);
+                const slice = ctx.createImageData(displayWidth, hInt);
+                for (let row = 0; row < hInt; row++) {
+                  const srcRow = Math.min(yInt + row, displayHeight - 1);
+                  const srcOff = srcRow * displayWidth * 4;
+                  slice.data.set(vhsFullImg.data.subarray(srcOff, srcOff + displayWidth * 4), row * displayWidth * 4);
+                }
                 ctx.filter = `blur(${blurStrength * 1.5}px)`;
-                putScaledImageData(slice, offset, y);
+                putScaledImageData(slice, offset, yInt);
                 ctx.filter = 'none';
               } catch (e) {
-                // Skip if getImageData fails
+                // Skip if slice extraction fails
               }
             }
           }
