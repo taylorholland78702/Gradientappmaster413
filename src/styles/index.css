@@ -115,23 +115,14 @@
 
 /* Glassy specular highlight traveling with the wave */
 @keyframes wav-light-sweep {
-  0%   { transform: translateX(-200%) skewX(-10deg); opacity: 0; }
+  0%   { transform: translateX(-200%); opacity: 0; }
   10%  { opacity: 1; }
   90%  { opacity: 1; }
-  100% { transform: translateX(300%)  skewX(-10deg); opacity: 0; }
+  100% { transform: translateX(300%);  opacity: 0; }
 }
 
-/* Applied to the button itself while held.
- * content-box + 6px padding top/bottom gives 44px of rendered area so the
- * flag wave can bend both above and below the natural 32px pill bounds.
- * Negative margins cancel the layout shift. */
+/* Applied to the button itself while held — no shape deformation, stripe only */
 .wav-wave-active {
-  animation: wav-ripple 0.7s ease-in-out infinite;
-  box-sizing: content-box !important;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-  margin-top: -6px !important;
-  margin-bottom: -6px !important;
   z-index: 1;
 }
 
