@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -312,6 +312,8 @@ export function InteractiveGradient() {
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
   const [radarFadeLength, setRadarFadeLength] = useState(90);
+  const [fadeDirection, setFadeDirection] = useState(0);
+  const [radarBeamWidth, setRadarBeamWidth] = useState(30);
   const [flowerCircles, setFlowerCircles] = useState(4);
   const [flowerScale, setFlowerScale] = useState(0.8);
   const [flowerSpread, setFlowerSpread] = useState(0.55);
@@ -333,6 +335,12 @@ export function InteractiveGradient() {
   const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
   const [marbleTurbulence, setMarbleTurbulence] = useState(1.5);
   const [marbleOctaves, setMarbleOctaves] = useState(5);
+  const [meshJitter, setMeshJitter] = useState(0);
+  const [chromaticAngle, setChromaticAngle] = useState(0);
+  const [vignetteSoftness, setVignetteSoftness] = useState(50);
+  const [fisheyeCenterX, setFisheyeCenterX] = useState(50);
+  const [fisheyeCenterY, setFisheyeCenterY] = useState(50);
+  const [mirrorMode, setMirrorMode] = useState<'horizontal' | 'vertical' | 'quad'>('horizontal');
 
   // Store base AI colors to keep them anchored
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
@@ -2477,7 +2485,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3020,7 +3028,21 @@ export function InteractiveGradient() {
         const g = Math.round(currentColor.g + (nextColor.g - currentColor.g) * blendAmount);
         const b = Math.round(currentColor.b + (nextColor.b - currentColor.b) * blendAmount);
 
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        if (gradientColors.length >= 2 && fadeDirection !== 0) {
+          const fadeRad = fadeDirection * Math.PI / 180;
+          const fadeCx = displayWidth / 2, fadeCy = displayHeight / 2;
+          const fadeHalfDiag = Math.sqrt(fadeCx * fadeCx + fadeCy * fadeCy);
+          const fx0 = fadeCx - Math.cos(fadeRad) * fadeHalfDiag;
+          const fy0 = fadeCy - Math.sin(fadeRad) * fadeHalfDiag;
+          const fx1 = fadeCx + Math.cos(fadeRad) * fadeHalfDiag;
+          const fy1 = fadeCy + Math.sin(fadeRad) * fadeHalfDiag;
+          const fadeLinGrad = ctx.createLinearGradient(fx0, fy0, fx1, fy1);
+          fadeLinGrad.addColorStop(0, `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`);
+          fadeLinGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
+          ctx.fillStyle = fadeLinGrad;
+        } else {
+          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        }
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
         // Mids: radial pulse from center
@@ -3047,8 +3069,11 @@ export function InteractiveGradient() {
           : 1;
         for (let i = 0; i < meshPoints; i++) {
           const meshAngle = (i * 360 / meshPoints + gradientAngle) * DEG_TO_RAD;
-          const meshX = centerX + Math.cos(meshAngle) * fitRadius * 0.6 * meshScale * audioMeshScale;
-          const meshY = centerY + Math.sin(meshAngle) * fitRadius * 0.6 * meshScale * audioMeshScale;
+          const jitterAmount = (meshJitter / 100) * fitRadius * 0.3;
+          const jx = (Math.sin(i * 127.1) * 0.5 + 0.5) * 2 - 1;
+          const jy = (Math.sin(i * 269.5) * 0.5 + 0.5) * 2 - 1;
+          const meshX = centerX + Math.cos(meshAngle) * fitRadius * 0.6 * meshScale * audioMeshScale + jx * jitterAmount;
+          const meshY = centerY + Math.sin(meshAngle) * fitRadius * 0.6 * meshScale * audioMeshScale + jy * jitterAmount;
           const meshRadius = Math.max(0, fitRadius * 0.8 * meshScale * audioMeshScale);
           const meshGrad = ctx.createRadialGradient(meshX, meshY, 0, meshX, meshY, meshRadius);
           const colorIndex = i % gradientColors.length;
@@ -3787,11 +3812,14 @@ export function InteractiveGradient() {
             let angleDiff = (radarSweepAngle - pixelAngle + 360) % 360;
 
             let brightness = 0;
-            if (angleDiff <= effectiveRadarFadeLength) {
-              brightness = 1 - (angleDiff / effectiveRadarFadeLength);
+            const beamHalf = radarBeamWidth / 2;
+            if (angleDiff <= beamHalf) {
+              brightness = 1;
+            } else if (angleDiff <= beamHalf + effectiveRadarFadeLength) {
+              brightness = 1 - ((angleDiff - beamHalf) / effectiveRadarFadeLength);
             }
             // Mids: bright flash at the sweep head
-            if (angleDiff <= 3) brightness = Math.max(brightness, audioRadarFlash);
+            if (angleDiff <= beamHalf + 3) brightness = Math.max(brightness, audioRadarFlash);
 
             // Get color from gradient
             const colorPos = (pixelAngle / 360) * (gradientColors.length - 1);
@@ -4073,15 +4101,18 @@ export function InteractiveGradient() {
           const trebleSpike = isFirstEffect && isAudioReactive ? (audioTrebleLevel / 90) * chromaticOffset * 1.5 : 0;
           const off = Math.min(Math.abs(chromaticOffset) + trebleSpike, displayWidth / 3);
           const offInt = Math.round(off);
+          const chromRad = chromaticAngle * Math.PI / 180;
+          const chromDx = Math.round(Math.cos(chromRad) * offInt);
+          const chromDy = Math.round(Math.sin(chromRad) * offInt);
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
               const i = (y * displayWidth + x) * 4;
-              // R channel: shift upper-left (−offInt, −offInt)
-              const rx = Math.max(0, Math.min(displayWidth - 1, x - offInt));
-              const ry = Math.max(0, Math.min(displayHeight - 1, y - offInt));
-              // B channel: shift lower-right (+offInt, +offInt)
-              const bx = Math.max(0, Math.min(displayWidth - 1, x + offInt));
-              const by = Math.max(0, Math.min(displayHeight - 1, y + offInt));
+              // R channel: shift in negative direction
+              const rx = Math.max(0, Math.min(displayWidth - 1, x - chromDx));
+              const ry = Math.max(0, Math.min(displayHeight - 1, y - chromDy));
+              // B channel: shift in positive direction
+              const bx = Math.max(0, Math.min(displayWidth - 1, x + chromDx));
+              const by = Math.max(0, Math.min(displayHeight - 1, y + chromDy));
               dst.data[i]     = src.data[(ry * displayWidth + rx) * 4];
               dst.data[i + 1] = src.data[i + 1]; // G unchanged
               dst.data[i + 2] = src.data[(by * displayWidth + bx) * 4 + 2];
@@ -4096,8 +4127,8 @@ export function InteractiveGradient() {
           const w = displayWidth, h = displayHeight;
           const src = getDisplayImageData();
           const dst = ctx.createImageData(w, h);
-          const cx = w / 2, cy = h / 2;
-          const R = Math.min(cx, cy);
+          const cx = (fisheyeCenterX / 100) * w, cy = (fisheyeCenterY / 100) * h;
+          const R = Math.min(w / 2, h / 2);
           const str = Math.max(0.01, fisheyeStrength + (isFirstEffect ? audioModulation : 0));
           for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
@@ -4413,7 +4444,29 @@ export function InteractiveGradient() {
           } catch(e) { /* skip */ }
           break;
         }
-        
+
+        case 'mirror': {
+          if (canvas.width === 0 || canvas.height === 0) break;
+          const mw = displayWidth, mh = displayHeight;
+          const mirrorTemp = document.createElement('canvas');
+          mirrorTemp.width = mw; mirrorTemp.height = mh;
+          const mCtx = mirrorTemp.getContext('2d')!;
+          if (mirrorMode === 'horizontal') {
+            mCtx.drawImage(canvas, 0, 0, mw/2, mh, 0, 0, mw/2, mh);
+            mCtx.save(); mCtx.scale(-1, 1); mCtx.drawImage(canvas, 0, 0, mw/2, mh, -mw, 0, mw/2, mh); mCtx.restore();
+          } else if (mirrorMode === 'vertical') {
+            mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, 0, mw, mh/2);
+            mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, -mh, mw, mh/2); mCtx.restore();
+          } else {
+            mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, 0, 0, mw/2, mh/2);
+            mCtx.save(); mCtx.scale(-1, 1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, -mw, 0, mw/2, mh/2); mCtx.restore();
+            mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, 0, -mh, mw/2, mh/2); mCtx.restore();
+            mCtx.save(); mCtx.scale(-1, -1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, -mw, -mh, mw/2, mh/2); mCtx.restore();
+          }
+          ctx.clearRect(0, 0, mw, mh);
+          ctx.drawImage(mirrorTemp, 0, 0);
+          break;
+        }
 
         case 'wave-distortion':
           // Wave distortion with rotation and wrapped edges to prevent white gaps
@@ -4511,10 +4564,11 @@ export function InteractiveGradient() {
           break;
         }
         
-        case 'vignette':
+        case 'vignette': {
           // Darken edges
           const vigRadius = Math.max(0, Math.max(displayWidth, displayHeight) / 1.5);
-          const vigGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, vigRadius);
+          const vigInnerRadius = vigRadius * (vignetteSoftness / 100);
+          const vigGrad = ctx.createRadialGradient(centerX, centerY, vigInnerRadius, centerX, centerY, vigRadius);
           vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
           // Audio modulation affects vignette strength
           const audioVignetteStrength = isFirstEffect ? audioModulation * 0.5 : 0;
@@ -4523,6 +4577,7 @@ export function InteractiveGradient() {
           ctx.fillStyle = vigGrad;
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           break;
+        }
         
         case 'grid': {
           if (canvas.width === 0 || canvas.height === 0) break;
@@ -4601,6 +4656,33 @@ export function InteractiveGradient() {
             }
             ctx.globalAlpha = 1.0;
             ctx.filter = 'none';
+          } else if (blurType === 'radial') {
+            // Radial zoom blur (same as former zoom-blur effect)
+            if (canvas.width > 0 && canvas.height > 0) {
+              try {
+                const zbSrc = getDisplayImageData();
+                const zbDst = ctx.createImageData(displayWidth, displayHeight);
+                const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
+                const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isFirstEffect && isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
+                const zbSteps = 10;
+                for (let y = 0; y < displayHeight; y++) {
+                  for (let x = 0; x < displayWidth; x++) {
+                    let rr = 0, gg = 0, bb = 0;
+                    for (let s = 0; s < zbSteps; s++) {
+                      const t = 1 - zbAmt * (s / zbSteps);
+                      const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(zbCx + (x - zbCx) * t)));
+                      const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(zbCy + (y - zbCy) * t)));
+                      const si = (sy * displayWidth + sx) * 4;
+                      rr += zbSrc.data[si]; gg += zbSrc.data[si+1]; bb += zbSrc.data[si+2];
+                    }
+                    const di = (y * displayWidth + x) * 4;
+                    zbDst.data[di] = rr / zbSteps; zbDst.data[di+1] = gg / zbSteps;
+                    zbDst.data[di+2] = bb / zbSteps; zbDst.data[di+3] = 255;
+                  }
+                }
+                putScaledImageData(zbDst);
+              } catch(e) { /* skip */ }
+            }
           }
           break;
         }
@@ -6195,6 +6277,7 @@ export function InteractiveGradient() {
             {[
               { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
               { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
+              { label: 'Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
@@ -6250,7 +6333,7 @@ export function InteractiveGradient() {
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
-              { label: 'Octaves', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
+              { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
@@ -6495,13 +6578,6 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.5" max="10" step="0.1" value={spiralZoom} onChange={(e) => setSpiralZoom(Number(e.target.value))} className="flex-1" />
-                <span className="text-xs text-white w-10 text-right">{spiralZoom.toFixed(1)}</span>
-              </div>
-            </div>
           </div>
         )}
 
@@ -6592,13 +6668,6 @@ export function InteractiveGradient() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.25" max="4" step="0.05" value={waveScale} onChange={(e) => setWaveScale(Number(e.target.value))} className="flex-1" />
-                <span className="text-xs text-white w-10 text-right">{waveScale.toFixed(2)}</span>
-              </div>
-            </div>
           </div>
         )}
 
@@ -6626,9 +6695,16 @@ export function InteractiveGradient() {
                       />
               </div>
             </div>
+            <div className="flex items-center justify-between mt-2">
+              <label className="text-xs text-white">Jitter:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+              </div>
+            </div>
           </div>
         )}
-        
+
         {/* Noise Controls */}
         {gradientType === 'noise' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
@@ -6654,7 +6730,7 @@ export function InteractiveGradient() {
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Octaves:</label>
+              <label className="text-xs text-white">Detail:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6892,11 +6968,24 @@ export function InteractiveGradient() {
           </div>
         )}
 
+        {/* Fade Controls */}
+        {gradientType === 'fade' && (
+          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Direction:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Radar Controls */}
         {gradientType === 'radar' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
             <div className="text-xs text-white font-semibold mb-2">Radar Controls</div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <label className="text-xs text-white">Fade Length:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -6915,6 +7004,13 @@ export function InteractiveGradient() {
                   onChange={(e) => setRadarFadeLength(Number(e.target.value))}
                   className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white">Beam Width:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -7082,11 +7178,11 @@ export function InteractiveGradient() {
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
               { value: 'kaleidoscope',   label: 'Kaleidoscope' },
+              { value: 'mirror',         label: 'Mirror' },
               { value: 'motion-blur',    label: 'Motion Blur' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
               { value: 'ripple',         label: 'Ripple' },
-              { value: 'charcoal',       label: 'Saturate' },
               { value: 'color-shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
               { value: 'triangulate',    label: 'Triangulate' },
@@ -7094,7 +7190,6 @@ export function InteractiveGradient() {
               { value: 'vhs-glitch',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave-distortion',label: 'Wave' },
-              { value: 'zoom-blur',      label: 'Zoom Blur' },
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none').map((effect) => (
               <button
                 key={effect.value}
@@ -7172,20 +7267,20 @@ export function InteractiveGradient() {
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
-                        min="0.005"
-                        max="0.05"
-                        step="0.001"
-                        value={rippleFrequency}
-                        onChange={(e) => setRippleFrequency(Number(e.target.value))}
+                        min="1"
+                        max="100"
+                        step="1"
+                        value={Math.round(rippleFrequency * 2000)}
+                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
                         className="flex-1"
                       />
                       <input
                         type="number"
-                        min="0.005"
-                        max="0.05"
-                        step="0.001"
-                        value={rippleFrequency}
-                        onChange={(e) => setRippleFrequency(Number(e.target.value))}
+                        min="1"
+                        max="100"
+                        step="1"
+                        value={Math.round(rippleFrequency * 2000)}
+                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
                         className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
@@ -7238,6 +7333,11 @@ export function InteractiveGradient() {
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-xs text-white whitespace-nowrap">Angle:</label>
+                    <input type="range" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('fisheye') && (
@@ -7247,6 +7347,16 @@ export function InteractiveGradient() {
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-xs text-white whitespace-nowrap">Center X:</label>
+                    <input type="range" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-xs text-white whitespace-nowrap">Center Y:</label>
+                    <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('bloom') && (
@@ -7291,6 +7401,21 @@ export function InteractiveGradient() {
                 </div>
                 </EffectSection>
               )}
+              {activeEffects.includes('mirror') && (
+                <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={expandedEffects.has('mirror')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-xs text-white whitespace-nowrap">Mode:</label>
+                    <div className="flex gap-1 flex-1">
+                      {(['horizontal', 'vertical', 'quad'] as const).map(mode => (
+                        <button key={mode} onClick={() => setMirrorMode(mode)}
+                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
+                          {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : '4×'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={expandedEffects.has('vignette')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
@@ -7298,6 +7423,11 @@ export function InteractiveGradient() {
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-xs text-white whitespace-nowrap">Softness:</label>
+                    <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('color-shift') && (
@@ -7389,6 +7519,16 @@ export function InteractiveGradient() {
                       >
                         Motion
                       </button>
+                      <button
+                        onClick={() => setBlurType('radial')}
+                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                          blurType === 'radial'
+                            ? 'bg-white text-black'
+                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Radial
+                      </button>
                     </div>
                   </div>
                   {blurType === 'gaussian' && (
@@ -7459,6 +7599,15 @@ export function InteractiveGradient() {
                         </div>
                       </div>
                     </>
+                  )}
+                  {blurType === 'radial' && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                      <div className="flex items-center gap-1 flex-1">
+                        <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
+                        <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                      </div>
+                    </div>
                   )}
                 </EffectSection>
               )}
