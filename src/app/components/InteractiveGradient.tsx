@@ -2377,6 +2377,10 @@ export function InteractiveGradient() {
     canvas.style.height = `${displayHeight}px`;
 
     // Scale context for high-resolution rendering
+    // resetTransform first — some browsers skip the state reset when canvas.width
+    // hasn't changed, causing ctx.scale to compound across frames (2→4→8→…)
+    // which shrinks the CSS coordinate space and moves everything toward (0,0).
+    ctx.resetTransform();
     ctx.scale(resolutionMultiplier, resolutionMultiplier);
 
     // putImageData ignores ctx transforms, so route through drawImage to respect DPR scale
