@@ -5653,7 +5653,7 @@ export function InteractiveGradient() {
         </div>
 
         {/* Top row with Eye, Light/Dark, Randomize, and Refresh buttons */}
-        <div className="flex gap-[3.5px] w-full mb-0.5">
+        <div className="flex gap-[3.5px] w-full mb-0.5 mt-[2.5px]">
           <button
             onClick={() => setIsControlsVisible(false)}
             className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
