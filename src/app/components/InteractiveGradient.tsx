@@ -5593,13 +5593,11 @@ export function InteractiveGradient() {
             }}
             onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 400, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
-            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none"
+            className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
             title="Tap: evolve · Hold: new mood"
           >
-            {isWavHolding && (
-              <span key={Date.now()} className="absolute inset-0 pointer-events-none wav-glass-holding" style={{ background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.18) 65%, transparent 80%)', width: '160%', left: '-30%' }} />
-            )}
+            {isWavHolding && <span className="wav-fill" />}
             <Shuffle className="relative w-4 h-4 text-white" />
           </button>
           <button

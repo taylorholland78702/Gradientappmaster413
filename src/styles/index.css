@@ -120,7 +120,7 @@
 }
 
 .wav-hue-drift {
-  animation: wav-hue-drift 6s linear infinite;
+  animation: wav-hue-drift 12s linear infinite;
 }
 
 /* Liquid fill rising from bottom over the hold duration */
