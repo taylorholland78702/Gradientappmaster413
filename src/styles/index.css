@@ -41,6 +41,149 @@
   z-index: 10;
 }
 
+/* ── WĀV label: always white regardless of panel mode ── */
+.wav-label,
+.control-panel .wav-label,
+.control-panel.panel-light .wav-label {
+  color: #ffffff !important;
+}
+
+/* ── WĀV button: wave ripple animation ── */
+
+/*
+ * Polygon points (22 total, same count every keyframe so CSS can interpolate):
+ *   TL corner: 3 pts  |  top interior: 5 pts  |  TR corner: 3 pts
+ *   BR corner: 3 pts  |  bottom interior: 5 pts (reversed)  |  BL corner: 3 pts
+ *
+ * Interior X positions use % so the wave scales with button width.
+ * Interior Y positions use px (height is fixed at 32px).
+ * Wave = gaussian pinch (top dips inward, bottom rises inward) traveling L→R.
+ * Peak amplitude: 4px — narrows pill to 24px at crest (75% of 32px).
+ */
+/*
+ * Flag wave: element has 6px padding top+bottom (total 44px rendered area).
+ * Normal pill sits at y=6 (top) … y=38 (bottom) within that area.
+ * Top + bottom edges move IN THE SAME DIRECTION — the whole pill bends like a ribbon.
+ * Amplitude grows left→right (small near pole, large at free end).
+ * Wave travels left→right over 4 keyframes.
+ */
+@keyframes wav-ripple {
+  0%, 100% {
+    clip-path: polygon(
+      0px 14px, 2px 8px, 8px 6px,
+      20% 6px, 35% 6px, 50% 6px, 65% 6px, 80% 6px,
+      calc(100% - 8px) 6px, calc(100% - 2px) 8px, 100% 14px,
+      100% 30px, calc(100% - 2px) 36px, calc(100% - 8px) 38px,
+      80% 38px, 65% 38px, 50% 38px, 35% 38px, 20% 38px,
+      8px 38px, 2px 36px, 0px 30px
+    );
+  }
+  /* Wave rolling left-center, free end beginning to dip */
+  25% {
+    clip-path: polygon(
+      0px 14px, 2px 8px, 8px 6px,
+      20% 6px, 35% 7px, 50% 7px, 65% 7px, 80% 6px,
+      calc(100% - 8px) 6px, calc(100% - 2px) 8px, 100% 14px,
+      100% 30px, calc(100% - 2px) 36px, calc(100% - 8px) 38px,
+      80% 38px, 65% 39px, 50% 39px, 35% 39px, 20% 38px,
+      8px 38px, 2px 36px, 0px 30px
+    );
+  }
+  /* Free end displaced down, left settled */
+  50% {
+    clip-path: polygon(
+      0px 14px, 2px 8px, 8px 6px,
+      20% 6px, 35% 6px, 50% 6px, 65% 7px, 80% 8px,
+      calc(100% - 8px) 6px, calc(100% - 2px) 8px, 100% 14px,
+      100% 30px, calc(100% - 2px) 36px, calc(100% - 8px) 38px,
+      80% 40px, 65% 39px, 50% 38px, 35% 38px, 20% 38px,
+      8px 38px, 2px 36px, 0px 30px
+    );
+  }
+  /* Free end rises above rest */
+  75% {
+    clip-path: polygon(
+      0px 14px, 2px 8px, 8px 6px,
+      20% 6px, 35% 6px, 50% 5px, 65% 5px, 80% 6px,
+      calc(100% - 8px) 6px, calc(100% - 2px) 8px, 100% 14px,
+      100% 30px, calc(100% - 2px) 36px, calc(100% - 8px) 38px,
+      80% 38px, 65% 37px, 50% 37px, 35% 38px, 20% 38px,
+      8px 38px, 2px 36px, 0px 30px
+    );
+  }
+}
+
+/* Glassy specular highlight traveling with the wave */
+@keyframes wav-light-sweep {
+  0%   { transform: translateX(-200%) skewX(-10deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(300%)  skewX(-10deg); opacity: 0; }
+}
+
+/* Applied to the button itself while held.
+ * content-box + 6px padding top/bottom gives 44px of rendered area so the
+ * flag wave can bend both above and below the natural 32px pill bounds.
+ * Negative margins cancel the layout shift. */
+.wav-wave-active {
+  animation: wav-ripple 0.7s ease-in-out infinite;
+  box-sizing: content-box !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  margin-top: -6px !important;
+  margin-bottom: -6px !important;
+  z-index: 1;
+}
+
+/* Glassy specular overlay — two layered highlights mimicking glass reflection */
+.wav-light-flash {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 55%;
+  pointer-events: none;
+  /* Outer soft halo + razor-thin bright center line */
+  background: linear-gradient(
+    100deg,
+    transparent        10%,
+    rgba(255,255,255,0.03) 28%,
+    rgba(255,255,255,0.10) 40%,
+    rgba(255,255,255,0.38) 48%,
+    rgba(255,255,255,0.48) 50%,
+    rgba(255,255,255,0.38) 52%,
+    rgba(255,255,255,0.10) 60%,
+    rgba(255,255,255,0.03) 72%,
+    transparent        90%
+  );
+  animation: wav-light-sweep 0.7s ease-in-out infinite;
+}
+
+/* Second, wider diffuse glow behind the specular — frosted glass depth */
+.wav-light-flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 180%;
+  left: -40%;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255,255,255,0.04) 45%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 55%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+/* Mini toolbar button — simpler sheen (no shape deformation) */
+.wav-glass-holding {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.5) 50%, transparent 80%);
+  animation: wav-light-sweep 0.65s ease-in-out forwards;
+}
+
 /* ── Control panel: legibility on any background ── */
 .control-panel,
 .control-panel * {

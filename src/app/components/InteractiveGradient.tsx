@@ -1603,12 +1603,6 @@ export function InteractiveGradient() {
     const angleDrift = 10 + factor * 165;
     setTargetAngle((gradientAngle + (Math.random() * angleDrift * 2 - angleDrift) + 360) % 360);
 
-    // Gradient type: increasingly likely to switch at higher factors
-    if (Math.random() < factor * 0.85) {
-      const pool = FEELING_LUCKY_GRADIENT_TYPES;
-      setGradientType(pool[Math.floor(Math.random() * pool.length)]);
-    }
-
     // Speed: starts changing at factor > 0.3
     if (factor > 0.3) {
       const speedOptions = [0.5, 1, 1, 2, 2, 3, 3, 4, 5, 6];
@@ -5603,7 +5597,9 @@ export function InteractiveGradient() {
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
             title="Tap: evolve · Hold: new mood"
           >
-            <span className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)', transform: isWavHolding ? 'translateX(150%)' : 'translateX(-150%)', transition: isWavHolding ? 'transform 0.4s linear' : 'transform 0s' }} />
+            {isWavHolding && (
+              <span key={Date.now()} className="absolute inset-0 pointer-events-none wav-glass-holding" style={{ background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.18) 65%, transparent 80%)', width: '160%', left: '-30%' }} />
+            )}
             <Shuffle className="relative w-4 h-4 text-white" />
           </button>
           <button
@@ -5696,20 +5692,12 @@ export function InteractiveGradient() {
               setIsWavHolding(false);
               if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
             }}
-            className="relative overflow-hidden px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow"
+            className={`relative px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow${isWavHolding ? ' wav-wave-active' : ' overflow-hidden'}`}
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
           >
-            {/* Flash sweep overlay */}
-            <span
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)',
-                transform: isWavHolding ? 'translateX(150%)' : 'translateX(-150%)',
-                transition: isWavHolding ? 'transform 0.4s linear' : 'transform 0s',
-              }}
-            />
+            {isWavHolding && <span className="wav-light-flash" />}
             {isControlsVisible ? (
-              <span className="relative text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>
+              <span className="relative text-[22px] tracking-tight leading-none wav-label" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>
             ) : <Shuffle className="relative w-4 h-4 text-white" />}
           </button>
           <button
