@@ -5544,7 +5544,7 @@ export function InteractiveGradient() {
         <div className="flex gap-[3.5px] w-full mb-0.5">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Hide Controls"
           >
             <Eye className="w-4 h-4" />
@@ -5552,7 +5552,7 @@ export function InteractiveGradient() {
 
           <button
             onClick={exportAsPNG}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Save PNG"
           >
             <Camera className="w-4 h-4" />
@@ -5560,20 +5560,16 @@ export function InteractiveGradient() {
 
           <button
             onClick={feelingLucky}
-            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-1 flex items-center justify-center"
+            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[2] flex items-center justify-center"
           >
             {isControlsVisible ? (
-              <span className="flex items-center gap-0.5">
-                <span className="leading-none" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', transform: 'translateY(2px)', display: 'inline-block' }}>˜</span>
-                <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
-                <span className="leading-none" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', transform: 'translateY(2px)', display: 'inline-block' }}>˜</span>
-              </span>
+              <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
             ) : <Shuffle className="w-4 h-4 text-white" />}
           </button>
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
+            className={`flex-1 h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
               undoDepth >= 0
                 ? 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
                 : 'bg-white/8 backdrop-blur-sm text-white/25 cursor-not-allowed'
@@ -5587,7 +5583,7 @@ export function InteractiveGradient() {
               // Refresh functionality - reset to default state
               window.location.reload();
             }}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
