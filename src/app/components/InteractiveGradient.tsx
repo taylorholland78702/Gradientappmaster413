@@ -5560,7 +5560,7 @@ export function InteractiveGradient() {
 
           <button
             onClick={feelingLucky}
-            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[2] flex items-center justify-center"
+            className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-[3] flex items-center justify-center"
           >
             {isControlsVisible ? (
               <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
