@@ -67,6 +67,26 @@ const DEFAULT_COLORS: ColorRGB[] = [
 const DEG_TO_RAD = Math.PI / 180;
 const TWO_PI = Math.PI * 2;
 
+function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
+  id: string; label: string; isMulti: boolean;
+  expanded: boolean; onToggle: (id: string) => void;
+  children: React.ReactNode;
+}) {
+  if (!isMulti) return <>{children}</>;
+  return (
+    <div className="border-b border-white/10 last:border-0">
+      <button
+        onClick={() => onToggle(id)}
+        className="flex items-center justify-between w-full py-1.5 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
+      >
+        <span className="text-xs text-white/80 font-medium">{label}</span>
+        <svg className={`w-3 h-3 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
+      {expanded && <div className="flex flex-col gap-1 pb-2">{children}</div>}
+    </div>
+  );
+}
+
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -127,6 +147,8 @@ export function InteractiveGradient() {
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
+  const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
+  const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
   const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
@@ -547,6 +569,7 @@ export function InteractiveGradient() {
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
     savePreset,
+    savePresetWithName,
     loadPreset,
     deletePreset,
     renamePreset,
@@ -1656,8 +1679,9 @@ export function InteractiveGradient() {
   // Save to presets from rating UI
   const saveRatingAsPreset = useCallback(() => {
     submitRating(10);
-    setIsPresetModalOpen(true);
-  }, [submitRating]);
+    setActiveTab('presets');
+    setIsPresetsDropdownOpen(true);
+  }, [submitRating, setIsPresetsDropdownOpen]);
 
   // Shuffle Effects - randomize only effects and their settings (1-15 effects)
   const shuffleEffects = useCallback(() => {
@@ -3770,11 +3794,6 @@ export function InteractiveGradient() {
       }
     }
 
-    // Restore audio-reactive transformations before applying effects
-    if (isAudioEnabled && isAudioReactive) {
-      ctx.restore();
-    }
-
     // Vocal shimmer — treble energy scatters bright sparkle pixels
     if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 4) {
       const shimmer = Math.min(1, audioTrebleLevel / 90);
@@ -3833,7 +3852,7 @@ export function InteractiveGradient() {
           tmp.height = displayHeight;
           const tc = tmp.getContext('2d');
           if (tc) {
-            tc.drawImage(canvas, 0, 0);
+            tc.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, displayWidth, displayHeight);
             ctx.imageSmoothingEnabled = true;
@@ -3916,8 +3935,8 @@ export function InteractiveGradient() {
             for (let c = -tHalfCols; c <= tHalfCols; c++) {
               const x = centerX + c * tSz - tSz / 2;
               const y = centerY + r * tSz - tSz / 2;
-              const sx1 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2));
-              const sy1 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2));
+              const sx1 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2)) * resolutionMultiplier;
+              const sy1 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2)) * resolutionMultiplier;
               const d1 = tCtx.getImageData(sx1, sy1, 1, 1).data;
               ctx.fillStyle = `rgb(${d1[0]},${d1[1]},${d1[2]})`;
               ctx.beginPath();
@@ -3925,8 +3944,8 @@ export function InteractiveGradient() {
               ctx.lineTo(x + tSz, y);
               ctx.lineTo(x + tSz, y + tSz);
               ctx.fill();
-              const sx2 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3));
-              const sy2 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3));
+              const sx2 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3)) * resolutionMultiplier;
+              const sy2 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3)) * resolutionMultiplier;
               const d2 = tCtx.getImageData(sx2, sy2, 1, 1).data;
               ctx.fillStyle = `rgb(${d2[0]},${d2[1]},${d2[2]})`;
               ctx.beginPath();
@@ -4032,7 +4051,7 @@ export function InteractiveGradient() {
         
         case 'oil-paint':
           ctx.filter = `blur(5px)`;
-          ctx.drawImage(canvas, 0, 0);
+          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.filter = 'none';
           break;
 
@@ -4256,7 +4275,7 @@ export function InteractiveGradient() {
         
         case 'motion-blur':
           ctx.filter = `blur(${blurAmount}px)`;
-          ctx.drawImage(canvas, 5, 0);
+          ctx.drawImage(canvas, 5, 0, displayWidth, displayHeight);
           ctx.filter = 'none';
           break;
         
@@ -4406,7 +4425,7 @@ export function InteractiveGradient() {
           tempCanvas.height = displayHeight;
           const gCtx = tempCanvas.getContext('2d');
           if (!gCtx) break;
-          gCtx.drawImage(canvas, 0, 0);
+          gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           const cw = displayWidth / gridColumns, ch = displayHeight / gridRows;
@@ -4462,7 +4481,7 @@ export function InteractiveGradient() {
         case 'blur': {
           if (blurType === 'gaussian') {
             ctx.filter = `blur(${blurGaussianAmount + (isFirstEffect ? audioModulation * 10 : 0)}px)`;
-            ctx.drawImage(canvas, 0, 0);
+            ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             ctx.filter = 'none';
           } else if (blurType === 'motion') {
             const amt = blurMotionAmount + (isFirstEffect ? audioModulation * 10 : 0);
@@ -4472,7 +4491,7 @@ export function InteractiveGradient() {
             ctx.filter = `blur(${amt * 0.2}px)`;
             ctx.globalAlpha = 0.8 / iterations;
             for (let i = 1; i <= iterations; i++) {
-              ctx.drawImage(canvas, ox * (i / iterations), oy * (i / iterations));
+              ctx.drawImage(canvas, ox * (i / iterations), oy * (i / iterations), displayWidth, displayHeight);
             }
             ctx.globalAlpha = 1.0;
             ctx.filter = 'none';
@@ -4483,7 +4502,7 @@ export function InteractiveGradient() {
         case 'bokeh': {
           const bsz = bokehSize + (isFirstEffect ? audioModulation * 5 : 0);
           ctx.filter = `blur(${bsz}px)`;
-          ctx.drawImage(canvas, 0, 0);
+          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.filter = 'none';
           const nc = Math.floor(50 * bokehIntensity);
 
@@ -4497,8 +4516,8 @@ export function InteractiveGradient() {
             const x = bokehSeed(i * 2) * displayWidth;
             const y = bokehSeed(i * 2 + 1) * displayHeight;
             const r = bokehSeed(i * 2 + 0.5) * bsz * 2 + bsz;
-            const sx = Math.min(Math.max(0, Math.floor(x)), displayWidth - 1);
-            const sy = Math.min(Math.max(0, Math.floor(y)), displayHeight - 1);
+            const sx = Math.min(Math.max(0, Math.floor(x)), displayWidth - 1) * resolutionMultiplier;
+            const sy = Math.min(Math.max(0, Math.floor(y)), displayHeight - 1) * resolutionMultiplier;
             const pd = ctx.getImageData(sx, sy, 1, 1).data;
 
             // Apply colorize by shifting hue
@@ -4553,7 +4572,7 @@ export function InteractiveGradient() {
           const audioBrightnessBoost = isFirstEffect ? audioModulation * 0.5 : 0;
           const effectiveBrightness = 1 + brightnessAmount + audioBrightnessBoost;
           ctx.filter = `brightness(${effectiveBrightness})`;
-          ctx.drawImage(canvas, 0, 0);
+          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.filter = 'none';
           break;
         
@@ -4681,7 +4700,7 @@ export function InteractiveGradient() {
             const audioBloomBoost = isAudioReactive ? audioSubBassLevel / 5 * 20 : 0;
             const effectiveRadius = bloomRadius + audioBloomBoost;
             bloomCtx.filter = `blur(${effectiveRadius}px)`;
-            bloomCtx.drawImage(canvas, 0, 0);
+            bloomCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             bloomCtx.filter = 'none';
             const audioBloomAlpha = isAudioReactive ? Math.min(2, bloomIntensity + audioSubBassLevel / 5 * 0.5) : bloomIntensity;
             ctx.save();
@@ -4699,7 +4718,7 @@ export function InteractiveGradient() {
           fbTmp.width = displayWidth;
           fbTmp.height = displayHeight;
           const fbTmpCtx = fbTmp.getContext('2d');
-          if (fbTmpCtx) fbTmpCtx.drawImage(canvas, 0, 0); // snapshot current
+          if (fbTmpCtx) fbTmpCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight); // snapshot current
 
           const fb = feedbackBufferRef.current;
           if (fb && fb.width === displayWidth && fb.height === displayHeight) {
@@ -4728,7 +4747,7 @@ export function InteractiveGradient() {
             feedbackBufferRef.current.height = displayHeight;
           }
           const updateCtx = feedbackBufferRef.current.getContext('2d');
-          if (updateCtx) { updateCtx.clearRect(0, 0, displayWidth, displayHeight); updateCtx.drawImage(canvas, 0, 0); }
+          if (updateCtx) { updateCtx.clearRect(0, 0, displayWidth, displayHeight); updateCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight); }
           break;
         }
 
@@ -5404,84 +5423,6 @@ export function InteractiveGradient() {
         />
       </div>
 
-      {/* Preset Modal */}
-      {isPresetModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 pointer-events-auto">
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl max-h-[80vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold mb-4 text-black">Manage Presets</h3>
-            
-            {/* Save New Preset Section */}
-            <div className="mb-6 pb-6 border-b border-gray-300">
-              <p className="text-sm text-gray-700 mb-3">Save current settings as a new preset:</p>
-              <input
-                type="text"
-                value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    savePreset();
-                  } else if (e.key === 'Escape') {
-                    setIsPresetModalOpen(false);
-                    setPresetName('');
-                  }
-                }}
-                placeholder="Enter preset name..."
-                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:outline-none text-black mb-3"
-                autoFocus
-              />
-              <button
-                onClick={savePreset}
-                className="w-full px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all shadow-sm"
-              >
-                Save Current Settings
-              </button>
-            </div>
-            
-            {/* Saved Presets Section */}
-            <div className="mb-4">
-              <h4 className="text-sm font-semibold text-black mb-3">Saved Presets ({savedPresets.length})</h4>
-              {savedPresets.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">No saved presets yet</p>
-              ) : (
-                <div className="space-y-2">
-                  {savedPresets.map((preset, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-white/8 backdrop-blur-sm rounded-lg p-3">
-                      <button
-                        onClick={() => loadPreset(preset)}
-                        className="flex-1 text-left text-sm text-black hover:text-purple-600 font-medium"
-                      >
-                        {preset.name}
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete preset "${preset.name}"?`)) {
-                            deletePreset(index);
-                          }
-                        }}
-                        className="px-3 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition-all"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="flex gap-2 justify-end pt-4 border-t border-gray-300">
-              <button
-                onClick={() => {
-                  setIsPresetModalOpen(false);
-                  setPresetName('');
-                }}
-                className="px-4 py-2 rounded-lg text-sm bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Rating UI overlay — temporarily hidden */}
       {false && showRatingUI && (
@@ -5551,9 +5492,9 @@ export function InteractiveGradient() {
             <Shuffle className="w-4 h-4 text-white" />
           </button>
           <button
-            onClick={() => setIsPresetModalOpen(true)}
+            onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
             className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white border border-white/15 shadow-md hover:bg-white/15 flex items-center justify-center"
-            title="Add Preset"
+            title="Presets"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -5971,7 +5912,7 @@ export function InteractiveGradient() {
             </div>
           </div>
         )}
-        
+
         {/* Polygon Controls */}
         {gradientType === 'polygon' && (
           <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
@@ -7039,17 +6980,16 @@ export function InteractiveGradient() {
           </div>
         </div>
         
-        {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (
+        {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (() => {
+          const isMulti = activeEffects.length > 1;
+
+          return (
           <div className="w-full bg-white/5 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5">
-            <div className="flex flex-col gap-1">
+            <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
-                <>
+                <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Kaleidoscope</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Segments:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Segments:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7074,16 +7014,12 @@ export function InteractiveGradient() {
                     <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <span className="text-xs text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('ripple') && (
-                <>
+                <EffectSection id="ripple" label="Ripple" isMulti={isMulti} expanded={expandedEffects.has('ripple')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Ripple</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7126,60 +7062,48 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('pixelate') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Pixelate</span>
-                  ) : (
+                <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={expandedEffects.has('pixelate')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  )}
                   <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
+                  </div>
+                </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Triangulate</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
-                  )}
+                <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={expandedEffects.has('triangulate')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('chromatic') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Chromatic</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Offset:</label>
-                  )}
+                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={expandedEffects.has('chromatic')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Offset:</label>
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('fisheye') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Fisheye</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                  )}
+                <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={expandedEffects.has('fisheye')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('bloom') && (
-                <>
+                <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={expandedEffects.has('bloom')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Bloom</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7188,16 +7112,12 @@ export function InteractiveGradient() {
                     <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
                     <span className="text-xs text-white w-8 text-right">{bloomRadius}</span>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('feedback') && (
-                <>
+                <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={expandedEffects.has('feedback')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Feedback</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Decay:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Decay:</label>
                     <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
                     <span className="text-xs text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
                   </div>
@@ -7211,49 +7131,39 @@ export function InteractiveGradient() {
                     <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
                     <span className="text-xs text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('zoom-blur') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Zoom Blur</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Amount:</label>
-                  )}
+                <EffectSection id="zoom-blur" label="Zoom Blur" isMulti={isMulti} expanded={expandedEffects.has('zoom-blur')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Amount:</label>
                   <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
                   <span className="text-xs text-white w-8 text-right">{blurRadialAmount}</span>
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Vignette</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                  )}
+                <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={expandedEffects.has('vignette')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('color-shift') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Shift</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Hue:</label>
-                  )}
+                <EffectSection id="color-shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('color-shift')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('film-grain') && (
-                <>
+                <EffectSection id="film-grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('film-grain')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Grain</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7302,14 +7212,12 @@ export function InteractiveGradient() {
                       </button>
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('blur') && (
-                <>
+                <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1 mb-1">
-                    {activeEffects.length > 1 && (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Blur</span>
-                    )}
+                    
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
@@ -7403,27 +7311,21 @@ export function InteractiveGradient() {
                       </div>
                     </>
                   )}
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('posterize') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Posterize</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Levels:</label>
-                  )}
+                <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={expandedEffects.has('posterize')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Levels:</label>
                   <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                 </div>
+                </EffectSection>
               )}
               {activeEffects.includes('halftone') && (
-                <>
+                <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={expandedEffects.has('halftone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Halftone</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
                     <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7478,31 +7380,23 @@ export function InteractiveGradient() {
                       </button>
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('charcoal') && (
-                <div className="flex items-center gap-1 mt-1">
-                  {activeEffects.length > 1 ? (
-                    <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Saturate</span>
-                  ) : (
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                  )}
+                <EffectSection id="charcoal" label="Saturate" isMulti={isMulti} expanded={expandedEffects.has('charcoal')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
-                </div>
+                  </div>
+                </EffectSection>
               )}
-              
-              
 
               
               {activeEffects.includes('duotone') && (
-                <>
+                <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Duotone</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7524,16 +7418,12 @@ export function InteractiveGradient() {
                       className="w-12 h-6 rounded cursor-pointer"
                     />
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('dust-scratches') && (
-                <>
+                <EffectSection id="dust-scratches" label="Dust" isMulti={isMulti} expanded={expandedEffects.has('dust-scratches')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Dust</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Dust:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Dust:</label>
                     <input type="range" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7560,16 +7450,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('grid') && (
-                <>
+                <EffectSection id="grid" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Grid</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Sides:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Sides:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7712,7 +7598,7 @@ export function InteractiveGradient() {
                       </button>
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
 
               
@@ -7720,13 +7606,9 @@ export function InteractiveGradient() {
               
               
               {activeEffects.includes('tritone') && (
-                <>
+                <EffectSection id="tritone" label="Tritone" isMulti={isMulti} expanded={expandedEffects.has('tritone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Tritone</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7768,16 +7650,12 @@ export function InteractiveGradient() {
                       className="flex-1 h-8 rounded cursor-pointer"
                     />
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('vhs-glitch') && (
-                <>
+                <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs-glitch')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">VHS</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7799,16 +7677,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('wave-distortion') && (
-                <>
+                <EffectSection id="wave-distortion" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave-distortion')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Wave</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Strength:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
@@ -7833,16 +7707,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('bokeh') && (
-                <>
+                <EffectSection id="bokeh" label="Bokeh" isMulti={isMulti} expanded={expandedEffects.has('bokeh')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Bokeh</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7908,16 +7778,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('brightness') && (
-                <>
+                <EffectSection id="brightness" label="Brightness" isMulti={isMulti} expanded={expandedEffects.has('brightness')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 ? (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Brightness</span>
-                    ) : (
-                      <label className="text-xs text-white whitespace-nowrap">Amount:</label>
-                    )}
+                    <label className="text-xs text-white whitespace-nowrap">Amount:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7939,14 +7805,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('slit-scan') && (
-                <>
+                <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={expandedEffects.has('slit-scan')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 && (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Slit-Scan</span>
-                    )}
+                    
                     <label className="text-xs text-white whitespace-nowrap">Dir:</label>
                     <div className="flex gap-1 flex-1">
                       <button
@@ -8014,14 +7878,12 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
               {activeEffects.includes('dither') && (
-                <>
+                <EffectSection id="dither" label="Dither" isMulti={isMulti} expanded={expandedEffects.has('dither')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    {activeEffects.length > 1 && (
-                      <span className="text-xs text-white/80 whitespace-nowrap shrink-0 w-[68px]">Dither</span>
-                    )}
+                    
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-1 flex-1">
                       <button
@@ -8069,12 +7931,13 @@ export function InteractiveGradient() {
                       />
                     </div>
                   </div>
-                </>
+                </EffectSection>
               )}
             </div>
           </div>
-        )}
-        
+          );
+        })()}
+
         </>)}
 
         {/* ── Audio Tab ── */}
@@ -8131,13 +7994,13 @@ export function InteractiveGradient() {
           renamingPresetIndex={renamingPresetIndex}
           renamingPresetValue={renamingPresetValue}
           setIsPresetsDropdownOpen={setIsPresetsDropdownOpen}
-          setIsPresetModalOpen={setIsPresetModalOpen}
           setRenamingPresetIndex={setRenamingPresetIndex}
           setRenamingPresetValue={setRenamingPresetValue}
           loadPreset={loadPreset}
           deletePreset={deletePreset}
           renamePreset={renamePreset}
           updatePreset={updatePreset}
+          savePresetWithName={savePresetWithName}
         />
         )}
 

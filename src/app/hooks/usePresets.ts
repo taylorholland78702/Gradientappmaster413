@@ -79,12 +79,17 @@ export function usePresets(params: UsePresetsParams) {
       alert('Please enter a preset name');
       return;
     }
+    await savePresetWithName(presetName.trim());
+    setPresetName('');
+    setIsPresetModalOpen(false);
+  };
 
+  const savePresetWithName = async (name: string) => {
+    if (!name.trim()) return;
     const preset: SavedPreset = {
-      name: presetName.trim(),
+      name: name.trim(),
       data: getCurrentState(),
     };
-
     const newPresets = [...savedPresets, preset];
     setSavedPresets(newPresets);
     localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
@@ -94,8 +99,6 @@ export function usePresets(params: UsePresetsParams) {
         newPresets[newPresets.length - 1]
       );
     }
-    setPresetName('');
-    setIsPresetModalOpen(false);
   };
 
   // Load preset
@@ -159,6 +162,7 @@ export function usePresets(params: UsePresetsParams) {
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
     // Functions
     savePreset,
+    savePresetWithName,
     loadPreset,
     deletePreset,
     renamePreset,

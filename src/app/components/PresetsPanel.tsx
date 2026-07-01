@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, Plus, Save, Pencil, Minus } from 'lucide-react';
 
 interface Preset {
@@ -12,13 +12,13 @@ interface PresetsPanelProps {
   renamingPresetIndex: number | null;
   renamingPresetValue: string;
   setIsPresetsDropdownOpen: (open: boolean) => void;
-  setIsPresetModalOpen: (open: boolean) => void;
   setRenamingPresetIndex: (index: number | null) => void;
   setRenamingPresetValue: (value: string) => void;
   loadPreset: (preset: Preset) => void;
   deletePreset: (index: number) => void;
   renamePreset: (index: number, newName: string) => void;
   updatePreset: (index: number) => void;
+  savePresetWithName: (name: string) => void;
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
@@ -27,14 +27,36 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   renamingPresetIndex,
   renamingPresetValue,
   setIsPresetsDropdownOpen,
-  setIsPresetModalOpen,
   setRenamingPresetIndex,
   setRenamingPresetValue,
   loadPreset,
   deletePreset,
   renamePreset,
   updatePreset,
+  savePresetWithName,
 }) => {
+  const [isAddingPreset, setIsAddingPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+
+  const handleAdd = () => {
+    setIsPresetsDropdownOpen(true);
+    setIsAddingPreset(true);
+    setNewPresetName('');
+  };
+
+  const confirmAdd = () => {
+    if (newPresetName.trim()) {
+      savePresetWithName(newPresetName.trim());
+    }
+    setIsAddingPreset(false);
+    setNewPresetName('');
+  };
+
+  const cancelAdd = () => {
+    setIsAddingPreset(false);
+    setNewPresetName('');
+  };
+
   return (
     <>
       {/* Presets Controls */}
@@ -48,7 +70,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         </button>
 
         <button
-          onClick={() => setIsPresetModalOpen(true)}
+          onClick={handleAdd}
           className="w-[32px] px-1 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
           title="Add Preset"
         >
@@ -59,7 +81,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       {/* Presets Dropdown Content */}
       {isPresetsDropdownOpen && (
         <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg overflow-hidden mb-0.5 max-h-[300px] overflow-y-auto">
-          {savedPresets.length === 0 ? (
+          {savedPresets.length === 0 && !isAddingPreset ? (
             <div className="px-4 py-2 text-xs text-white/50 italic">
               No saved presets
             </div>
@@ -87,21 +109,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                 )}
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updatePreset(index);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); updatePreset(index); }}
                   className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
-                  title="Save current edits to this preset"
+                  title="Save current settings to this preset"
                 >
                   <Save className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRenamingPresetIndex(index);
-                    setRenamingPresetValue(preset.name);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); setRenamingPresetIndex(index); setRenamingPresetValue(preset.name); }}
                   className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
                   title="Rename preset"
                 >
@@ -116,6 +131,35 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                 </button>
               </div>
             ))
+          )}
+
+          {/* Inline new preset input */}
+          {isAddingPreset && (
+            <div className="flex items-center w-full border-t border-white/10">
+              <input
+                autoFocus
+                value={newPresetName}
+                onChange={(e) => setNewPresetName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmAdd();
+                  if (e.key === 'Escape') cancelAdd();
+                }}
+                placeholder="Preset name..."
+                className="flex-1 px-4 py-2 text-xs bg-white/5 text-white placeholder-white/30 focus:outline-none"
+              />
+              <button
+                onClick={confirmAdd}
+                className="px-3 py-2 text-xs text-green-400 hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+              >
+                Save
+              </button>
+              <button
+                onClick={cancelAdd}
+                className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
           )}
         </div>
       )}
