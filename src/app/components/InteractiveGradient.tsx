@@ -5934,7 +5934,7 @@ export function InteractiveGradient() {
                   max="50"
                   value={gridRows}
                   onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -5955,7 +5955,7 @@ export function InteractiveGradient() {
                   max="50"
                   value={gridColumns}
                   onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6027,7 +6027,7 @@ export function InteractiveGradient() {
                             p.id === selectedPinId ? { ...p, radius: newRadius } : p
                           ));
                         }}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -6082,7 +6082,7 @@ export function InteractiveGradient() {
                   max="10"
                   value={polygonSides}
                   onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6109,7 +6109,7 @@ export function InteractiveGradient() {
                   max="24"
                   value={polygon2Sides}
                   onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6130,7 +6130,7 @@ export function InteractiveGradient() {
                   max="30"
                   value={concentricRingCount}
                   onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6159,7 +6159,7 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={iridescentIntensity}
                   onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6182,7 +6182,7 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={iridescentScale}
                   onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6200,7 +6200,7 @@ export function InteractiveGradient() {
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6219,7 +6219,7 @@ export function InteractiveGradient() {
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6237,7 +6237,7 @@ export function InteractiveGradient() {
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6256,7 +6256,7 @@ export function InteractiveGradient() {
                 <label className="text-xs text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6283,7 +6283,7 @@ export function InteractiveGradient() {
                   max="360"
                   value={angleStartOffset}
                   onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6304,7 +6304,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterX}
                   onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6325,7 +6325,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterY}
                   onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6366,7 +6366,7 @@ export function InteractiveGradient() {
                   max="10"
                   value={shapesSides}
                   onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6387,7 +6387,7 @@ export function InteractiveGradient() {
                   max="50"
                   value={shapesCount}
                   onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6449,7 +6449,7 @@ export function InteractiveGradient() {
                   max="20"
                   value={spiralTightness}
                   onChange={(e) => setSpiralTightness(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6470,7 +6470,7 @@ export function InteractiveGradient() {
                   max="10"
                   value={spiralRotations}
                   onChange={(e) => setSpiralRotations(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6491,7 +6491,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={spiralThickness}
                   onChange={(e) => setSpiralThickness(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6525,7 +6525,7 @@ export function InteractiveGradient() {
                   max="200"
                   value={waveAmplitude}
                   onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6546,7 +6546,7 @@ export function InteractiveGradient() {
                   max="10"
                   value={waveFrequency}
                   onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6567,7 +6567,7 @@ export function InteractiveGradient() {
                   max="20"
                   value={waveNumber}
                   onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6588,7 +6588,7 @@ export function InteractiveGradient() {
                   max="360"
                   value={waveRotation}
                   onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6622,7 +6622,7 @@ export function InteractiveGradient() {
                         max="10"
                         value={meshGridSize}
                         onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
@@ -6649,7 +6649,7 @@ export function InteractiveGradient() {
                   max="200"
                   value={noiseScale}
                   onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6670,7 +6670,7 @@ export function InteractiveGradient() {
                   max="8"
                   value={noiseOctaves}
                   onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6678,7 +6678,7 @@ export function InteractiveGradient() {
               <label className="text-xs text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
@@ -6706,14 +6706,14 @@ export function InteractiveGradient() {
               <label className="text-xs text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
               </div>
             </div>
             <div className="flex items-center justify-between">
               <label className="text-xs text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1" />
+                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -6739,7 +6739,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterX}
                   onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6760,7 +6760,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterY}
                   onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6794,7 +6794,7 @@ export function InteractiveGradient() {
                   max="16"
                   value={radialBurstCount}
                   onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6815,7 +6815,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={radialBurstSpread}
                   onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6836,7 +6836,7 @@ export function InteractiveGradient() {
                   max="200"
                   value={radialBurstSize}
                   onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6864,7 +6864,7 @@ export function InteractiveGradient() {
                         max="30"
                         value={voronoiCellCount}
                         onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
@@ -6885,7 +6885,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={voronoiDistortion}
                   onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6913,7 +6913,7 @@ export function InteractiveGradient() {
                   max="180"
                   value={radarFadeLength}
                   onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6941,7 +6941,7 @@ export function InteractiveGradient() {
                   max="12"
                   value={flowerCircles}
                   onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6964,7 +6964,7 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={flowerScale}
                   onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6987,7 +6987,7 @@ export function InteractiveGradient() {
                   step="0.05"
                   value={flowerSpread}
                   onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -7014,7 +7014,7 @@ export function InteractiveGradient() {
                   max="20"
                   value={conicalSpiralTurns}
                   onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -7037,7 +7037,7 @@ export function InteractiveGradient() {
                         step="0.1"
                         value={conicalSpiralTightness}
                         onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
@@ -7154,7 +7154,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={kaleidoscopeSegments}
                         onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
-                        className="text-xs text-white w-10 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7186,7 +7186,7 @@ export function InteractiveGradient() {
                         step="0.001"
                         value={rippleFrequency}
                         onChange={(e) => setRippleFrequency(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7207,7 +7207,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={rippleAmplitude}
                         onChange={(e) => setRippleAmplitude(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7218,7 +7218,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -7227,7 +7227,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7236,7 +7236,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Offset:</label>
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7245,7 +7245,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7254,7 +7254,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Radius:</label>
@@ -7296,7 +7296,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7305,7 +7305,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7314,7 +7314,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Type:</label>
@@ -7409,7 +7409,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={blurGaussianAmount}
                         onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                       </div>
                     </div>
@@ -7433,7 +7433,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={blurMotionAmount}
                         onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                         </div>
                       </div>
@@ -7454,7 +7454,7 @@ export function InteractiveGradient() {
                             max="360"
                             value={Math.round(blurMotionDirection)}
                             onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
-                            className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                            className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                           />
                         </div>
                       </div>
@@ -7467,7 +7467,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Levels:</label>
                   <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
@@ -7476,7 +7476,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
                     <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Variation:</label>
@@ -7497,7 +7497,7 @@ export function InteractiveGradient() {
                         step="0.01"
                         value={halftoneVariation}
                         onChange={(e) => setHalftoneVariation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7536,7 +7536,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                   <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -7547,7 +7547,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Color 1:</label>
@@ -7574,7 +7574,7 @@ export function InteractiveGradient() {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-xs text-white whitespace-nowrap">Dust:</label>
                     <input type="range" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-xs text-white whitespace-nowrap">Crackle:</label>
@@ -7595,7 +7595,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={dustCrackleIntensity}
                         onChange={(e) => setDustCrackleIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7685,7 +7685,7 @@ export function InteractiveGradient() {
                         max={100}
                         value={gridShapeSize}
                         onChange={(e) => setGridShapeSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7708,7 +7708,7 @@ export function InteractiveGradient() {
                         step="0.01"
                         value={gridVariation}
                         onChange={(e) => setGridVariation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7775,7 +7775,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={tritoneIntensity}
                         onChange={(e) => setTritoneIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7822,7 +7822,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={vhsGlitchIntensity}
                         onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7852,7 +7852,7 @@ export function InteractiveGradient() {
                         max="360"
                         value={waveDistortionRotation}
                         onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7877,7 +7877,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={bokehSize}
                         onChange={(e) => setBokehSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7900,7 +7900,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={bokehIntensity}
                         onChange={(e) => setBokehIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7923,7 +7923,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={bokehColorize}
                         onChange={(e) => setBokehColorize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7950,7 +7950,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={brightnessAmount}
                         onChange={(e) => setBrightnessAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8023,7 +8023,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={slitScanIntensity}
                         onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8076,7 +8076,7 @@ export function InteractiveGradient() {
                         step="1"
                         value={ditherLevels}
                         onChange={(e) => setDitherLevels(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
