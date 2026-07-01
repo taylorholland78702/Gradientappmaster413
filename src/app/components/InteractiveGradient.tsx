@@ -5601,7 +5601,7 @@ export function InteractiveGradient() {
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             onDoubleClick={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); setIsWavHolding(false); evolveWithFactor(1); }}
             className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
-            style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
+            style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
             title="Tap: evolve · Hold: new mood"
           >
             {isWavHolding && <span className="wav-fill" />}
@@ -5699,7 +5699,7 @@ export function InteractiveGradient() {
               evolveWithFactor(1);
             }}
             className={`relative px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow overflow-hidden${isWavHolding ? ' wav-wave-active' : ' wav-hue-drift'}`}
-            style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
+            style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
           >
             {isWavHolding && <span className="wav-fill" />}
             {isControlsVisible ? (
