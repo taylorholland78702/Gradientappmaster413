@@ -5877,7 +5877,8 @@ export function InteractiveGradient() {
               </button>
               <button
                 onClick={handleAIPromptSubmit}
-                className="px-2 py-0.5 rounded text-xs bg-white text-black shadow-sm hover:bg-white/80 transition-all"
+                className="px-2 py-0.5 rounded text-xs text-white font-semibold shadow-sm transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
               >
                 Generate
               </button>
