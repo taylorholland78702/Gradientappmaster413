@@ -669,9 +669,9 @@ export function InteractiveGradient() {
         const avgLuminance = count > 0 ? total / count : 128;
         // Hysteresis: only switch when luminance crosses wide thresholds
         setIsPanelLight(prev => {
-          if (prev && avgLuminance > 175) return false; // was light, bg got bright → go dark
-          if (!prev && avgLuminance < 90) return true;  // was dark, bg got dark → go light
-          return prev; // stay put in the middle range
+          if (!prev && avgLuminance > 175) return true;  // was dark, bg got bright → go light (dark text)
+          if (prev && avgLuminance < 90) return false;   // was light, bg got dark → go dark (white text)
+          return prev; // hysteresis: stay put in the middle range
         });
       } catch (_) {}
     }, 1000);
@@ -5621,7 +5621,7 @@ export function InteractiveGradient() {
       <div
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
-          background: isPanelLight ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.10)',
+          background: isPanelLight ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.18)',
           backdropFilter: 'blur(12px)',
           borderRadius: 14,
         }}
