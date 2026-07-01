@@ -5696,7 +5696,6 @@ export function InteractiveGradient() {
             style={{ background: 'linear-gradient(to right, #7c3aed, #ec4899, #eab308)' }}
           >
             {isWavHolding && <span className="wav-fill" />}
-            {isWavHolding && <span className="wav-light-flash" />}
             {isControlsVisible ? (
               <span className="relative text-[22px] tracking-tight leading-none wav-label" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>
             ) : <Shuffle className="relative w-4 h-4 text-white" />}
