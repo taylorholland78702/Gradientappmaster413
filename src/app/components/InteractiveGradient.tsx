@@ -5562,7 +5562,13 @@ export function InteractiveGradient() {
             onClick={feelingLucky}
             className="px-2 h-[32px] rounded-lg transition-all bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white shadow-sm hover:shadow flex-1 flex items-center justify-center"
           >
-            {isControlsVisible ? <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span> : <Shuffle className="w-4 h-4 text-white" />}
+            {isControlsVisible ? (
+              <span className="flex items-center gap-0.5">
+                <span className="text-[11px] leading-none" style={{ color: 'rgba(255,255,255,0.7)' }}>˜</span>
+                <span className="text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#fff' }}>WĀV</span>
+                <span className="text-[11px] leading-none" style={{ color: 'rgba(255,255,255,0.7)' }}>˜</span>
+              </span>
+            ) : <Shuffle className="w-4 h-4 text-white" />}
           </button>
           <button
             onClick={undoLastChange}
