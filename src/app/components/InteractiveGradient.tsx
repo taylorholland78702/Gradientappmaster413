@@ -5703,7 +5703,8 @@ export function InteractiveGradient() {
       <div
         style={{
           ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
-          background: 'transparent',
+          background: isPanelLight ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+          backdropFilter: 'blur(60px)',
           borderRadius: 14,
         }}
         className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[290px] max-h-[calc(100vh-2rem)] overflow-y-auto p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light' : ''} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
