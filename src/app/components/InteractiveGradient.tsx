@@ -5834,7 +5834,7 @@ export function InteractiveGradient() {
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Wand2 className="w-3.5 h-3.5" /><span>Effects</span>
+            <Wand2 className="w-3.5 h-3.5" /><span>FX</span>
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[10px] font-semibold transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
@@ -7161,7 +7161,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
             className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
-          >CLEAR</button>
+          >RESET</button>
           <button
             onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
             className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
