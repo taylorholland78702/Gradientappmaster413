@@ -5709,7 +5709,7 @@ export function InteractiveGradient() {
               }}
             />
             {isControlsVisible ? (
-              <span className="relative text-[22px] tracking-tight leading-none text-white" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900 }}>WĀV</span>
+              <span className="relative text-[22px] tracking-tight leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>
             ) : <Shuffle className="relative w-4 h-4 text-white" />}
           </button>
           <button
