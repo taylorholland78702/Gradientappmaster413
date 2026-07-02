@@ -8,6 +8,8 @@ interface VCRControlsProps {
   vcrRecordedFrames: unknown[];
   vcrPlaybackSpeed: number;
   rotationDirection: 'clockwise' | 'counter';
+  isEncoding: boolean;
+  encodingProgress: number;
   setVcrPlaybackSpeed: (speed: number) => void;
   setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
@@ -22,6 +24,8 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   vcrRecordedFrames,
   vcrPlaybackSpeed,
   rotationDirection,
+  isEncoding,
+  encodingProgress,
   setVcrPlaybackSpeed,
   setRotationDirection,
   toggleVCRRecording,
@@ -32,10 +36,15 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
       <div className="flex-1 flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
-          title="Record Video"
+          disabled={isEncoding}
+          className="p-1 rounded hover:bg-white/15 text-white transition-all relative"
+          title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video'}
         >
-          <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
+          {isEncoding ? (
+            <span className="text-[9px] font-bold text-yellow-400 leading-none">{encodingProgress}%</span>
+          ) : (
+            <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
+          )}
         </button>
 
         <button

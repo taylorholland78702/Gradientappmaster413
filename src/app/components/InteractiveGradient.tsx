@@ -524,6 +524,7 @@ export function InteractiveGradient() {
     toggleVCRRecording,
     toggleVCRPlayback,
     handleStop,
+    isEncoding, encodingProgress,
   } = vcr;
 
   // usePresets — preset save/load/delete/rename
@@ -5829,6 +5830,8 @@ export function InteractiveGradient() {
           vcrRecordedFrames={vcrRecordedFrames}
           vcrPlaybackSpeed={vcrPlaybackSpeed}
           rotationDirection={rotationDirection}
+          isEncoding={isEncoding}
+          encodingProgress={encodingProgress}
           setVcrPlaybackSpeed={setVcrPlaybackSpeed}
           setRotationDirection={setRotationDirection}
           toggleVCRRecording={toggleVCRRecording}

@@ -33,18 +33,8 @@ export interface UseVCRPlaybackParams {
   audioFile: string | null;
 }
 
-function getBestMimeType(): string {
-  const candidates = [
-    'video/mp4;codecs=avc1',
-    'video/mp4',
-    'video/webm;codecs=vp9',
-    'video/webm',
-  ];
-  for (const type of candidates) {
-    if (MediaRecorder.isTypeSupported(type)) return type;
-  }
-  return '';
-}
+const CAPTURE_FPS = 30;
+const FRAME_INTERVAL_MS = 1000 / CAPTURE_FPS;
 
 export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const {
@@ -74,6 +64,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const [vcrPlaybackSpeed, setVcrPlaybackSpeed] = useState(1);
   const [vcrLoop, setVcrLoop] = useState(false);
   const [vcrPlaybackIndex, setVcrPlaybackIndex] = useState(0);
+  const [isEncoding, setIsEncoding] = useState(false);
+  const [encodingProgress, setEncodingProgress] = useState(0);
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -83,8 +75,17 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const vcrRecordingStartTime = useRef<number>(0);
   const vcrPlaybackStartTime = useRef<number>(0);
   const mp4RafRef = useRef<number | null>(null);
-  // Ref-based flag avoids stale closure in toggleVCRRecording
   const isRecordingRef = useRef(false);
+
+  // ffmpeg frame capture refs
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ffmpegRef = useRef<any>(null);
+  const frameDataRef = useRef<Uint8Array[]>([]);
+  const isCapturingRef = useRef(false);
+  const captureRafRef = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef(0);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRecorderRef = useRef<MediaRecorder | null>(null);
 
   // VCR Recording effect
   useEffect(() => {
@@ -136,87 +137,168 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     return () => clearInterval(playbackInterval);
   }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed, vcrLoop]);
 
+  const loadFFmpeg = useCallback(async () => {
+    if (ffmpegRef.current) return ffmpegRef.current;
+    const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+    const { toBlobURL } = await import('@ffmpeg/util');
+    const ffmpeg = new FFmpeg();
+    const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+    ffmpegRef.current = ffmpeg;
+    return ffmpeg;
+  }, []);
+
   const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.warn('startRecording: canvas not available');
-      return;
-    }
+    if (!canvas) return;
 
-    const mimeType = getBestMimeType();
-    recordedChunksRef.current = [];
-
-    let videoStream: MediaStream;
-    try {
-      videoStream = canvas.captureStream(30);
-    } catch (err) {
-      console.error('captureStream failed:', err);
-      return;
-    }
-
-    // Try to attach audio tracks
-    let stream = videoStream;
-    try {
-      let audioTracks: MediaStreamTrack[] = [];
-      if (audioFile && audioContextRef.current && analyserRef.current) {
-        // File audio: tap the analyser output via MediaStreamDestination
-        const dest = audioContextRef.current.createMediaStreamDestination();
-        analyserRef.current.connect(dest);
-        audioTracks = dest.stream.getAudioTracks();
-      } else if (streamRef.current) {
-        // Mic: use the live mic stream tracks directly
-        audioTracks = streamRef.current.getAudioTracks();
-      }
-      if (audioTracks.length > 0) {
-        stream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
-      }
-    } catch (err) {
-      console.warn('Audio capture failed, recording video only:', err);
-    }
-
-    let mediaRecorder: MediaRecorder;
-    try {
-      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    } catch (err) {
-      console.error('MediaRecorder init failed:', err);
-      stream.getTracks().forEach(t => t.stop());
-      return;
-    }
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) recordedChunksRef.current.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-      const isMP4 = mimeType.includes('mp4');
-      const blob = new Blob(recordedChunksRef.current, { type: isMP4 ? 'video/mp4' : 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gradient-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    };
-
-    mediaRecorder.start();
-    mediaRecorderRef.current = mediaRecorder;
+    frameDataRef.current = [];
+    audioChunksRef.current = [];
+    isCapturingRef.current = true;
+    lastFrameTimeRef.current = 0;
     isRecordingRef.current = true;
     setIsRecording(true);
+
+    // Capture audio separately via MediaRecorder (audio-only stream)
+    try {
+      let audioStream: MediaStream | null = null;
+      if (audioFile && audioContextRef.current && analyserRef.current) {
+        const dest = audioContextRef.current.createMediaStreamDestination();
+        analyserRef.current.connect(dest);
+        if (dest.stream.getAudioTracks().length > 0) audioStream = dest.stream;
+      } else if (streamRef.current) {
+        const tracks = streamRef.current.getAudioTracks();
+        if (tracks.length > 0) audioStream = new MediaStream(tracks);
+      }
+      if (audioStream) {
+        const audioMime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm';
+        const ar = new MediaRecorder(audioStream, { mimeType: audioMime });
+        ar.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+        ar.start();
+        audioRecorderRef.current = ar;
+      }
+    } catch (err) {
+      console.warn('Audio capture init failed, video only:', err);
+    }
+
+    // Capture video frames via RAF
+    const captureFrame = (timestamp: number) => {
+      if (!isCapturingRef.current) return;
+      if (timestamp - lastFrameTimeRef.current >= FRAME_INTERVAL_MS) {
+        lastFrameTimeRef.current = timestamp;
+        canvas.toBlob((blob) => {
+          if (blob && isCapturingRef.current) {
+            blob.arrayBuffer().then(buf => {
+              frameDataRef.current.push(new Uint8Array(buf));
+            });
+          }
+        }, 'image/jpeg', 0.93);
+      }
+      captureRafRef.current = requestAnimationFrame(captureFrame);
+    };
+    captureRafRef.current = requestAnimationFrame(captureFrame);
   }, [canvasRef, setIsRecording, audioFile, audioContextRef, analyserRef, streamRef]);
 
   const stopRecording = useCallback(() => {
-    const mediaRecorder = mediaRecorderRef.current;
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      const stream = mediaRecorder.stream;
-      if (stream) stream.getTracks().forEach(track => track.stop());
-      mediaRecorderRef.current = null;
-    }
+    isCapturingRef.current = false;
     isRecordingRef.current = false;
     setIsRecording(false);
-  }, [setIsRecording]);
+
+    if (captureRafRef.current) {
+      cancelAnimationFrame(captureRafRef.current);
+      captureRafRef.current = null;
+    }
+
+    // Stop audio recorder and wait for final data
+    const audioRecorder = audioRecorderRef.current;
+    audioRecorderRef.current = null;
+
+    const frames = [...frameDataRef.current];
+    frameDataRef.current = [];
+
+    if (frames.length === 0) return;
+
+    const encodeVideo = async (audioBlob: Blob | null) => {
+      setIsEncoding(true);
+      setEncodingProgress(0);
+
+      try {
+        const ffmpeg = await loadFFmpeg();
+
+        ffmpeg.on('progress', ({ progress }: { progress: number }) => {
+          setEncodingProgress(Math.round(progress * 100));
+        });
+
+        // Write video frames
+        for (let i = 0; i < frames.length; i++) {
+          await ffmpeg.writeFile(`f${String(i).padStart(5, '0')}.jpg`, frames[i]);
+        }
+
+        const hasAudio = audioBlob && audioBlob.size > 1000;
+        if (hasAudio) {
+          const audioBuf = new Uint8Array(await audioBlob!.arrayBuffer());
+          await ffmpeg.writeFile('audio.webm', audioBuf);
+        }
+
+        const outputArgs = [
+          '-framerate', String(CAPTURE_FPS),
+          '-i', 'f%05d.jpg',
+          ...(hasAudio ? ['-i', 'audio.webm'] : []),
+          '-c:v', 'libx264',
+          '-crf', '18',
+          '-preset', 'medium',
+          '-pix_fmt', 'yuv420p',
+          ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []),
+          '-movflags', '+faststart',
+          'out.mp4',
+        ];
+
+        await ffmpeg.exec(outputArgs);
+
+        const data = await ffmpeg.readFile('out.mp4') as Uint8Array;
+        const blob = new Blob([data], { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wav-${Date.now()}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Clean up ffmpeg FS
+        for (let i = 0; i < frames.length; i++) {
+          try { await ffmpeg.deleteFile(`f${String(i).padStart(5, '0')}.jpg`); } catch { /* ok */ }
+        }
+        try { await ffmpeg.deleteFile('out.mp4'); } catch { /* ok */ }
+        if (hasAudio) { try { await ffmpeg.deleteFile('audio.webm'); } catch { /* ok */ } }
+
+      } catch (err) {
+        console.error('FFmpeg encoding failed:', err);
+      } finally {
+        setIsEncoding(false);
+        setEncodingProgress(0);
+      }
+    };
+
+    if (audioRecorder && audioRecorder.state !== 'inactive') {
+      audioRecorder.onstop = () => {
+        const audioBlob = audioChunksRef.current.length > 0
+          ? new Blob(audioChunksRef.current, { type: 'audio/webm' })
+          : null;
+        audioChunksRef.current = [];
+        encodeVideo(audioBlob);
+      };
+      audioRecorder.stop();
+    } else {
+      encodeVideo(null);
+    }
+  }, [setIsRecording, loadFFmpeg]);
 
   const toggleVCRRecording = useCallback(() => {
     if (isRecordingRef.current) {
@@ -268,6 +350,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     vcrPlaybackSpeed, setVcrPlaybackSpeed,
     vcrLoop, setVcrLoop,
     vcrPlaybackIndex, setVcrPlaybackIndex,
+    isEncoding, encodingProgress,
     // Refs
     mediaRecorderRef,
     recordedChunksRef,
