@@ -234,10 +234,11 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           setEncodingProgress(Math.round(progress * 100));
         });
 
-        // Write video frames
-        for (let i = 0; i < frames.length; i++) {
-          await ffmpeg.writeFile(`f${String(i).padStart(5, '0')}.jpg`, frames[i]);
-        }
+        // Write video frames — parallelized since each goes to a distinct file in
+        // ffmpeg's virtual FS, so there's no need to wait on them one at a time.
+        await Promise.all(frames.map((frame, i) =>
+          ffmpeg.writeFile(`f${String(i).padStart(5, '0')}.jpg`, frame)
+        ));
 
         const hasAudio = audioBlob && audioBlob.size > 1000;
         if (hasAudio) {
@@ -250,8 +251,9 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           '-i', 'f%05d.jpg',
           ...(hasAudio ? ['-i', 'audio.webm'] : []),
           '-c:v', 'libx264',
-          '-crf', '18',
-          '-preset', 'veryfast',
+          '-crf', '20',
+          '-preset', 'ultrafast',
+          '-threads', '0',
           '-pix_fmt', 'yuv420p',
           ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []),
           '-movflags', '+faststart',

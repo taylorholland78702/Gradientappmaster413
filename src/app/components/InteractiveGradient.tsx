@@ -2881,45 +2881,42 @@ export function InteractiveGradient() {
         // Treble shifts which colors the waves use
         const waveColorShiftAmt = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * gradientColors.length * 0.3 : 0;
 
+        // Cache one tiny horizontal gradient bitmap per color pair (there are only
+        // gradientColors.length of them) so the per-scanline fill below can blit a
+        // cheap bitmap instead of allocating a CanvasGradient on every row — that's
+        // what makes riding the gradient along the wave's curve affordable per-frame.
+        const waveStripCache: HTMLCanvasElement[] = [];
+        for (let c = 0; c < gradientColors.length; c++) {
+          const color = gradientColors[c];
+          const nextColor = gradientColors[(c + 1) % gradientColors.length];
+          if (!color || !nextColor) continue;
+          const strip = document.createElement('canvas');
+          strip.width = 64; strip.height = 1;
+          const sCtx = strip.getContext('2d')!;
+          const sGrad = sCtx.createLinearGradient(0, 0, 64, 0);
+          sGrad.addColorStop(0, `rgb(${color.r}, ${color.g}, ${color.b})`);
+          sGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
+          sCtx.fillStyle = sGrad;
+          sCtx.fillRect(0, 0, 64, 1);
+          waveStripCache[c] = strip;
+        }
+
+        const waveRowStep = 8;
         for (let i = -startOffset; i < numWavesForWave - startOffset; i++) {
           const baseX = i * waveWidth;
           const shiftedI = i + waveColorShiftAmt;
           const colorIndex = ((Math.floor(shiftedI) % gradientColors.length) + gradientColors.length) % gradientColors.length;
-          const color = gradientColors[colorIndex];
-          const nextColor = gradientColors[(colorIndex + 1) % gradientColors.length];
-          
-          // Safety check
-          if (!color || !nextColor) continue;
-          
-          const gradient = ctx.createLinearGradient(baseX, 0, baseX + waveWidth, 0);
-          gradient.addColorStop(0, `rgb(${color.r}, ${color.g}, ${color.b})`);
-          gradient.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
-          
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          
-          // Start from top left of wave - extend far beyond canvas
-          ctx.moveTo(baseX, -displayHeight * 3);
-          
-          // Draw the left wavy edge
-          for (let y = -displayHeight * 3; y <= displayHeight * 3; y += 5) {
+          const strip = waveStripCache[colorIndex];
+          if (!strip) continue;
+
+          // Fill scanline-by-scanline so the gradient's left/right edges follow the
+          // same sine offset as the stripe's own wavy boundary at that row — the
+          // gradient rides inside the curve instead of sitting as a straight band
+          // laid over it.
+          for (let y = -displayHeight * 3; y <= displayHeight * 3; y += waveRowStep) {
             const waveX = baseX + Math.sin(y * frequency) * amplitude;
-            ctx.lineTo(waveX, y);
+            ctx.drawImage(strip, 0, 0, 64, 1, waveX, y, waveWidth, waveRowStep + 1);
           }
-          
-          // Draw bottom edge
-          ctx.lineTo(baseX + waveWidth + amplitude, displayHeight * 3);
-          
-          // Draw the right wavy edge
-          for (let y = displayHeight * 3; y >= -displayHeight * 3; y -= 5) {
-            const waveX = baseX + waveWidth + Math.sin(y * frequency) * amplitude;
-            ctx.lineTo(waveX, y);
-          }
-          
-          // Close path back to start
-          ctx.lineTo(baseX - amplitude, -displayHeight * 3);
-          ctx.closePath();
-          ctx.fill();
         }
 
         ctx.restore();
@@ -4446,14 +4443,23 @@ export function InteractiveGradient() {
             // flipping alternate rows/columns so every seam lines up seamlessly.
             const n = Math.max(2, Math.min(16, Math.round(mirrorTileCount)));
             const tileW = mw / n, tileH = mh / n;
+            // Round tile boundaries to whole pixels and overdraw by 1px so
+            // adjacent tiles overlap slightly instead of leaving hairline gaps
+            // from sub-pixel rounding in drawImage.
             for (let row = 0; row < n; row++) {
               for (let col = 0; col < n; col++) {
                 const flipX = col % 2 === 1;
                 const flipY = row % 2 === 1;
+                const x0 = Math.round(col * tileW);
+                const x1 = Math.round((col + 1) * tileW);
+                const y0 = Math.round(row * tileH);
+                const y1 = Math.round((row + 1) * tileH);
+                const w = x1 - x0 + 1;
+                const h = y1 - y0 + 1;
                 mCtx.save();
-                mCtx.translate(col * tileW + (flipX ? tileW : 0), row * tileH + (flipY ? tileH : 0));
+                mCtx.translate(x0 + (flipX ? w - 1 : 0), y0 + (flipY ? h - 1 : 0));
                 mCtx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-                mCtx.drawImage(canvas, 0, 0, tileW, tileH, 0, 0, tileW, tileH);
+                mCtx.drawImage(canvas, 0, 0, tileW, tileH, 0, 0, w, h);
                 mCtx.restore();
               }
             }

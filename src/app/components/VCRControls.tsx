@@ -32,12 +32,13 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   toggleVCRPlayback,
 }) => {
   return (
-    <div className="flex items-center bg-black/25 rounded-lg px-1 w-full shadow-sm">
-      <div className="flex-1 flex items-center justify-between">
+    <div className="flex items-stretch bg-black/25 rounded-lg w-full shadow-sm">
+      {/* Group 1 (2/5 width) — matches the 2-column span of the rows above/below */}
+      <div className="flex-[2] flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all relative"
+          className="flex-1 p-2 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
           title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video'}
         >
           {isEncoding ? (
@@ -62,14 +63,17 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
         <button
           onClick={toggleVCRPlayback}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all"
+          className="flex-1 p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
           {(isVCRPlaying || isAutoMode) ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
         </button>
+      </div>
 
-        <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
+      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
+      {/* Group 2 (2/5 width) — compressed so its outer edges land on the same lines */}
+      <div className="flex-[2] flex items-center justify-between px-0.5">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
@@ -80,7 +84,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(0.5);
             }
           }}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all"
+          className="p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Slower"
         >
           <Rewind weight="regular" className="w-4 h-4" />
@@ -98,17 +102,20 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(1);
             }
           }}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all"
+          className="p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Faster"
         >
           <FastForward weight="regular" className="w-4 h-4" />
         </button>
+      </div>
 
-        <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
+      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
+      {/* Group 3 (1/5 width) */}
+      <div className="flex-1 flex items-center justify-center">
         <button
           onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
         >
           {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
