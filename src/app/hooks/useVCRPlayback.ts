@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
+import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 export interface ColorRGB {
   r: number;
@@ -87,6 +88,16 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRecorderRef = useRef<MediaRecorder | null>(null);
 
+  // WebCodecs capture refs — video is hardware-encoded live during recording
+  // instead of relayed through JPEG frames + ffmpeg.wasm after the fact, so
+  // the post-stop wait is just a quick flush instead of a full re-encode.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const videoEncoderRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const muxerRef = useRef<any>(null);
+  const videoFrameIndexRef = useRef(0);
+  const usingWebCodecsRef = useRef(false);
+
   // VCR Recording effect
   useEffect(() => {
     if (!isVCRRecording) return;
@@ -159,18 +170,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     return ffmpeg;
   }, []);
 
-  const startRecording = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    frameDataRef.current = [];
-    audioChunksRef.current = [];
-    isCapturingRef.current = true;
-    lastFrameTimeRef.current = 0;
-    isRecordingRef.current = true;
-    setIsRecording(true);
-
-    // Capture audio separately via MediaRecorder (audio-only stream)
+  const startAudioCapture = useCallback((): boolean => {
     try {
       let audioStream: MediaStream | null = null;
       if (audioFile && audioContextRef.current && analyserRef.current) {
@@ -189,10 +189,196 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         ar.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
         ar.start();
         audioRecorderRef.current = ar;
+        return true;
       }
     } catch (err) {
       console.warn('Audio capture init failed, video only:', err);
     }
+    return false;
+  }, [audioFile, audioContextRef, analyserRef, streamRef]);
+
+  // Re-encodes a recorded webm/opus audio blob into AAC AudioChunks and feeds
+  // them into the given mp4 muxer. Runs after stop, but decoding+encoding audio
+  // is cheap relative to video, so this doesn't meaningfully slow the export.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const muxAudioBlob = useCallback(async (audioBlob: Blob, muxer: any) => {
+    const arrayBuf = await audioBlob.arrayBuffer();
+    const audioCtx = new AudioContext();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+    await audioCtx.close();
+
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+
+    await new Promise<void>((resolve, reject) => {
+      const encoder = new AudioEncoder({
+        output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+        error: reject,
+      });
+      encoder.configure({
+        codec: 'mp4a.40.2',
+        sampleRate,
+        numberOfChannels,
+        bitrate: 192_000,
+      });
+
+      const CHUNK_FRAMES = 4096;
+      let frameOffset = 0;
+      while (frameOffset < audioBuffer.length) {
+        const frames = Math.min(CHUNK_FRAMES, audioBuffer.length - frameOffset);
+        const planar = new Float32Array(frames * numberOfChannels);
+        for (let ch = 0; ch < numberOfChannels; ch++) {
+          planar.set(audioBuffer.getChannelData(ch).subarray(frameOffset, frameOffset + frames), ch * frames);
+        }
+        const audioData = new AudioData({
+          format: 'f32-planar',
+          sampleRate,
+          numberOfFrames: frames,
+          numberOfChannels,
+          timestamp: (frameOffset / sampleRate) * 1e6,
+          data: planar,
+        });
+        encoder.encode(audioData);
+        audioData.close();
+        frameOffset += frames;
+      }
+
+      encoder.flush().then(() => { encoder.close(); resolve(); }).catch(reject);
+    });
+  }, []);
+
+  const startRecordingWebCodecs = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const target = new ArrayBufferTarget();
+    const muxer = new Muxer({
+      target,
+      video: {
+        codec: 'avc',
+        width: canvas.width,
+        height: canvas.height,
+      },
+      fastStart: 'in-memory',
+    });
+    muxerRef.current = muxer;
+    videoFrameIndexRef.current = 0;
+
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      error: (err) => console.error('VideoEncoder error:', err),
+    });
+    encoder.configure({
+      codec: 'avc1.640034',
+      width: canvas.width,
+      height: canvas.height,
+      bitrate: 20_000_000,
+      framerate: CAPTURE_FPS,
+      hardwareAcceleration: 'prefer-hardware',
+    });
+    videoEncoderRef.current = encoder;
+
+    audioChunksRef.current = [];
+    isCapturingRef.current = true;
+    lastFrameTimeRef.current = 0;
+    isRecordingRef.current = true;
+    setIsRecording(true);
+
+    startAudioCapture();
+
+    const captureFrame = (timestamp: number) => {
+      if (!isCapturingRef.current) return;
+      if (timestamp - lastFrameTimeRef.current >= FRAME_INTERVAL_MS) {
+        lastFrameTimeRef.current = timestamp;
+        const frameTimestampUs = (videoFrameIndexRef.current * 1e6) / CAPTURE_FPS;
+        const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs });
+        // Keyframe every 2 seconds so the file is seekable without being too big.
+        encoder.encode(frame, { keyFrame: videoFrameIndexRef.current % (CAPTURE_FPS * 2) === 0 });
+        frame.close();
+        videoFrameIndexRef.current += 1;
+      }
+      captureRafRef.current = requestAnimationFrame(captureFrame);
+    };
+    captureRafRef.current = requestAnimationFrame(captureFrame);
+  }, [canvasRef, setIsRecording, startAudioCapture]);
+
+  const stopRecordingWebCodecs = useCallback(() => {
+    isCapturingRef.current = false;
+    isRecordingRef.current = false;
+    setIsRecording(false);
+
+    if (captureRafRef.current) {
+      cancelAnimationFrame(captureRafRef.current);
+      captureRafRef.current = null;
+    }
+
+    const audioRecorder = audioRecorderRef.current;
+    audioRecorderRef.current = null;
+    const encoder = videoEncoderRef.current;
+    const muxer = muxerRef.current;
+    videoEncoderRef.current = null;
+    muxerRef.current = null;
+
+    if (!encoder || !muxer || videoFrameIndexRef.current === 0) return;
+
+    const finalize = async (audioBlob: Blob | null) => {
+      setIsEncoding(true);
+      setEncodingProgress(0);
+      try {
+        await encoder.flush();
+        encoder.close();
+
+        const hasAudio = audioBlob && audioBlob.size > 1000;
+        if (hasAudio) {
+          setEncodingProgress(50);
+          await muxAudioBlob(audioBlob!, muxer);
+        }
+
+        muxer.finalize();
+        const { buffer } = muxer.target as ArrayBufferTarget;
+        const blob = new Blob([buffer], { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wav-${Date.now()}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('WebCodecs export failed:', err);
+      } finally {
+        setIsEncoding(false);
+        setEncodingProgress(0);
+      }
+    };
+
+    if (audioRecorder && audioRecorder.state !== 'inactive') {
+      audioRecorder.onstop = () => {
+        const audioBlob = audioChunksRef.current.length > 0
+          ? new Blob(audioChunksRef.current, { type: 'audio/webm' })
+          : null;
+        audioChunksRef.current = [];
+        finalize(audioBlob);
+      };
+      audioRecorder.stop();
+    } else {
+      finalize(null);
+    }
+  }, [setIsRecording, muxAudioBlob]);
+
+  const startRecordingFFmpeg = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    frameDataRef.current = [];
+    audioChunksRef.current = [];
+    isCapturingRef.current = true;
+    lastFrameTimeRef.current = 0;
+    isRecordingRef.current = true;
+    setIsRecording(true);
+
+    startAudioCapture();
 
     // Capture video frames via RAF
     const captureFrame = (timestamp: number) => {
@@ -210,9 +396,9 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       captureRafRef.current = requestAnimationFrame(captureFrame);
     };
     captureRafRef.current = requestAnimationFrame(captureFrame);
-  }, [canvasRef, setIsRecording, audioFile, audioContextRef, analyserRef, streamRef]);
+  }, [canvasRef, setIsRecording, startAudioCapture]);
 
-  const stopRecording = useCallback(() => {
+  const stopRecordingFFmpeg = useCallback(() => {
     isCapturingRef.current = false;
     isRecordingRef.current = false;
     setIsRecording(false);
@@ -309,6 +495,27 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       encodeVideo(null);
     }
   }, [setIsRecording, loadFFmpeg]);
+
+  // WebCodecs (hardware-accelerated, encodes live during capture) is used when
+  // available; ffmpeg.wasm (software, encodes after stop) is the fallback for
+  // browsers without VideoEncoder/AudioEncoder support (e.g. older Safari).
+  const startRecording = useCallback(() => {
+    const supportsWebCodecs = typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined';
+    usingWebCodecsRef.current = supportsWebCodecs;
+    if (supportsWebCodecs) {
+      startRecordingWebCodecs();
+    } else {
+      startRecordingFFmpeg();
+    }
+  }, [startRecordingWebCodecs, startRecordingFFmpeg]);
+
+  const stopRecording = useCallback(() => {
+    if (usingWebCodecsRef.current) {
+      stopRecordingWebCodecs();
+    } else {
+      stopRecordingFFmpeg();
+    }
+  }, [stopRecordingWebCodecs, stopRecordingFFmpeg]);
 
   const toggleVCRRecording = useCallback(() => {
     if (isRecordingRef.current) {
