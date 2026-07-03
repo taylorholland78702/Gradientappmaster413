@@ -142,10 +142,18 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const { FFmpeg } = await import('@ffmpeg/ffmpeg');
     const { toBlobURL } = await import('@ffmpeg/util');
     const ffmpeg = new FFmpeg();
-    const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    // The multi-threaded core runs the encode across several worker threads via
+    // SharedArrayBuffer, which is several times faster than the single-threaded
+    // core — but it only works when the page is cross-origin isolated (COOP/COEP
+    // headers, set in vite.config.ts and vercel.json). Fall back otherwise.
+    const useMultiThread = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
+    const base = useMultiThread
+      ? 'https://unpkg.com/@ffmpeg/core-mt@0.12.10/dist/esm'
+      : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
     await ffmpeg.load({
       coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+      ...(useMultiThread ? { workerURL: await toBlobURL(`${base}/ffmpeg-core.worker.js`, 'text/javascript') } : {}),
     });
     ffmpegRef.current = ffmpeg;
     return ffmpeg;

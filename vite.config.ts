@@ -41,6 +41,25 @@ export default defineConfig({
     },
   },
 
+  // Cross-origin isolation is required for the multi-threaded ffmpeg.wasm core
+  // (SharedArrayBuffer) used by video export — see useVCRPlayback's loadFFmpeg.
+  // CORP is required alongside COEP so same-origin worker chunks (e.g. ffmpeg's
+  // own worker.js) aren't blocked by the embedder policy.
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
+  },
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
+  },
+
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })
