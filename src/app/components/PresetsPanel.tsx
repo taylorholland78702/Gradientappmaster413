@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Pencil, Minus } from 'lucide-react';
+import { FloppyDisk, PencilSimple, Minus } from '@phosphor-icons/react';
 
 interface Preset {
   name: string;
@@ -62,7 +62,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   };
 
   return (
-    <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg overflow-hidden mb-0.5">
+    <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
       {/* New preset input — shown on open, dismissed on load or explicit cancel */}
       {isAddingPreset && (
         <div className="flex items-center border-b border-white/10">
@@ -110,7 +110,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   if (e.key === 'Escape') setRenamingPresetIndex(null);
                 }}
                 onBlur={() => { if (renamingPresetValue.trim()) renamePreset(index, renamingPresetValue); setRenamingPresetIndex(null); }}
-                className="flex-1 px-4 py-2 text-xs bg-white/5 text-white focus:outline-none"
+                className="flex-1 px-4 py-2 text-xs bg-black/20 text-white focus:outline-none"
               />
             ) : (
               <button
@@ -125,21 +125,21 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
               title="Save current settings to this preset"
             >
-              <Save className="w-4 h-4" />
+              <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setRenamingPresetIndex(index); setRenamingPresetValue(preset.name); }}
               className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
               title="Rename preset"
             >
-              <Pencil className="w-4 h-4" />
+              <PencilSimple weight="regular" className="w-4 h-4" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); deletePreset(index); }}
               className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
               title="Delete preset"
             >
-              <Minus className="w-4 h-4" />
+              <Minus weight="regular" className="w-4 h-4" />
             </button>
           </div>
         ))

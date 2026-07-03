@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { ChevronDown, Eye, EyeOff, Undo, Shuffle, Plus, RefreshCw, Palette, Blend, Wand2, Mic, MicOff, Bookmark, Camera } from 'lucide-react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, FloppyDisk, Info, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -79,8 +79,8 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
         onClick={() => onToggle(id)}
         className="flex items-center justify-between w-full py-1.5 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
       >
-        <span className="text-xs text-white/80 font-medium">{label}</span>
-        <svg className={`w-3 h-3 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 4l4 4 4-4"/></svg>
+        <span className="text-[10px] text-white/80 font-medium">{label}</span>
+        <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
       {expanded && <div className="flex flex-col gap-1 pb-2">{children}</div>}
     </div>
@@ -137,6 +137,7 @@ export function InteractiveGradient() {
   const targetZoomRef = useRef<number>(1);
   const vcrPlaybackSpeedRef = useRef<number>(1);
   const isAutoModeRef = useRef<boolean>(false);
+  const rotationDirectionRef = useRef<'clockwise' | 'counter'>('clockwise');
   const isVCRPlayingRef = useRef<boolean>(false);
   const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
@@ -157,7 +158,7 @@ export function InteractiveGradient() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
-  const [isPanelLight, setIsPanelLight] = useState(true);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
@@ -172,7 +173,9 @@ export function InteractiveGradient() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(null);
+  const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(() => {
+    try { const s = localStorage.getItem('panelPos'); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
   const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
@@ -340,7 +343,8 @@ export function InteractiveGradient() {
   const [vignetteSoftness, setVignetteSoftness] = useState(50);
   const [fisheyeCenterX, setFisheyeCenterX] = useState(50);
   const [fisheyeCenterY, setFisheyeCenterY] = useState(50);
-  const [mirrorMode, setMirrorMode] = useState<'horizontal' | 'vertical' | 'quad'>('horizontal');
+  const [mirrorMode, setMirrorMode] = useState<'horizontal' | 'vertical' | 'grid'>('horizontal');
+  const [mirrorTileCount, setMirrorTileCount] = useState(2);
 
   // Store base AI colors to keep them anchored
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
@@ -367,6 +371,9 @@ export function InteractiveGradient() {
   const undoStackRef = useRef<any[]>([]);
   const undoIndexRef = useRef(-1);
   const [undoDepth, setUndoDepth] = useState(-1);
+  // Redo state - captures the state undo/redo moves away from, so it can be restored
+  const redoStackRef = useRef<any[]>([]);
+  const [redoDepth, setRedoDepth] = useState(0);
 
   // Track manual zoom interaction
   const lastManualZoomTime = useRef<number>(0);
@@ -649,43 +656,11 @@ export function InteractiveGradient() {
   useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
   useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
   useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
+  useEffect(() => { rotationDirectionRef.current = rotationDirection; }, [rotationDirection]);
   const isAutoColorRef = useRef(true);
   useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
 
-  // Auto-adapt panel light/dark based on canvas brightness behind the panel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      if (!ctx) return;
-      const px = (panelPos?.x ?? 16) * resolutionMultiplier;
-      const py = (panelPos?.y ?? 16) * resolutionMultiplier;
-      const sampleW = Math.min(200 * resolutionMultiplier, canvas.width - px);
-      const sampleH = Math.min(160 * resolutionMultiplier, canvas.height - py);
-      if (sampleW <= 0 || sampleH <= 0) return;
-      try {
-        const data = ctx.getImageData(px, py, sampleW, sampleH).data;
-        let total = 0;
-        const step = 4 * 8; // sample every 8th pixel for performance
-        let count = 0;
-        for (let i = 0; i < data.length; i += step) {
-          // perceived luminance
-          total += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          count++;
-        }
-        const avgLuminance = count > 0 ? total / count : 128;
-        // Hysteresis: only switch when luminance crosses wide thresholds
-        setIsPanelLight(prev => {
-          if (!prev && avgLuminance > 130) return true;  // was dark, bg got bright → go light (dark text)
-          if (prev && avgLuminance < 80) return false;   // was light, bg got dark → go dark (white text)
-          return prev; // hysteresis: stay put in the middle range
-        });
-      } catch (_) {}
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [panelPos, resolutionMultiplier]);
   useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
 
 
@@ -769,9 +744,13 @@ export function InteractiveGradient() {
         if (hasConverged && !isAnimating) drawParamsDirtyRef.current = false;
       }
 
-      // Sync back to state every 3 frames (~20fps) for undo snapshots and VCR recording
+      // Sync back to state every 15 frames (~4fps) for undo snapshots.
+      // The canvas itself reads live values straight from refs (see drawRef), so this
+      // sync is only for keeping React state fresh for buildSnapshot/undo — it does not
+      // need to run at animation framerate, and doing so was forcing a full re-render of
+      // the entire panel tree ~20x/sec during any animation, causing jank on lower-end GPUs.
       lerpSyncFrameRef.current++;
-      if (lerpSyncFrameRef.current % 3 === 0) {
+      if (lerpSyncFrameRef.current % 15 === 0) {
         setGradientColors([...gradientColorsRef.current]);
         setGradientAngle(gradientAngleRef.current);
         setZoom(zoomRef.current);
@@ -812,6 +791,28 @@ export function InteractiveGradient() {
       // Voronoi morphing — PLAY or mic active
       if (gradientTypeRef.current === 'voronoi' && isPlayActive) {
         setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1));
+      }
+
+      // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
+      // sweep below) instead of jumping once per 800ms: a big jump followed by the lerp
+      // catching up in ~100ms meant the gradient sat still for most of every 800ms window,
+      // which reads as stepped/incremental motion no matter how fast the draw call is.
+      if (isAutoModeRef.current) {
+        let rotationAmountPerFrame;
+        if (gradientTypeRef.current === 'fade') {
+          rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.0167 : -0.0167;
+        } else if (gradientTypeRef.current === 'waves') {
+          rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.00833 : -0.00833;
+        } else {
+          rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.03125 : -0.03125;
+        }
+        const midsBoost = isAudioActiveRef.current ? 1 + audioMidsLevelRef.current * 4 : 1;
+        // These types rotate at 2x across every speed step. (Noise and Radial are
+        // intentionally excluded — neither uses the rotation angle at all, so there's
+        // no existing motion for them to speed up; see conversation for details.)
+        const doubleSpeedTypes = ['angle', 'fade', 'conical-spiral', 'iridescent', 'radial-burst'];
+        const angleSpeedBoost = doubleSpeedTypes.includes(gradientTypeRef.current) ? 2 : 1;
+        setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost));
       }
 
       // Radar sweep — PLAY or mic active
@@ -863,13 +864,14 @@ export function InteractiveGradient() {
 
   useEffect(() => {
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMarbleAnimTime(t => t + 0.01 * vcrPlaybackSpeed), 16);
+    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
-  // Save current state for undo (defined early for use in other functions)
-  const saveCurrentState = useCallback(() => {
-    const snapshot = {
+
+  // Build a snapshot of all mutable gradient/effect state (used by undo, redo, and saveCurrentState)
+  const buildSnapshot = useCallback(() => {
+    return {
       gradientColors: [...gradientColors],
       targetColors: [...targetColors],
       gradientType,
@@ -961,21 +963,15 @@ export function InteractiveGradient() {
       baseAIColors: baseAIColors ? [...baseAIColors] : null,
       submittedAIPrompt,
     };
-    // Push snapshot onto a 10-item stack, discarding any forward history
-    const stack = undoStackRef.current;
-    const newIndex = undoIndexRef.current + 1;
-    undoStackRef.current = [...stack.slice(0, newIndex), snapshot].slice(-10);
-    undoIndexRef.current = undoStackRef.current.length - 1;
-    setUndoDepth(undoIndexRef.current);
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
-      activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, 
-      chromaticOffset, fisheyeStrength, grainIntensity, blurMotionAmount, 
-      blurMotionDirection, blurGaussianAmount, blurRadialAmount, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, 
-      vignetteStrength, colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, 
-      dustCrackleIntensity, hexGridSize, lightLeakIntensity, linesCount, linesAngle, 
+      activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize,
+      chromaticOffset, fisheyeStrength, grainIntensity, blurMotionAmount,
+      blurMotionDirection, blurGaussianAmount, blurRadialAmount, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed,
+      vignetteStrength, colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity,
+      dustCrackleIntensity, hexGridSize, lightLeakIntensity, linesCount, linesAngle,
       linesThickness, liquifyStrength, pinchStrength,
       scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
-      tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, vhsGlitchIntensity, 
+      tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, vhsGlitchIntensity,
       polygonSides, polygon2Sides, waveDistortionStrength,
       spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
       waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
@@ -984,6 +980,20 @@ export function InteractiveGradient() {
       angleStartOffset, angleCenterX, angleCenterY,
       iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt]);
+
+  // Save current state for undo (defined early for use in other functions)
+  const saveCurrentState = useCallback(() => {
+    const snapshot = buildSnapshot();
+    // Push snapshot onto a 10-item stack, discarding any forward history
+    const stack = undoStackRef.current;
+    const newIndex = undoIndexRef.current + 1;
+    undoStackRef.current = [...stack.slice(0, newIndex), snapshot].slice(-10);
+    undoIndexRef.current = undoStackRef.current.length - 1;
+    setUndoDepth(undoIndexRef.current);
+    // A fresh edit invalidates any redo history
+    redoStackRef.current = [];
+    setRedoDepth(0);
+  }, [buildSnapshot]);
 
   // Randomize all colors
   const randomizeAllColors = useCallback(() => {
@@ -1010,7 +1020,7 @@ export function InteractiveGradient() {
   const getGradientDisplayName = useCallback((type: GradientType): string => {
     const names: Record<string, string> = {
       angle: 'Angle', aurora: 'Aurora', caustics: 'Caustics',
-      'conical-spiral': 'Conical Spiral', fade: 'Fade', flower: 'Flower',
+      'conical-spiral': 'Helix', fade: 'Fade', flower: 'Flower',
       freeform: 'Freeform', grid: 'Grid', iridescent: 'Iridescent',
       'lava-lamp': 'Lava Lamp', linear: 'Linear', marble: 'Marble',
       mesh: 'Mesh', noise: 'Noise', plasma: 'Plasma',
@@ -1025,13 +1035,13 @@ export function InteractiveGradient() {
 
   // Memoize full gradient type list for UI
   const FULL_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'aurora', 'caustics', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'],
+    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'conical-spiral', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'],
     []
   );
 
   // Gradient types for Randomize (excludes freeform and mesh)
   const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'aurora', 'caustics', 'conical-spiral', 'fade', 'flower', 'grid', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
+    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'conical-spiral', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
     []
   );
 
@@ -1069,13 +1079,8 @@ export function InteractiveGradient() {
   }, [saveCurrentState]);
 
   // Undo to previous state (up to 10 levels)
-  const undoLastChange = useCallback(() => {
-    if (undoIndexRef.current < 0) return;
-    const snapshot = undoStackRef.current[undoIndexRef.current];
-    undoIndexRef.current -= 1;
-    setUndoDepth(undoIndexRef.current);
-    if (!snapshot) return;
-
+  // Apply a snapshot's values to live state (shared by undo and redo)
+  const applySnapshot = useCallback((snapshot: any) => {
     const colors = snapshot.gradientColors || DEFAULT_COLORS;
     const targets = snapshot.targetColors || colors;
     setGradientColors(colors);
@@ -1167,8 +1172,40 @@ export function InteractiveGradient() {
     setResolutionMultiplier(snapshot.resolutionMultiplier || 1);
     setBaseAIColors(snapshot.baseAIColors);
     setSubmittedAIPrompt(snapshot.submittedAIPrompt);
-
   }, []);
+
+  const undoLastChange = useCallback(() => {
+    if (undoIndexRef.current < 0) return;
+    const snapshot = undoStackRef.current[undoIndexRef.current];
+    undoIndexRef.current -= 1;
+    setUndoDepth(undoIndexRef.current);
+    if (!snapshot) return;
+
+    // Capture the live state onto the redo stack before overwriting it
+    const currentSnapshot = buildSnapshot();
+    redoStackRef.current = [...redoStackRef.current, currentSnapshot].slice(-10);
+    setRedoDepth(redoStackRef.current.length);
+
+    applySnapshot(snapshot);
+  }, [buildSnapshot, applySnapshot]);
+
+  const redoLastChange = useCallback(() => {
+    const redoStack = redoStackRef.current;
+    if (redoStack.length === 0) return;
+    const snapshot = redoStack[redoStack.length - 1];
+    redoStackRef.current = redoStack.slice(0, -1);
+    setRedoDepth(redoStackRef.current.length);
+
+    // Push the live state back onto the undo stack so it can be undone again
+    const currentSnapshot = buildSnapshot();
+    const stack = undoStackRef.current;
+    const newIndex = undoIndexRef.current + 1;
+    undoStackRef.current = [...stack.slice(0, newIndex), currentSnapshot].slice(-10);
+    undoIndexRef.current = undoStackRef.current.length - 1;
+    setUndoDepth(undoIndexRef.current);
+
+    applySnapshot(snapshot);
+  }, [buildSnapshot, applySnapshot]);
 
   // Jump all the way back to the oldest snapshot in the stack
   const undoAll = useCallback(() => {
@@ -1177,19 +1214,21 @@ export function InteractiveGradient() {
     undoLastChange();
   }, [undoLastChange]);
 
-  // Keyboard shortcuts - Cmd/Ctrl+Z for undo
+  // Keyboard shortcuts - Cmd/Ctrl+Z for undo, Cmd/Ctrl+Shift+Z for redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check for Cmd+Z (Mac) or Ctrl+Z (Windows/Linux)
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undoLastChange();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redoLastChange();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undoLastChange]);
+  }, [undoLastChange, redoLastChange]);
 
   // Memoize gradient and effect type arrays (constant values)
   const GRADIENT_TYPES: GradientType[] = useMemo(() => 
@@ -1209,10 +1248,8 @@ export function InteractiveGradient() {
   const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'brightness', 'film-grain', 'bokeh', 'fisheye'];
 
   const feelingLucky = useCallback(() => {
-    console.log('[Rating] feelingLucky called, setting showRatingUI in 800ms');
-    setShowRatingUI(false); // reset first in case already showing
+    setShowRatingUI(false);
     setTimeout(() => {
-      console.log('[Rating] timeout fired');
       setShowRatingUI(true);
     }, 800);
     saveCurrentState();
@@ -1417,51 +1454,6 @@ export function InteractiveGradient() {
     
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
-    
-    // Randomize colors
-    // setTargetColors(gradientColors.map(() => randomColor()));
-    // setBaseAIColors(null);
-    // setSubmittedAIPrompt('');
-    
-    // Pick a random gradient type from the valid gradient types (excludes freeform)
-    // const randomGradient = FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
-    // setGradientType(randomGradient);
-    
-    // Pick 1-10 random effects with a mean of 5 using triangular distribution
-    // Use triangular distribution: sum of two uniform randoms gives a distribution centered around 5
-    // const numEffects = Math.min(10, Math.max(1, Math.round((Math.random() + Math.random()) * 5)));
-    // const selectedEffects: EffectType[] = [];
-    
-    // for (let i = 0; i < numEffects; i++) {
-    //   const randomEffect = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
-    //   if (!selectedEffects.includes(randomEffect)) {
-    //     selectedEffects.push(randomEffect);
-    //   }
-    // }
-    
-    // setActiveEffects(selectedEffects);
-    // Enable MULTI FX mode so users can deselect individual effects
-    // setIsMultiFxMode(true);
-    
-    // Random rotation angle
-    // setTargetAngle(Math.random() * 360);
-    
-    // Random zoom
-    // setTargetZoom(0.5 + Math.random() * 2.5); // 0.5 to 3
-    
-    // Random playback speed - only 0.5x, 1x, and 2x-10x
-    // const speedOptions = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    // const randomSpeed = speedOptions[Math.floor(Math.random() * speedOptions.length)];
-    // setVcrPlaybackSpeed(randomSpeed);
-    
-    // Random rotation direction
-    // setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
-    
-    // Randomize all FX slider variables
-    // setKaleidoscopeSegments(Math.floor(Math.random() * 20) + 3); // 3-22
-    // setTwistAmount(Math.random() * 5); // 0-5
-    // setPixelSize(Math.floor(Math.random() * 50) + 5); // 5-54
-    // setTriangleSize(Math.floor(Math.random() * 80) + 20); // 20-99
     setBlurMotionAmount(Math.floor(Math.random() * 50) + 10);        // 10–59
     setBlurMotionDirection(Math.floor(Math.random() * 360));           // 0–360
     setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);        // 3–17
@@ -2363,99 +2355,55 @@ export function InteractiveGradient() {
     setAIPrompt('');
   };
 
-  // Auto mode - automatically change colors
+  // Color AUTO PLAY — cycles colors independently of gradient AUTO PLAY
+  useEffect(() => {
+    if (!isAutoColor) return;
+
+    const applyColorShift = (color: ColorRGB, baseColor: ColorRGB | null, shiftRange: number): ColorRGB => {
+      if (baseColor) {
+        const maxDrift = 30;
+        const newR = Math.max(baseColor.r - maxDrift, Math.min(baseColor.r + maxDrift, color.r + (Math.random() - 0.5) * shiftRange));
+        const newG = Math.max(baseColor.g - maxDrift, Math.min(baseColor.g + maxDrift, color.g + (Math.random() - 0.5) * shiftRange));
+        const newB = Math.max(baseColor.b - maxDrift, Math.min(baseColor.b + maxDrift, color.b + (Math.random() - 0.5) * shiftRange));
+        return { r: Math.max(0, Math.min(255, newR)), g: Math.max(0, Math.min(255, newG)), b: Math.max(0, Math.min(255, newB)) };
+      }
+      return {
+        r: Math.max(0, Math.min(255, color.r + (Math.random() - 0.5) * shiftRange)),
+        g: Math.max(0, Math.min(255, color.g + (Math.random() - 0.5) * shiftRange)),
+        b: Math.max(0, Math.min(255, color.b + (Math.random() - 0.5) * shiftRange)),
+      };
+    };
+
+    const interval = setInterval(() => {
+      if (gradientType === 'fade') {
+        setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 8)));
+      } else if (gradientType === 'waves' || gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
+        setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 60)));
+      } else {
+        const numColorsToChange = Math.floor(Math.random() * 2) + 2;
+        const indicesToChange = new Set<number>();
+        while (indicesToChange.size < numColorsToChange) {
+          indicesToChange.add(Math.floor(Math.random() * gradientColors.length));
+        }
+        setTargetColors(prev =>
+          prev.map((color, index) =>
+            applyColorShift(color, baseAIColors?.[index] || null, indicesToChange.has(index) ? 40 : 16)
+          )
+        );
+      }
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, [isAutoColor, gradientColors.length, gradientType, baseAIColors]);
+
+  // Gradient AUTO PLAY — stop any active recording/VCR playback when Auto Play starts.
+  // The actual rotation now happens every frame inside the master RAF loop (see
+  // isAutoModeRef check there) instead of a chunked setInterval, for smooth motion.
   useEffect(() => {
     if (!isAutoMode) return;
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
-
-    const interval = setInterval(() => {
-      // Helper function to keep colors tethered to base AI colors
-      const applyColorShift = (color: ColorRGB, baseColor: ColorRGB | null, shiftRange: number) => {
-        if (baseColor) {
-          // If we have base AI colors, keep colors anchored to them
-          const maxDrift = 30; // Maximum allowed drift from base color
-          
-          // Calculate small random shift
-          const rShift = (Math.random() - 0.5) * shiftRange;
-          const gShift = (Math.random() - 0.5) * shiftRange;
-          const bShift = (Math.random() - 0.5) * shiftRange;
-          
-          // Apply shift but then pull back toward base color
-          let newR = color.r + rShift;
-          let newG = color.g + gShift;
-          let newB = color.b + bShift;
-          
-          // Clamp to stay within maxDrift of base color
-          newR = Math.max(baseColor.r - maxDrift, Math.min(baseColor.r + maxDrift, newR));
-          newG = Math.max(baseColor.g - maxDrift, Math.min(baseColor.g + maxDrift, newG));
-          newB = Math.max(baseColor.b - maxDrift, Math.min(baseColor.b + maxDrift, newB));
-          
-          return {
-            r: Math.max(0, Math.min(255, newR)),
-            g: Math.max(0, Math.min(255, newG)),
-            b: Math.max(0, Math.min(255, newB)),
-          };
-        } else {
-          // No base colors, use original behavior
-          const rShift = (Math.random() - 0.5) * shiftRange;
-          const gShift = (Math.random() - 0.5) * shiftRange;
-          const bShift = (Math.random() - 0.5) * shiftRange;
-          
-          return {
-            r: Math.max(0, Math.min(255, color.r + rShift)),
-            g: Math.max(0, Math.min(255, color.g + gShift)),
-            b: Math.max(0, Math.min(255, color.b + bShift)),
-          };
-        }
-      };
-      
-      // Different behavior for different gradient types
-      if (isAutoColorRef.current) {
-        if (gradientType === 'fade') {
-          setTargetColors(prev =>
-            prev.map((color, index) =>
-              applyColorShift(color, baseAIColors?.[index] || null, 8)
-            )
-          );
-        } else if (gradientType === 'waves' || gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
-          setTargetColors(prev =>
-            prev.map((color, index) =>
-              applyColorShift(color, baseAIColors?.[index] || null, 60)
-            )
-          );
-        } else {
-          const numColorsToChange = Math.floor(Math.random() * 2) + 2;
-          const indicesToChange = new Set<number>();
-          while (indicesToChange.size < numColorsToChange) {
-            indicesToChange.add(Math.floor(Math.random() * gradientColors.length));
-          }
-          setTargetColors(prev =>
-            prev.map((color, index) => {
-              const shiftRange = indicesToChange.has(index) ? 40 : 16;
-              return applyColorShift(color, baseAIColors?.[index] || null, shiftRange);
-            })
-          );
-        }
-      }
-      
-      // Rotation speeds based on gradient type
-      let rotationAmount;
-      if (gradientType === 'fade') {
-        rotationAmount = rotationDirection === 'clockwise' ? 0.8 : -0.8;
-      } else if (gradientType === 'stripes' || gradientType === 'waves') {
-        // Stripes and waves move vertically instead of rotating
-        rotationAmount = rotationDirection === 'clockwise' ? 0.4 : -0.4;
-      } else {
-        rotationAmount = rotationDirection === 'clockwise' ? 1.5 : -1.5;
-      }
-      // Mids boost rotation speed — more mid energy = faster spin
-      const midsBoost = isAudioActiveRef.current ? 1 + audioMidsLevelRef.current * 4 : 1;
-      setTargetAngle(prev => prev + (rotationAmount * vcrPlaybackSpeed * midsBoost));
-    }, 800);
-
-    return () => clearInterval(interval);
-  }, [isAutoMode, gradientColors.length, gradientType, rotationDirection, baseAIColors, vcrPlaybackSpeed]);
+  }, [isAutoMode]);
 
   // VCR recording/playback effects are now in useVCRPlayback hook
 
@@ -2482,11 +2430,12 @@ export function InteractiveGradient() {
     causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale,
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
+    noiseDirection,
     bokehSize, bokehIntensity,
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2500,7 +2449,10 @@ export function InteractiveGradient() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    // willReadFrequently forces the whole context onto a software (non-GPU) rendering
+    // path — getImageData is only used by specific effects (VHS, dither, slit-scan,
+    // ripple, etc.), not the base gradient draw, so leave GPU acceleration on by default.
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     // Read animated values from refs (updated every frame without React state changes)
@@ -2510,10 +2462,18 @@ export function InteractiveGradient() {
 
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
-    canvas.width = displayWidth * resolutionMultiplier;
-    canvas.height = displayHeight * resolutionMultiplier;
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
+    const targetWidth = displayWidth * resolutionMultiplier;
+    const targetHeight = displayHeight * resolutionMultiplier;
+    // Assigning canvas.width/height forces a full reallocation + clear of the backing
+    // store, even when the value is unchanged. Only touch it when the size actually
+    // changed (window resize, DPR change) — doing this unconditionally every frame was
+    // reallocating the entire canvas 60x/sec and was the dominant cause of jank.
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
+    }
 
     // Scale context for high-resolution rendering
     // resetTransform first — some browsers skip the state reset when canvas.width
@@ -2618,19 +2578,46 @@ export function InteractiveGradient() {
       }
 
       case 'angle': {
-        ctx.save();
         // Very subtle audio: slight angle shimmer, no center drift
         const audioConicAngleOffset = (isAudioEnabled && isAudioReactive) ? audioTrebleLevel * Math.PI * 0.004 : 0;
-        const audioConicCenterDX = 0;
-        const audioConicCenterDY = 0;
-        const conicCenterX = (displayWidth * angleCenterX) / 100 + audioConicCenterDX;
-        const conicCenterY = (displayHeight * angleCenterY) / 100 + audioConicCenterDY;
-        ctx.translate(centerX, centerY);
+        const conicCenterX = (displayWidth * angleCenterX) / 100;
+        const conicCenterY = (displayHeight * angleCenterY) / 100;
         const conicZoom = (isAudioEnabled && isAudioReactive) ? 1 : Math.max(1, zoom);
-        ctx.scale(conicZoom, conicZoom);
-        ctx.translate(-centerX, -centerY);
         const conicStartAngle = angleRad + (angleStartOffset * Math.PI) / 180 + audioConicAngleOffset;
-        gradient = ctx.createConicGradient(conicStartAngle, conicCenterX, conicCenterY);
+
+        // createConicGradient (and even a cached-bitmap + rotated drawImage blit) both
+        // route through the canvas compositing pipeline, which is the slow path on this
+        // GPU. Radar proves the fix: skip the pipeline entirely and write pixels directly
+        // via putImageData, exactly like the radar sweep already does successfully.
+        const angleImageData = ctx.createImageData(displayWidth, displayHeight);
+        const angleData = angleImageData.data;
+        const angleNumColors = gradientColors.length;
+
+        for (let ry = 0; ry < displayHeight; ry++) {
+          for (let rx = 0; rx < displayWidth; rx++) {
+            const dx = (rx - conicCenterX) / conicZoom;
+            const dy = (ry - conicCenterY) / conicZoom;
+            let pixelAngle = Math.atan2(dy, dx) - conicStartAngle;
+            pixelAngle = ((pixelAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            const t = pixelAngle / (2 * Math.PI);
+
+            const colorPos = t * (angleNumColors - 1);
+            const colorIdx = Math.floor(colorPos);
+            const colorFrac = colorPos - colorIdx;
+            const color1 = gradientColors[colorIdx % angleNumColors];
+            const color2 = gradientColors[(colorIdx + 1) % angleNumColors];
+            if (!color1 || !color2) continue;
+
+            const idx = (ry * displayWidth + rx) * 4;
+            angleData[idx] = color1.r + (color2.r - color1.r) * colorFrac;
+            angleData[idx + 1] = color1.g + (color2.g - color1.g) * colorFrac;
+            angleData[idx + 2] = color1.b + (color2.b - color1.b) * colorFrac;
+            angleData[idx + 3] = 255;
+          }
+        }
+
+        putScaledImageData(angleImageData);
+        gradient = undefined;
         break;
       }
 
@@ -3921,11 +3908,6 @@ export function InteractiveGradient() {
 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        // Restore context for angle gradient
-        if (gradientType === 'angle') {
-          ctx.restore();
-        }
       }
     }
 
@@ -4459,10 +4441,22 @@ export function InteractiveGradient() {
             mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, 0, mw, mh/2);
             mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, -mh, mw, mh/2); mCtx.restore();
           } else {
-            mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, 0, 0, mw/2, mh/2);
-            mCtx.save(); mCtx.scale(-1, 1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, -mw, 0, mw/2, mh/2); mCtx.restore();
-            mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, 0, -mh, mw/2, mh/2); mCtx.restore();
-            mCtx.save(); mCtx.scale(-1, -1); mCtx.drawImage(canvas, 0, 0, mw/2, mh/2, -mw, -mh, mw/2, mh/2); mCtx.restore();
+            // Generalized N×N mirrored tiling (quad was the fixed N=2 case) — samples
+            // the top-left corner of the source and tiles it across an N×N grid,
+            // flipping alternate rows/columns so every seam lines up seamlessly.
+            const n = Math.max(2, Math.min(16, Math.round(mirrorTileCount)));
+            const tileW = mw / n, tileH = mh / n;
+            for (let row = 0; row < n; row++) {
+              for (let col = 0; col < n; col++) {
+                const flipX = col % 2 === 1;
+                const flipY = row % 2 === 1;
+                mCtx.save();
+                mCtx.translate(col * tileW + (flipX ? tileW : 0), row * tileH + (flipY ? tileH : 0));
+                mCtx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+                mCtx.drawImage(canvas, 0, 0, tileW, tileH, 0, 0, tileW, tileH);
+                mCtx.restore();
+              }
+            }
           }
           ctx.clearRect(0, 0, mw, mh);
           ctx.drawImage(mirrorTemp, 0, 0);
@@ -5624,11 +5618,11 @@ export function InteractiveGradient() {
       {false && showRatingUI && (
         <div
           className="absolute pointer-events-auto z-[9999]"
-          style={panelPos ? { left: panelPos.x + 290, top: panelPos.y } : { left: 306, top: 16 }}
+          style={panelPos ? { left: panelPos.x + 215, top: panelPos.y } : { left: 231, top: 16 }}
         >
           <div
-            className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl"
-            style={{ background: 'rgba(18,20,30,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+            className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl shadow-sm"
+            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}
           >
             <div className="flex items-center gap-1.5">
               <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
@@ -5667,18 +5661,18 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* Eye-off button when controls are hidden */}
+      {/* Collapsed cluster — only rendered while the panel is hidden */}
       {!isControlsVisible && (
         <div
           className="absolute pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left"
-          style={panelPos ? { left: panelPos.x + 6, top: panelPos.y + 22 } : { top: 38, left: 22 }}
+          style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white border border-white/15 shadow-md hover:bg-white/15 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Show Controls"
           >
-            <EyeOff className="w-4 h-4" />
+            <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
           <button
             onPointerDown={() => {
@@ -5690,40 +5684,50 @@ export function InteractiveGradient() {
             onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             onDoubleClick={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); setIsWavHolding(false); evolveWithFactor(1); }}
-            className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-md hover:shadow-lg flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
+            className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
             style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
             title="Tap: evolve · Hold: new mood"
           >
             {isWavHolding && <span className="wav-fill" />}
-            <Shuffle className="relative w-4 h-4 text-white" />
+            <Shuffle weight="regular" className="relative w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={undoLastChange}
+            disabled={undoDepth < 0}
+            className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            title="Undo (Cmd+Z)"
+          >
+            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
+          </button>
+          <button
+            onClick={redoLastChange}
+            disabled={redoDepth === 0}
+            className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            title="Redo (Cmd+Shift+Z)"
+          >
+            <ArrowUUpRight weight="regular" className="w-4 h-4" />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white border border-white/15 shadow-md hover:bg-white/15 flex items-center justify-center"
+            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Presets"
           >
-            <Plus className="w-4 h-4" />
+            <Plus weight="regular" className="w-4 h-4" />
           </button>
         </div>
       )}
-      
+
       {/* Main controls */}
       <div
-        style={{
-          ...(panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }),
-          background: isPanelLight ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-          backdropFilter: 'blur(40px)',
-          borderRadius: 14,
-          WebkitMaskImage: 'radial-gradient(ellipse 92% 96% at 50% 50%, black 78%, transparent 100%)',
-          maskImage: 'radial-gradient(ellipse 92% 96% at 50% 50%, black 78%, transparent 100%)',
-        }}
-        className={`control-panel absolute flex flex-col gap-[3.5px] pointer-events-auto transition-opacity duration-300 w-[290px] max-h-[calc(100vh-2rem)] overflow-y-auto p-[6px] scale-[1.15] origin-top-left ${isPanelLight ? 'panel-light' : ''} ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        data-role="panel"
+        style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
+        className={`control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        {/* Drag handle */}
-        <div
-          className="w-full flex justify-center items-center py-0.5 cursor-grab active:cursor-grabbing select-none"
+        {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
+        <button
           onMouseDown={(e) => {
-            const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+            const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
+            const rect = panel.getBoundingClientRect();
             panelDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
             const onMove = (ev: MouseEvent) => {
               if (!panelDragRef.current) return;
@@ -5732,7 +5736,14 @@ export function InteractiveGradient() {
                 y: panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
               });
             };
-            const onUp = () => {
+            const onUp = (ev: MouseEvent) => {
+              if (panelDragRef.current) {
+                const pos = {
+                  x: panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
+                  y: panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
+                };
+                try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch {}
+              }
               panelDragRef.current = null;
               window.removeEventListener('mousemove', onMove);
               window.removeEventListener('mouseup', onUp);
@@ -5740,87 +5751,121 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-        >
-          <div className="w-8 h-1 rounded-full bg-white/20"></div>
-        </div>
-
-        {/* Top row with Eye, Light/Dark, Randomize, and Refresh buttons */}
-        <div className="flex gap-[3.5px] w-full mb-0.5 mt-[2.5px]">
-          <button
-            onClick={() => setIsControlsVisible(false)}
-            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
-            title="Hide Controls"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={exportAsPNG}
-            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
-            title="Save PNG"
-          >
-            <Camera className="w-4 h-4" />
-          </button>
-
-          <button
-            onPointerDown={() => {
-              setIsWavHolding(true);
-              wavPressStartTime.current = Date.now();
-              wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => {
-                wavLongPressFired.current = true;
-                setIsWavHolding(false);
-                evolveWithFactor(1);
-              }, 800);
-            }}
-            onPointerUp={() => {
-              setIsWavHolding(false);
-              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-              if (!wavLongPressFired.current) {
-                const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1);
-                evolveWithFactor(factor);
-              }
-            }}
-            onPointerLeave={() => {
-              setIsWavHolding(false);
-              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-            }}
-            onDoubleClick={() => {
-              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+          onPointerDown={() => {
+            setIsWavHolding(true);
+            wavPressStartTime.current = Date.now();
+            wavLongPressFired.current = false;
+            wavLongPressTimer.current = setTimeout(() => {
+              wavLongPressFired.current = true;
               setIsWavHolding(false);
               evolveWithFactor(1);
-            }}
-            className={`relative px-2 h-[32px] rounded-lg flex-[3] flex items-center justify-center select-none shadow-sm hover:shadow overflow-hidden${isWavHolding ? ' wav-wave-active' : ' wav-hue-drift'}`}
-            style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
+            }, 800);
+          }}
+          onPointerUp={() => {
+            setIsWavHolding(false);
+            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+            if (!wavLongPressFired.current) {
+              const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1);
+              evolveWithFactor(factor);
+            }
+          }}
+          onPointerLeave={() => {
+            setIsWavHolding(false);
+            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+          }}
+          onDoubleClick={() => {
+            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+            setIsWavHolding(false);
+            evolveWithFactor(1);
+          }}
+          className="wav-drag-handle relative w-full flex items-end justify-center select-none hover:opacity-90 cursor-grab active:cursor-grabbing"
+          title="Press to Alter, Long Press / Double Click to Remix"
+        >
+          <span className="relative w-full block wav-glow-wrap">
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-outline-text"
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 900,
+              }}
+            >wāv</span>
+            <span
+              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-gradient-text ${isWavHolding ? 'wav-flow-hold' : 'wav-hue-drift'}`}
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 900,
+                backgroundImage: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308, #ec4899, #7c3aed)',
+                backgroundSize: '100% 220%',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            >wāv</span>
+          </span>
+        </button>
+
+        {/* Icon row */}
+        <div className="flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm">
+          <div className="flex items-stretch">
+          <button
+            onClick={() => setIsControlsVisible(false)}
+            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            title="Hide Controls"
           >
-            {isWavHolding && <span className="wav-fill" />}
-            {isControlsVisible ? (
-              <span className="relative text-[22px] tracking-tight leading-none wav-label" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#ffffff' }}>WĀV</span>
-            ) : <Shuffle className="relative w-4 h-4 text-white" />}
+            <Eye weight="regular" className="w-4 h-4" />
           </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button
+            onClick={exportAsPNG}
+            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            title="Save PNG"
+          >
+            <Camera weight="regular" className="w-4 h-4" />
+          </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`flex-1 h-[32px] p-1.5 rounded-lg transition-all flex items-center justify-center ${
-              undoDepth >= 0
-                ? 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
-                : 'bg-white/8 backdrop-blur-sm text-white/25 cursor-not-allowed'
+            className={`flex-1 py-2 transition-all flex items-center justify-center ${
+              undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
           >
-            <Undo className="w-4 h-4" />
+            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
           </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <button
+            onClick={redoLastChange}
+            disabled={redoDepth === 0}
+            className={`flex-1 py-2 transition-all flex items-center justify-center ${
+              redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
+            }`}
+            title="Redo (Cmd+Shift+Z)"
+          >
+            <ArrowUUpRight weight="regular" className="w-4 h-4" />
+          </button>
+          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
             onClick={() => {
-              // Refresh functionality - reset to default state
-              window.location.reload();
+              setGradientType('angle');
+              setGradientColors(DEFAULT_COLORS);
+              setTargetColors(DEFAULT_COLORS);
+              setActiveEffects([]);
+              setIsMultiFxMode(false);
+              setIsAutoColor(true);
+              setActiveTab(null);
+              setBaseAIColors(null);
+              setSubmittedAIPrompt('');
+              setAIPrompt('');
             }}
-            className="flex-1 h-[32px] p-1.5 rounded-lg transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 flex items-center justify-center"
-            title="Refresh"
+            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            title="Reset"
           >
-            <RefreshCw className="w-4 h-4" />
+            <ArrowsClockwise weight="regular" className="w-4 h-4" />
           </button>
-        </div>
+          </div>{/* end icon row */}
+        </div>{/* end top card */}
         
         {/* VCR Controls */}
         <VCRControls
@@ -5840,57 +5885,49 @@ export function InteractiveGradient() {
         />
         
         {/* Tab Bar */}
-        <div className="flex items-stretch w-full mb-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
-          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Blend className="w-3.5 h-3.5" /><span>GRADIENT</span>
+        <div className="flex items-stretch w-full bg-black/25 rounded-lg shadow-sm overflow-hidden">
+          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <Gradient weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Wand2 className="w-3.5 h-3.5" /><span>FX</span>
+          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <MagicWand weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
-            onClick={() => {
-              if (isMicActive) {
-                stopMicVisualization();
-                setActiveTab(null);
-              } else {
-                startMicVisualization(selectedAudioDeviceId);
-                setActiveTab('audio');
-              }
-            }}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${(activeTab === 'audio' || isMicActive) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+            onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
+            title="Audio"
+            className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
           >
-            {isMicActive ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
-            <span>AUDIO</span>
+            <SpeakerHigh weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Palette className="w-3.5 h-3.5" /><span>COLOR</span>
+          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <Palette weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-semibold tracking-wide transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-            <Plus className="w-3.5 h-3.5" /><span>PRESETS</span>
+          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <FloppyDisk weight="regular" className="w-4 h-4" />
           </button>
         </div>
 
         {/* ── Color Tab ── */}
         {activeTab === 'color' && (<>
-          <div className="flex gap-[3.5px] w-full mb-0.5">
+          <div className="flex gap-2 w-full">
             <button
               onClick={() => setIsAutoColor(prev => !prev)}
-              className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all backdrop-blur-sm font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-white/8 text-white/50 hover:bg-white/15 hover:text-white line-through'}`}
+              className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-black/25 text-white/50 hover:bg-white/15 hover:text-white line-through'}`}
               title="Auto color change"
             >AUTO PLAY</button>
             <button
               onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
-              className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
+              className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-black/25 text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
               title="Shuffle Colors"
-            ><Shuffle className="w-4 h-4" /></button>
+            ><Shuffle weight="regular" className="w-4 h-4" /></button>
           </div>
         {submittedAIPrompt && (
-          <div className="flex items-center gap-1 mb-0.5">
-            <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-white/8 backdrop-blur-sm/50 rounded text-center truncate">
+          <div className="flex items-center gap-1">
+            <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-black/20 rounded text-center truncate">
               "{submittedAIPrompt}"
             </div>
             <button
@@ -5901,14 +5938,14 @@ export function InteractiveGradient() {
                 setTargetColors(DEFAULT_COLORS);
                 setAIPrompt('');
               }}
-              className="w-6 h-6 flex-shrink-0 rounded bg-white/8 backdrop-blur-sm/50 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
+              className="w-6 h-6 flex-shrink-0 rounded bg-black/20 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
               title="Clear keywords"
             >×</button>
           </div>
         )}
         
         {/* AI Color Picker */}
-          <div className="w-full mb-0.5 bg-white/8 backdrop-blur-sm rounded-lg p-2">
+          <div className="w-full bg-black/25 rounded-lg p-2">
             {/* Selected keyword chips */}
             {aiPrompt.split(' ').filter(Boolean).length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
@@ -5932,12 +5969,12 @@ export function InteractiveGradient() {
                   if (e.key === 'Enter') handleAIPromptSubmit();
                   if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
                 }}
-                className="w-full px-2 py-1.5 rounded text-[10px] bg-white/8 backdrop-blur-sm border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white cursor-pointer"
+                className="w-full px-2 py-1.5 rounded text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white cursor-pointer"
               />
             </div>
 
             {isKeywordHelpOpen && (
-              <div className="mb-2 p-2 rounded bg-white/5 border border-white/8 text-[10px] text-white/70 leading-relaxed">
+              <div className="mb-2 p-2 rounded bg-black/20 border border-white/8 text-[10px] text-white/70 leading-relaxed">
                 <div className="font-bold text-white/90 mb-1">Themes</div>
                 <div className="mb-2 flex flex-wrap gap-1">
                   {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => {
@@ -5977,13 +6014,13 @@ export function InteractiveGradient() {
                   setAIPrompt('');
                   setIsKeywordHelpOpen(false);
                 }}
-                className="px-2 py-0.5 rounded text-xs bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 transition-all"
+                className="px-2 py-0.5 rounded text-xs bg-black/25 text-white hover:bg-white/15 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAIPromptSubmit}
-                className="px-2 py-0.5 rounded text-xs bg-white text-black shadow-sm hover:bg-white/80 transition-all"
+                className="px-2 py-0.5 rounded text-xs bg-white/30 text-white font-semibold shadow-sm hover:bg-white/40 transition-all"
               >
                 Generate
               </button>
@@ -5995,7 +6032,7 @@ export function InteractiveGradient() {
         {activeTab === 'gradients' && (<>
 
         {/* Gradient Type Buttons - 2 Column Grid */}
-        <div className="w-full mb-0.5">
+        <div className="w-full">
           <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(10, auto)' }}>
             {FULL_GRADIENT_TYPES.map((type) => (
               <button
@@ -6007,10 +6044,10 @@ export function InteractiveGradient() {
                     setGradientTransitionOpacity(1);
                   }, 800);
                 }}
-                className={`px-0.5 py-0.5 rounded text-xs capitalize transition-all whitespace-nowrap ${
+                className={`px-0.5 py-0.5 rounded text-[10px] capitalize transition-all whitespace-nowrap ${
                   gradientType === type
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                    : 'bg-black/25 text-white hover:bg-black/35'
                 }`}
               >
                 {getGradientDisplayName(type)}
@@ -6022,9 +6059,9 @@ export function InteractiveGradient() {
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
         {gradientType === 'grid' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Rows:</label>
+              <label className="text-[10px] text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6040,12 +6077,12 @@ export function InteractiveGradient() {
                   max="50"
                   value={gridRows}
                   onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Columns:</label>
+              <label className="text-[10px] text-white">Columns:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6061,7 +6098,7 @@ export function InteractiveGradient() {
                   max="50"
                   value={gridColumns}
                   onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6070,7 +6107,7 @@ export function InteractiveGradient() {
         
         {/* Freeform Controls */}
         {gradientType === 'freeform' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex flex-col gap-1">
               <button
                 onClick={(e) => {
@@ -6107,7 +6144,7 @@ export function InteractiveGradient() {
                   </button>
                   
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-white">Radius:</label>
+                    <label className="text-[10px] text-white">Radius:</label>
                     <div className="flex items-center gap-1 flex-1 ml-2">
                       <input
                         type="range"
@@ -6133,13 +6170,13 @@ export function InteractiveGradient() {
                             p.id === selectedPinId ? { ...p, radius: newRadius } : p
                           ));
                         }}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-white">Color:</label>
+                    <label className="text-[10px] text-white">Color:</label>
                     <input
                       type="color"
                       value={(() => {
@@ -6170,9 +6207,9 @@ export function InteractiveGradient() {
 
         {/* Polygon Controls */}
         {gradientType === 'polygon' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Sides:</label>
+              <label className="text-[10px] text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6188,7 +6225,7 @@ export function InteractiveGradient() {
                   max="10"
                   value={polygonSides}
                   onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6197,9 +6234,9 @@ export function InteractiveGradient() {
         
         {/* Polar Grid Controls */}
         {gradientType === 'polygon-solid' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Radials:</label>
+              <label className="text-[10px] text-white">Radials:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6215,12 +6252,12 @@ export function InteractiveGradient() {
                   max="24"
                   value={polygon2Sides}
                   onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Ring Count:</label>
+              <label className="text-[10px] text-white">Ring Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6236,7 +6273,7 @@ export function InteractiveGradient() {
                   max="30"
                   value={concentricRingCount}
                   onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6245,9 +6282,9 @@ export function InteractiveGradient() {
         
         {/* Iridescent Controls */}
         {gradientType === 'iridescent' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Intensity:</label>
+              <label className="text-[10px] text-white">Intensity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6265,12 +6302,12 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={iridescentIntensity}
                   onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6288,7 +6325,7 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={iridescentScale}
                   onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6297,17 +6334,17 @@ export function InteractiveGradient() {
         
         {/* Aurora Controls */}
         {gradientType === 'aurora' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             {[
               { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
               { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
               { label: 'Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6316,17 +6353,17 @@ export function InteractiveGradient() {
 
         {/* Caustics Controls */}
         {gradientType === 'caustics' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             {[
               { label: 'Complexity', value: causticsComplexity, set: setCausticsComplexity, min: 0.2, max: 4, step: 0.1 },
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6335,16 +6372,16 @@ export function InteractiveGradient() {
 
         {/* Lava Lamp Controls */}
         {gradientType === 'lava-lamp' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6353,17 +6390,17 @@ export function InteractiveGradient() {
 
         {/* Marble Controls */}
         {gradientType === 'marble' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
               { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-xs text-white w-20 shrink-0">{label}:</label>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
               </div>
             ))}
@@ -6372,9 +6409,9 @@ export function InteractiveGradient() {
 
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Start Angle:</label>
+              <label className="text-[10px] text-white">Start Angle:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6390,12 +6427,12 @@ export function InteractiveGradient() {
                   max="360"
                   value={angleStartOffset}
                   onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Center X:</label>
+              <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6411,12 +6448,12 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterX}
                   onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Center Y:</label>
+              <label className="text-[10px] text-white">Center Y:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6432,7 +6469,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterY}
                   onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6441,9 +6478,9 @@ export function InteractiveGradient() {
         
         {/* Shapes Controls */}
         {gradientType === 'shapes' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6453,11 +6490,11 @@ export function InteractiveGradient() {
                   onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
                   className="flex-1"
                 />
-                <span className="text-xs text-white w-10 text-right">{concentricRingWidth}</span>
+                <span className="text-[10px] text-white w-10 text-right">{concentricRingWidth}</span>
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Sides:</label>
+              <label className="text-[10px] text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6473,12 +6510,12 @@ export function InteractiveGradient() {
                   max="10"
                   value={shapesSides}
                   onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Count:</label>
+              <label className="text-[10px] text-white">Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6494,19 +6531,19 @@ export function InteractiveGradient() {
                   max="50"
                   value={shapesCount}
                   onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white whitespace-nowrap">Rotate:</label>
+              <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
               <div className="flex gap-0.5 flex-1 ml-2">
                 <button
                   onClick={() => setShapesRotationDirection('none')}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'none'
                       ? 'bg-white text-black'
-                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                      : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   OFF
@@ -6516,7 +6553,7 @@ export function InteractiveGradient() {
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'clockwise'
                       ? 'bg-white text-black'
-                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                      : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   ⟳
@@ -6526,7 +6563,7 @@ export function InteractiveGradient() {
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     shapesRotationDirection === 'counterclockwise'
                       ? 'bg-white text-black'
-                      : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                      : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   ⟲
@@ -6538,9 +6575,9 @@ export function InteractiveGradient() {
         
         {/* Spiral Controls */}
         {gradientType === 'spiral' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Tightness:</label>
+              <label className="text-[10px] text-white">Tightness:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6556,12 +6593,12 @@ export function InteractiveGradient() {
                   max="20"
                   value={spiralTightness}
                   onChange={(e) => setSpiralTightness(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Rotations:</label>
+              <label className="text-[10px] text-white">Rotations:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6577,12 +6614,12 @@ export function InteractiveGradient() {
                   max="10"
                   value={spiralRotations}
                   onChange={(e) => setSpiralRotations(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Thickness:</label>
+              <label className="text-[10px] text-white">Thickness:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6598,7 +6635,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={spiralThickness}
                   onChange={(e) => setSpiralThickness(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6607,9 +6644,9 @@ export function InteractiveGradient() {
 
         {/* Waves Controls */}
         {gradientType === 'waves' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Amplitude:</label>
+              <label className="text-[10px] text-white">Amplitude:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6625,12 +6662,12 @@ export function InteractiveGradient() {
                   max="200"
                   value={waveAmplitude}
                   onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Frequency:</label>
+              <label className="text-[10px] text-white">Frequency:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6646,12 +6683,12 @@ export function InteractiveGradient() {
                   max="10"
                   value={waveFrequency}
                   onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Number:</label>
+              <label className="text-[10px] text-white">Number:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6667,12 +6704,12 @@ export function InteractiveGradient() {
                   max="20"
                   value={waveNumber}
                   onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Direction:</label>
+              <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6688,7 +6725,7 @@ export function InteractiveGradient() {
                   max="360"
                   value={waveRotation}
                   onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6697,9 +6734,9 @@ export function InteractiveGradient() {
 
         {/* Mesh Controls */}
         {gradientType === 'mesh' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Grid Size:</label>
+              <label className="text-[10px] text-white">Grid Size:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6715,15 +6752,15 @@ export function InteractiveGradient() {
                         max="10"
                         value={meshGridSize}
                         onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <label className="text-xs text-white">Jitter:</label>
+              <label className="text-[10px] text-white">Jitter:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -6731,9 +6768,9 @@ export function InteractiveGradient() {
 
         {/* Noise Controls */}
         {gradientType === 'noise' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6749,12 +6786,12 @@ export function InteractiveGradient() {
                   max="200"
                   value={noiseScale}
                   onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Detail:</label>
+              <label className="text-[10px] text-white">Detail:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6770,26 +6807,26 @@ export function InteractiveGradient() {
                   max="8"
                   value={noiseOctaves}
                   onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Direction:</label>
+              <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Warp:</label>
+              <label className="text-[10px] text-white">Warp:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
-                <span className="text-xs text-white w-10 text-right">{noiseWarp.toFixed(2)}</span>
+                <span className="text-[10px] text-white w-10 text-right">{noiseWarp.toFixed(2)}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs text-white whitespace-nowrap">Type:</label>
+              <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
               <div className="flex gap-1 flex-1">
                 {(['smooth', 'ridged'] as const).map(t => (
                   <button key={t} onClick={() => setNoiseType(t)} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-white/8 text-white hover:bg-white/15'}`}>{t}</button>
@@ -6801,19 +6838,19 @@ export function InteractiveGradient() {
 
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Complexity:</label>
+              <label className="text-[10px] text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -6821,9 +6858,9 @@ export function InteractiveGradient() {
         
         {/* Radial Controls */}
         {gradientType === 'radial' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Center X:</label>
+              <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6839,12 +6876,12 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterX}
                   onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Center Y:</label>
+              <label className="text-[10px] text-white">Center Y:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6860,15 +6897,15 @@ export function InteractiveGradient() {
                   max="100"
                   value={angleCenterY}
                   onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
-                <span className="text-xs text-white w-10 text-right">{radialSizeScale.toFixed(2)}</span>
+                <span className="text-[10px] text-white w-10 text-right">{radialSizeScale.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -6876,9 +6913,9 @@ export function InteractiveGradient() {
 
         {/* Radial Burst Controls */}
         {gradientType === 'radial-burst' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Burst Count:</label>
+              <label className="text-[10px] text-white">Burst Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6894,12 +6931,12 @@ export function InteractiveGradient() {
                   max="16"
                   value={radialBurstCount}
                   onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <label className="text-xs text-white">Spread:</label>
+              <label className="text-[10px] text-white">Spread:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6915,12 +6952,12 @@ export function InteractiveGradient() {
                   max="100"
                   value={radialBurstSpread}
                   onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <label className="text-xs text-white">Size:</label>
+              <label className="text-[10px] text-white">Size:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6936,7 +6973,7 @@ export function InteractiveGradient() {
                   max="200"
                   value={radialBurstSize}
                   onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6945,10 +6982,10 @@ export function InteractiveGradient() {
         
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
-            <div className="text-xs text-white font-semibold mb-2">Voronoi Controls</div>
+          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
+            <div className="text-[10px] text-white font-semibold mb-2">Voronoi Controls</div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Cell Count:</label>
+              <label className="text-[10px] text-white">Cell Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6964,12 +7001,12 @@ export function InteractiveGradient() {
                         max="30"
                         value={voronoiCellCount}
                         onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Distortion:</label>
+              <label className="text-[10px] text-white">Distortion:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -6985,7 +7022,7 @@ export function InteractiveGradient() {
                   max="100"
                   value={voronoiDistortion}
                   onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -6994,12 +7031,12 @@ export function InteractiveGradient() {
 
         {/* Fade Controls */}
         {gradientType === 'fade' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Direction:</label>
+              <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -7007,10 +7044,10 @@ export function InteractiveGradient() {
 
         {/* Radar Controls */}
         {gradientType === 'radar' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
-            <div className="text-xs text-white font-semibold mb-2">Radar Controls</div>
+          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
+            <div className="text-[10px] text-white font-semibold mb-2">Radar Controls</div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Fade Length:</label>
+              <label className="text-[10px] text-white">Fade Length:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7026,15 +7063,15 @@ export function InteractiveGradient() {
                   max="180"
                   value={radarFadeLength}
                   onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Beam Width:</label>
+              <label className="text-[10px] text-white">Beam Width:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>
@@ -7042,10 +7079,10 @@ export function InteractiveGradient() {
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/5 backdrop-blur-sm border border-white/8 rounded-lg">
-            <div className="text-xs text-white font-semibold mb-2">Flower Controls</div>
+          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
+            <div className="text-[10px] text-white font-semibold mb-2">Flower Controls</div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Circles:</label>
+              <label className="text-[10px] text-white">Circles:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7061,12 +7098,12 @@ export function InteractiveGradient() {
                   max="12"
                   value={flowerCircles}
                   onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Scale:</label>
+              <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7084,12 +7121,12 @@ export function InteractiveGradient() {
                   step="0.1"
                   value={flowerScale}
                   onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Spread:</label>
+              <label className="text-[10px] text-white">Spread:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7107,7 +7144,7 @@ export function InteractiveGradient() {
                   step="0.05"
                   value={flowerSpread}
                   onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
@@ -7116,9 +7153,9 @@ export function InteractiveGradient() {
 
         {/* Conical Spiral Controls */}
         {gradientType === 'conical-spiral' && (
-          <div className="w-full mt-1 mb-0.5 p-2 bg-white/8 backdrop-blur-sm rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-white">Turns:</label>
+              <label className="text-[10px] text-white">Turns:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7134,12 +7171,12 @@ export function InteractiveGradient() {
                   max="20"
                   value={conicalSpiralTurns}
                   onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
-                  className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-xs text-white">Tightness:</label>
+              <label className="text-[10px] text-white">Tightness:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
@@ -7157,7 +7194,7 @@ export function InteractiveGradient() {
                         step="0.1"
                         value={conicalSpiralTightness}
                         onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
               </div>
             </div>
@@ -7169,19 +7206,19 @@ export function InteractiveGradient() {
         {/* ── Effects Tab ── */}
         {activeTab === 'effects' && (<>
         {/* Top row: MULTI + Shuffle + RESET */}
-        <div className="w-full mb-0.5 flex gap-0.5">
+        <div className="w-full flex gap-0.5">
           <button
             onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
+            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
           >MULTI</button>
           <button
             onClick={randomizeEffects}
-            className="flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all bg-white/8 backdrop-blur-sm text-white hover:bg-white/15 shadow-sm flex items-center justify-center"
+            className="flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all bg-black/25 text-white hover:bg-white/15 shadow-sm flex items-center justify-center"
             title="Shuffle Effects"
-          ><Shuffle className="w-3.5 h-3.5" /></button>
+          ><Shuffle weight="regular" className="w-4 h-4" /></button>
           <button
             onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-xs font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}
+            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
           >RESET</button>
         </div>
         <div className="w-full">
@@ -7201,7 +7238,7 @@ export function InteractiveGradient() {
               { value: 'grid',           label: 'Grid' },
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
-              { value: 'kaleidoscope',   label: 'Kaleidoscope' },
+              { value: 'kaleidoscope',   label: 'Kaleido' },
               { value: 'mirror',         label: 'Mirror' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
@@ -7235,10 +7272,10 @@ export function InteractiveGradient() {
                     }
                   }
                 }}
-                className={`px-0.5 py-0.5 rounded text-xs transition-all whitespace-nowrap shadow-sm ${
+                className={`px-0.5 py-0.5 rounded text-[10px] transition-all whitespace-nowrap shadow-sm ${
                   activeEffects.includes(effect.value)
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                    : 'bg-black/25 text-white hover:bg-black/35'
                 }`}
               >
                 {effect.label}
@@ -7251,12 +7288,12 @@ export function InteractiveGradient() {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className="w-full bg-white/5 backdrop-blur-sm px-3 py-2 rounded-lg mb-0.5">
+          <div className="w-full bg-black/20 px-3 py-2 rounded-lg">
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Segments:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Segments:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7272,21 +7309,21 @@ export function InteractiveGradient() {
                         max="50"
                         value={kaleidoscopeSegments}
                         onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
-                        className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Speed:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
-                    <span className="text-xs text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
+                    <span className="text-[10px] text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('ripple') && (
                 <EffectSection id="ripple" label="Ripple" isMulti={isMulti} expanded={expandedEffects.has('ripple')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Frequency:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Frequency:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7304,12 +7341,12 @@ export function InteractiveGradient() {
                         step="1"
                         value={Math.round(rippleFrequency * 2000)}
                         onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Amplitude:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Amplitude:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7325,7 +7362,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={rippleAmplitude}
                         onChange={(e) => setRippleAmplitude(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7334,150 +7371,157 @@ export function InteractiveGradient() {
               {activeEffects.includes('pixelate') && (
                 <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={expandedEffects.has('pixelate')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
                 <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={expandedEffects.has('triangulate')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Size:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic') && (
                 <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={expandedEffects.has('chromatic')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Offset:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Angle:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Angle:</label>
                     <input type="range" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('fisheye') && (
                 <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={expandedEffects.has('fisheye')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Center X:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Center X:</label>
                     <input type="range" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Center Y:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Center Y:</label>
                     <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('bloom') && (
                 <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={expandedEffects.has('bloom')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Radius:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Radius:</label>
                     <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
-                    <span className="text-xs text-white w-8 text-right">{bloomRadius}</span>
+                    <span className="text-[10px] text-white w-8 text-right">{bloomRadius}</span>
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('feedback') && (
                 <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={expandedEffects.has('feedback')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Decay:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
                     <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
-                    <span className="text-xs text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
+                    <span className="text-[10px] text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Zoom:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Zoom:</label>
                     <input type="range" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="flex-1" />
-                    <span className="text-xs text-white w-8 text-right">{feedbackZoom.toFixed(1)}</span>
+                    <span className="text-[10px] text-white w-8 text-right">{feedbackZoom.toFixed(1)}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Spin:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Spin:</label>
                     <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
-                    <span className="text-xs text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
+                    <span className="text-[10px] text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('zoom-blur') && (
                 <EffectSection id="zoom-blur" label="Zoom Blur" isMulti={isMulti} expanded={expandedEffects.has('zoom-blur')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                   <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
-                  <span className="text-xs text-white w-8 text-right">{blurRadialAmount}</span>
+                  <span className="text-[10px] text-white w-8 text-right">{blurRadialAmount}</span>
                 </div>
                 </EffectSection>
               )}
               {activeEffects.includes('mirror') && (
                 <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={expandedEffects.has('mirror')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Mode:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Mode:</label>
                     <div className="flex gap-1 flex-1">
-                      {(['horizontal', 'vertical', 'quad'] as const).map(mode => (
+                      {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
                         <button key={mode} onClick={() => setMirrorMode(mode)}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>
-                          {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : '4×'}
+                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}>
+                          {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
                         </button>
                       ))}
                     </div>
                   </div>
+                  {mirrorMode === 'grid' && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
+                      <input type="range" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="flex-1" />
+                      <span className="text-[10px] text-white w-8 text-right">{mirrorTileCount}</span>
+                    </div>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={expandedEffects.has('vignette')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Softness:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
                     <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-xs text-white w-10 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('color-shift') && (
                 <EffectSection id="color-shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('color-shift')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Hue:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
               {activeEffects.includes('film-grain') && (
                 <EffectSection id="film-grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('film-grain')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Type:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setGrainType('fine')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'fine'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Fine
@@ -7487,7 +7531,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'medium'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Med
@@ -7497,7 +7541,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'coarse'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Coarse
@@ -7507,7 +7551,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'film'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Film
@@ -7520,14 +7564,14 @@ export function InteractiveGradient() {
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1 mb-1">
                     
-                    <label className="text-xs text-white whitespace-nowrap">Type:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
                         className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
                           blurType === 'gaussian'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Gaussian
@@ -7537,7 +7581,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
                           blurType === 'motion'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Motion
@@ -7547,7 +7591,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
                           blurType === 'radial'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Radial
@@ -7556,7 +7600,7 @@ export function InteractiveGradient() {
                   </div>
                   {blurType === 'gaussian' && (
                     <div className="flex items-center justify-between gap-1">
-                      <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                       <div className="flex items-center gap-1 flex-1">
                         <input
                           type="range"
@@ -7572,7 +7616,7 @@ export function InteractiveGradient() {
                         max="50"
                         value={blurGaussianAmount}
                         onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                       </div>
                     </div>
@@ -7580,7 +7624,7 @@ export function InteractiveGradient() {
                   {blurType === 'motion' && (
                     <>
                       <div className="flex items-center justify-between gap-1">
-                        <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                        <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                         <div className="flex items-center gap-1 flex-1">
                           <input
                             type="range"
@@ -7596,12 +7640,12 @@ export function InteractiveGradient() {
                         max="50"
                         value={blurMotionAmount}
                         onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-1">
-                        <label className="text-xs text-white whitespace-nowrap">Direction:</label>
+                        <label className="text-[10px] text-white whitespace-nowrap">Direction:</label>
                         <div className="flex items-center gap-1 flex-1">
                           <input
                             type="range"
@@ -7617,7 +7661,7 @@ export function InteractiveGradient() {
                             max="360"
                             value={Math.round(blurMotionDirection)}
                             onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
-                            className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                            className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                           />
                         </div>
                       </div>
@@ -7625,10 +7669,10 @@ export function InteractiveGradient() {
                   )}
                   {blurType === 'radial' && (
                     <div className="flex items-center justify-between gap-1">
-                      <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                       <div className="flex items-center gap-1 flex-1">
                         <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
-                        <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                        <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                       </div>
                     </div>
                   )}
@@ -7637,21 +7681,21 @@ export function InteractiveGradient() {
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={expandedEffects.has('posterize')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Levels:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
                   <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
                 </EffectSection>
               )}
               {activeEffects.includes('halftone') && (
                 <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={expandedEffects.has('halftone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Dot Size:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Dot Size:</label>
                     <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Variation:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7669,32 +7713,32 @@ export function InteractiveGradient() {
                         step="0.01"
                         value={halftoneVariation}
                         onChange={(e) => setHalftoneVariation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
-                      <label className="text-xs text-white whitespace-nowrap">Move:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
                       <button
                         onClick={() => setHalftoneMove(!halftoneMove)}
                         className={`px-2 py-1 text-xs rounded transition-all ${
                           halftoneMove
                             ? 'bg-blue-500 text-white'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         {halftoneMove ? 'ON' : 'OFF'}
                       </button>
                     </div>
                     <div className="flex items-center gap-1">
-                      <label className="text-xs text-white whitespace-nowrap">CMYK:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
                       <button
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
                         className={`px-2 py-1 text-xs rounded transition-all ${
                           halftoneCMYK
                             ? 'bg-yellow-500 text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         {halftoneCMYK ? 'ON' : 'OFF'}
@@ -7706,9 +7750,9 @@ export function InteractiveGradient() {
               {activeEffects.includes('charcoal') && (
                 <EffectSection id="charcoal" label="Saturate" isMulti={isMulti} expanded={expandedEffects.has('charcoal')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                  <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                   <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -7717,12 +7761,12 @@ export function InteractiveGradient() {
               {activeEffects.includes('duotone') && (
                 <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Color 1:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Color 1:</label>
                     <input
                       type="color"
                       value={duotoneColor1}
@@ -7731,7 +7775,7 @@ export function InteractiveGradient() {
                     />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Color 2:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Color 2:</label>
                     <input
                       type="color"
                       value={duotoneColor2}
@@ -7744,12 +7788,12 @@ export function InteractiveGradient() {
               {activeEffects.includes('dust-scratches') && (
                 <EffectSection id="dust-scratches" label="Dust" isMulti={isMulti} expanded={expandedEffects.has('dust-scratches')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Dust:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Dust:</label>
                     <input type="range" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Crackle:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7767,7 +7811,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={dustCrackleIntensity}
                         onChange={(e) => setDustCrackleIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7776,7 +7820,7 @@ export function InteractiveGradient() {
               {activeEffects.includes('grid') && (
                 <EffectSection id="grid" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Sides:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Sides:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7792,12 +7836,12 @@ export function InteractiveGradient() {
                         max="10"
                         value={gridSides}
                         onChange={(e) => setGridSides(Number(e.target.value))}
-                        className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Rows:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Rows:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7813,12 +7857,12 @@ export function InteractiveGradient() {
                         max="50"
                         value={gridRows}
                         onChange={(e) => setGridRows(Number(e.target.value))}
-                        className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Columns:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Columns:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7834,13 +7878,13 @@ export function InteractiveGradient() {
                         max="50"
                         value={gridColumns}
                         onChange={(e) => setGridColumns(Number(e.target.value))}
-                        className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   {/* Grid Effect Shape Size Control */}
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white/80 whitespace-nowrap">Size:</label>
+                    <label className="text-[10px] text-white/80 whitespace-nowrap">Size:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7857,12 +7901,12 @@ export function InteractiveGradient() {
                         max={100}
                         value={gridShapeSize}
                         onChange={(e) => setGridShapeSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Variation:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7880,19 +7924,19 @@ export function InteractiveGradient() {
                         step="0.01"
                         value={gridVariation}
                         onChange={(e) => setGridVariation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Rotate:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setGridRotationDirection('none')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'none'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         OFF
@@ -7902,7 +7946,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'clockwise'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         ⟳
@@ -7912,7 +7956,7 @@ export function InteractiveGradient() {
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'counterclockwise'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         ⟲
@@ -7929,7 +7973,7 @@ export function InteractiveGradient() {
               {activeEffects.includes('tritone') && (
                 <EffectSection id="tritone" label="Tritone" isMulti={isMulti} expanded={expandedEffects.has('tritone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7947,7 +7991,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={tritoneIntensity}
                         onChange={(e) => setTritoneIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -7976,7 +8020,7 @@ export function InteractiveGradient() {
               {activeEffects.includes('vhs-glitch') && (
                 <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs-glitch')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -7994,7 +8038,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={vhsGlitchIntensity}
                         onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8003,12 +8047,12 @@ export function InteractiveGradient() {
               {activeEffects.includes('wave-distortion') && (
                 <EffectSection id="wave-distortion" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave-distortion')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Strength:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-xs text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
+                    <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Rotation:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotation:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8024,7 +8068,7 @@ export function InteractiveGradient() {
                         max="360"
                         value={waveDistortionRotation}
                         onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8033,7 +8077,7 @@ export function InteractiveGradient() {
               {activeEffects.includes('bokeh') && (
                 <EffectSection id="bokeh" label="Bokeh" isMulti={isMulti} expanded={expandedEffects.has('bokeh')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Blur Size:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Blur Size:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8049,12 +8093,12 @@ export function InteractiveGradient() {
                         max="50"
                         value={bokehSize}
                         onChange={(e) => setBokehSize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8072,12 +8116,12 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={bokehIntensity}
                         onChange={(e) => setBokehIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Colorize:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Colorize:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8095,7 +8139,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={bokehColorize}
                         onChange={(e) => setBokehColorize(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8104,7 +8148,7 @@ export function InteractiveGradient() {
               {activeEffects.includes('brightness') && (
                 <EffectSection id="brightness" label="Brightness" isMulti={isMulti} expanded={expandedEffects.has('brightness')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-xs text-white whitespace-nowrap">Amount:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8122,7 +8166,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={brightnessAmount}
                         onChange={(e) => setBrightnessAmount(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8132,14 +8176,14 @@ export function InteractiveGradient() {
                 <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={expandedEffects.has('slit-scan')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     
-                    <label className="text-xs text-white whitespace-nowrap">Dir:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Dir:</label>
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'horizontal'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Horiz
@@ -8149,7 +8193,7 @@ export function InteractiveGradient() {
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'vertical'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Vert
@@ -8159,7 +8203,7 @@ export function InteractiveGradient() {
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'radial'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Radial
@@ -8169,7 +8213,7 @@ export function InteractiveGradient() {
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           slitScanDirection === 'circular'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Circ
@@ -8177,7 +8221,7 @@ export function InteractiveGradient() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8195,7 +8239,7 @@ export function InteractiveGradient() {
                         step="0.05"
                         value={slitScanIntensity}
                         onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8205,14 +8249,14 @@ export function InteractiveGradient() {
                 <EffectSection id="dither" label="Dither" isMulti={isMulti} expanded={expandedEffects.has('dither')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     
-                    <label className="text-xs text-white whitespace-nowrap">Type:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setDitherType('bayer')}
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'bayer'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Bayer
@@ -8222,7 +8266,7 @@ export function InteractiveGradient() {
                         className={`px-2 py-0.5 rounded text-xs transition-all ${
                           ditherType === 'floyd-steinberg'
                             ? 'bg-white text-black'
-                            : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'
+                            : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         Floyd-Steinberg
@@ -8230,7 +8274,7 @@ export function InteractiveGradient() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs text-white whitespace-nowrap">Levels:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -8248,7 +8292,7 @@ export function InteractiveGradient() {
                         step="1"
                         value={ditherLevels}
                         onChange={(e) => setDitherLevels(Number(e.target.value))}
-                        className="text-xs text-white w-12 text-right bg-white/8 border border-white/20 rounded px-1"
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
                   </div>
@@ -8264,46 +8308,24 @@ export function InteractiveGradient() {
         {/* ── Audio Tab ── */}
         {activeTab === 'audio' && (
         <AudioPanel
-          isMicActive={isMicActive}
-          audioInputDevices={audioInputDevices}
-          selectedAudioDeviceId={selectedAudioDeviceId}
-          isAudioControlsOpen={isAudioControlsOpen}
-          masterSensitivity={masterSensitivity}
-          bassMultiplier={bassMultiplier}
-          midsMultiplier={midsMultiplier}
-          trebleMultiplier={trebleMultiplier}
-          bassBeatSync={bassBeatSync}
-          midsBeatSync={midsBeatSync}
-          trebleBeatSync={trebleBeatSync}
-          liveBassLevel={liveBassLevel}
-          liveMidsLevel={liveMidsLevel}
-          liveTrebleLevel={liveTrebleLevel}
-          audioFileName={audioFileName}
-          waveformData={waveformData}
-          audioFileMetadata={audioFileMetadata}
-          setSelectedAudioDeviceId={setSelectedAudioDeviceId}
-          setIsAudioControlsOpen={setIsAudioControlsOpen}
-          setMasterSensitivity={setMasterSensitivity}
-          setBassMultiplier={setBassMultiplier}
-          setMidsMultiplier={setMidsMultiplier}
-          setTrebleMultiplier={setTrebleMultiplier}
-          setBassBeatSync={setBassBeatSync}
-          setMidsBeatSync={setMidsBeatSync}
-          setTrebleBeatSync={setTrebleBeatSync}
-          subBassMultiplier={subBassMultiplier}
-          setSubBassMultiplier={setSubBassMultiplier}
-          subBassBeatSync={subBassBeatSync}
-          setSubBassBeatSync={setSubBassBeatSync}
-          liveSubBassLevel={liveSubBassLevel}
-          setColorShiftHue={setColorShiftHue}
-          startMicVisualization={startMicVisualization}
-          stopMicVisualization={stopMicVisualization}
-          onAudioFileClick={handleAudioFileClick}
-          isMicOrAudioActive={isMicActive || !!audioFileName}
-          zoomBeatEnabled={zoomBeatEnabled} setZoomBeatEnabled={setZoomBeatEnabled}
-          shakeBeatEnabled={shakeBeatEnabled} setShakeBeatEnabled={setShakeBeatEnabled}
-          contrastBeatEnabled={contrastBeatEnabled} setContrastBeatEnabled={setContrastBeatEnabled}
-          paletteBeatEnabled={paletteBeatEnabled} setPaletteBeatEnabled={setPaletteBeatEnabled}
+          state={{
+            isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
+            masterSensitivity, bassMultiplier, midsMultiplier, trebleMultiplier,
+            bassBeatSync, midsBeatSync, trebleBeatSync,
+            liveBassLevel, liveMidsLevel, liveTrebleLevel,
+            audioFileName, waveformData, audioFileMetadata,
+            subBassMultiplier, subBassBeatSync, liveSubBassLevel,
+            zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+          }}
+          actions={{
+            setSelectedAudioDeviceId, setIsAudioControlsOpen,
+            setMasterSensitivity, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+            setSubBassMultiplier, setSubBassBeatSync,
+            setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
+            setColorShiftHue, startMicVisualization, stopMicVisualization,
+            onAudioFileClick: handleAudioFileClick,
+            setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+          }}
         />
         )}
 
@@ -8334,7 +8356,37 @@ export function InteractiveGradient() {
           loop
         />
       )}
-      
+
+      {/* About button — bottom-right corner */}
+      <button
+        onClick={() => setIsAboutOpen(true)}
+        className="absolute bottom-4 right-4 pointer-events-auto w-8 h-8 rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+        title="About wāv"
+      >
+        <Info weight="regular" className="w-4 h-4" />
+      </button>
+
+      {/* About panel */}
+      {isAboutOpen && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAboutOpen(false)} />
+          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm mx-6 text-white shadow-2xl">
+            <button
+              onClick={() => setIsAboutOpen(false)}
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+            >
+              <X weight="regular" className="w-4 h-4" />
+            </button>
+            <div className="text-2xl font-black tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>wāv</div>
+            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed">
+              <p>wāv is a generative art environment for music visualization and live performance.</p>
+              <p>Artwork reacts in real time to audio — synchronizing colors, patterns, and shapes to the beat and frequency content of your music.</p>
+              <p>Whether performing live, running an installation, or just listening at home, wāv turns your audio into a visual spectacle.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

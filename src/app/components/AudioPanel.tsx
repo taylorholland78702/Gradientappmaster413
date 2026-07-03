@@ -1,7 +1,7 @@
 import React from 'react';
-import { ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
+import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash } from '@phosphor-icons/react';
 
-interface AudioPanelProps {
+export interface AudioPanelState {
   isMicActive: boolean;
   audioInputDevices: MediaDeviceInfo[];
   selectedAudioDeviceId: string;
@@ -19,17 +19,24 @@ interface AudioPanelProps {
   audioFileName: string | null;
   waveformData: number[];
   audioFileMetadata: { sampleRate: number; duration: number } | null;
+  subBassMultiplier: number;
+  subBassBeatSync: boolean;
+  liveSubBassLevel: number;
+  zoomBeatEnabled: boolean;
+  shakeBeatEnabled: boolean;
+  contrastBeatEnabled: boolean;
+  paletteBeatEnabled: boolean;
+}
+
+export interface AudioPanelActions {
   setSelectedAudioDeviceId: (id: string) => void;
   setIsAudioControlsOpen: (open: boolean) => void;
   setMasterSensitivity: (v: number) => void;
   setBassMultiplier: (v: number) => void;
   setMidsMultiplier: (v: number) => void;
   setTrebleMultiplier: (v: number) => void;
-  subBassMultiplier: number;
   setSubBassMultiplier: (v: number) => void;
-  subBassBeatSync: boolean;
   setSubBassBeatSync: (v: boolean) => void;
-  liveSubBassLevel: number;
   setBassBeatSync: (v: boolean) => void;
   setMidsBeatSync: (v: boolean) => void;
   setTrebleBeatSync: (v: boolean) => void;
@@ -37,62 +44,57 @@ interface AudioPanelProps {
   startMicVisualization: (deviceId?: string) => void;
   stopMicVisualization: () => void;
   onAudioFileClick: () => void;
-  zoomBeatEnabled: boolean; setZoomBeatEnabled: (v: boolean) => void;
-  shakeBeatEnabled: boolean; setShakeBeatEnabled: (v: boolean) => void;
-  contrastBeatEnabled: boolean; setContrastBeatEnabled: (v: boolean) => void;
-  paletteBeatEnabled: boolean; setPaletteBeatEnabled: (v: boolean) => void;
+  setZoomBeatEnabled: (v: boolean) => void;
+  setShakeBeatEnabled: (v: boolean) => void;
+  setContrastBeatEnabled: (v: boolean) => void;
+  setPaletteBeatEnabled: (v: boolean) => void;
 }
 
+interface AudioPanelProps {
+  state: AudioPanelState;
+  actions: AudioPanelActions;
+}
 
 const BEAT_BTN = (active: boolean) =>
-  `flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${active ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`;
+  `flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${active ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`;
 
-const AudioPanelInner: React.FC<AudioPanelProps> = ({
-  isMicActive,
-  audioInputDevices,
-  selectedAudioDeviceId,
-  isAudioControlsOpen,
-  masterSensitivity,
-  bassMultiplier,
-  midsMultiplier,
-  trebleMultiplier,
-  bassBeatSync,
-  midsBeatSync,
-  trebleBeatSync,
-  liveBassLevel,
-  liveMidsLevel,
-  liveTrebleLevel,
-  audioFileName,
-  waveformData,
-  audioFileMetadata,
-  setSelectedAudioDeviceId,
-  setIsAudioControlsOpen,
-  setMasterSensitivity,
-  setBassMultiplier,
-  setMidsMultiplier,
-  setTrebleMultiplier,
-  subBassMultiplier,
-  setSubBassMultiplier,
-  subBassBeatSync,
-  setSubBassBeatSync,
-  liveSubBassLevel,
-  setBassBeatSync,
-  setMidsBeatSync,
-  setTrebleBeatSync,
-  setColorShiftHue,
-  startMicVisualization,
-  stopMicVisualization,
-  onAudioFileClick,
-  zoomBeatEnabled, setZoomBeatEnabled,
-  shakeBeatEnabled, setShakeBeatEnabled,
-  contrastBeatEnabled, setContrastBeatEnabled,
-  paletteBeatEnabled, setPaletteBeatEnabled,
-}) => {
+const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
+  const {
+    isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
+    masterSensitivity, bassMultiplier, midsMultiplier, trebleMultiplier,
+    bassBeatSync, midsBeatSync, trebleBeatSync,
+    liveBassLevel, liveMidsLevel, liveTrebleLevel,
+    audioFileName, waveformData, audioFileMetadata,
+    subBassMultiplier, subBassBeatSync, liveSubBassLevel,
+    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+  } = state;
+
+  const {
+    setSelectedAudioDeviceId, setIsAudioControlsOpen,
+    setMasterSensitivity, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setSubBassMultiplier, setSubBassBeatSync,
+    setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
+    setColorShiftHue, startMicVisualization, stopMicVisualization, onAudioFileClick,
+    setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+  } = actions;
+
   return (
     <>
       {/* Audiovisuals Section — single pill */}
-      <div className="w-full mb-0.5 flex">
-        <div className="flex items-center justify-between flex-1 bg-white/8 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden">
+      <div className="w-full flex">
+        <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg shadow-sm overflow-hidden">
+          {/* Mic on/off */}
+          <button
+            onClick={() => {
+              if (isMicActive) stopMicVisualization();
+              else startMicVisualization(selectedAudioDeviceId);
+            }}
+            className={`flex-1 px-2 py-1 text-xs font-semibold transition-all flex items-center justify-center ${isMicActive ? 'bg-white/30 text-white' : 'text-white hover:bg-white/15'}`}
+            title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On'}
+          >
+            {isMicActive ? <Microphone weight="regular" className="w-4 h-4" /> : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
+          </button>
+          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Device dropdown */}
           <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
             <select
@@ -112,7 +114,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 pointer-events-none" />
+            <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
           </div>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Upload */}
@@ -121,7 +123,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
             className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Load Audio File"
           >
-            <Plus className="w-4 h-4" />
+            <Plus weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Parameters toggle */}
@@ -130,21 +132,21 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
             className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
             title="Audio Parameters"
           >
-            <SlidersHorizontal className="w-4 h-4 flex-shrink-0" />
-            <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
+            <SlidersHorizontal weight="regular" className="w-4 h-4 flex-shrink-0" />
+            <CaretDown weight="regular" className={`w-4 h-4 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>
 
       {isAudioControlsOpen && (
-        <div className="w-full bg-white/5 backdrop-blur-sm border border-white/8 px-3 py-2 rounded-lg mb-0.5 overflow-hidden">
+        <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
           <div className="flex flex-col gap-3">
 
             {/* Intensity */}
             <div className="flex items-center gap-2">
-              <label className="text-xs text-white whitespace-nowrap flex-shrink-0">Intensity</label>
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Intensity</label>
               <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
-              <span className="text-xs text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
+              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
 
             {/* Band column headers */}
@@ -159,7 +161,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
             <div className="flex gap-2 items-start overflow-hidden">
 
               {/* Sub-bass */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -169,11 +171,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-white/60">Shape</span>
-                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Bass */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -183,11 +185,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-white/60">Pulse</span>
-                <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Mids */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -197,11 +199,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-white/60">Motion</span>
-                <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
               {/* Treble */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-white/5">
+              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -211,7 +213,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-white/60">Color</span>
-                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-white/8 backdrop-blur-sm text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
             </div>
 
@@ -232,7 +234,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full mb-0.5 bg-white/5 backdrop-blur-sm rounded-lg px-1.5 py-3">
+        <div className="w-full bg-black/20 rounded-lg px-1.5 py-3">
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-white/20"></div>

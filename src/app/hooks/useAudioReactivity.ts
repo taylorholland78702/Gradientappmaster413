@@ -210,7 +210,14 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       setIsAudioEnabled(true);
       setIsAudioReactive(true);
     } catch (error) {
-      // Silently fail - microphone access is blocked in preview environments
+      console.error('Mic access failed:', error);
+      if (error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
+        alert('Microphone access was denied. Allow microphone access for this site in your browser settings, then try again.');
+      } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+        alert('No microphone was found on this device.');
+      } else {
+        alert('Could not start the microphone. Check your browser\'s microphone permissions and try again.');
+      }
     }
   };
 

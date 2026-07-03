@@ -251,7 +251,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           ...(hasAudio ? ['-i', 'audio.webm'] : []),
           '-c:v', 'libx264',
           '-crf', '18',
-          '-preset', 'medium',
+          '-preset', 'veryfast',
           '-pix_fmt', 'yuv420p',
           ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []),
           '-movflags', '+faststart',

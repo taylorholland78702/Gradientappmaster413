@@ -122,6 +122,26 @@
 
 .wav-hue-drift {
   animation: wav-hue-drift 12s linear infinite;
+  /* Force this filter animation onto its own GPU-composited layer instead of
+     letting the browser fall back to re-rasterizing the masked gradient text
+     on the main thread every frame — the fallback path is very expensive on
+     integrated GPUs and was the likely cause of sustained canvas jank. */
+  will-change: filter;
+  transform: translateZ(0);
+}
+
+/* Gradient flowing bottom-to-top inside the wāv wordmark */
+@keyframes wav-flow-up {
+  0%   { background-position-y: 100%; }
+  100% { background-position-y: -20%; }
+}
+
+.wav-flow-idle {
+  animation: wav-flow-up 6s linear infinite;
+}
+
+.wav-flow-hold {
+  animation: wav-flow-up 0.9s linear infinite;
 }
 
 /* Liquid fill rising from bottom over the hold duration */
@@ -204,84 +224,30 @@
 /* ── Control panel: legibility on any background ── */
 .control-panel,
 .control-panel * {
-  text-shadow: 0 0 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.95);
+  text-shadow: 0 0 2px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.8);
 }
 .control-panel .text-black,
 .control-panel .text-black * {
   text-shadow: none;
 }
 .control-panel svg {
-  filter: drop-shadow(0 0 2px rgba(0,0,0,0.95)) drop-shadow(0 0 6px rgba(0,0,0,0.7));
+  filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.9));
 }
 
-/* ── Light panel mode ── */
-.control-panel.panel-light,
-.control-panel.panel-light * {
-  color: rgba(0,0,0,0.82) !important;
+.control-panel .wav-gradient-text {
+  color: transparent !important;
   text-shadow: none !important;
-  border-color: rgba(0,0,0,0.1) !important;
 }
-.control-panel.panel-light svg {
+.control-panel .wav-glow-wrap {
   filter: none !important;
-  color: rgba(0,0,0,0.7) !important;
+  position: relative;
+  isolation: isolate;
 }
-/* Frosted glass elements → dark tint (only explicit base bg classes, not hover variants) */
-.control-panel.panel-light :is(
-  [class~="bg-white/5"],
-  [class~="bg-white/8"],
-  [class~="bg-white/15"],
-  [class~="bg-white/20"],
-  [class~="bg-white/30"]
-) {
-  background-color: rgba(0,0,0,0.06) !important;
-}
-/* Section bg containers */
-.control-panel.panel-light [class*="bg-white\/5"] {
-  background-color: rgba(0,0,0,0.03) !important;
-}
-/* Keep RANDOMIZE gradient */
-.control-panel.panel-light [class*="from-purple"] {
-  background-image: linear-gradient(to right, #9333ea, #ec4899, #facc15) !important;
-  color: white !important;
-}
-.control-panel.panel-light [class*="from-purple"] * {
-  background-image: none !important;
-  color: white !important;
-}
-/* Active states (currently bg-white text-black) → invert to dark bg white text */
-.control-panel.panel-light .text-black {
-  background-color: rgba(0,0,0,0.82) !important;
-  color: white !important;
-}
-/* BEAT active state in light mode */
-.control-panel.panel-light .beat-active {
-  background-color: rgba(0,0,0,0.82) !important;
-  color: white !important;
-  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.5) !important;
+.control-panel .wav-outline-text {
+  color: #ffffff !important;
+  -webkit-text-stroke: 2.5px #ffffff;
   text-shadow: none !important;
-}
-/* Hover states in light mode */
-.control-panel.panel-light button:not([class*="from-purple"]):hover {
-  background-color: rgba(0,0,0,0.1) !important;
-}
-/* Drag handle */
-.control-panel.panel-light .bg-white\/20 {
-  background-color: rgba(0,0,0,0.15) !important;
-}
-/* Slider track in light mode */
-.control-panel.panel-light input[type="range"]::-webkit-slider-runnable-track {
-  background: linear-gradient(
-    to right,
-    rgba(0,0,0,0.6) 0%,
-    rgba(0,0,0,0.6) var(--slider-pct, 50%),
-    rgba(0,0,0,0.12) var(--slider-pct, 50%),
-    rgba(0,0,0,0.12) 100%
-  ) !important;
-  box-shadow: none !important;
-}
-.control-panel.panel-light input[type="range"]::-webkit-slider-thumb {
-  background: rgba(0,0,0,0.8) !important;
-  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.2) !important;
+  pointer-events: none;
 }
 
 /* ── Universal slider reset ── */
@@ -325,14 +291,14 @@ input[type="range"]::-moz-range-progress {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 13px;
-  height: 13px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #fff;
-  margin-top: -5px;
+  margin-top: -3px;
   box-shadow:
-    0 0 0 1.5px rgba(0,0,0,0.2),
-    0 1px 4px rgba(0,0,0,0.25);
+    0 0 0 1px rgba(0,0,0,0.2),
+    0 1px 3px rgba(0,0,0,0.2);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
@@ -351,8 +317,8 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   border: none;
   background: #fff;

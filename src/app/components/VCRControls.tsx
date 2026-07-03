@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Play, Pause, FastForward, Rewind, RotateCw, RotateCcw } from 'lucide-react';
+import { Circle, Play, Pause, FastForward, Rewind, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -32,27 +32,40 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   toggleVCRPlayback,
 }) => {
   return (
-    <div className="flex items-center bg-white/8 backdrop-blur-sm rounded-lg px-2 py-0.5 mb-0.5 w-full">
+    <div className="flex items-center bg-black/25 rounded-lg px-1 w-full shadow-sm">
       <div className="flex-1 flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all relative"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all relative"
           title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video'}
         >
           {isEncoding ? (
-            <span className="text-[9px] font-bold text-yellow-400 leading-none">{encodingProgress}%</span>
+            <svg width="16" height="16" viewBox="0 0 16 16">
+              {/* Track */}
+              <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+              {/* Progress arc — starts at 12 o'clock, sweeps clockwise */}
+              <circle
+                cx="8" cy="8" r="6"
+                fill="none"
+                stroke="#facc15"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeDasharray={`${(encodingProgress / 100) * 37.7} 37.7`}
+                transform="rotate(-90 8 8)"
+              />
+            </svg>
           ) : (
-            <Circle className={`w-4 h-4 ${isRecording ? 'fill-red-500 stroke-red-500' : ''}`} />
+            <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-4 h-4 ${isRecording ? 'text-red-500' : ''}`} />
           )}
         </button>
 
         <button
           onClick={toggleVCRPlayback}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all"
           title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
-          {(isVCRPlaying || isAutoMode) ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {(isVCRPlaying || isAutoMode) ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
         </button>
 
         <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
@@ -67,13 +80,13 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(0.5);
             }
           }}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all"
           title="Slower"
         >
-          <Rewind className="w-4 h-4" />
+          <Rewind weight="regular" className="w-4 h-4" />
         </button>
 
-        <span className="text-xs text-white text-center w-6">{vcrPlaybackSpeed}x</span>
+        <span className="text-[10px] text-white text-center w-6">{vcrPlaybackSpeed}x</span>
 
         <button
           onClick={() => {
@@ -85,20 +98,20 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(1);
             }
           }}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all"
           title="Faster"
         >
-          <FastForward className="w-4 h-4" />
+          <FastForward weight="regular" className="w-4 h-4" />
         </button>
 
         <div className="w-px h-5 bg-white/20 flex-shrink-0"></div>
 
         <button
           onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all"
           title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
         >
-          {rotationDirection === 'clockwise' ? <RotateCw className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
+          {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
         </button>
       </div>
     </div>
