@@ -1411,9 +1411,9 @@ export function InteractiveGradient() {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      // Pick 0-5 effects. At most one shape-changer is included (they mask the
+      // Pick 0-7 effects. At most one shape-changer is included (they mask the
       // gradient entirely when stacked), the rest are light/audio effects.
-      const numEffects = Math.floor(Math.random() * 6);
+      const numEffects = Math.floor(Math.random() * 8);
       const selectedEffects: EffectType[] = [];
       if (numEffects > 0) {
         const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
