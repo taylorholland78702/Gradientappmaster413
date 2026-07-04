@@ -3115,8 +3115,18 @@ export function InteractiveGradient() {
             for (let octave = 0; octave < noiseOctaves; octave++) {
               const frequency = Math.pow(2, octave);
               const scale = baseNoiseScale * frequency;
-              const raw = Math.sin(rx * scale + noiseDirection * 0.1 * frequency) *
-                          Math.cos(ry * scale + noiseDirection * 0.1 * frequency);
+              // Rotate each octave's basis by a fixed offset (~137.5°, the golden
+              // angle) so added octaves reshape the pattern instead of just
+              // layering finer detail onto the same axis-aligned grid — this is
+              // what makes each Detail value look like a genuinely different
+              // shape rather than a sharper version of Detail=1.
+              const octAngle = octave * 2.4;
+              const oCos = Math.cos(octAngle);
+              const oSin = Math.sin(octAngle);
+              const orx = rx * oCos - ry * oSin;
+              const ory = rx * oSin + ry * oCos;
+              const raw = Math.sin(orx * scale + noiseDirection * 0.1 * frequency) *
+                          Math.cos(ory * scale + noiseDirection * 0.1 * frequency);
               const n = noiseType === 'ridged'      ? 1 - Math.abs(raw)
                       : noiseType === 'turbulence'  ? Math.abs(raw)
                       : raw;
