@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'bokeh' | 'brightness' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -92,7 +92,7 @@ const WAV_MOODS = [
   { name: 'pastel',     hues: [300, 180, 60],   sat: [35, 60]  as [number,number],  lit: [72, 88]  as [number,number],  effects: ['blur', 'chromatic'] as EffectType[],       gradients: ['radial', 'shapes', 'fade', 'iridescent'] as GradientType[] },
   { name: 'neon',       hues: [300, 180, 60],   sat: [90, 100] as [number,number],  lit: [45, 58]  as [number,number],  effects: ['chromatic', 'bloom'] as EffectType[],      gradients: ['radial', 'plasma', 'waves', 'radial-burst'] as GradientType[] },
   { name: 'warm',       hues: [10, 30, 50],     sat: [70, 95]  as [number,number],  lit: [45, 65]  as [number,number],  effects: ['vignette', 'film-grain'] as EffectType[],  gradients: ['radial', 'fade', 'spiral', 'conical-spiral'] as GradientType[] },
-  { name: 'cool',       hues: [200, 220, 240],  sat: [55, 85]  as [number,number],  lit: [40, 62]  as [number,number],  effects: ['blur', 'bokeh'] as EffectType[],            gradients: ['radial', 'noise', 'waves', 'voronoi'] as GradientType[] },
+  { name: 'cool',       hues: [200, 220, 240],  sat: [55, 85]  as [number,number],  lit: [40, 62]  as [number,number],  effects: ['blur'] as EffectType[],                     gradients: ['radial', 'noise', 'waves', 'voronoi'] as GradientType[] },
   { name: 'monochrome', hues: [220, 220, 220],  sat: [5,  20]  as [number,number],  lit: [20, 80]  as [number,number],  effects: ['film-grain', 'vignette'] as EffectType[],  gradients: ['radial', 'concentric', 'noise', 'shapes'] as GradientType[] },
   { name: 'sunset',     hues: [0,   20,  40],   sat: [80, 100] as [number,number],  lit: [50, 68]  as [number,number],  effects: ['chromatic', 'vignette'] as EffectType[],   gradients: ['radial', 'fade', 'iridescent', 'angle'] as GradientType[] },
   { name: 'forest',     hues: [100, 140, 160],  sat: [45, 75]  as [number,number],  lit: [30, 52]  as [number,number],  effects: ['film-grain', 'blur'] as EffectType[],       gradients: ['radial', 'noise', 'mesh', 'voronoi'] as GradientType[] },
@@ -256,10 +256,6 @@ export function InteractiveGradient() {
   const [meshGridSize, setMeshGridSize] = useState(4);
   
   // New effect parameters
-  const [brightnessAmount, setBrightnessAmount] = useState(0);
-  const [bokehSize, setBokehSize] = useState(30);
-  const [bokehIntensity, setBokehIntensity] = useState(1);
-  const [bokehColorize, setBokehColorize] = useState(1);
   const [dustSize, setDustSize] = useState(5);
   const [grainType, setGrainType] = useState<'fine' | 'medium' | 'coarse' | 'film'>('medium');
   const [gridVariation, setGridVariation] = useState(0);
@@ -392,6 +388,7 @@ export function InteractiveGradient() {
   const feedbackBufferRef = useRef<HTMLCanvasElement | null>(null);
   const rippleRingsRef = useRef<{ phase: number; strength: number }[]>([]);
   const prevBassForRippleRef = useRef(0);
+  const rippleAutoFrameRef = useRef(0);
   
   // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
@@ -1239,7 +1236,7 @@ export function InteractiveGradient() {
   );
   
   const ALL_EFFECTS: EffectType[] = useMemo(() =>
-    ['blur', 'bokeh', 'brightness', 'charcoal', 'chromatic', 'dither', 'duotone', 'dust-scratches', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'color-shift', 'slit-scan', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion'],
+    ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'dust-scratches', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'color-shift', 'slit-scan', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion'],
     []
   );
 
@@ -1247,7 +1244,7 @@ export function InteractiveGradient() {
   // All gradients are now audio-reactive
   const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polygon-solid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
   // Effects that pulse/react visibly with audio
-  const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'brightness', 'film-grain', 'bokeh', 'fisheye'];
+  const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'film-grain', 'fisheye'];
 
   const feelingLucky = useCallback(() => {
     setShowRatingUI(false);
@@ -1631,7 +1628,6 @@ export function InteractiveGradient() {
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(5, 50)));
       else if (eff === 'color-shift') setColorShiftHue(Math.round(rng(5, 180)));
       else if (eff === 'twist') setTwistAmount(rng(0, 5));
-      else if (eff === 'bokeh') setChromaticOffset(Math.round(rng(5, 80)));
     }
 
     // Gradient-specific params — scale range with factor
@@ -2429,11 +2425,10 @@ export function InteractiveGradient() {
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     noiseDirection,
-    bokehSize, bokehIntensity,
-    bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
+    ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -4696,83 +4691,6 @@ export function InteractiveGradient() {
           break;
         }
         
-        case 'bokeh': {
-          const bsz = bokehSize + (isFirstEffect ? audioModulation * 5 : 0);
-          ctx.filter = `blur(${bsz}px)`;
-          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
-          ctx.filter = 'none';
-          const nc = Math.floor(50 * bokehIntensity);
-
-          // Seeded random for consistent positions
-          const bokehSeed = (n: number) => {
-            const x = Math.sin(n * 12.9898 + bokehSize * 78.233) * 43758.5453;
-            return x - Math.floor(x);
-          };
-
-          for (let i = 0; i < nc; i++) {
-            const x = bokehSeed(i * 2) * displayWidth;
-            const y = bokehSeed(i * 2 + 1) * displayHeight;
-            const r = bokehSeed(i * 2 + 0.5) * bsz * 2 + bsz;
-            const sx = Math.min(Math.max(0, Math.floor(x)), displayWidth - 1) * resolutionMultiplier;
-            const sy = Math.min(Math.max(0, Math.floor(y)), displayHeight - 1) * resolutionMultiplier;
-            const pd = ctx.getImageData(sx, sy, 1, 1).data;
-
-            // Apply colorize by shifting hue
-            let r1 = pd[0], g1 = pd[1], b1 = pd[2];
-            if (bokehColorize > 0) {
-              const hueShift = bokehColorize * 360;
-              const max = Math.max(r1, g1, b1);
-              const min = Math.min(r1, g1, b1);
-              const delta = max - min;
-              let h = 0;
-              if (delta !== 0) {
-                if (max === r1) h = ((g1 - b1) / delta) % 6;
-                else if (max === g1) h = (b1 - r1) / delta + 2;
-                else h = (r1 - g1) / delta + 4;
-                h = h * 60;
-                if (h < 0) h += 360;
-              }
-              h = (h + hueShift) % 360;
-              const s = max === 0 ? 0 : delta / max;
-              const v = max / 255;
-              const c = v * s;
-              const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-              const m = v - c;
-              let r2 = 0, g2 = 0, b2 = 0;
-              if (h < 60) { r2 = c; g2 = x; }
-              else if (h < 120) { r2 = x; g2 = c; }
-              else if (h < 180) { g2 = c; b2 = x; }
-              else if (h < 240) { g2 = x; b2 = c; }
-              else if (h < 300) { r2 = x; b2 = c; }
-              else { r2 = c; b2 = x; }
-              r1 = (r2 + m) * 255;
-              g1 = (g2 + m) * 255;
-              b1 = (b2 + m) * 255;
-            }
-
-            const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-            g.addColorStop(0, `rgba(${Math.min(255, r1)},${Math.min(255, g1)},${Math.min(255, b1)},${bokehIntensity * 0.6})`);
-            g.addColorStop(0.5, `rgba(${Math.min(255, r1 * 0.8)},${Math.min(255, g1 * 0.8)},${Math.min(255, b1 * 0.8)},${bokehIntensity * 0.3})`);
-            g.addColorStop(1, `rgba(${pd[0]},${pd[1]},${pd[2]},0)`);
-            ctx.fillStyle = g;
-            ctx.globalCompositeOperation = 'screen';
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalCompositeOperation = 'source-over';
-          }
-          break;
-        }
-        
-        case 'brightness':
-          // Brightness adjustment
-          const audioBrightnessBoost = isFirstEffect ? audioModulation * 0.5 : 0;
-          const effectiveBrightness = 1 + brightnessAmount + audioBrightnessBoost;
-          ctx.filter = `brightness(${effectiveBrightness})`;
-          ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
-          ctx.filter = 'none';
-          break;
-        
         case 'dither':
           // Dither effect
           const ditherImageData = getDisplayImageData();
@@ -4934,8 +4852,15 @@ export function InteractiveGradient() {
             ctx.translate(-centerX, -centerY);
             ctx.drawImage(fb, 0, 0);
             ctx.restore();
+            // Blend the current (fully opaque) frame over the trail instead of a
+            // plain source-over draw — at alpha 1 that would completely erase the
+            // trail underneath every frame, which is why no trail was ever visible.
+            // 'lighten' lets the brighter of (trail, current) win per-pixel so the
+            // decaying echo actually shows through.
             ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'lighten';
             ctx.drawImage(fbTmp, 0, 0);
+            ctx.globalCompositeOperation = 'source-over';
           }
           // Update feedback buffer
           if (!feedbackBufferRef.current || feedbackBufferRef.current.width !== displayWidth) {
@@ -4954,11 +4879,22 @@ export function InteractiveGradient() {
           try {
             const bassSig = isAudioReactive ? audioSubBassLevel / 5 : 0;
             const bassThreshold = 0.35;
-            if (bassSig > bassThreshold && prevBassForRippleRef.current <= bassThreshold) {
-              rippleRingsRef.current.push({ phase: 0, strength: bassSig });
-              if (rippleRingsRef.current.length > 6) rippleRingsRef.current.shift();
+            if (isAudioReactive) {
+              if (bassSig > bassThreshold && prevBassForRippleRef.current <= bassThreshold) {
+                rippleRingsRef.current.push({ phase: 0, strength: bassSig });
+                if (rippleRingsRef.current.length > 6) rippleRingsRef.current.shift();
+              }
+              prevBassForRippleRef.current = bassSig;
+            } else if (isAutoModeRef.current || isVCRPlayingRef.current) {
+              // No audio to drive this off of — pulse rings on a fixed interval
+              // instead, so the effect isn't completely inert without audio input.
+              rippleAutoFrameRef.current += 1;
+              if (rippleAutoFrameRef.current > 90) {
+                rippleAutoFrameRef.current = 0;
+                rippleRingsRef.current.push({ phase: 0, strength: 0.6 });
+                if (rippleRingsRef.current.length > 6) rippleRingsRef.current.shift();
+              }
             }
-            prevBassForRippleRef.current = bassSig;
             rippleRingsRef.current.forEach(r => { r.phase += 0.018; });
             rippleRingsRef.current = rippleRingsRef.current.filter(r => r.phase < 1.0);
 
@@ -7235,12 +7171,10 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(12, auto)' }}>
             {([
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
-              { value: 'bokeh',          label: 'Bokeh' },
-              { value: 'brightness',     label: 'Brightness' },
               { value: 'chromatic',      label: 'Chromatic' },
               { value: 'dither',         label: 'Dither' },
               { value: 'dust-scratches', label: 'Dust' },
@@ -8081,104 +8015,6 @@ export function InteractiveGradient() {
                         max="360"
                         value={waveDistortionRotation}
                         onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('bokeh') && (
-                <EffectSection id="bokeh" label="Bokeh" isMulti={isMulti} expanded={expandedEffects.has('bokeh')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Blur Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="5"
-                        max="50"
-                        value={bokehSize}
-                        onChange={(e) => setBokehSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="50"
-                        value={bokehSize}
-                        onChange={(e) => setBokehSize(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bokehIntensity}
-                        onChange={(e) => setBokehIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bokehIntensity}
-                        onChange={(e) => setBokehIntensity(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Colorize:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bokehColorize}
-                        onChange={(e) => setBokehColorize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={bokehColorize}
-                        onChange={(e) => setBokehColorize(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('brightness') && (
-                <EffectSection id="brightness" label="Brightness" isMulti={isMulti} expanded={expandedEffects.has('brightness')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="-1"
-                        max="1"
-                        step="0.05"
-                        value={brightnessAmount}
-                        onChange={(e) => setBrightnessAmount(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="-1"
-                        max="1"
-                        step="0.05"
-                        value={brightnessAmount}
-                        onChange={(e) => setBrightnessAmount(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
                     </div>
