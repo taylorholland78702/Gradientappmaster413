@@ -306,30 +306,31 @@ export function InteractiveGradient() {
   const [voronoiDistortion, setVoronoiDistortion] = useState(100);
   const [voronoiMorphSpeed, setVoronoiMorphSpeed] = useState(1);
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
-  const [conicalSpiralTurns, setConicalSpiralTurns] = useState(10);
+  const [conicalSpiralTurns, setConicalSpiralTurns] = useState(3);
   const [conicalSpiralTightness, setConicalSpiralTightness] = useState(2);
   const [iridescentAngle, setIridescentAngle] = useState(45);
   const [iridescentIntensity, setIridescentIntensity] = useState(0.8);
-  const [iridescentScale, setIridescentScale] = useState(5);
+  const [iridescentScale, setIridescentScale] = useState(2);
   const [waveDistortionStrength, setWaveDistortionStrength] = useState(100);
   const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
   const [radarSweepAngle, setRadarSweepAngle] = useState(0);
   const [radarFadeLength, setRadarFadeLength] = useState(90);
   const [fadeDirection, setFadeDirection] = useState(0);
   const [radarBeamWidth, setRadarBeamWidth] = useState(30);
-  const [flowerCircles, setFlowerCircles] = useState(4);
+  const [flowerCircles, setFlowerCircles] = useState(3);
   const [flowerScale, setFlowerScale] = useState(0.8);
-  const [flowerSpread, setFlowerSpread] = useState(0.55);
+  const [flowerSpread, setFlowerSpread] = useState(0.6);
   const [flowerRotation, setFlowerRotation] = useState(0);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
   const [auroraAnimTime, setAuroraAnimTime] = useState(0);
-  const [auroraBandCount, setAuroraBandCount] = useState(7);
-  const [auroraWaveSpeed, setAuroraWaveSpeed] = useState(1);
-  const [auroraBandHeight, setAuroraBandHeight] = useState(2);
+  const [auroraBandCount, setAuroraBandCount] = useState(6);
+  const [auroraWaveSpeed, setAuroraWaveSpeed] = useState(0.2);
+  const [auroraBandHeight, setAuroraBandHeight] = useState(1);
   const [causticsAnimTime, setCausticsAnimTime] = useState(0);
-  const [causticsComplexity, setCausticsComplexity] = useState(2);
-  const [causticsBrightness, setCausticsBrightness] = useState(1);
-  const [causticsScale, setCausticsScale] = useState(2.5);
+  // Complexity and Scale were redundant — both just scale the same sine-wave
+  // frequency terms, so Complexity was removed and its value folded into Scale.
+  const [causticsBrightness, setCausticsBrightness] = useState(1.5);
+  const [causticsScale, setCausticsScale] = useState(5);
   const [lavaAnimTime, setLavaAnimTime] = useState(0);
   const [lavaBlobCount, setLavaBlobCount] = useState(5);
   const [lavaBlobSize, setLavaBlobSize] = useState(0.15);
@@ -2423,7 +2424,7 @@ export function InteractiveGradient() {
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
     flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
     auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight,
-    causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale,
+    causticsAnimTime, causticsBrightness, causticsScale,
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     noiseDirection,
@@ -2431,7 +2432,7 @@ export function InteractiveGradient() {
     bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsComplexity, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, bokehSize, bokehIntensity, bokehColorize, brightnessAmount, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3635,7 +3636,7 @@ export function InteractiveGradient() {
         const cScaleXY = causticsScale / displayWidth;
         const scaleX = cScaleXY * 4 / zoom;
         const scaleY = (causticsScale / displayHeight) * 4 / zoom;
-        const cFreq = causticsComplexity * causticsFreqBoost;
+        const cFreq = causticsFreqBoost;
         for (let y = 0; y < displayHeight; y++) {
           for (let x = 0; x < displayWidth; x++) {
             const nx = (x - centerX) * scaleX;
@@ -6357,7 +6358,6 @@ export function InteractiveGradient() {
         {gradientType === 'caustics' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">
             {[
-              { label: 'Complexity', value: causticsComplexity, set: setCausticsComplexity, min: 0.2, max: 4, step: 0.1 },
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
