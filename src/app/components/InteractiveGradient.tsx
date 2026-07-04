@@ -115,7 +115,8 @@ export function InteractiveGradient() {
   
   // Video recording state (shared between root and useVCRPlayback hook)
   const [isRecording, setIsRecording] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(false);
+  // Play engages automatically on load/refresh at the default 1x speed.
+  const [isAutoMode, setIsAutoMode] = useState(true);
   const [isAutoColor, setIsAutoColor] = useState(true);
   const [gradientTransitionOpacity, setGradientTransitionOpacity] = useState(1);
   
@@ -332,8 +333,8 @@ export function InteractiveGradient() {
   const [causticsBrightness, setCausticsBrightness] = useState(1.5);
   const [causticsScale, setCausticsScale] = useState(5);
   const [lavaAnimTime, setLavaAnimTime] = useState(0);
-  const [lavaBlobCount, setLavaBlobCount] = useState(5);
-  const [lavaBlobSize, setLavaBlobSize] = useState(0.15);
+  const [lavaBlobCount, setLavaBlobCount] = useState(10);
+  const [lavaBlobSize, setLavaBlobSize] = useState(0.08);
   const [lavaSpeed, setLavaSpeed] = useState(1);
   const [marbleAnimTime, setMarbleAnimTime] = useState(0);
   const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
