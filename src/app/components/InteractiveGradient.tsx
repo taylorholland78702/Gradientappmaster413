@@ -1411,23 +1411,19 @@ export function InteractiveGradient() {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      const roll = Math.random();
-      let selectedEffects: EffectType[];
-      if (roll < 0.25) {
-        selectedEffects = []; // no effects — raw gradient
-      } else if (roll < 0.65) {
-        // 1 light/audio effect
+      // Pick 0-5 effects. At most one shape-changer is included (they mask the
+      // gradient entirely when stacked), the rest are light/audio effects.
+      const numEffects = Math.floor(Math.random() * 6);
+      const selectedEffects: EffectType[] = [];
+      if (numEffects > 0) {
         const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-        selectedEffects = [shuffledLight[0]];
-      } else if (roll < 0.82) {
-        // 1 shape-changer + 1 light effect so gradient still shows through
-        const sc = SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)];
-        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-        selectedEffects = [sc, shuffledLight[0]];
-      } else {
-        // 2 light effects
-        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-        selectedEffects = shuffledLight.slice(0, 2);
+        if (Math.random() < 0.4) {
+          selectedEffects.push(SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)]);
+        }
+        for (const fx of shuffledLight) {
+          if (selectedEffects.length >= numEffects) break;
+          selectedEffects.push(fx);
+        }
       }
 
       setActiveEffects(selectedEffects);
