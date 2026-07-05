@@ -75,12 +75,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               if (e.key === 'Escape') cancelAdd();
             }}
             placeholder="New preset name..."
-            className="flex-1 px-4 py-2 text-xs bg-transparent text-white placeholder-white/30 focus:outline-none"
+            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
           />
           {newPresetName.trim() && (
             <button
               onClick={confirmAdd}
-              className="px-3 py-2 text-xs text-green-400 hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
             >
               Save
             </button>
@@ -122,7 +122,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
             )}
             <button
               onClick={(e) => { e.stopPropagation(); updatePreset(index); }}
-              className="px-2 py-2 text-white/50 hover:text-green-400 hover:bg-white/15 transition-colors flex-shrink-0"
+              className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
               title="Save current settings to this preset"
             >
               <FloppyDisk weight="regular" className="w-4 h-4" />
