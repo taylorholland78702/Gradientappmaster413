@@ -8103,22 +8103,20 @@ export function InteractiveGradient() {
               {activeEffects.includes('slit-scan') && (
                 <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={expandedEffects.has('slit-scan')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
-                    
-                    <label className="text-[10px] text-white whitespace-nowrap">Dir:</label>
-                    <div className="flex gap-1 flex-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'horizontal'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
-                        Horiz
+                        Horz
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('vertical')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'vertical'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8128,7 +8126,7 @@ export function InteractiveGradient() {
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('radial')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'radial'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8138,13 +8136,13 @@ export function InteractiveGradient() {
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('circular')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'circular'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
-                        Circ
+                        Circle
                       </button>
                     </div>
                   </div>
