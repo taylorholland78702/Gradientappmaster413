@@ -218,7 +218,6 @@ export function InteractiveGradient() {
   const [liquifyStrength, setLiquifyStrength] = useState(30);
   const [pinchStrength, setPinchStrength] = useState(0.5);
   const [scanLineSize, setScanLineSize] = useState(4);
-  const [scanLineOffset, setScanLineOffset] = useState(0);
   const [sepiaIntensity, setSepiaIntensity] = useState(1);
   const [solarizeThreshold, setSolarizeThreshold] = useState(128);
   const [gridSides, setGridSides] = useState(4);
