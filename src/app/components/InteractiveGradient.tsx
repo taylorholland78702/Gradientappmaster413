@@ -7729,7 +7729,7 @@ export function InteractiveGradient() {
                     />
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">3 Colors:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Tritone:</label>
                     <button
                       onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
                       className={`px-2 py-0.5 rounded text-[10px] transition-all ${
