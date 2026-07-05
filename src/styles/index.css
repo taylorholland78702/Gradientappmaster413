@@ -254,19 +254,19 @@
   animation: wav-light-sweep 0.65s ease-in-out forwards;
 }
 
-/* ── Control panel: legibility on any background ── */
+/* ── Control panel: flat translucent-white theme, readable on any
+   background behind it — no drop shadows, solid black type. ── */
 .control-panel,
 .control-panel * {
-  text-shadow: 0 0 2px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.8);
-}
-.control-panel .text-black,
-.control-panel .text-black * {
-  text-shadow: none;
+  color: #000000 !important;
+  text-shadow: none !important;
 }
 .control-panel svg {
-  filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.9));
+  filter: none !important;
 }
 
+/* The wāv wordmark keeps its own white/gradient-on-canvas styling —
+   exempt from the panel's flat black-text rule above. */
 .control-panel .wav-fill-text,
 .control-panel .wav-random-fill {
   text-shadow: none !important;
@@ -281,6 +281,35 @@
   -webkit-text-stroke: 2.5px #ffffff;
   text-shadow: none !important;
   pointer-events: none;
+}
+.control-panel .wav-fill-text {
+  color: #ffffff !important;
+}
+.control-panel .wav-random-fill {
+  color: transparent !important;
+}
+
+/* Every panel/button surface that was translucent black becomes a
+   single translucent white; white borders/dividers darken to stay
+   visible against it; hovers get a subtle dark tint instead of a
+   white one (which would vanish on a white background). */
+.control-panel [class*="bg-black/"] {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+.control-panel [class*="border-white"] {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+.control-panel [class*="bg-white/"]:not([class*="hover:"]) {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+.control-panel button:not(.wav-drag-handle):not([style*="background"]):hover {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+.control-panel button:disabled {
+  opacity: 0.35;
+}
+.control-panel input::placeholder {
+  color: rgba(0, 0, 0, 0.45) !important;
 }
 
 /* ── Universal slider reset ── */
