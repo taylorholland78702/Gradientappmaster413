@@ -4756,9 +4756,14 @@ export function InteractiveGradient() {
               for (let y = 0; y < displayHeight; y++) {
                 const fi = Math.min(Math.floor((y / displayHeight) * (buf.length - 1) * int), buf.length - 1);
                 const sf = buf[fi];
-                const shift = Math.round((fi - midBuf) * int * 2);
+                // Shift scales with canvas width (not a fixed px amount) and the
+                // slider's full range now maps to a much larger max displacement
+                // so Intensity actually feels intense at the high end.
+                const shift = Math.round(((fi - midBuf) / midBuf) * int * displayWidth * 0.35);
                 for (let x = 0; x < displayWidth; x++) {
-                  const sx = Math.max(0, Math.min(displayWidth - 1, x + shift));
+                  // Wrap instead of clamp — clamping collapsed many source columns
+                  // onto the same edge pixel, producing a solid stripe artifact.
+                  const sx = ((x + shift) % displayWidth + displayWidth) % displayWidth;
                   const i = (y * displayWidth + x) * 4;
                   const si = (y * displayWidth + sx) * 4;
                   out.data[i] = sf.data[si];
@@ -4771,9 +4776,9 @@ export function InteractiveGradient() {
               for (let x = 0; x < displayWidth; x++) {
                 const fi = Math.min(Math.floor((x / displayWidth) * (buf.length - 1) * int), buf.length - 1);
                 const sf = buf[fi];
-                const shift = Math.round((fi - midBuf) * int * 2);
+                const shift = Math.round(((fi - midBuf) / midBuf) * int * displayHeight * 0.35);
                 for (let y = 0; y < displayHeight; y++) {
-                  const sy = Math.max(0, Math.min(displayHeight - 1, y + shift));
+                  const sy = ((y + shift) % displayHeight + displayHeight) % displayHeight;
                   const i = (y * displayWidth + x) * 4;
                   const si = (sy * displayWidth + x) * 4;
                   out.data[i] = sf.data[si];
@@ -4790,8 +4795,12 @@ export function InteractiveGradient() {
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
                   const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * int), buf.length - 1);
                   const sf = buf[fi];
-                  const shift = (fi - midBuf) * int * 2;
-                  const sd = Math.max(0, d + shift);
+                  const shift = ((fi - midBuf) / midBuf) * int * md * 0.35;
+                  // Reflect instead of clamping to 0 — clamping collapsed every
+                  // pixel within |shift| of center onto the exact same source
+                  // pixel, producing a solid-color disc in the middle of the canvas.
+                  let sd = d + shift;
+                  if (sd < 0) sd = -sd;
                   const angle = Math.atan2(y - cy, x - cx);
                   const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(angle) * sd)));
                   const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(angle) * sd)));
@@ -4814,7 +4823,7 @@ export function InteractiveGradient() {
                   const fi = Math.min(Math.floor(norm * (buf.length - 1) * int), buf.length - 1);
                   const sf = buf[fi];
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                  const angleShift = (fi - midBuf) * int * 0.05;
+                  const angleShift = ((fi - midBuf) / midBuf) * int * 1.6;
                   const sAngle = angle + angleShift;
                   const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * d)));
                   const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * d)));
