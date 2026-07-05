@@ -4745,28 +4745,41 @@ export function InteractiveGradient() {
             const int = slitScanIntensity;
             const buf = slitScanBufferRef.current;
 
+            // Beyond substituting a historical frame's color, also spatially shift
+            // the sample point based on how far back that frame is. Pure color
+            // substitution is nearly invisible on gradients that barely change
+            // frame-to-frame (e.g. a slowly rotating Angle gradient) — the shear
+            // makes the effect read as an obvious glitch regardless of source.
+            const midBuf = (buf.length - 1) / 2;
+
             if (slitScanDirection === 'horizontal') {
               for (let y = 0; y < displayHeight; y++) {
                 const fi = Math.min(Math.floor((y / displayHeight) * (buf.length - 1) * int), buf.length - 1);
                 const sf = buf[fi];
+                const shift = Math.round((fi - midBuf) * int * 2);
                 for (let x = 0; x < displayWidth; x++) {
+                  const sx = Math.max(0, Math.min(displayWidth - 1, x + shift));
                   const i = (y * displayWidth + x) * 4;
-                  out.data[i] = sf.data[i];
-                  out.data[i+1] = sf.data[i+1];
-                  out.data[i+2] = sf.data[i+2];
-                  out.data[i+3] = sf.data[i+3];
+                  const si = (y * displayWidth + sx) * 4;
+                  out.data[i] = sf.data[si];
+                  out.data[i+1] = sf.data[si+1];
+                  out.data[i+2] = sf.data[si+2];
+                  out.data[i+3] = sf.data[si+3];
                 }
               }
             } else if (slitScanDirection === 'vertical') {
               for (let x = 0; x < displayWidth; x++) {
                 const fi = Math.min(Math.floor((x / displayWidth) * (buf.length - 1) * int), buf.length - 1);
                 const sf = buf[fi];
+                const shift = Math.round((fi - midBuf) * int * 2);
                 for (let y = 0; y < displayHeight; y++) {
+                  const sy = Math.max(0, Math.min(displayHeight - 1, y + shift));
                   const i = (y * displayWidth + x) * 4;
-                  out.data[i] = sf.data[i];
-                  out.data[i+1] = sf.data[i+1];
-                  out.data[i+2] = sf.data[i+2];
-                  out.data[i+3] = sf.data[i+3];
+                  const si = (sy * displayWidth + x) * 4;
+                  out.data[i] = sf.data[si];
+                  out.data[i+1] = sf.data[si+1];
+                  out.data[i+2] = sf.data[si+2];
+                  out.data[i+3] = sf.data[si+3];
                 }
               }
             } else if (slitScanDirection === 'radial') {
@@ -4777,15 +4790,22 @@ export function InteractiveGradient() {
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
                   const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * int), buf.length - 1);
                   const sf = buf[fi];
+                  const shift = (fi - midBuf) * int * 2;
+                  const sd = Math.max(0, d + shift);
+                  const angle = Math.atan2(y - cy, x - cx);
+                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(angle) * sd)));
+                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(angle) * sd)));
                   const i = (y * displayWidth + x) * 4;
-                  out.data[i] = sf.data[i];
-                  out.data[i+1] = sf.data[i+1];
-                  out.data[i+2] = sf.data[i+2];
-                  out.data[i+3] = sf.data[i+3];
+                  const si = (sy * displayWidth + sx) * 4;
+                  out.data[i] = sf.data[si];
+                  out.data[i+1] = sf.data[si+1];
+                  out.data[i+2] = sf.data[si+2];
+                  out.data[i+3] = sf.data[si+3];
                 }
               }
             } else {
-              // circular: sample frame based on angle around center
+              // circular: sample frame based on angle around center, with the
+              // sample point itself rotated by the assigned frame's time offset
               const cx = displayWidth / 2, cy = displayHeight / 2;
               for (let y = 0; y < displayHeight; y++) {
                 for (let x = 0; x < displayWidth; x++) {
@@ -4793,11 +4813,17 @@ export function InteractiveGradient() {
                   const norm = (angle + Math.PI) / (Math.PI * 2); // 0..1
                   const fi = Math.min(Math.floor(norm * (buf.length - 1) * int), buf.length - 1);
                   const sf = buf[fi];
+                  const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
+                  const angleShift = (fi - midBuf) * int * 0.05;
+                  const sAngle = angle + angleShift;
+                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * d)));
+                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * d)));
                   const i = (y * displayWidth + x) * 4;
-                  out.data[i] = sf.data[i];
-                  out.data[i+1] = sf.data[i+1];
-                  out.data[i+2] = sf.data[i+2];
-                  out.data[i+3] = sf.data[i+3];
+                  const si = (sy * displayWidth + sx) * 4;
+                  out.data[i] = sf.data[si];
+                  out.data[i+1] = sf.data[si+1];
+                  out.data[i+2] = sf.data[si+2];
+                  out.data[i+3] = sf.data[si+3];
                 }
               }
             }
@@ -4846,8 +4872,10 @@ export function InteractiveGradient() {
             ctx.save();
             ctx.globalAlpha = Math.min(0.98, audioFbDecay);
             ctx.translate(centerX, centerY);
-            ctx.rotate(feedbackRotation * 0.005);
-            const zs = 1 + audioFbZoom * 0.005;
+            // Rotation/zoom multipliers bumped 4x — at the old scale the sliders'
+            // full range barely moved the trail per frame, reading as inert.
+            ctx.rotate(feedbackRotation * 0.02);
+            const zs = 1 + audioFbZoom * 0.02;
             ctx.scale(zs, zs);
             ctx.translate(-centerX, -centerY);
             ctx.drawImage(fb, 0, 0);
@@ -4919,8 +4947,14 @@ export function InteractiveGradient() {
                 }
                 let srcX = x, srcY = y;
                 if (totalOffset !== 0 && dist > 1) {
-                  srcX = x + (dx / dist) * totalOffset;
-                  srcY = y + (dy / dist) * totalOffset;
+                  // Radial displacement alone is invisible on gradients whose color
+                  // only varies with angle (e.g. Angle/Fade) since moving a pixel
+                  // along its own radius doesn't change its color at all. Adding a
+                  // tangential (perpendicular) component makes the ripple visible
+                  // on angle-based gradients too, not just radially-varying ones.
+                  const tx = -dy / dist, ty = dx / dist;
+                  srcX = x + (dx / dist) * totalOffset + tx * totalOffset * 0.6;
+                  srcY = y + (dy / dist) * totalOffset + ty * totalOffset * 0.6;
                 }
                 const clampedX = Math.max(0, Math.min(displayWidth - 1, Math.round(srcX)));
                 const clampedY = Math.max(0, Math.min(displayHeight - 1, Math.round(srcY)));
