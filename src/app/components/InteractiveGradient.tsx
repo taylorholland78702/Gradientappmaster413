@@ -31,7 +31,7 @@ interface ColorRGB {
   b: number;
 }
 
-type GradientType = 'radial' | 'angle' | 'spiral' | 'polygon-solid' | 'waves' | 'fade' | 'conical-spiral' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble';
+type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble';
 
 interface ColorPin {
   id: string;
@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -67,6 +67,25 @@ const DEFAULT_COLORS: ColorRGB[] = [
 const DEG_TO_RAD = Math.PI / 180;
 const TWO_PI = Math.PI * 2;
 
+// Effect/gradient internal ids were renamed to match their UI labels
+// (film-grain -> grain, color-shift -> shift, vhs-glitch -> vhs,
+// wave-distortion -> wave, conical-spiral -> helix, polygon-solid ->
+// polar-grid, spiral -> windmill). Presets saved before this rename — in
+// Firestore or the local rated-results cache — still contain the old ids,
+// so any external data must be run through this map before use.
+const ID_MIGRATIONS: Record<string, string> = {
+  'film-grain': 'grain',
+  'color-shift': 'shift',
+  'vhs-glitch': 'vhs',
+  'wave-distortion': 'wave',
+  'conical-spiral': 'helix',
+  'polygon-solid': 'polar-grid',
+  'spiral': 'windmill',
+};
+const migrateId = (id: string): string => ID_MIGRATIONS[id] || id;
+const migrateIds = (ids: string[] | undefined | null): string[] =>
+  (ids || []).map(migrateId);
+
 function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   id: string; label: string; isMulti: boolean;
   expanded: boolean; onToggle: (id: string) => void;
@@ -88,14 +107,14 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
 }
 
 const WAV_MOODS = [
-  { name: 'dark',       hues: [260, 280, 220],  sat: [40, 65]  as [number,number],  lit: [20, 38]  as [number,number],  effects: ['vignette', 'film-grain'] as EffectType[],  gradients: ['radial', 'noise', 'mesh', 'aurora'] as GradientType[] },
+  { name: 'dark',       hues: [260, 280, 220],  sat: [40, 65]  as [number,number],  lit: [20, 38]  as [number,number],  effects: ['vignette', 'grain'] as EffectType[],  gradients: ['radial', 'noise', 'mesh', 'aurora'] as GradientType[] },
   { name: 'pastel',     hues: [300, 180, 60],   sat: [35, 60]  as [number,number],  lit: [72, 88]  as [number,number],  effects: ['blur', 'chromatic'] as EffectType[],       gradients: ['radial', 'shapes', 'fade', 'iridescent'] as GradientType[] },
   { name: 'neon',       hues: [300, 180, 60],   sat: [90, 100] as [number,number],  lit: [45, 58]  as [number,number],  effects: ['chromatic', 'bloom'] as EffectType[],      gradients: ['radial', 'plasma', 'waves', 'radial-burst'] as GradientType[] },
-  { name: 'warm',       hues: [10, 30, 50],     sat: [70, 95]  as [number,number],  lit: [45, 65]  as [number,number],  effects: ['vignette', 'film-grain'] as EffectType[],  gradients: ['radial', 'fade', 'spiral', 'conical-spiral'] as GradientType[] },
+  { name: 'warm',       hues: [10, 30, 50],     sat: [70, 95]  as [number,number],  lit: [45, 65]  as [number,number],  effects: ['vignette', 'grain'] as EffectType[],  gradients: ['radial', 'fade', 'windmill', 'helix'] as GradientType[] },
   { name: 'cool',       hues: [200, 220, 240],  sat: [55, 85]  as [number,number],  lit: [40, 62]  as [number,number],  effects: ['blur'] as EffectType[],                     gradients: ['radial', 'noise', 'waves', 'voronoi'] as GradientType[] },
-  { name: 'monochrome', hues: [220, 220, 220],  sat: [5,  20]  as [number,number],  lit: [20, 80]  as [number,number],  effects: ['film-grain', 'vignette'] as EffectType[],  gradients: ['radial', 'concentric', 'noise', 'shapes'] as GradientType[] },
+  { name: 'monochrome', hues: [220, 220, 220],  sat: [5,  20]  as [number,number],  lit: [20, 80]  as [number,number],  effects: ['grain', 'vignette'] as EffectType[],  gradients: ['radial', 'concentric', 'noise', 'shapes'] as GradientType[] },
   { name: 'sunset',     hues: [0,   20,  40],   sat: [80, 100] as [number,number],  lit: [50, 68]  as [number,number],  effects: ['chromatic', 'vignette'] as EffectType[],   gradients: ['radial', 'fade', 'iridescent', 'angle'] as GradientType[] },
-  { name: 'forest',     hues: [100, 140, 160],  sat: [45, 75]  as [number,number],  lit: [30, 52]  as [number,number],  effects: ['film-grain', 'blur'] as EffectType[],       gradients: ['radial', 'noise', 'mesh', 'voronoi'] as GradientType[] },
+  { name: 'forest',     hues: [100, 140, 160],  sat: [45, 75]  as [number,number],  lit: [30, 52]  as [number,number],  effects: ['grain', 'blur'] as EffectType[],       gradients: ['radial', 'noise', 'mesh', 'voronoi'] as GradientType[] },
 ];
 
 export function InteractiveGradient() {
@@ -349,7 +368,18 @@ export function InteractiveGradient() {
   // Rating system for Randomize
   const [showRatingUI, setShowRatingUI] = useState(false);
   const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
-    try { return JSON.parse(localStorage.getItem('gradientRatings') || '[]'); } catch { return []; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem('gradientRatings') || '[]');
+      // Migrate any pre-rename ids in cached rating data (see ID_MIGRATIONS).
+      return parsed.map((r: { rating: number; data: any }) => ({
+        ...r,
+        data: {
+          ...r.data,
+          gradientType: r.data?.gradientType ? migrateId(r.data.gradientType) : r.data?.gradientType,
+          activeEffects: migrateIds(r.data?.activeEffects),
+        },
+      }));
+    } catch { return []; }
   });
   const [pendingRatingState, setPendingRatingState] = useState<any>(null);
   
@@ -410,7 +440,7 @@ export function InteractiveGradient() {
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
+    onBassFlash: () => { if (gradientType !== 'windmill' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
     // Previously flipped rotationDirection on every mids flash, which made the
     // direction toggle button in the VCR controls silently fight the user's
     // manual choice once audio was engaged. Rotation direction is now only
@@ -418,13 +448,13 @@ export function InteractiveGradient() {
     onMidsFlash: () => {},
     onTrebleFlash: () => {
       if (!isAutoColorRef.current) return;
-      if (gradientType === 'spiral' || gradientType === 'angle') return;
+      if (gradientType === 'windmill' || gradientType === 'angle') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
     setTargetColors: (updater) => { if (isAutoColorRef.current) setTargetColors(updater); },
     setGradientColors: (updater) => { if (isAutoColorRef.current) setGradientColors(updater); },
-    setTargetZoom: (updater) => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(updater); },
+    setTargetZoom: (updater) => { if (gradientType !== 'windmill' && gradientType !== 'angle') setTargetZoom(updater); },
     zoomBeatEnabled,
   });
 
@@ -567,10 +597,10 @@ export function InteractiveGradient() {
       setTargetColors(colors);
       setGradientAngle(data.gradientAngle ?? 45);
       setTargetAngle(data.gradientAngle ?? 45);
-      setGradientType((data.gradientType as GradientType) || 'angle');
+      setGradientType((data.gradientType ? migrateId(data.gradientType) : 'angle') as GradientType);
       setZoom(data.zoom ?? 1);
       setTargetZoom(data.zoom ?? 1);
-      setActiveEffects((data.activeEffects || []) as EffectType[]);
+      setActiveEffects(migrateIds(data.activeEffects) as EffectType[]);
       setKaleidoscopeSegments(data.kaleidoscopeSegments || 8);
       setTwistAmount(data.twistAmount || 2);
       setPixelSize(data.pixelSize || 20);
@@ -666,7 +696,7 @@ export function InteractiveGradient() {
 
   // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
   useEffect(() => {
-    if (isMicActive && gradientType === 'spiral') {
+    if (isMicActive && gradientType === 'windmill') {
       setTargetColors([...gradientColorsRef.current]);
     }
   }, [isMicActive, gradientType]);
@@ -797,7 +827,7 @@ export function InteractiveGradient() {
         // These types rotate at 2x across every speed step. (Noise and Radial are
         // intentionally excluded — neither uses the rotation angle at all, so there's
         // no existing motion for them to speed up; see conversation for details.)
-        const doubleSpeedTypes = ['angle', 'fade', 'conical-spiral', 'iridescent', 'radial-burst'];
+        const doubleSpeedTypes = ['angle', 'fade', 'helix', 'iridescent', 'radial-burst'];
         const angleSpeedBoost = doubleSpeedTypes.includes(gradientTypeRef.current) ? 2 : 1;
         setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost));
       }
@@ -1001,13 +1031,13 @@ export function InteractiveGradient() {
   const getGradientDisplayName = useCallback((type: GradientType): string => {
     const names: Record<string, string> = {
       angle: 'Angle', aurora: 'Aurora', caustics: 'Caustics',
-      'conical-spiral': 'Helix', fade: 'Fade', flower: 'Flower',
+      'helix': 'Helix', fade: 'Fade', flower: 'Flower',
       freeform: 'Freeform', grid: 'Grid', iridescent: 'Iridescent',
       'lava-lamp': 'Lava Lamp', linear: 'Linear', marble: 'Marble',
       mesh: 'Mesh', noise: 'Noise', plasma: 'Plasma',
-      polygon: 'Polygon', 'polygon-solid': 'Polar Grid',
+      polygon: 'Polygon', 'polar-grid': 'Polar Grid',
       radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
-      shapes: 'Shapes', spiral: 'Windmill', star: 'Star',
+      shapes: 'Shapes', windmill: 'Windmill', star: 'Star',
       starburst: 'Starburst', checkerboard: 'Checkerboard',
       voronoi: 'Voronoi', waves: 'Waves',
     };
@@ -1016,13 +1046,13 @@ export function InteractiveGradient() {
 
   // Memoize full gradient type list for UI
   const FULL_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'conical-spiral', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'spiral', 'voronoi', 'waves'],
+    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'windmill', 'voronoi', 'waves'],
     []
   );
 
   // Gradient types for Randomize (excludes freeform and mesh)
   const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = useMemo(() =>
-    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'conical-spiral', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polygon-solid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'spiral'],
+    ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'windmill'],
     []
   );
 
@@ -1042,9 +1072,9 @@ export function InteractiveGradient() {
     saveCurrentState();
     const allEffects: EffectType[] = [
       'blur', 'charcoal', 'chromatic', 'duotone',
-      'fisheye', 'film-grain', 'grid', 'halftone', 'invert',
+      'fisheye', 'grain', 'grid', 'halftone', 'invert',
       'kaleidoscope', 'pixelate', 'posterize', 'triangulate',
-      'vhs-glitch', 'vignette', 'wave-distortion', 'color-shift'
+      'vhs', 'vignette', 'wave', 'shift'
     ];
     
     // Randomly select 1-3 effects
@@ -1208,20 +1238,20 @@ export function InteractiveGradient() {
 
   // Memoize gradient and effect type arrays (constant values)
   const GRADIENT_TYPES: GradientType[] = useMemo(() => 
-    ['linear', 'radial', 'angle', 'spiral', 'starburst', 'polygon', 'waves', 'circles', 'fade', 'mesh', 'conical-spiral', 'radial-burst', 'voronoi', 'noise', 'plasma', 'grid', 'checkerboard', 'tunnel'], 
+    ['linear', 'radial', 'angle', 'windmill', 'starburst', 'polygon', 'waves', 'circles', 'fade', 'mesh', 'helix', 'radial-burst', 'voronoi', 'noise', 'plasma', 'grid', 'checkerboard', 'tunnel'], 
     []
   );
   
   const ALL_EFFECTS: EffectType[] = useMemo(() =>
-    ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'color-shift', 'slit-scan', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion'],
+    ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'fisheye', 'grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave'],
     []
   );
 
   // Randomize - randomize everything!
   // All gradients are now audio-reactive
-  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'spiral', 'conical-spiral', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polygon-solid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
+  const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
   // Effects that pulse/react visibly with audio
-  const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave-distortion', 'color-shift', 'film-grain', 'fisheye'];
+  const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye'];
 
   const feelingLucky = useCallback(() => {
     setShowRatingUI(false);
@@ -1595,10 +1625,10 @@ export function InteractiveGradient() {
       else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(10, 180)));
       else if (eff === 'vignette') setVignetteStrength(rng(0.1, 0.9));
       else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(2, 18)));
-      else if (eff === 'film-grain') setGrainIntensity(rng(0, 0.5));
-      else if (eff === 'wave-distortion') setWaveDistortionStrength(Math.round(rng(10, 100)));
+      else if (eff === 'grain') setGrainIntensity(rng(0, 0.5));
+      else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(10, 100)));
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(5, 50)));
-      else if (eff === 'color-shift') setColorShiftHue(Math.round(rng(5, 180)));
+      else if (eff === 'shift') setColorShiftHue(Math.round(rng(5, 180)));
       else if (eff === 'twist') setTwistAmount(rng(0, 5));
     }
 
@@ -2622,7 +2652,7 @@ export function InteractiveGradient() {
         drawPolygon();
         break;
 
-      case 'polygon-solid':
+      case 'polar-grid':
         // Create a polygon pattern with solid colors and concentric rings - centered and sized to fit window on load
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -2715,7 +2745,7 @@ export function InteractiveGradient() {
 
 
 
-      case 'spiral': {
+      case 'windmill': {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
 
@@ -3246,7 +3276,7 @@ export function InteractiveGradient() {
         break;
       
 
-      case 'conical-spiral':
+      case 'helix':
         // Conical gradient with spiral
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -3869,7 +3899,7 @@ export function InteractiveGradient() {
     }
 
     // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'conical-spiral', 'radial-burst', 'freeform', 'flower', 'radar'];
+    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower', 'radar'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
         addGradientStops(gradient, gradientColors);
@@ -3918,7 +3948,7 @@ export function InteractiveGradient() {
         : 0;
       
       // Get imageData only for effects that need it
-      const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'color-shift', 'duotone'].includes(effectType);
+      const needsImageData = ['invert', 'grain', 'charcoal', 'posterize', 'halftone', 'shift', 'duotone'].includes(effectType);
       let imageData: ImageData | null = null;
       
       if (needsImageData) {
@@ -4124,7 +4154,7 @@ export function InteractiveGradient() {
         }
         
         // New effects - basic implementations
-        case 'film-grain': {
+        case 'grain': {
           // Dust-scratches was merged in here as an optional Crackle layer —
           // its noise component was the identical additive-noise loop as grain
           // itself, just with different constants, so the only distinct piece
@@ -4305,7 +4335,7 @@ export function InteractiveGradient() {
           break;
         }
 
-        case 'vhs-glitch': {
+        case 'vhs': {
           // VHS effect with horizontal disruption — spikes on bass beats
           if (canvas.width === 0 || canvas.height === 0) break;
           const bassBoost = isAudioReactive ? (audioSubBassLevel / 5) * 0.9 : 0;
@@ -4452,7 +4482,7 @@ export function InteractiveGradient() {
           break;
         }
 
-        case 'wave-distortion':
+        case 'wave':
           // Wave distortion with rotation and wrapped edges to prevent white gaps
           if (canvas.width === 0 || canvas.height === 0) break;
           try {
@@ -4488,7 +4518,7 @@ export function InteractiveGradient() {
         
 
 
-        case 'color-shift': {
+        case 'shift': {
           if (!imageData) break;
           const d = imageData.data;
           for (let i = 0; i < d.length; i += 4) {
@@ -5050,7 +5080,7 @@ export function InteractiveGradient() {
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     // Self-animating gradients — drag interaction conflicts with their own animation
-    const NO_DRAG_TYPES = ['spiral', 'radar', 'flower', 'conical-spiral'];
+    const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'helix'];
     if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
 
     // In freeform mode, if not dragging a pin, clicking adds a new pin or changes interaction
@@ -6212,7 +6242,7 @@ export function InteractiveGradient() {
         )}
         
         {/* Polar Grid Controls */}
-        {gradientType === 'polygon-solid' && (
+        {gradientType === 'polar-grid' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Radials:</label>
@@ -6517,7 +6547,7 @@ export function InteractiveGradient() {
         )}
         
         {/* Spiral Controls */}
-        {gradientType === 'spiral' && (
+        {gradientType === 'windmill' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Tightness:</label>
@@ -7095,7 +7125,7 @@ export function InteractiveGradient() {
         )}
 
         {/* Conical Spiral Controls */}
-        {gradientType === 'conical-spiral' && (
+        {gradientType === 'helix' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Turns:</label>
@@ -7174,7 +7204,7 @@ export function InteractiveGradient() {
               { value: 'duotone',        label: 'Duotone' },
               { value: 'feedback',       label: 'Feedback' },
               { value: 'fisheye',        label: 'Fisheye' },
-              { value: 'film-grain',     label: 'Grain' },
+              { value: 'grain',     label: 'Grain' },
               { value: 'grid',           label: 'Grid' },
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
@@ -7183,12 +7213,12 @@ export function InteractiveGradient() {
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
               { value: 'ripple',         label: 'Ripple' },
-              { value: 'color-shift',    label: 'Shift' },
+              { value: 'shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
               { value: 'triangulate',    label: 'Triangulate' },
-              { value: 'vhs-glitch',     label: 'VHS' },
+              { value: 'vhs',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
-              { value: 'wave-distortion',label: 'Wave' },
+              { value: 'wave',label: 'Wave' },
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none').map((effect) => (
               <button
                 key={effect.value}
@@ -7436,8 +7466,8 @@ export function InteractiveGradient() {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('color-shift') && (
-                <EffectSection id="color-shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('color-shift')} onToggle={toggleEffectExpanded}>
+              {activeEffects.includes('shift') && (
+                <EffectSection id="color-shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('shift')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
@@ -7445,8 +7475,8 @@ export function InteractiveGradient() {
                 </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('film-grain') && (
-                <EffectSection id="film-grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('film-grain')} onToggle={toggleEffectExpanded}>
+              {activeEffects.includes('grain') && (
+                <EffectSection id="film-grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
@@ -7904,8 +7934,8 @@ export function InteractiveGradient() {
               
               
               
-              {activeEffects.includes('vhs-glitch') && (
-                <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs-glitch')} onToggle={toggleEffectExpanded}>
+              {activeEffects.includes('vhs') && (
+                <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
@@ -7931,8 +7961,8 @@ export function InteractiveGradient() {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('wave-distortion') && (
-                <EffectSection id="wave-distortion" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave-distortion')} onToggle={toggleEffectExpanded}>
+              {activeEffects.includes('wave') && (
+                <EffectSection id="wave-distortion" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
