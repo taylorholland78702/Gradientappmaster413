@@ -34,6 +34,18 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        // Split vendor deps into their own chunk so they're cached separately
+        // from app code (which changes on every edit) — firebase in particular
+        // is large and otherwise gets re-downloaded on every deploy even when
+        // it hasn't changed.
+        manualChunks: {
+          firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
+          icons: ['@phosphor-icons/react'],
+        },
+      },
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
