@@ -107,9 +107,9 @@ export function InteractiveGradient() {
   const [resolutionMultiplier, setResolutionMultiplier] = useState(() => window.devicePixelRatio || 1);
 
   // Per-effect beat toggles
-  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
-  const [shakeBeatEnabled, setShakeBeatEnabled] = useState(true);
-  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(true);
+  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(false);
+  const [shakeBeatEnabled, setShakeBeatEnabled] = useState(false);
+  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(false);
   const [paletteBeatEnabled, setPaletteBeatEnabled] = useState(false);
   
   
@@ -232,8 +232,6 @@ export function InteractiveGradient() {
   const [gridColumns, setGridColumns] = useState(3);
   const [gridRotation, setGridRotation] = useState(0);
   const [gridRotationDirection, setGridRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
-  const [shapesRotation, setShapesRotation] = useState(0);
-  const [shapesRotationDirection, setShapesRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
   const [polygonSides, setPolygonSides] = useState(5);
   const [polygon2Sides, setPolygon2Sides] = useState(5); // For polar-grid gradient
   const [angleStartOffset, setAngleStartOffset] = useState(0);
@@ -414,7 +412,11 @@ export function InteractiveGradient() {
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
     onBassFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
-    onMidsFlash: () => { if (gradientType !== 'spiral' && gradientType !== 'angle') setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise'); },
+    // Previously flipped rotationDirection on every mids flash, which made the
+    // direction toggle button in the VCR controls silently fight the user's
+    // manual choice once audio was engaged. Rotation direction is now only
+    // ever changed by the user (or by feelingLucky's randomizer).
+    onMidsFlash: () => {},
     onTrebleFlash: () => {
       if (!isAutoColorRef.current) return;
       if (gradientType === 'spiral' || gradientType === 'angle') return;
@@ -694,8 +696,6 @@ export function InteractiveGradient() {
   gridRotationDirectionRef.current = gridRotationDirection;
   const gradientTypeRef = useRef(gradientType);
   gradientTypeRef.current = gradientType;
-  const shapesRotationDirectionRef = useRef(shapesRotationDirection);
-  shapesRotationDirectionRef.current = shapesRotationDirection;
   const isMicActiveRef = useRef(isMicActive);
   isMicActiveRef.current = isMicActive;
 
@@ -765,17 +765,6 @@ export function InteractiveGradient() {
       if (activeEffectsRef.current.includes('grid') && gridRotationDirectionRef.current !== 'none') {
         setGridRotation(prev => {
           const increment = gridRotationDirectionRef.current === 'clockwise' ? 2 : -2;
-          return (prev + increment) % 360;
-        });
-      }
-
-      // Shapes rotation animation — VCR playing OR manual direction set
-      const shouldRotateShapes = gradientTypeRef.current === 'shapes' &&
-        (isVCRPlayingRef.current || shapesRotationDirectionRef.current !== 'none');
-      if (shouldRotateShapes) {
-        setShapesRotation(prev => {
-          const increment = isVCRPlayingRef.current ? 2 * spd :
-            (shapesRotationDirectionRef.current === 'clockwise' ? 2 : -2);
           return (prev + increment) % 360;
         });
       }
@@ -951,7 +940,6 @@ export function InteractiveGradient() {
       conicalSpiralTurns,
       conicalSpiralTightness,
             gridRotation,
-      shapesRotation,
       angleStartOffset,
       angleCenterX,
       angleCenterY,
@@ -1161,7 +1149,6 @@ export function InteractiveGradient() {
     setConicalSpiralTurns(snapshot.conicalSpiralTurns);
     setConicalSpiralTightness(snapshot.conicalSpiralTightness);
     setGridRotation(snapshot.gridRotation);
-    setShapesRotation(snapshot.shapesRotation || 0);
     setAngleStartOffset(snapshot.angleStartOffset);
     setAngleCenterX(snapshot.angleCenterX);
     setAngleCenterY(snapshot.angleCenterY);
@@ -1726,7 +1713,6 @@ export function InteractiveGradient() {
       conicalSpiralTurns,
       conicalSpiralTightness,
             gridRotation,
-      shapesRotation,
       angleStartOffset,
       angleCenterX,
       angleCenterY,
@@ -2412,7 +2398,7 @@ export function InteractiveGradient() {
     dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
     waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity,
-    tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize,
+    tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize,
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
     spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
     waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
@@ -2428,7 +2414,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, shapesRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2961,9 +2947,11 @@ export function InteractiveGradient() {
             // Line (vertical line with thickness = radius)
             ctx.rect(centerX - radius, centerY - displayHeight * 2, radius * 2, displayHeight * 4);
           } else {
-            // Polygon (3+ sides)
+            // Polygon (3+ sides) — rotation follows the same playhead-driven
+            // angle every other gradient type uses, instead of its own
+            // redundant rotation state/direction controls.
             const angleStep = (Math.PI * 2) / shapesSides;
-            const rotationRadians = (shapesRotation * Math.PI) / 180;
+            const rotationRadians = (gradientAngle * Math.PI) / 180;
             const startAngle = -Math.PI / 2 + rotationRadians; // Start from top + rotation
 
             for (let j = 0; j <= shapesSides; j++) {
@@ -6561,41 +6549,6 @@ export function InteractiveGradient() {
                   onChange={(e) => setShapesCount(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
-              <div className="flex gap-0.5 flex-1 ml-2">
-                <button
-                  onClick={() => setShapesRotationDirection('none')}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    shapesRotationDirection === 'none'
-                      ? 'bg-white text-black'
-                      : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
-                >
-                  OFF
-                </button>
-                <button
-                  onClick={() => setShapesRotationDirection('clockwise')}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    shapesRotationDirection === 'clockwise'
-                      ? 'bg-white text-black'
-                      : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
-                >
-                  ⟳
-                </button>
-                <button
-                  onClick={() => setShapesRotationDirection('counterclockwise')}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    shapesRotationDirection === 'counterclockwise'
-                      ? 'bg-white text-black'
-                      : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
-                >
-                  ⟲
-                </button>
               </div>
             </div>
           </div>
