@@ -6106,15 +6106,10 @@ export function InteractiveGradient() {
               }}
             >wāv</span>
             <span
-              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-gradient-text ${isWavHolding ? 'wav-flow-hold' : 'wav-hue-drift'}`}
+              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-fill-text ${isWavHolding ? 'wav-fill-erasing' : ''}`}
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 900,
-                backgroundImage: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308, #ec4899, #7c3aed)',
-                backgroundSize: '100% 220%',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
               }}
             >wāv</span>
           </span>
