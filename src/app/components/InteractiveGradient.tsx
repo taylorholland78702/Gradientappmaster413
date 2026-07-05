@@ -41,7 +41,7 @@ interface ColorPin {
   radius: number; // influence radius in pixels
 }
 
-type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'dust-scratches' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'tritone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
+type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'film-grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs-glitch' | 'blur' | 'wave-distortion' | 'color-shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror';
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -207,7 +207,8 @@ export function InteractiveGradient() {
   const [charcoalIntensity, setCharcoalIntensity] = useState(0.5);
   const [digitalNoiseIntensity, setDigitalNoiseIntensity] = useState(0.3);
   const [duotoneIntensity, setDuotoneIntensity] = useState(1);
-  const [dustIntensity, setDustIntensity] = useState(0.5);
+  // Dust-scratches was merged into film-grain — only its crackle-lines slider
+  // survives as an add-on (the noise portion was identical to grain's own).
   const [dustCrackleIntensity, setDustCrackleIntensity] = useState(0.3);
   const [hexGridSize, setHexGridSize] = useState(20);
   const [lightLeakIntensity, setLightLeakIntensity] = useState(0.5);
@@ -221,12 +222,11 @@ export function InteractiveGradient() {
   const [sepiaIntensity, setSepiaIntensity] = useState(1);
   const [solarizeThreshold, setSolarizeThreshold] = useState(128);
   const [gridSides, setGridSides] = useState(4);
-  const [tritoneIntensity, setTritoneIntensity] = useState(1);
-  const [tritoneColor1, setTritoneColor1] = useState('#000033'); // Dark blue
-  const [tritoneColor2, setTritoneColor2] = useState('#FF6B35'); // Orange
-  const [tritoneColor3, setTritoneColor3] = useState('#F7F7FF'); // Near white
   const [duotoneColor1, setDuotoneColor1] = useState('#000033'); // Dark blue
   const [duotoneColor2, setDuotoneColor2] = useState('#FF6B35'); // Orange
+  // Tritone was merged into Duotone — this just adds a 3rd color stop.
+  const [duotoneColor3, setDuotoneColor3] = useState('#F7F7FF'); // Near white
+  const [duotoneThreeColor, setDuotoneThreeColor] = useState(false);
   const [vhsGlitchIntensity, setVhsGlitchIntensity] = useState(0.2);
   const [gridRows, setGridRows] = useState(6);
   const [gridColumns, setGridColumns] = useState(3);
@@ -893,7 +893,6 @@ export function InteractiveGradient() {
       duotoneIntensity,
       duotoneColor1,
       duotoneColor2,
-      dustIntensity,
       dustCrackleIntensity,
       hexGridSize,
       lightLeakIntensity,
@@ -908,10 +907,8 @@ export function InteractiveGradient() {
       gridSides,
       gridRows,
       gridColumns,
-      tritoneIntensity,
-      tritoneColor1,
-      tritoneColor2,
-      tritoneColor3,
+      duotoneColor3,
+      duotoneThreeColor,
       vhsGlitchIntensity,
       polygonSides,
       polygon2Sides,
@@ -954,11 +951,11 @@ export function InteractiveGradient() {
       activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize,
       chromaticOffset, fisheyeStrength, grainIntensity, blurMotionAmount,
       blurMotionDirection, blurGaussianAmount, blurRadialAmount, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed,
-      vignetteStrength, colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity,
+      vignetteStrength, colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2,
       dustCrackleIntensity, hexGridSize, lightLeakIntensity, linesCount, linesAngle,
       linesThickness, liquifyStrength, pinchStrength,
       scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
-      tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, vhsGlitchIntensity,
+      duotoneColor3, duotoneThreeColor, vhsGlitchIntensity,
       polygonSides, polygon2Sides, waveDistortionStrength,
       spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
       waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
@@ -989,18 +986,16 @@ export function InteractiveGradient() {
     setBaseAIColors(null); // Clear base AI colors when randomizing
     setSubmittedAIPrompt(''); // Clear submitted prompt when randomizing
     
-    // Also randomize tritone and duotone colors
+    // Also randomize duotone colors
     const randomHexColor = () => {
       const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       return `#${r}${g}${b}`;
     };
-    setTritoneColor1(randomHexColor());
-    setTritoneColor2(randomHexColor());
-    setTritoneColor3(randomHexColor());
     setDuotoneColor1(randomHexColor());
     setDuotoneColor2(randomHexColor());
+    setDuotoneColor3(randomHexColor());
   }, [gradientColors, randomColor, saveCurrentState]);
 
   // Memoize gradient name mapping
@@ -1048,9 +1043,8 @@ export function InteractiveGradient() {
     saveCurrentState();
     const allEffects: EffectType[] = [
       'blur', 'charcoal', 'chromatic', 'duotone',
-      'dust-scratches', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert',
-      'kaleidoscope', 'pixelate', 'posterize',
-      'tritone', 'triangulate',
+      'fisheye', 'film-grain', 'grid', 'halftone', 'invert',
+      'kaleidoscope', 'pixelate', 'posterize', 'triangulate',
       'vhs-glitch', 'vignette', 'wave-distortion', 'color-shift'
     ];
     
@@ -1103,7 +1097,6 @@ export function InteractiveGradient() {
     setDuotoneIntensity(snapshot.duotoneIntensity);
     setDuotoneColor1(snapshot.duotoneColor1);
     setDuotoneColor2(snapshot.duotoneColor2);
-    setDustIntensity(snapshot.dustIntensity);
     setDustCrackleIntensity(snapshot.dustCrackleIntensity);
     setHexGridSize(snapshot.hexGridSize);
     setLightLeakIntensity(snapshot.lightLeakIntensity);
@@ -1116,10 +1109,8 @@ export function InteractiveGradient() {
     setSepiaIntensity(snapshot.sepiaIntensity);
     setSolarizeThreshold(snapshot.solarizeThreshold);
     setGridSides(snapshot.gridSides);
-    setTritoneIntensity(snapshot.tritoneIntensity);
-    setTritoneColor1(snapshot.tritoneColor1);
-    setTritoneColor2(snapshot.tritoneColor2);
-    setTritoneColor3(snapshot.tritoneColor3);
+    setDuotoneColor3(snapshot.duotoneColor3 || '#F7F7FF');
+    setDuotoneThreeColor(snapshot.duotoneThreeColor || false);
     setVhsGlitchIntensity(snapshot.vhsGlitchIntensity);
     setGridRows(snapshot.gridRows);
     setGridColumns(snapshot.gridColumns);
@@ -1223,7 +1214,7 @@ export function InteractiveGradient() {
   );
   
   const ALL_EFFECTS: EffectType[] = useMemo(() =>
-    ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'dust-scratches', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'color-shift', 'slit-scan', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion'],
+    ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'fisheye', 'film-grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'color-shift', 'slit-scan', 'triangulate', 'vhs-glitch', 'vignette', 'wave-distortion'],
     []
   );
 
@@ -1450,7 +1441,6 @@ export function InteractiveGradient() {
     setCharcoalIntensity(Math.random() * 0.6 + 0.2);                  // 0.2–0.8
     setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
     setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
-    setDustIntensity(Math.random() * 0.4);                            // 0–0.4
     setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3
     setHexGridSize(Math.floor(Math.random() * 80) + 15);              // 15–94
     setLightLeakIntensity(Math.random() * 0.5 + 0.1);                 // 0.1–0.6
@@ -1463,7 +1453,6 @@ export function InteractiveGradient() {
     setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
     setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
     setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
-    setTritoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
     setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
     setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
@@ -1504,20 +1493,17 @@ export function InteractiveGradient() {
     setIridescentIntensity(Math.random() * 1.2 + 0.5);                // 0.5–1.7
     setIridescentScale(Math.random() * 1.5 + 0.5);                    // 0.5–2.0
     
-    // Randomize tritone colors
+    // Randomize duotone colors
     const randomHexColor = () => {
       const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
       return `#${r}${g}${b}`;
     };
-    setTritoneColor1(randomHexColor());
-    setTritoneColor2(randomHexColor());
-    setTritoneColor3(randomHexColor());
-    
     setDuotoneColor1(randomHexColor());
     setDuotoneColor2(randomHexColor());
-    
+    setDuotoneColor3(randomHexColor());
+
     // Randomize freeform gradient pins (3-8 random pins)
     const numPins = Math.floor(Math.random() * 6) + 3; // 3-8 pins
     const newPins: ColorPin[] = [];
@@ -1664,7 +1650,6 @@ export function InteractiveGradient() {
       duotoneIntensity,
       duotoneColor1,
       duotoneColor2,
-      dustIntensity,
       dustCrackleIntensity,
       hexGridSize,
       lightLeakIntensity,
@@ -1677,10 +1662,8 @@ export function InteractiveGradient() {
       sepiaIntensity,
       solarizeThreshold,
       gridSides,
-      tritoneIntensity,
-      tritoneColor1,
-      tritoneColor2,
-      tritoneColor3,
+      duotoneColor3,
+      duotoneThreeColor,
       vhsGlitchIntensity,
       gridRows,
       gridColumns,
@@ -1725,10 +1708,10 @@ export function InteractiveGradient() {
     kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
     grainIntensity, blurMotionAmount, blurMotionDirection, blurGaussianAmount, blurRadialAmount,
     posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, vignetteStrength,
-    colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustIntensity, dustCrackleIntensity,
+    colorShiftHue, charcoalIntensity, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustCrackleIntensity,
     hexGridSize, lightLeakIntensity, linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
     scanLineSize, sepiaIntensity, solarizeThreshold,
-    gridSides, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3,
+    gridSides, duotoneColor3, duotoneThreeColor,
     vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
     spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
@@ -1807,7 +1790,6 @@ export function InteractiveGradient() {
     setCharcoalIntensity(Math.random()); // 0-1
     setDigitalNoiseIntensity(Math.random()); // 0-1
     setDuotoneIntensity(Math.random()); // 0-1
-    setDustIntensity(Math.random()); // 0-1
     setDustCrackleIntensity(Math.random()); // 0-1
     setHexGridSize(Math.floor(Math.random() * 190) + 10); // 10-200
     setLightLeakIntensity(Math.random()); // 0-1
@@ -1820,18 +1802,17 @@ export function InteractiveGradient() {
     setSepiaIntensity(Math.random()); // 0-1
     setSolarizeThreshold(Math.floor(Math.random() * 255)); // 0-255
     setGridSides(Math.floor(Math.random() * 10) + 1); // 1-10 sides
-    setTritoneIntensity(Math.random()); // 0-1
     setVhsGlitchIntensity(Math.random()); // 0-1
     setGridRows(Math.floor(Math.random() * 50) + 1); // 1-50
     setGridColumns(Math.floor(Math.random() * 50) + 1); // 1-50
     setPolygonSides(Math.floor(Math.random() * 10) + 1); // 1-10
     setPolygon2Sides(Math.floor(Math.random() * 10) + 1); // 1-10
     setWaveDistortionStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-    
-    // Randomize tritone colors
-    setTritoneColor1(randomHexColor());
-    setTritoneColor2(randomHexColor());
-    setTritoneColor3(randomHexColor());
+
+    // Randomize duotone colors
+    setDuotoneColor1(randomHexColor());
+    setDuotoneColor2(randomHexColor());
+    setDuotoneColor3(randomHexColor());
   }, [ALL_EFFECTS, randomHexColor]);
 
   // Shuffle Audiovisuals - randomize audio reactivity multipliers
@@ -2395,10 +2376,10 @@ export function InteractiveGradient() {
     grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
     blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
     halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness,
-    dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
+    dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
     waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
-    lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity,
-    tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize,
+    lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor,
+    digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize,
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
     spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
     waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
@@ -2414,7 +2395,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustIntensity, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, tritoneIntensity, tritoneColor1, tritoneColor2, tritoneColor3, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3938,7 +3919,7 @@ export function InteractiveGradient() {
         : 0;
       
       // Get imageData only for effects that need it
-      const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'dust-scratches', 'color-shift', 'duotone', 'tritone'].includes(effectType);
+      const needsImageData = ['invert', 'film-grain', 'charcoal', 'posterize', 'halftone', 'color-shift', 'duotone'].includes(effectType);
       let imageData: ImageData | null = null;
       
       if (needsImageData) {
@@ -4145,6 +4126,11 @@ export function InteractiveGradient() {
         
         // New effects - basic implementations
         case 'film-grain': {
+          // Dust-scratches was merged in here as an optional Crackle layer —
+          // its noise component was the identical additive-noise loop as grain
+          // itself, just with different constants, so the only distinct piece
+          // worth keeping was the crackle lines, which can now be dialed in
+          // alongside grain instead of needing a separate effect.
           if (!imageData) break;
           const d = imageData.data;
           const int = grainIntensity + (isFirstEffect ? audioModulation * 0.3 : 0);
@@ -4154,9 +4140,28 @@ export function InteractiveGradient() {
             d[i] += n; d[i + 1] += n; d[i + 2] += n;
           }
           putScaledImageData(imageData);
+
+          if (dustCrackleIntensity > 0) {
+            ctx.strokeStyle = `rgba(0,0,0,${dustCrackleIntensity * 0.3})`;
+            ctx.lineWidth = 1;
+            const numCracks = Math.floor(20 * dustCrackleIntensity);
+            for (let i = 0; i < numCracks; i++) {
+              ctx.beginPath();
+              let x = Math.random() * displayWidth;
+              let y = Math.random() * displayHeight;
+              ctx.moveTo(x, y);
+              const steps = Math.floor(10 + Math.random() * 30);
+              for (let j = 0; j < steps; j++) {
+                x += (Math.random() - 0.5) * 20;
+                y += (Math.random() - 0.5) * 20;
+                ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+            }
+          }
           break;
         }
-        
+
         case 'oil-paint':
           ctx.filter = `blur(5px)`;
           ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
@@ -4369,42 +4374,6 @@ export function InteractiveGradient() {
           break;
         }
 
-        case 'dust-scratches':
-          // Texture overlay with dust noise and crackle lines
-          if (!imageData) break;
-          const texData = imageData.data;
-          // Add dust noise
-          for (let i = 0; i < texData.length; i += 4) {
-            const noise = (Math.random() - 0.5) * 30 * dustIntensity;
-            texData[i] += noise;
-            texData[i + 1] += noise;
-            texData[i + 2] += noise;
-          }
-          putScaledImageData(imageData);
-          
-          // Add crackle lines
-          if (dustCrackleIntensity > 0) {
-            ctx.strokeStyle = `rgba(0,0,0,${dustCrackleIntensity * 0.3})`;
-            ctx.lineWidth = 1;
-            const numCracks = Math.floor(20 * dustCrackleIntensity);
-            for (let i = 0; i < numCracks; i++) {
-              ctx.beginPath();
-              let x = Math.random() * displayWidth;
-              let y = Math.random() * displayHeight;
-              ctx.moveTo(x, y);
-              
-              // Random walk for crack line
-              const steps = Math.floor(10 + Math.random() * 30);
-              for (let j = 0; j < steps; j++) {
-                x += (Math.random() - 0.5) * 20;
-                y += (Math.random() - 0.5) * 20;
-                ctx.lineTo(x, y);
-              }
-              ctx.stroke();
-            }
-          }
-          break;
-        
         case 'motion-blur':
           ctx.filter = `blur(${blurAmount}px)`;
           ctx.drawImage(canvas, 5, 0, displayWidth, displayHeight);
@@ -4533,6 +4502,8 @@ export function InteractiveGradient() {
         }
         
         case 'duotone': {
+          // Tritone was merged in here as an optional 3rd color stop rather
+          // than a separate effect — same luminance-to-gradient-map algorithm.
           if (!imageData) break;
           const d = imageData.data;
           const h2r = (h: string) => {
@@ -4540,46 +4511,38 @@ export function InteractiveGradient() {
             return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 0, g: 0, b: 0 };
           };
           const c0 = h2r(duotoneColor1), c1 = h2r(duotoneColor2);
-          for (let i = 0; i < d.length; i += 4) {
-            const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
-            d[i] = (c0.r * (1 - t) + c1.r * t) * duotoneIntensity + d[i] * (1 - duotoneIntensity);
-            d[i + 1] = (c0.g * (1 - t) + c1.g * t) * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
-            d[i + 2] = (c0.b * (1 - t) + c1.b * t) * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
-          }
-          putScaledImageData(imageData);
-          break;
-        }
-        
-        case 'tritone': {
-          if (!imageData) break;
-          const d = imageData.data;
-          const h2r = (h: string) => {
-            const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
-            return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 0, g: 0, b: 0 };
-          };
-          const c0 = h2r(tritoneColor1), c1 = h2r(tritoneColor2), c2 = h2r(tritoneColor3);
-          for (let i = 0; i < d.length; i += 4) {
-            const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
-            let r, gr, b;
-            if (t < 0.5) {
-              const lt = t * 2;
-              r = c0.r * (1 - lt) + c1.r * lt;
-              gr = c0.g * (1 - lt) + c1.g * lt;
-              b = c0.b * (1 - lt) + c1.b * lt;
-            } else {
-              const lt = (t - 0.5) * 2;
-              r = c1.r * (1 - lt) + c2.r * lt;
-              gr = c1.g * (1 - lt) + c2.g * lt;
-              b = c1.b * (1 - lt) + c2.b * lt;
+          if (duotoneThreeColor) {
+            const c2 = h2r(duotoneColor3);
+            for (let i = 0; i < d.length; i += 4) {
+              const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
+              let r, gr, b;
+              if (t < 0.5) {
+                const lt = t * 2;
+                r = c0.r * (1 - lt) + c1.r * lt;
+                gr = c0.g * (1 - lt) + c1.g * lt;
+                b = c0.b * (1 - lt) + c1.b * lt;
+              } else {
+                const lt = (t - 0.5) * 2;
+                r = c1.r * (1 - lt) + c2.r * lt;
+                gr = c1.g * (1 - lt) + c2.g * lt;
+                b = c1.b * (1 - lt) + c2.b * lt;
+              }
+              d[i] = r * duotoneIntensity + d[i] * (1 - duotoneIntensity);
+              d[i + 1] = gr * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
+              d[i + 2] = b * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
             }
-            d[i] = r * tritoneIntensity + d[i] * (1 - tritoneIntensity);
-            d[i + 1] = gr * tritoneIntensity + d[i + 1] * (1 - tritoneIntensity);
-            d[i + 2] = b * tritoneIntensity + d[i + 2] * (1 - tritoneIntensity);
+          } else {
+            for (let i = 0; i < d.length; i += 4) {
+              const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
+              d[i] = (c0.r * (1 - t) + c1.r * t) * duotoneIntensity + d[i] * (1 - duotoneIntensity);
+              d[i + 1] = (c0.g * (1 - t) + c1.g * t) * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
+              d[i + 2] = (c0.b * (1 - t) + c1.b * t) * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
+            }
           }
           putScaledImageData(imageData);
           break;
         }
-        
+
         case 'vignette': {
           // Darken edges
           const vigRadius = Math.max(0, Math.max(displayWidth, displayHeight) / 1.5);
@@ -7203,13 +7166,12 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(12, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(11, auto)' }}>
             {([
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
               { value: 'chromatic',      label: 'Chromatic' },
               { value: 'dither',         label: 'Dither' },
-              { value: 'dust-scratches', label: 'Dust' },
               { value: 'duotone',        label: 'Duotone' },
               { value: 'feedback',       label: 'Feedback' },
               { value: 'fisheye',        label: 'Fisheye' },
@@ -7225,7 +7187,6 @@ export function InteractiveGradient() {
               { value: 'color-shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
               { value: 'triangulate',    label: 'Triangulate' },
-              { value: 'tritone',        label: 'Tritone' },
               { value: 'vhs-glitch',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave-distortion',label: 'Wave' },
@@ -7537,6 +7498,11 @@ export function InteractiveGradient() {
                       </button>
                     </div>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('blur') && (
@@ -7762,38 +7728,28 @@ export function InteractiveGradient() {
                       className="w-12 h-6 rounded cursor-pointer"
                     />
                   </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('dust-scratches') && (
-                <EffectSection id="dust-scratches" label="Dust" isMulti={isMulti} expanded={expandedEffects.has('dust-scratches')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Dust:</label>
-                    <input type="range" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={dustIntensity} onChange={(e) => setDustIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
-                    <div className="flex items-center gap-1 flex-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">3 Colors:</label>
+                    <button
+                      onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
+                      className={`px-2 py-0.5 rounded text-[10px] transition-all ${
+                        duotoneThreeColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                      }`}
+                    >
+                      {duotoneThreeColor ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  {duotoneThreeColor && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Color 3:</label>
                       <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={dustCrackleIntensity}
-                        onChange={(e) => setDustCrackleIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={dustCrackleIntensity}
-                        onChange={(e) => setDustCrackleIntensity(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                        type="color"
+                        value={duotoneColor3}
+                        onChange={(e) => setDuotoneColor3(e.target.value)}
+                        className="w-12 h-6 rounded cursor-pointer"
                       />
                     </div>
-                  </div>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('grid') && (
@@ -7949,53 +7905,6 @@ export function InteractiveGradient() {
               
               
               
-              {activeEffects.includes('tritone') && (
-                <EffectSection id="tritone" label="Tritone" isMulti={isMulti} expanded={expandedEffects.has('tritone')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={tritoneIntensity}
-                        onChange={(e) => setTritoneIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={tritoneIntensity}
-                        onChange={(e) => setTritoneIntensity(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="color"
-                      value={tritoneColor1}
-                      onChange={(e) => setTritoneColor1(e.target.value)}
-                      className="flex-1 h-8 rounded cursor-pointer"
-                    />
-                    <input
-                      type="color"
-                      value={tritoneColor2}
-                      onChange={(e) => setTritoneColor2(e.target.value)}
-                      className="flex-1 h-8 rounded cursor-pointer"
-                    />
-                    <input
-                      type="color"
-                      value={tritoneColor3}
-                      onChange={(e) => setTritoneColor3(e.target.value)}
-                      className="flex-1 h-8 rounded cursor-pointer"
-                    />
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('vhs-glitch') && (
                 <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs-glitch')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
