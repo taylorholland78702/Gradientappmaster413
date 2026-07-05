@@ -4769,16 +4769,17 @@ export function InteractiveGradient() {
             const int = slitScanIntensity;
             const buf = slitScanBufferRef.current;
 
-            // Beyond substituting a historical frame's color, also spatially shift
-            // the sample point based on how far back that frame is. Pure color
-            // substitution is nearly invisible on gradients that barely change
-            // frame-to-frame (e.g. a slowly rotating Angle gradient) — the shear
-            // makes the effect read as an obvious glitch regardless of source.
+            // Frame selection stays bounded to the buffer's actual range (raising
+            // Intensity past 1 would otherwise make fi blow past buf.length and
+            // clamp to the same last frame across the whole screen, collapsing
+            // the banding). The raw (uncapped) intensity is used separately below
+            // for the shift/twist magnitude, which is what "Intensity" now scales.
+            const frameSel = Math.min(int, 1);
             const midBuf = (buf.length - 1) / 2;
 
             if (slitScanDirection === 'horizontal') {
               for (let y = 0; y < displayHeight; y++) {
-                const fi = Math.min(Math.floor((y / displayHeight) * (buf.length - 1) * int), buf.length - 1);
+                const fi = Math.min(Math.floor((y / displayHeight) * (buf.length - 1) * frameSel), buf.length - 1);
                 const sf = buf[fi];
                 // Shift scales with canvas width (not a fixed px amount) and the
                 // slider's full range now maps to a much larger max displacement
@@ -4798,7 +4799,7 @@ export function InteractiveGradient() {
               }
             } else if (slitScanDirection === 'vertical') {
               for (let x = 0; x < displayWidth; x++) {
-                const fi = Math.min(Math.floor((x / displayWidth) * (buf.length - 1) * int), buf.length - 1);
+                const fi = Math.min(Math.floor((x / displayWidth) * (buf.length - 1) * frameSel), buf.length - 1);
                 const sf = buf[fi];
                 const shift = Math.round(((fi - midBuf) / midBuf) * int * displayHeight * 0.35);
                 for (let y = 0; y < displayHeight; y++) {
@@ -4812,22 +4813,28 @@ export function InteractiveGradient() {
                 }
               }
             } else if (slitScanDirection === 'radial') {
+              // Rings that expand/contract in radius AND twist tangentially, so
+              // at higher intensity they read as spiraling/folding in on
+              // themselves instead of just breathing in and out.
               const cx = displayWidth / 2, cy = displayHeight / 2;
               const md = Math.sqrt(cx*cx + cy*cy);
               for (let y = 0; y < displayHeight; y++) {
                 for (let x = 0; x < displayWidth; x++) {
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                  const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * int), buf.length - 1);
+                  const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * frameSel), buf.length - 1);
                   const sf = buf[fi];
-                  const shift = ((fi - midBuf) / midBuf) * int * md * 0.35;
+                  const normOffset = (fi - midBuf) / midBuf;
+                  const shift = normOffset * int * md * 0.35;
                   // Reflect instead of clamping to 0 — clamping collapsed every
                   // pixel within |shift| of center onto the exact same source
                   // pixel, producing a solid-color disc in the middle of the canvas.
                   let sd = d + shift;
                   if (sd < 0) sd = -sd;
                   const angle = Math.atan2(y - cy, x - cx);
-                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(angle) * sd)));
-                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(angle) * sd)));
+                  const twist = normOffset * int * 1.4;
+                  const sAngle = angle + twist;
+                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
+                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
                   const i = (y * displayWidth + x) * 4;
                   const si = (sy * displayWidth + sx) * 4;
                   out.data[i] = sf.data[si];
@@ -4838,19 +4845,24 @@ export function InteractiveGradient() {
               }
             } else {
               // circular: sample frame based on angle around center, with the
-              // sample point itself rotated by the assigned frame's time offset
+              // sample point itself rotated AND pulled toward/away from center by
+              // the assigned frame's time offset — at high intensity this reads
+              // as rings spinning and folding inward rather than a flat rotation.
               const cx = displayWidth / 2, cy = displayHeight / 2;
               for (let y = 0; y < displayHeight; y++) {
                 for (let x = 0; x < displayWidth; x++) {
                   const angle = Math.atan2(y - cy, x - cx); // -PI to PI
                   const norm = (angle + Math.PI) / (Math.PI * 2); // 0..1
-                  const fi = Math.min(Math.floor(norm * (buf.length - 1) * int), buf.length - 1);
+                  const fi = Math.min(Math.floor(norm * (buf.length - 1) * frameSel), buf.length - 1);
                   const sf = buf[fi];
                   const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                  const angleShift = ((fi - midBuf) / midBuf) * int * 1.6;
+                  const normOffset = (fi - midBuf) / midBuf;
+                  const angleShift = normOffset * int * 1.6;
                   const sAngle = angle + angleShift;
-                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * d)));
-                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * d)));
+                  let sd = d * (1 - normOffset * int * 0.25);
+                  if (sd < 0) sd = -sd;
+                  const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
+                  const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
                   const i = (y * displayWidth + x) * 4;
                   const si = (sy * displayWidth + sx) * 4;
                   out.data[i] = sf.data[si];
@@ -8142,8 +8154,8 @@ export function InteractiveGradient() {
                       <input
                         type="range"
                         min="0.1"
-                        max="1"
-                        step="0.05"
+                        max="10"
+                        step="0.1"
                         value={slitScanIntensity}
                         onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
                         className="flex-1"
@@ -8151,8 +8163,8 @@ export function InteractiveGradient() {
                       <input
                         type="number"
                         min="0.1"
-                        max="1"
-                        step="0.05"
+                        max="10"
+                        step="0.1"
                         value={slitScanIntensity}
                         onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
