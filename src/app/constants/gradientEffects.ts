@@ -73,7 +73,7 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
 };
 
 // Full gradient type list for UI
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'windmill', 'voronoi', 'waves', 'metaballs', 'truchet', 'moire', 'flow-field'];
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 'caustics', 'fade', 'flow-field', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'metaballs', 'moire', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'truchet', 'voronoi', 'waves', 'windmill'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
 export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];

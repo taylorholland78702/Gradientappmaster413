@@ -6348,7 +6348,7 @@ export function InteractiveGradient() {
 
         {/* Gradient Type Buttons - 2 Column Grid */}
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(10, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(12, auto)' }}>
             {FULL_GRADIENT_TYPES.map((type) => (
               <button
                 key={type}
