@@ -158,13 +158,23 @@
 }
 
 @keyframes wav-reveal-rise {
-  0%   { clip-path: inset(0 0 100% 0); opacity: 0; background-position-y: -20%; }
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; }
   10%  { opacity: 1; }
-  100% { clip-path: inset(0 0 0% 0); opacity: 1; background-position-y: 100%; }
+  100% { clip-path: inset(0 0 0% 0); opacity: 1; }
+}
+
+/* Continuous upward color scroll, decoupled from the one-shot reveal
+   above so the flow reads clearly instead of fighting the growing clip
+   window — confirmed bottom-to-top empirically: as background-position-y
+   goes from -20% to 100%, the lower part of the (oversized) gradient
+   image rises toward the top of the letters. */
+@keyframes wav-flow-bottom-up {
+  0%   { background-position-y: -20%; }
+  100% { background-position-y: 100%; }
 }
 
 .wav-random-fill.wav-revealing {
-  animation: wav-reveal-rise 0.8s linear forwards;
+  animation: wav-reveal-rise 0.8s linear forwards, wav-flow-bottom-up 0.9s linear infinite;
 }
 
 /* Liquid fill rising from bottom over the hold duration */
