@@ -6119,6 +6119,7 @@ export function InteractiveGradient() {
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 900,
                 backgroundImage: wavRandomGradient,
+                backgroundSize: '100% 220%',
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 color: 'transparent',

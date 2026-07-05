@@ -149,16 +149,18 @@
 }
 
 /* Random-colored gradient fill hidden behind the white fill; revealed
-   bottom-to-top in sync with the white fill erasing above it. */
+   bottom-to-top in sync with the white fill erasing above it, with the
+   gradient colors themselves flowing upward through the letters too. */
 .wav-random-fill {
   opacity: 0;
   clip-path: inset(0 0 100% 0);
+  background-position-y: 100%;
 }
 
 @keyframes wav-reveal-rise {
-  0%   { clip-path: inset(0 0 100% 0); opacity: 0; }
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; background-position-y: 100%; }
   10%  { opacity: 1; }
-  100% { clip-path: inset(0 0 0% 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0% 0); opacity: 1; background-position-y: -20%; }
 }
 
 .wav-random-fill.wav-revealing {
