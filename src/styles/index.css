@@ -154,13 +154,13 @@
 .wav-random-fill {
   opacity: 0;
   clip-path: inset(0 0 100% 0);
-  background-position-y: 100%;
+  background-position-y: -20%;
 }
 
 @keyframes wav-reveal-rise {
-  0%   { clip-path: inset(0 0 100% 0); opacity: 0; background-position-y: 100%; }
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; background-position-y: -20%; }
   10%  { opacity: 1; }
-  100% { clip-path: inset(0 0 0% 0); opacity: 1; background-position-y: -20%; }
+  100% { clip-path: inset(0 0 0% 0); opacity: 1; background-position-y: 100%; }
 }
 
 .wav-random-fill.wav-revealing {
