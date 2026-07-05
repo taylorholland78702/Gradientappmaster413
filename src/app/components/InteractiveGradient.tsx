@@ -307,6 +307,38 @@ export function InteractiveGradient() {
   const [marbleOctaves, setMarbleOctaves] = useState(5);
   const [meshJitter, setMeshJitter] = useState(0);
   const [chromaticAngle, setChromaticAngle] = useState(0);
+  // Metaballs
+  const [metaballAnimTime, setMetaballAnimTime] = useState(0);
+  const [metaballCount, setMetaballCount] = useState(6);
+  const [metaballSize, setMetaballSize] = useState(0.16);
+  const [metaballSpeed, setMetaballSpeed] = useState(1);
+  // Truchet tiles
+  const [truchetSize, setTruchetSize] = useState(40);
+  const [truchetVariation, setTruchetVariation] = useState(0.5);
+  const [truchetThickness, setTruchetThickness] = useState(4);
+  // Moire
+  const [moireAnimTime, setMoireAnimTime] = useState(0);
+  const [moireScale, setMoireScale] = useState(10);
+  const [moireOffset, setMoireOffset] = useState(30);
+  const [moireSpeed, setMoireSpeed] = useState(1);
+  // Flow field
+  const [flowAnimTime, setFlowAnimTime] = useState(0);
+  const [flowParticleCount, setFlowParticleCount] = useState(250);
+  const [flowSpeed, setFlowSpeed] = useState(1);
+  const [flowScale, setFlowScale] = useState(3);
+  // Glitch block-shuffle
+  const [blockShuffleSize, setBlockShuffleSize] = useState(40);
+  const [blockShuffleAmount, setBlockShuffleAmount] = useState(0.3);
+  // ASCII mosaic
+  const [asciiSize, setAsciiSize] = useState(14);
+  const [asciiColor, setAsciiColor] = useState(true);
+  // Liquid displacement
+  const [liquidAnimTime, setLiquidAnimTime] = useState(0);
+  const [liquidStrength, setLiquidStrength] = useState(30);
+  const [liquidScale, setLiquidScale] = useState(3);
+  // Chromatic trails
+  const [chromaticTrailsDecay, setChromaticTrailsDecay] = useState(0.85);
+  const [chromaticTrailsOffset, setChromaticTrailsOffset] = useState(8);
   const [vignetteSoftness, setVignetteSoftness] = useState(50);
   const [fisheyeCenterX, setFisheyeCenterX] = useState(50);
   const [fisheyeCenterY, setFisheyeCenterY] = useState(50);
@@ -369,7 +401,12 @@ export function InteractiveGradient() {
   const rippleRingsRef = useRef<{ phase: number; strength: number }[]>([]);
   const prevBassForRippleRef = useRef(0);
   const rippleAutoFrameRef = useRef(0);
-  
+  // Flow field's persistent trail canvas + particle positions
+  const flowBufferRef = useRef<HTMLCanvasElement | null>(null);
+  const flowParticlesRef = useRef<{ x: number; y: number }[]>([]);
+  // Chromatic Trails' own trail buffer (separate from Feedback's)
+  const chromaticTrailsBufferRef = useRef<HTMLCanvasElement | null>(null);
+
   // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
   // Minimum time between color changes (in milliseconds)
@@ -838,6 +875,29 @@ export function InteractiveGradient() {
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
+  useEffect(() => {
+    if (gradientType !== 'metaballs' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * metaballSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, metaballSpeed]);
+
+  useEffect(() => {
+    if (gradientType !== 'moire' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setMoireAnimTime(t => t + 0.015 * vcrPlaybackSpeed * moireSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, moireSpeed]);
+
+  useEffect(() => {
+    if (gradientType !== 'flow-field' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * flowSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, flowSpeed]);
+
+  useEffect(() => {
+    if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   // Build a snapshot of all mutable gradient/effect state (used by undo, redo, and saveCurrentState)
   const buildSnapshot = useCallback(() => {
@@ -2348,7 +2408,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, blockShuffleSize, blockShuffleAmount, asciiSize, asciiColor, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -3700,6 +3760,182 @@ export function InteractiveGradient() {
         break;
       }
 
+      case 'metaballs': {
+        // Like Lava Lamp's field-function blobs, but colored continuously
+        // across the whole field (no on/off brightness threshold) so
+        // overlapping blobs actually blend into each other rather than
+        // reading as separate glowing shapes on a black background.
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const metaAudio = isAudioEnabled && isAudioReactive;
+        const audioBassMb = metaAudio ? audioSubBassLevel / 5 : 0;
+        const audioMidsMb = metaAudio ? audioMidsLevel / 5 : 0;
+        const mbTime = (metaballAnimTime + gradientAngle * 0.02) * (1 + audioMidsMb * 2);
+        const mbScaleBoost = 1 + audioBassMb * 2.0;
+        const mbColorShift = metaAudio ? audioTrebleLevel * 0.8 : 0;
+        const imageDataMb = ctx.createImageData(displayWidth, displayHeight);
+        const dMb = imageDataMb.data;
+        const numBalls = Math.max(2, Math.min(metaballCount, 14));
+        const balls: Array<{x: number, y: number, r: number}> = [];
+        for (let i = 0; i < numBalls; i++) {
+          const angle = (i / numBalls) * Math.PI * 2 + mbTime * (0.25 + i * 0.05);
+          const orbitR = 0.2 + 0.18 * Math.sin(mbTime * 0.3 + i * 1.3);
+          balls.push({
+            x: centerX + displayWidth * orbitR * Math.cos(angle),
+            y: centerY + displayHeight * orbitR * Math.sin(angle * 0.8 + mbTime * 0.15),
+            r: Math.min(displayWidth, displayHeight) * metaballSize * mbScaleBoost,
+          });
+        }
+        const mbZoomScale = 1 / zoom;
+        for (let y = 0; y < displayHeight; y++) {
+          for (let x = 0; x < displayWidth; x++) {
+            const px = centerX + (x - centerX) * mbZoomScale;
+            const py = centerY + (y - centerY) * mbZoomScale;
+            let field = 0;
+            for (let b = 0; b < balls.length; b++) {
+              const dx = px - balls[b].x, dy = py - balls[b].y;
+              const dist2 = dx * dx + dy * dy;
+              field += (balls[b].r * balls[b].r) / (dist2 + 1);
+            }
+            const tValMb = (1 - 1 / (1 + field * 0.6)) * (1 - mbColorShift) + mbColorShift;
+            const colorPosMb = tValMb * (gradientColors.length - 1);
+            const ciMb = Math.floor(colorPosMb);
+            const cfMb = colorPosMb - ciMb;
+            const c1Mb = gradientColors[ciMb] || { r: 0, g: 0, b: 0 };
+            const c2Mb = gradientColors[(ciMb + 1) % gradientColors.length] || c1Mb;
+            const brightnessMb = Math.min(1, field * 0.9);
+            const idxMb = (y * displayWidth + x) * 4;
+            dMb[idxMb]     = Math.round((c1Mb.r + (c2Mb.r - c1Mb.r) * cfMb) * brightnessMb);
+            dMb[idxMb + 1] = Math.round((c1Mb.g + (c2Mb.g - c1Mb.g) * cfMb) * brightnessMb);
+            dMb[idxMb + 2] = Math.round((c1Mb.b + (c2Mb.b - c1Mb.b) * cfMb) * brightnessMb);
+            dMb[idxMb + 3] = 255;
+          }
+        }
+        putScaledImageData(imageDataMb);
+        break;
+      }
+
+      case 'truchet': {
+        // Grid of tiles, each with one of two quarter-circle-arc orientations
+        // chosen by a per-cell hash (stable across frames) — forms continuous
+        // maze-like curves. Drawn with vector arcs, not a pixel loop, so it's
+        // cheap regardless of canvas resolution.
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const tSize = Math.max(10, truchetSize) / zoom;
+        const cols = Math.ceil(displayWidth / tSize) + 2;
+        const rows = Math.ceil(displayHeight / tSize) + 2;
+        ctx.lineWidth = Math.max(1, truchetThickness);
+        ctx.lineCap = 'round';
+        // Slow color drift via the shared playhead angle instead of its own
+        // separate rotation/animation state.
+        const trAngleOffset = gradientAngle * 0.3;
+        for (let row = -1; row < rows; row++) {
+          for (let col = -1; col < cols; col++) {
+            const seed = Math.sin(col * 127.1 + row * 311.7 + 43.7) * 43758.5453;
+            const seedFrac = seed - Math.floor(seed);
+            const flip = seedFrac < truchetVariation;
+            const cx0 = col * tSize, cy0 = row * tSize;
+            const colorPos = (((row + col) / 6 + trAngleOffset / 360) % 1 + 1) % 1;
+            const cIdx = Math.floor(((colorPos * gradientColors.length) % gradientColors.length + gradientColors.length) % gradientColors.length);
+            const color = gradientColors[cIdx] || { r: 255, g: 255, b: 255 };
+            ctx.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            if (!flip) {
+              ctx.beginPath();
+              ctx.arc(cx0, cy0, tSize / 2, 0, Math.PI / 2);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(cx0 + tSize, cy0 + tSize, tSize / 2, Math.PI, Math.PI * 1.5);
+              ctx.stroke();
+            } else {
+              ctx.beginPath();
+              ctx.arc(cx0 + tSize, cy0, tSize / 2, Math.PI / 2, Math.PI);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(cx0, cy0 + tSize, tSize / 2, Math.PI * 1.5, Math.PI * 2);
+              ctx.stroke();
+            }
+          }
+        }
+        break;
+      }
+
+      case 'moire': {
+        // Two sets of concentric rings with offset centers, blended with
+        // 'lighten' — classic moiré interference technique.
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        const mrTime = moireAnimTime;
+        const spacing = Math.max(2, moireScale) / zoom;
+        const maxR = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight) / 2 + spacing;
+        const offsetX = Math.cos(mrTime) * moireOffset;
+        const offsetY = Math.sin(mrTime * 0.7) * moireOffset;
+        const drawRings = (cx: number, cy: number, colorOffset: number) => {
+          const ringCount = Math.ceil(maxR / spacing);
+          ctx.lineWidth = Math.max(1, spacing * 0.35);
+          for (let i = 0; i < ringCount; i++) {
+            const r = i * spacing;
+            const colorIdx = (i + colorOffset) % gradientColors.length;
+            const color = gradientColors[colorIdx] || { r: 255, g: 255, b: 255 };
+            ctx.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        };
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighten';
+        drawRings(centerX, centerY, 0);
+        drawRings(centerX + offsetX, centerY + offsetY, Math.floor(gradientColors.length / 2));
+        ctx.restore();
+        break;
+      }
+
+      case 'flow-field': {
+        // Particles drift along a smoothly-varying pseudo-noise direction
+        // field, leaving fading trails in a persistent buffer — the only
+        // gradient in the app whose motion drifts rather than rotates/pulses.
+        if (canvas.width === 0 || canvas.height === 0) break;
+        if (!flowBufferRef.current || flowBufferRef.current.width !== displayWidth || flowBufferRef.current.height !== displayHeight) {
+          flowBufferRef.current = document.createElement('canvas');
+          flowBufferRef.current.width = displayWidth;
+          flowBufferRef.current.height = displayHeight;
+          flowParticlesRef.current = [];
+        }
+        const fbCtx = flowBufferRef.current.getContext('2d')!;
+        const targetCount = Math.max(10, Math.min(1000, flowParticleCount));
+        const particles = flowParticlesRef.current;
+        while (particles.length < targetCount) {
+          particles.push({ x: Math.random() * displayWidth, y: Math.random() * displayHeight });
+        }
+        if (particles.length > targetCount) particles.length = targetCount;
+
+        fbCtx.fillStyle = 'rgba(0,0,0,0.06)';
+        fbCtx.fillRect(0, 0, displayWidth, displayHeight);
+        const fScale = flowScale * 0.004;
+        const fTime = flowAnimTime;
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          const angle = (Math.sin(p.x * fScale + fTime) * Math.cos(p.y * fScale - fTime * 0.8)
+            + Math.sin((p.x + p.y) * fScale * 0.5 + fTime * 0.5)) * Math.PI;
+          const nx = p.x + Math.cos(angle) * 1.5;
+          const ny = p.y + Math.sin(angle) * 1.5;
+          const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
+          fbCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`;
+          fbCtx.lineWidth = 1.5;
+          fbCtx.beginPath();
+          fbCtx.moveTo(p.x, p.y);
+          fbCtx.lineTo(nx, ny);
+          fbCtx.stroke();
+          p.x = nx < 0 ? displayWidth : nx > displayWidth ? 0 : nx;
+          p.y = ny < 0 ? displayHeight : ny > displayHeight ? 0 : ny;
+        }
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        ctx.drawImage(flowBufferRef.current, 0, 0);
+        break;
+      }
+
       case 'radar': {
         // Radar sweep gradient - rotating scan line with fade trail
         ctx.fillStyle = '#000000';
@@ -3872,7 +4108,7 @@ export function InteractiveGradient() {
         : 0;
       
       // Get imageData only for effects that need it
-      const needsImageData = ['invert', 'grain', 'charcoal', 'posterize', 'halftone', 'shift', 'duotone'].includes(effectType);
+      const needsImageData = ['invert', 'grain', 'charcoal', 'posterize', 'halftone', 'shift', 'duotone', 'block-shuffle', 'ascii'].includes(effectType);
       let imageData: ImageData | null = null;
       
       if (needsImageData) {
@@ -4915,6 +5151,153 @@ export function InteractiveGradient() {
             }
             putScaledImageData(ripOut);
           } catch(e) { /* skip */ }
+          break;
+        }
+
+        case 'block-shuffle': {
+          // Classic databend look: randomly permute rectangular blocks of the
+          // image. Distinct from Slit-Scan's time-based shear — this is a
+          // pure spatial scramble with no temporal buffer involved.
+          if (!imageData) break;
+          const bsSize = Math.max(8, blockShuffleSize);
+          const cols = Math.max(1, Math.floor(displayWidth / bsSize));
+          const rows = Math.max(1, Math.floor(displayHeight / bsSize));
+          const srcCanvasBs = document.createElement('canvas');
+          srcCanvasBs.width = displayWidth; srcCanvasBs.height = displayHeight;
+          srcCanvasBs.getContext('2d')!.putImageData(imageData, 0, 0);
+          const blockW = displayWidth / cols, blockH = displayHeight / rows;
+          const positions: Array<[number, number]> = [];
+          for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) positions.push([c, r]);
+          const numSwaps = Math.floor(positions.length * blockShuffleAmount * 0.5);
+          for (let s = 0; s < numSwaps; s++) {
+            const ia = Math.floor(Math.random() * positions.length);
+            const ib = Math.floor(Math.random() * positions.length);
+            const tmp = positions[ia]; positions[ia] = positions[ib]; positions[ib] = tmp;
+          }
+          ctx.clearRect(0, 0, displayWidth, displayHeight);
+          let posIdx = 0;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const [sc, sr] = positions[posIdx];
+              posIdx++;
+              ctx.drawImage(srcCanvasBs, sc * blockW, sr * blockH, blockW, blockH, c * blockW, r * blockH, blockW, blockH);
+            }
+          }
+          break;
+        }
+
+        case 'ascii': {
+          // Halftone's sibling — brightness maps to a character ramp instead
+          // of dot size.
+          if (!imageData) break;
+          const aSize = Math.max(6, asciiSize);
+          const chars = ' .:-=+*#%@';
+          const colsA = Math.ceil(displayWidth / aSize);
+          const rowsA = Math.ceil(displayHeight / aSize);
+          const idatA = imageData.data;
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, displayWidth, displayHeight);
+          ctx.font = `${aSize}px monospace`;
+          ctx.textBaseline = 'top';
+          for (let r = 0; r < rowsA; r++) {
+            for (let c = 0; c < colsA; c++) {
+              const px = Math.min(displayWidth - 1, c * aSize + Math.floor(aSize / 2));
+              const py = Math.min(displayHeight - 1, r * aSize + Math.floor(aSize / 2));
+              const pIdx = (py * displayWidth + px) * 4;
+              const pr = idatA[pIdx], pg = idatA[pIdx + 1], pb = idatA[pIdx + 2];
+              const brightness = (pr + pg + pb) / 3 / 255;
+              const charIdx = Math.min(chars.length - 1, Math.floor(brightness * chars.length));
+              const ch = chars[charIdx];
+              if (ch === ' ') continue;
+              ctx.fillStyle = asciiColor ? `rgb(${pr},${pg},${pb})` : '#ffffff';
+              ctx.fillText(ch, c * aSize, r * aSize);
+            }
+          }
+          break;
+        }
+
+        case 'liquid': {
+          // Turbulent noise-driven refraction — sits between Fisheye (radial
+          // warp) and Wave-Distortion (directional wave), but organic/swirly
+          // like real liquid refraction instead of a single wave direction.
+          if (canvas.width === 0 || canvas.height === 0) break;
+          const liqSrc = getDisplayImageData();
+          const liqOut = ctx.createImageData(displayWidth, displayHeight);
+          const lScale = liquidScale * 0.006;
+          const lTime = liquidAnimTime;
+          const lStrength = liquidStrength;
+          for (let y = 0; y < displayHeight; y++) {
+            for (let x = 0; x < displayWidth; x++) {
+              const n1 = Math.sin(x * lScale + lTime) * Math.cos(y * lScale * 1.3 - lTime * 0.7);
+              const n2 = Math.sin((x + y) * lScale * 0.6 - lTime * 1.2) * 0.5;
+              const dx = (n1 + n2) * lStrength;
+              const n3 = Math.cos(x * lScale * 1.1 - lTime * 0.9) * Math.sin(y * lScale + lTime * 0.6);
+              const n4 = Math.cos((x - y) * lScale * 0.7 + lTime * 1.1) * 0.5;
+              const dy = (n3 + n4) * lStrength;
+              const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(x + dx)));
+              const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(y + dy)));
+              const di = (y * displayWidth + x) * 4;
+              const si = (sy * displayWidth + sx) * 4;
+              liqOut.data[di] = liqSrc.data[si];
+              liqOut.data[di + 1] = liqSrc.data[si + 1];
+              liqOut.data[di + 2] = liqSrc.data[si + 2];
+              liqOut.data[di + 3] = 255;
+            }
+          }
+          putScaledImageData(liqOut);
+          break;
+        }
+
+        case 'chromatic-trails': {
+          // Feedback's echo-trail mechanic, plus a per-channel spatial offset
+          // on the decaying trail so echoes separate into RGB fringes as they
+          // fade — distinct from Feedback (no fringing) and from Chromatic
+          // (no trail/decay).
+          if (canvas.width === 0 || canvas.height === 0) break;
+          if (!chromaticTrailsBufferRef.current || chromaticTrailsBufferRef.current.width !== displayWidth || chromaticTrailsBufferRef.current.height !== displayHeight) {
+            chromaticTrailsBufferRef.current = document.createElement('canvas');
+            chromaticTrailsBufferRef.current.width = displayWidth;
+            chromaticTrailsBufferRef.current.height = displayHeight;
+          }
+          const ctBuf = chromaticTrailsBufferRef.current;
+          const ctBufCtx = ctBuf.getContext('2d', { willReadFrequently: true })!;
+          const ctBufData = ctBufCtx.getImageData(0, 0, displayWidth, displayHeight);
+          const ctBd = ctBufData.data;
+          const ctOff = Math.round(chromaticTrailsOffset);
+
+          // Fringe + decay the trail: R sampled from the left, B from the
+          // right, G stays put, alpha scaled down by the decay factor.
+          const ctFringed = ctx.createImageData(displayWidth, displayHeight);
+          const ctFd = ctFringed.data;
+          for (let y = 0; y < displayHeight; y++) {
+            for (let x = 0; x < displayWidth; x++) {
+              const i = (y * displayWidth + x) * 4;
+              const rx = Math.max(0, Math.min(displayWidth - 1, x - ctOff));
+              const bx = Math.max(0, Math.min(displayWidth - 1, x + ctOff));
+              const ri = (y * displayWidth + rx) * 4;
+              const bi = (y * displayWidth + bx) * 4;
+              ctFd[i] = ctBd[ri];
+              ctFd[i + 1] = ctBd[i + 1];
+              ctFd[i + 2] = ctBd[bi + 2];
+              ctFd[i + 3] = Math.round(ctBd[i + 3] * chromaticTrailsDecay);
+            }
+          }
+          ctBufCtx.putImageData(ctFringed, 0, 0);
+
+          const ctTmp = document.createElement('canvas');
+          ctTmp.width = displayWidth; ctTmp.height = displayHeight;
+          ctTmp.getContext('2d')!.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+
+          ctx.clearRect(0, 0, displayWidth, displayHeight);
+          ctx.drawImage(ctBuf, 0, 0);
+          ctx.globalCompositeOperation = 'lighten';
+          ctx.drawImage(ctTmp, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+
+          // Feed the fresh (undecayed) frame back into the trail buffer.
+          ctBufCtx.globalCompositeOperation = 'lighten';
+          ctBufCtx.drawImage(ctTmp, 0, 0);
+          ctBufCtx.globalCompositeOperation = 'source-over';
           break;
         }
 
@@ -6338,6 +6721,78 @@ export function InteractiveGradient() {
           </div>
         )}
 
+        {gradientType === 'metaballs' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Count', value: metaballCount, set: setMetaballCount, min: 2, max: 14, step: 1 },
+              { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
+              { label: 'Speed', value: metaballSpeed, set: setMetaballSpeed, min: 0.1, max: 5, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'truchet' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Tile Size', value: truchetSize, set: setTruchetSize, min: 15, max: 100, step: 5 },
+              { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
+              { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'moire' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Scale', value: moireScale, set: setMoireScale, min: 3, max: 40, step: 1 },
+              { label: 'Offset', value: moireOffset, set: setMoireOffset, min: 0, max: 100, step: 1 },
+              { label: 'Speed', value: moireSpeed, set: setMoireSpeed, min: 0.1, max: 5, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'flow-field' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
+              { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
+              { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">
@@ -7118,11 +7573,14 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(11, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
             {([
+              { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
+              { value: 'block-shuffle',  label: 'Block Shuffle' },
               { value: 'blur',           label: 'Blur' },
               { value: 'chromatic',      label: 'Chromatic' },
+              { value: 'chromatic-trails', label: 'Chroma Trails' },
               { value: 'dither',         label: 'Dither' },
               { value: 'duotone',        label: 'Duotone' },
               { value: 'feedback',       label: 'Feedback' },
@@ -7132,6 +7590,7 @@ export function InteractiveGradient() {
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
               { value: 'kaleidoscope',   label: 'Kaleido' },
+              { value: 'liquid',         label: 'Liquid' },
               { value: 'mirror',         label: 'Mirror' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
@@ -7256,6 +7715,76 @@ export function InteractiveGradient() {
                         onChange={(e) => setRippleAmplitude(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('block-shuffle') && (
+                <EffectSection id="block-shuffle" label="Block Shuffle" isMulti={isMulti} expanded={expandedEffects.has('block-shuffle')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Block Size:</label>
+                    <input type="range" min="10" max="150" value={blockShuffleSize} onChange={(e) => setBlockShuffleSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="10" max="150" value={blockShuffleSize} onChange={(e) => setBlockShuffleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.01" value={blockShuffleAmount} onChange={(e) => setBlockShuffleAmount(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.01" value={blockShuffleAmount} onChange={(e) => setBlockShuffleAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('ascii') && (
+                <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={expandedEffects.has('ascii')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
+                    <input type="range" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
+                      <button
+                        onClick={() => setAsciiColor(!asciiColor)}
+                        className={`px-2 py-1 text-xs rounded transition-all ${
+                          asciiColor ? 'bg-blue-500 text-white' : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {asciiColor ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('liquid') && (
+                <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={expandedEffects.has('liquid')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                    <input type="range" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('chromatic-trails') && (
+                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={expandedEffects.has('chromatic-trails')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
+                    <input type="range" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
