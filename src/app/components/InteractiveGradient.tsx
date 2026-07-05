@@ -4236,14 +4236,28 @@ export function InteractiveGradient() {
             ];
             for (let ci = 0; ci < cmykChannels.length; ci++) {
               const ch = cmykChannels[ci];
-              const angleRad = (ch.angle + (halftoneMove ? halftoneTimeRef.current * 5 : 0)) * Math.PI / 180;
+              // Move drives per-dot variation over time (below), not the grid's
+              // orientation — spinning the whole lattice read as the entire
+              // canvas rotating rather than the dots themselves moving.
+              const angleRad = ch.angle * Math.PI / 180;
               const cosA = Math.cos(angleRad), sinA = Math.sin(angleRad);
               ctx.fillStyle = ch.color;
               for (let gi = -steps; gi <= steps; gi++) {
                 for (let gj = -steps; gj <= steps; gj++) {
                   const rx = gi * sz, ry = gj * sz;
-                  const px = centerX + rx * cosA - ry * sinA;
-                  const py = centerY + rx * sinA + ry * cosA;
+                  let px = centerX + rx * cosA - ry * sinA;
+                  let py = centerY + rx * sinA + ry * cosA;
+                  if (halftoneMove) {
+                    // Each dot wobbles around its own lattice position instead of
+                    // the whole grid spinning — the motion reads as belonging to
+                    // the dots themselves, not the canvas.
+                    const seed = Math.sin(gi * 127.1 + gj * 311.7 + ci * 7.31) * 43758.5453;
+                    const seedFrac = seed - Math.floor(seed);
+                    const jAngle = seedFrac * Math.PI * 2;
+                    const jAmt = Math.sin(halftoneTimeRef.current * 2 + seedFrac * 20) * sz * 0.18;
+                    px += Math.cos(jAngle) * jAmt;
+                    py += Math.sin(jAngle) * jAmt;
+                  }
                   if (px < -sz || px > displayWidth + sz || py < -sz || py > displayHeight + sz) continue;
                   const [r, g, b] = getHTPixel(px, py);
                   const rn = r/255, gn = g/255, bn = b/255;
@@ -4253,7 +4267,7 @@ export function InteractiveGradient() {
                   const m = k === 1 ? 0 : (1 - gn - k) / denom;
                   const y = k === 1 ? 0 : (1 - bn - k) / denom;
                   const channelVal = ci === 0 ? c : ci === 1 ? m : ci === 2 ? y : k;
-                  const s2 = Math.sin(px * 12.9898 + py * 78.233) * 43758.5453;
+                  const s2 = Math.sin(px * 12.9898 + py * 78.233 + (halftoneMove ? halftoneTimeRef.current * 1000 : 0)) * 43758.5453;
                   const vf = 1 + ((s2 - Math.floor(s2)) - 0.5) * halftoneVariation;
                   const dotR = channelVal * (sz / 2) * 0.95 * vf;
                   if (dotR < 0.3) continue;
@@ -4272,8 +4286,18 @@ export function InteractiveGradient() {
             const htHalfRows = Math.ceil(displayHeight / sz / 2) + 1;
             for (let hr = -htHalfRows; hr <= htHalfRows; hr++) {
               for (let hc = -htHalfCols; hc <= htHalfCols; hc++) {
-                const x = centerX + hc * sz;
-                const y = centerY + hr * sz;
+                let x = centerX + hc * sz;
+                let y = centerY + hr * sz;
+                if (halftoneMove) {
+                  // Per-dot wobble around its own lattice position — see CMYK
+                  // branch above for why this replaces whole-grid rotation.
+                  const seed = Math.sin(hc * 127.1 + hr * 311.7) * 43758.5453;
+                  const seedFrac = seed - Math.floor(seed);
+                  const jAngle = seedFrac * Math.PI * 2;
+                  const jAmt = Math.sin(halftoneTimeRef.current * 2 + seedFrac * 20) * sz * 0.18;
+                  x += Math.cos(jAngle) * jAmt;
+                  y += Math.sin(jAngle) * jAmt;
+                }
                 const [pr, pg, pb] = getHTPixel(x, y);
                 const br = (pr + pg + pb) / 3;
                 const s = Math.sin(x * 12.9898 + y * 78.233 + (halftoneMove ? halftoneTimeRef.current * 1000 : 0)) * 43758.5453;
