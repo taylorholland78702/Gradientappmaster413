@@ -148,6 +148,23 @@
   animation: wav-erase-rise 0.8s linear forwards;
 }
 
+/* Random-colored gradient fill hidden behind the white fill; revealed
+   bottom-to-top in sync with the white fill erasing above it. */
+.wav-random-fill {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+}
+
+@keyframes wav-reveal-rise {
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { clip-path: inset(0 0 0% 0); opacity: 1; }
+}
+
+.wav-random-fill.wav-revealing {
+  animation: wav-reveal-rise 0.8s linear forwards;
+}
+
 /* Liquid fill rising from bottom over the hold duration */
 @keyframes wav-fill-rise {
   0%   { transform: translateY(100%); }
@@ -238,7 +255,8 @@
   filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.9));
 }
 
-.control-panel .wav-fill-text {
+.control-panel .wav-fill-text,
+.control-panel .wav-random-fill {
   text-shadow: none !important;
 }
 .control-panel .wav-glow-wrap {

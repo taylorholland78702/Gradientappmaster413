@@ -137,6 +137,12 @@ export function InteractiveGradient() {
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
   const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
   const [isWavHolding, setIsWavHolding] = useState(false);
+  const [wavRandomGradient, setWavRandomGradient] = useState('linear-gradient(to top, #7c3aed, #ec4899, #eab308)');
+  const randomizeWavGradient = () => {
+    const hue = () => Math.floor(Math.random() * 360);
+    const h1 = hue(), h2 = (h1 + 60 + Math.random() * 120) % 360, h3 = (h2 + 60 + Math.random() * 120) % 360;
+    setWavRandomGradient(`linear-gradient(to top, hsl(${h1}, 85%, 60%), hsl(${h2}, 85%, 60%), hsl(${h3}, 85%, 60%))`);
+  };
   const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
@@ -6067,6 +6073,7 @@ export function InteractiveGradient() {
             window.addEventListener('mouseup', onUp);
           }}
           onPointerDown={() => {
+            randomizeWavGradient();
             setIsWavHolding(true);
             wavPressStartTime.current = Date.now();
             wavLongPressFired.current = false;
@@ -6103,6 +6110,18 @@ export function InteractiveGradient() {
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 900,
+              }}
+            >wāv</span>
+            <span
+              aria-hidden="true"
+              className={`absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-random-fill ${isWavHolding ? 'wav-revealing' : ''}`}
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 900,
+                backgroundImage: wavRandomGradient,
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
               }}
             >wāv</span>
             <span
