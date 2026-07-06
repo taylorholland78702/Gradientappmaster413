@@ -3234,11 +3234,17 @@ export function InteractiveGradient() {
         const gridDrawH = displayHeight * gridOverdraw;
         const gridOffX = (displayWidth - gridDrawW) / 2;
         const gridOffY = (displayHeight - gridDrawH) / 2;
-        const cellWidth = gridDrawW / gridColumns;
-        const cellHeight = gridDrawH / gridRows;
+        // Clamp to 2+ — 1x1 degenerates into a single full-canvas cell
+        // that's visually indistinguishable from the Linear gradient type,
+        // wasting the slider on a redundant look. Guards old saved
+        // presets/localStorage from before this floor existed too.
+        const gridRowsSafe = Math.max(2, gridRows);
+        const gridColumnsSafe = Math.max(2, gridColumns);
+        const cellWidth = gridDrawW / gridColumnsSafe;
+        const cellHeight = gridDrawH / gridRowsSafe;
 
-        for (let row = 0; row < gridRows; row++) {
-          for (let col = 0; col < gridColumns; col++) {
+        for (let row = 0; row < gridRowsSafe; row++) {
+          for (let col = 0; col < gridColumnsSafe; col++) {
             const cellAngle = (gradientAngle + row * 30 + col * 30 + audioGridOffset) % 360;
             const angleRad = (cellAngle * Math.PI) / 180;
             const cellCenterX = gridOffX + col * cellWidth + cellWidth / 2;
@@ -4802,9 +4808,11 @@ export function InteractiveGradient() {
           gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const cw = displayWidth / gridColumns, ch = displayHeight / gridRows;
-          for (let r = 0; r < gridRows + 1; r++) {
-            for (let c = 0; c < gridColumns + 1; c++) {
+          const gridRowsSafeFx = Math.max(2, gridRows);
+          const gridColumnsSafeFx = Math.max(2, gridColumns);
+          const cw = displayWidth / gridColumnsSafeFx, ch = displayHeight / gridRowsSafeFx;
+          for (let r = 0; r < gridRowsSafeFx + 1; r++) {
+            for (let c = 0; c < gridColumnsSafeFx + 1; c++) {
               const x = c * cw, y = r * ch;
               const vx = gridVariation > 0 ? (Math.random() - 0.5) * cw * gridVariation : 0;
               const vy = gridVariation > 0 ? (Math.random() - 0.5) * ch * gridVariation : 0;
@@ -6406,7 +6414,7 @@ export function InteractiveGradient() {
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
-                  min="1"
+                  min="2"
                   max="50"
                   value={gridRows}
                   onChange={(e) => setGridRows(Number(e.target.value))}
@@ -6414,7 +6422,7 @@ export function InteractiveGradient() {
                 />
                 <input
                   type="number"
-                  min="1"
+                  min="2"
                   max="50"
                   value={gridRows}
                   onChange={(e) => setGridRows(Number(e.target.value))}
@@ -6427,7 +6435,7 @@ export function InteractiveGradient() {
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
                   type="range"
-                  min="1"
+                  min="2"
                   max="50"
                   value={gridColumns}
                   onChange={(e) => setGridColumns(Number(e.target.value))}
@@ -6435,7 +6443,7 @@ export function InteractiveGradient() {
                 />
                 <input
                   type="number"
-                  min="1"
+                  min="2"
                   max="50"
                   value={gridColumns}
                   onChange={(e) => setGridColumns(Number(e.target.value))}
@@ -8287,7 +8295,7 @@ export function InteractiveGradient() {
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
-                        min="1"
+                        min="2"
                         max="50"
                         value={gridRows}
                         onChange={(e) => setGridRows(Number(e.target.value))}
@@ -8295,7 +8303,7 @@ export function InteractiveGradient() {
                       />
                       <input
                         type="number"
-                        min="1"
+                        min="2"
                         max="50"
                         value={gridRows}
                         onChange={(e) => setGridRows(Number(e.target.value))}
@@ -8308,7 +8316,7 @@ export function InteractiveGradient() {
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
-                        min="1"
+                        min="2"
                         max="50"
                         value={gridColumns}
                         onChange={(e) => setGridColumns(Number(e.target.value))}
@@ -8316,7 +8324,7 @@ export function InteractiveGradient() {
                       />
                       <input
                         type="number"
-                        min="1"
+                        min="2"
                         max="50"
                         value={gridColumns}
                         onChange={(e) => setGridColumns(Number(e.target.value))}
