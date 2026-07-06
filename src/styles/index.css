@@ -206,7 +206,11 @@
 }
 
 .wav-btn-fill-reveal.wav-revealing {
-  animation: wav-reveal-rise 0.8s linear forwards, wav-flow-bottom-up 0.9s linear infinite;
+  /* Same reveal wipe timing as the wordmark, but the color flow loops
+     much faster since this button is a fraction of the wordmark's
+     size — at the wordmark's 0.9s pace the same pixel speed would
+     barely move across this small a box in one hold. */
+  animation: wav-reveal-rise 0.8s linear forwards, wav-flow-bottom-up 0.3s linear infinite;
 }
 
 /* Liquid fill rising from bottom over the hold duration */
