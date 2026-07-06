@@ -7873,8 +7873,8 @@ export function InteractiveGradient() {
                       <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
                       <button
                         onClick={() => setAsciiColor(!asciiColor)}
-                        className={`px-2 py-1 text-xs rounded transition-all ${
-                          asciiColor ? 'bg-blue-500 text-white' : 'bg-black/25 text-white hover:bg-white/15'
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
+                          asciiColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         {asciiColor ? 'ON' : 'OFF'}
@@ -8301,9 +8301,9 @@ export function InteractiveGradient() {
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
                       <button
                         onClick={() => setHalftoneMove(!halftoneMove)}
-                        className={`px-2 py-1 text-xs rounded transition-all ${
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneMove
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -8314,9 +8314,9 @@ export function InteractiveGradient() {
                       <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
                       <button
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
-                        className={`px-2 py-1 text-xs rounded transition-all ${
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneCMYK
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -8675,7 +8675,7 @@ export function InteractiveGradient() {
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setDitherType('bayer')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'bayer'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8685,7 +8685,7 @@ export function InteractiveGradient() {
                       </button>
                       <button
                         onClick={() => setDitherType('floyd-steinberg')}
-                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'floyd-steinberg'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
