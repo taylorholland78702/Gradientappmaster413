@@ -31,18 +31,29 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   toggleVCRRecording,
   toggleVCRPlayback,
 }) => {
+  // Column width shared by all 4 groups below: 1/5 of the row, minus the 3
+  // dividers' combined 3px, mirroring the reference rows' own 5-equal-column
+  // + fixed-1px-divider math exactly (so every vertical line lines up)
+  // instead of an eyeballed flex-grow ratio. Uses an inline style rather than
+  // a Tailwind arbitrary-value class built via string interpolation —
+  // Tailwind's JIT scanner only picks up class names it can find literally
+  // in the source, so a dynamically-constructed `basis-[calc(...)]` string
+  // silently produces no CSS at all (the exact bug that broke the first
+  // version of this column math).
+  const colStyle = (n: number): React.CSSProperties => ({
+    flexBasis: `calc((100% - 3px) / 5 * ${n})`,
+    flexGrow: 0,
+    flexShrink: 0,
+  });
+
   return (
     <div className="flex items-stretch bg-black/25 rounded-lg w-full shadow-sm">
-      {/* Group 1 — exact width of 2 of the reference rows' 5 equal columns
-          (icon row / tab row: 5 flex-1 buttons + 4 fixed 1px dividers). This
-          row only has 2 dividers, so the calc() accounts for that directly
-          instead of an empirically-tuned flex-grow ratio, guaranteeing the
-          divider below lands exactly on the same column boundary. */}
-      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-between">
+      {/* Col 1 — under Gradient */}
+      <div style={colStyle(1)} className="flex items-center justify-center">
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
-          className="flex-1 p-2 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
           title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video'}
         >
           {isEncoding ? (
@@ -64,10 +75,15 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
             <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-4 h-4 ${isRecording ? 'text-red-500' : ''}`} />
           )}
         </button>
+      </div>
 
+      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
+
+      {/* Col 2 — under FX */}
+      <div style={colStyle(1)} className="flex items-center justify-center">
         <button
           onClick={toggleVCRPlayback}
-          className="flex-1 p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          className="p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
           {(isVCRPlaying || isAutoMode) ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
@@ -76,12 +92,24 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
       <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
-      {/* Group 2 — same exact-width formula, 2 of 5 reference columns. The
-          three items (<< 1x >>) cluster together compactly at justify-center
-          instead of spreading edge-to-edge with justify-between, so the
-          whole group reads as one centered unit matching the icon-sized
-          look of the single-icon columns above/below. */}
-      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-center gap-2.5">
+      {/* Col 3 — under Audio */}
+      <div style={colStyle(1)} className="flex items-center justify-center">
+        <button
+          onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
+          className="p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
+        >
+          {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
+        </button>
+      </div>
+
+      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
+
+      {/* Cols 4-5 — under Color + Presets. The three items (<< 1x >>) cluster
+          together compactly at justify-center rather than spreading
+          edge-to-edge, so the whole playhead control reads as one centered
+          unit spanning exactly this 2-column width. */}
+      <div style={colStyle(2)} className="flex items-center justify-center gap-1 overflow-hidden">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
@@ -114,19 +142,6 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           title="Faster"
         >
           <FastForward weight="regular" className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
-
-      {/* Group 3 — 1 of 5 reference columns. */}
-      <div className="basis-[calc((100%_-_2px)/5*1)] grow-0 shrink-0 flex items-center justify-center">
-        <button
-          onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-          className="p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
-        >
-          {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
         </button>
       </div>
     </div>
