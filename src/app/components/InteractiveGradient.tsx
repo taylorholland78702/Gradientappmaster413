@@ -1086,18 +1086,13 @@ export function InteractiveGradient() {
   // Randomize effects
   const randomizeEffects = useCallback(() => {
     saveCurrentState();
-    const allEffects: EffectType[] = [
-      'blur', 'charcoal', 'chromatic', 'duotone',
-      'fisheye', 'grain', 'grid', 'halftone', 'invert',
-      'kaleidoscope', 'pixelate', 'posterize', 'triangulate',
-      'vhs', 'vignette', 'wave', 'shift'
-    ];
-    
-    // Randomly select 1-3 effects
-    const numEffects = Math.floor(Math.random() * 3) + 1;
-    const shuffled = [...allEffects].sort(() => Math.random() - 0.5);
+    // Randomly select 1-6 effects from the full effect list (previously a
+    // stale hardcoded subset that excluded every effect added after it was
+    // written — ALL_EFFECTS is the single source of truth for what exists).
+    const numEffects = Math.floor(Math.random() * 6) + 1;
+    const shuffled = [...ALL_EFFECTS].sort(() => Math.random() - 0.5);
     const selectedEffects = shuffled.slice(0, numEffects);
-    
+
     setActiveEffects(selectedEffects);
     if (selectedEffects.length > 1) {
       setIsMultiFxMode(true);
