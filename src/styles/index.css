@@ -130,17 +130,19 @@
   transform: translateZ(0);
 }
 
-/* wāv wordmark fill: 80% white over the live gradient by default; holding
-   erases it from the bottom up (clip-path wipe) to reveal the full
-   gradient underneath, mirroring the shuffle button's fill-rise. */
-.wav-fill-text {
+/* wāv wordmark: solid white fill with a gray stroke, visible over any
+   background (including white). Holding erases it from the bottom up
+   (clip-path wipe) to reveal the random gradient underneath, mirroring
+   the shuffle button's fill-rise; releasing snaps it straight back. */
+.wav-base-text {
   color: #ffffff;
-  opacity: 0.8;
+  -webkit-text-stroke: 2.5px #9ca3af;
+  opacity: 1;
   clip-path: inset(0 0 0% 0);
 }
 
 @keyframes wav-erase-rise {
-  0%   { clip-path: inset(0 0 0% 0);   opacity: 0.8; }
+  0%   { clip-path: inset(0 0 0% 0);   opacity: 1; }
   100% { clip-path: inset(0 0 100% 0); opacity: 0; }
 }
 
@@ -148,19 +150,25 @@
   animation: wav-erase-rise 0.8s linear forwards;
 }
 
-/* Random-colored gradient fill hidden behind the white fill; revealed
-   bottom-to-top in sync with the white fill erasing above it, with the
-   gradient colors themselves flowing upward through the letters too. */
+/* Random-colored gradient fill hidden behind the base text; revealed
+   bottom-to-top in sync with the base text erasing above it, with the
+   gradient colors themselves flowing upward through the letters too.
+   clip-path insets from the TOP (not bottom) so the visible region is
+   anchored at the bottom and grows upward as the top-inset shrinks —
+   using a bottom-inset here would (and did) grow the reveal downward
+   from the top instead, which read as color entering from the top
+   while the base text's bottom-up erase left a gap showing raw canvas
+   through the transparent-fill instead of the moving gradient. */
 .wav-random-fill {
   opacity: 0;
-  clip-path: inset(0 0 100% 0);
+  clip-path: inset(100% 0 0 0);
   background-position-y: -20%;
 }
 
 @keyframes wav-reveal-rise {
-  0%   { clip-path: inset(0 0 100% 0); opacity: 0; }
+  0%   { clip-path: inset(100% 0 0 0); opacity: 0; }
   10%  { opacity: 1; }
-  100% { clip-path: inset(0 0 0% 0); opacity: 1; }
+  100% { clip-path: inset(0% 0 0 0); opacity: 1; }
 }
 
 /* Continuous upward color scroll, decoupled from the one-shot reveal
@@ -265,9 +273,9 @@
   filter: none !important;
 }
 
-/* The wāv wordmark keeps its own white/gradient-on-canvas styling —
-   exempt from the panel's flat black-text rule above. */
-.control-panel .wav-fill-text,
+/* The wāv wordmark keeps its own white/gray/gradient styling — exempt
+   from the panel's flat black-text rule above. */
+.control-panel .wav-base-text,
 .control-panel .wav-random-fill {
   text-shadow: none !important;
 }
@@ -276,14 +284,9 @@
   position: relative;
   isolation: isolate;
 }
-.control-panel .wav-outline-text {
-  color: transparent !important;
-  -webkit-text-stroke: 2.5px #ffffff;
-  text-shadow: none !important;
-  pointer-events: none;
-}
-.control-panel .wav-fill-text {
+.control-panel .wav-base-text {
   color: #ffffff !important;
+  -webkit-text-stroke: 2.5px #9ca3af;
 }
 .control-panel .wav-random-fill {
   color: transparent !important;
