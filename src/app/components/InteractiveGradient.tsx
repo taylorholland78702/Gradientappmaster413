@@ -8684,38 +8684,33 @@ export function InteractiveGradient() {
               <div>
                 <p className="font-semibold text-white mb-1">The wāv header</p>
                 <p>Tap the wordmark to alter the artwork — a small nudge to its colors and shapes.</p>
-                <p>Press and hold to preview a full remix: the white letters erase from the bottom up as you hold, revealing a random color gradient underneath. Release early and you get a partial alter proportional to how long you held; hold for a full beat (about a second) or double-click, and it commits to a brand new mood.</p>
+                <p>Press and hold to make incremental changes, hold for a full beat or double-click, and it remixes the artwork completely.</p>
                 <p>Drag the wordmark to move the whole control panel anywhere on screen.</p>
               </div>
 
               <div>
                 <p className="font-semibold text-white mb-1">Top icon row</p>
-                <p>Eye — hide or show the control panel, leaving a compact icon cluster in its place.</p>
-                <p>Camera — save the current frame as a PNG.</p>
-                <p>Undo / redo — step backward or forward through your changes.</p>
-                <p>Refresh — reset to defaults.</p>
+                <p>Eye — collapse the control panel</p>
+                <p>Camera — save the current frame as a PNG</p>
+                <p>Undo / redo — step backward or forward</p>
+                <p>Refresh — reset to defaults</p>
               </div>
 
               <div>
                 <p className="font-semibold text-white mb-1">Playback row</p>
-                <p>Record — capture a video of the live animation.</p>
-                <p>Play / pause — start or stop all motion and audio reactivity.</p>
-                <p>Slower / faster — adjust playback speed.</p>
-                <p>Direction arrow — reverse the rotation direction.</p>
+                <p>Record — capture video of the live animation</p>
+                <p>Play / pause — start or stop all motion and audio reactivity</p>
+                <p>Slower / faster — adjust playback speed</p>
+                <p>Direction arrow — reverse the rotation direction</p>
               </div>
 
               <div>
                 <p className="font-semibold text-white mb-1">Tabs</p>
-                <p>Gradient — choose the base pattern (Radial, Plasma, Metaballs, Flow Field, and more) and tune its sliders.</p>
-                <p>FX — layer on effects like Glitch, ASCII, Liquid, or Chromatic Trails; toggle Multi to stack several at once.</p>
-                <p>Audio — connect a microphone or audio file so the artwork reacts to sound.</p>
-                <p>Color — pick or generate a color palette, or turn on Auto Play to cycle looks automatically.</p>
-                <p>Presets — save the current look by name and reload it anytime.</p>
-              </div>
-
-              <div>
-                <p className="font-semibold text-white mb-1">Collapsed cluster</p>
-                <p>When the panel is hidden, the shuffle icon carries over the wordmark's tap-to-alter / hold-to-remix behavior, alongside quick access to undo, redo, and presets.</p>
+                <p>Gradient — choose the base pattern and tune its sliders</p>
+                <p>FX — layer on effects; toggle Multi to stack several at once</p>
+                <p>Audio — connect a microphone or audio file so the artwork reacts to sound</p>
+                <p>Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</p>
+                <p>Presets — save the current look by name and reload it anytime</p>
               </div>
             </div>
           </div>
