@@ -6111,7 +6111,7 @@ export function InteractiveGradient() {
             setIsWavHolding(false);
             evolveWithFactor(1);
           }}
-          className="wav-drag-handle relative w-full flex items-end justify-center select-none hover:opacity-90 cursor-grab active:cursor-grabbing"
+          className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing"
           title="Press to Alter, Long Press / Double Click to Remix"
         >
           <span className="relative w-full block wav-glow-wrap">
