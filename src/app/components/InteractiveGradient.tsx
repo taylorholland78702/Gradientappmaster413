@@ -8075,7 +8075,7 @@ export function InteractiveGradient() {
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (
-                <EffectSection id="color-shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('shift')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('shift')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
@@ -8084,7 +8084,7 @@ export function InteractiveGradient() {
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
-                <EffectSection id="film-grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
@@ -8541,7 +8541,7 @@ export function InteractiveGradient() {
               
               
               {activeEffects.includes('vhs') && (
-                <EffectSection id="vhs-glitch" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
@@ -8568,7 +8568,7 @@ export function InteractiveGradient() {
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (
-                <EffectSection id="wave-distortion" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
