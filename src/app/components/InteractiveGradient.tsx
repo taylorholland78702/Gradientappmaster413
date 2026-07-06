@@ -343,9 +343,6 @@ export function InteractiveGradient() {
   const [flowParticleCount, setFlowParticleCount] = useState(250);
   const [flowSpeed, setFlowSpeed] = useState(1);
   const [flowScale, setFlowScale] = useState(3);
-  // Glitch block-shuffle
-  const [blockShuffleSize, setBlockShuffleSize] = useState(40);
-  const [blockShuffleAmount, setBlockShuffleAmount] = useState(0.3);
   // ASCII mosaic
   const [asciiSize, setAsciiSize] = useState(14);
   const [asciiColor, setAsciiColor] = useState(true);
@@ -2435,7 +2432,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, blockShuffleSize, blockShuffleAmount, asciiSize, asciiColor, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, asciiSize, asciiColor, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -4135,7 +4132,7 @@ export function InteractiveGradient() {
         : 0;
       
       // Get imageData only for effects that need it
-      const needsImageData = ['invert', 'grain', 'charcoal', 'posterize', 'halftone', 'shift', 'duotone', 'block-shuffle', 'ascii'].includes(effectType);
+      const needsImageData = ['invert', 'grain', 'charcoal', 'posterize', 'halftone', 'shift', 'duotone', 'ascii'].includes(effectType);
       let imageData: ImageData | null = null;
       
       if (needsImageData) {
@@ -5199,38 +5196,6 @@ export function InteractiveGradient() {
             }
             putScaledImageData(ripOut);
           } catch(e) { /* skip */ }
-          break;
-        }
-
-        case 'block-shuffle': {
-          // Classic databend look: randomly permute rectangular blocks of the
-          // image. Distinct from Slit-Scan's time-based shear — this is a
-          // pure spatial scramble with no temporal buffer involved.
-          if (!imageData) break;
-          const bsSize = Math.max(8, blockShuffleSize);
-          const cols = Math.max(1, Math.floor(displayWidth / bsSize));
-          const rows = Math.max(1, Math.floor(displayHeight / bsSize));
-          const srcCanvasBs = document.createElement('canvas');
-          srcCanvasBs.width = displayWidth; srcCanvasBs.height = displayHeight;
-          srcCanvasBs.getContext('2d')!.putImageData(imageData, 0, 0);
-          const blockW = displayWidth / cols, blockH = displayHeight / rows;
-          const positions: Array<[number, number]> = [];
-          for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) positions.push([c, r]);
-          const numSwaps = Math.floor(positions.length * blockShuffleAmount * 0.5);
-          for (let s = 0; s < numSwaps; s++) {
-            const ia = Math.floor(Math.random() * positions.length);
-            const ib = Math.floor(Math.random() * positions.length);
-            const tmp = positions[ia]; positions[ia] = positions[ib]; positions[ib] = tmp;
-          }
-          ctx.clearRect(0, 0, displayWidth, displayHeight);
-          let posIdx = 0;
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-              const [sc, sr] = positions[posIdx];
-              posIdx++;
-              ctx.drawImage(srcCanvasBs, sc * blockW, sr * blockH, blockW, blockH, c * blockW, r * blockH, blockW, blockH);
-            }
-          }
           break;
         }
 
@@ -7634,11 +7599,10 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
             {([
               { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
-              { value: 'block-shuffle',  label: 'Block Shuffle' },
               { value: 'blur',           label: 'Blur' },
               { value: 'chromatic',      label: 'Chromatic' },
               { value: 'chromatic-trails', label: 'Chroma Trails' },
@@ -7777,22 +7741,6 @@ export function InteractiveGradient() {
                         onChange={(e) => setRippleAmplitude(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('block-shuffle') && (
-                <EffectSection id="block-shuffle" label="Block Shuffle" isMulti={isMulti} expanded={expandedEffects.has('block-shuffle')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Block Size:</label>
-                    <input type="range" min="10" max="150" value={blockShuffleSize} onChange={(e) => setBlockShuffleSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="10" max="150" value={blockShuffleSize} onChange={(e) => setBlockShuffleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="1" step="0.01" value={blockShuffleAmount} onChange={(e) => setBlockShuffleAmount(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="1" step="0.01" value={blockShuffleAmount} onChange={(e) => setBlockShuffleAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

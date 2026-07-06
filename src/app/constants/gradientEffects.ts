@@ -12,7 +12,7 @@ export interface ColorRGB {
 
 export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field';
 
-export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'block-shuffle' | 'ascii' | 'liquid' | 'chromatic-trails' | 'pulse';
+export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'pulse';
 
 export const DEFAULT_COLORS: ColorRGB[] = [
   { r: 255, g: 100, b: 200 }, // Pink
@@ -78,7 +78,7 @@ export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 'caustics
 // Gradient types for Randomize (excludes freeform and mesh)
 export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'shapes', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
 
-export const ALL_EFFECTS: EffectType[] = ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'fisheye', 'grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'block-shuffle', 'ascii', 'liquid', 'chromatic-trails', 'pulse'];
+export const ALL_EFFECTS: EffectType[] = ['blur', 'charcoal', 'chromatic', 'dither', 'duotone', 'fisheye', 'grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'pixelate', 'posterize', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'ascii', 'liquid', 'chromatic-trails', 'pulse'];
 
 // Gradients that pulse/react visibly with audio
 export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
