@@ -76,8 +76,12 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
       <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
-      {/* Group 2 — same exact-width formula, 2 of 5 reference columns. */}
-      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-between px-0.5">
+      {/* Group 2 — same exact-width formula, 2 of 5 reference columns. The
+          three items (<< 1x >>) cluster together compactly at justify-center
+          instead of spreading edge-to-edge with justify-between, so the
+          whole group reads as one centered unit matching the icon-sized
+          look of the single-icon columns above/below. */}
+      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-center gap-2.5">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
