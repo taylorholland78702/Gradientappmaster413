@@ -8665,7 +8665,7 @@ export function InteractiveGradient() {
       {isAboutOpen && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAboutOpen(false)} />
-          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm mx-6 text-white shadow-2xl">
+          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm mx-6 max-h-[80vh] overflow-y-auto text-white shadow-2xl">
             <button
               onClick={() => setIsAboutOpen(false)}
               className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
@@ -8677,6 +8677,46 @@ export function InteractiveGradient() {
               <p>wāv is a generative art environment for music visualization and live performance.</p>
               <p>Artwork reacts in real time to audio — synchronizing colors, patterns, and shapes to the beat and frequency content of your music.</p>
               <p>Whether performing live, running an installation, or just listening at home, wāv turns your audio into a visual spectacle.</p>
+            </div>
+
+            <div className="text-2xl font-black tracking-tight mt-8 mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>manual</div>
+            <div className="flex flex-col gap-5 text-sm text-white/80 leading-relaxed">
+              <div>
+                <p className="font-semibold text-white mb-1">The wāv header</p>
+                <p>Tap the wordmark to alter the artwork — a small nudge to its colors and shapes.</p>
+                <p>Press and hold to preview a full remix: the white letters erase from the bottom up as you hold, revealing a random color gradient underneath. Release early and you get a partial alter proportional to how long you held; hold for a full beat (about a second) or double-click, and it commits to a brand new mood.</p>
+                <p>Drag the wordmark to move the whole control panel anywhere on screen.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-white mb-1">Top icon row</p>
+                <p>Eye — hide or show the control panel, leaving a compact icon cluster in its place.</p>
+                <p>Camera — save the current frame as a PNG.</p>
+                <p>Undo / redo — step backward or forward through your changes.</p>
+                <p>Refresh — reset to defaults.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-white mb-1">Playback row</p>
+                <p>Record — capture a video of the live animation.</p>
+                <p>Play / pause — start or stop all motion and audio reactivity.</p>
+                <p>Slower / faster — adjust playback speed.</p>
+                <p>Direction arrow — reverse the rotation direction.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-white mb-1">Tabs</p>
+                <p>Gradient — choose the base pattern (Radial, Plasma, Metaballs, Flow Field, and more) and tune its sliders.</p>
+                <p>FX — layer on effects like Glitch, ASCII, Liquid, or Chromatic Trails; toggle Multi to stack several at once.</p>
+                <p>Audio — connect a microphone or audio file so the artwork reacts to sound.</p>
+                <p>Color — pick or generate a color palette, or turn on Auto Play to cycle looks automatically.</p>
+                <p>Presets — save the current look by name and reload it anytime.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-white mb-1">Collapsed cluster</p>
+                <p>When the panel is hidden, the shuffle icon carries over the wordmark's tap-to-alter / hold-to-remix behavior, alongside quick access to undo, redo, and presets.</p>
+              </div>
             </div>
           </div>
         </div>
