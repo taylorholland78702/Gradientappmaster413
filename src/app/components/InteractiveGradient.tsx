@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';import { db, auth } from '../../firebase';import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';import { signInAnonymously } from 'firebase/auth';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, FloppyDisk, Info, X } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, FloppyDisk, Info, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
@@ -8679,38 +8679,36 @@ export function InteractiveGradient() {
               <p>Whether performing live, running an installation, or just listening at home, wāv turns your audio into a visual spectacle.</p>
             </div>
 
-            <div className="text-2xl font-black tracking-tight mt-8 mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>manual</div>
-            <div className="flex flex-col gap-5 text-sm text-white/80 leading-relaxed">
-              <div>
-                <p className="font-semibold text-white mb-1">The wāv header</p>
-                <p>Tap the wordmark to alter the artwork — a small nudge to its colors and shapes.</p>
-                <p>Press and hold to make incremental changes, hold for a full beat or double-click, and it remixes the artwork completely.</p>
-                <p>Drag the wordmark to move the whole control panel anywhere on screen.</p>
+            <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">The wāv header</p>
+                <p>Tap the wordmark to alter the artwork. Hold for a full beat or double-click, to completely remix the artwork.</p>
+                <p>Drag the wordmark to move the control panel anywhere on screen.</p>
               </div>
 
-              <div>
-                <p className="font-semibold text-white mb-1">Top icon row</p>
-                <p>Eye — collapse the control panel</p>
-                <p>Camera — save the current frame as a PNG</p>
-                <p>Undo / redo — step backward or forward</p>
-                <p>Refresh — reset to defaults</p>
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Top icon row</p>
+                <p className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</p>
+                <p className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</p>
+                <p className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</p>
+                <p className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Refresh — reset to defaults</p>
               </div>
 
-              <div>
-                <p className="font-semibold text-white mb-1">Playback row</p>
-                <p>Record — capture video of the live animation</p>
-                <p>Play / pause — start or stop all motion and audio reactivity</p>
-                <p>Slower / faster — adjust playback speed</p>
-                <p>Direction arrow — reverse the rotation direction</p>
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Playback row</p>
+                <p className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</p>
+                <p className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Pause weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / pause — start or stop all motion and audio reactivity</p>
+                <p className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</p>
+                <p className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</p>
               </div>
 
-              <div>
-                <p className="font-semibold text-white mb-1">Tabs</p>
-                <p>Gradient — choose the base pattern and tune its sliders</p>
-                <p>FX — layer on effects; toggle Multi to stack several at once</p>
-                <p>Audio — connect a microphone or audio file so the artwork reacts to sound</p>
-                <p>Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</p>
-                <p>Presets — save the current look by name and reload it anytime</p>
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Tabs</p>
+                <p className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</p>
+                <p className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> FX — layer on effects; toggle Multi to stack several at once</p>
+                <p className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</p>
+                <p className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</p>
+                <p className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</p>
               </div>
             </div>
           </div>
