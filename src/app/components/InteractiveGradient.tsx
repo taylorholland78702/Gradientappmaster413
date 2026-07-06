@@ -90,8 +90,7 @@ export function InteractiveGradient() {
   // Play engages automatically on load/refresh at the default 1x speed.
   const [isAutoMode, setIsAutoMode] = useState(true);
   const [isAutoColor, setIsAutoColor] = useState(true);
-  const [gradientTransitionOpacity, setGradientTransitionOpacity] = useState(1);
-  
+
   const [gradientColors, setGradientColors] = useState<ColorRGB[]>(DEFAULT_COLORS);
   const [targetColors, setTargetColors] = useState<ColorRGB[]>(gradientColors);
   const [gradientAngle, setGradientAngle] = useState(45);
@@ -6019,7 +6018,7 @@ export function InteractiveGradient() {
           onTouchMove={handleTouchMove}
           onWheel={handleWheel}
           className="w-full h-full"
-          style={{ touchAction: 'none', opacity: gradientTransitionOpacity, transition: 'opacity 0.1s ease-in-out' }}
+          style={{ touchAction: 'none' }}
         />
       </div>
       
@@ -6494,13 +6493,7 @@ export function InteractiveGradient() {
             {FULL_GRADIENT_TYPES.map((type) => (
               <button
                 key={type}
-                onClick={() => {
-                  setGradientTransitionOpacity(0);
-                  setTimeout(() => {
-                    setGradientType(type);
-                    setGradientTransitionOpacity(1);
-                  }, 800);
-                }}
+                onClick={() => setGradientType(type)}
                 className={`px-0.5 py-0.5 rounded text-[10px] capitalize transition-all whitespace-nowrap ${
                   gradientType === type
                     ? 'bg-white text-black shadow-sm'
