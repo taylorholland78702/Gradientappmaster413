@@ -345,7 +345,7 @@ export function InteractiveGradient() {
   const [flowScale, setFlowScale] = useState(3);
   // ASCII mosaic
   const [asciiSize, setAsciiSize] = useState(14);
-  const [asciiColor, setAsciiColor] = useState(true);
+  const [asciiColor, setAsciiColor] = useState(false);
   // Liquid displacement
   const [liquidAnimTime, setLiquidAnimTime] = useState(0);
   const [liquidStrength, setLiquidStrength] = useState(30);
@@ -5207,7 +5207,7 @@ export function InteractiveGradient() {
           // of dot size.
           if (!imageData) break;
           const aSize = Math.max(6, asciiSize);
-          const chars = ' .:-=+*#%@';
+          const chars = ' .:-=+*x#%@';
           const colsA = Math.ceil(displayWidth / aSize);
           const rowsA = Math.ceil(displayHeight / aSize);
           const idatA = imageData.data;
