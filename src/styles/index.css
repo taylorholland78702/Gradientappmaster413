@@ -337,8 +337,12 @@
 .control-panel [class*="bg-white/"]:not([class*="hover:"]) {
   background-color: rgba(0, 0, 0, 0.1) !important;
 }
+/* Solid, opaque gray — not a low-alpha black, which replaces (rather than
+   composites over) the button's own white background and ends up showing
+   whatever's behind the panel (often dark canvas) through the gap, reading
+   as a black/blank hover instead of a visible highlight. */
 .control-panel button:not(.wav-drag-handle):not([style*="background"]):hover {
-  background-color: rgba(0, 0, 0, 0.08) !important;
+  background-color: rgb(209, 213, 219) !important;
 }
 .control-panel button:disabled {
   opacity: 0.35;
