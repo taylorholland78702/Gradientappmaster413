@@ -6008,6 +6008,7 @@ export function InteractiveGradient() {
           </button>
           <button
             onPointerDown={() => {
+              randomizeWavGradient();
               setIsWavHolding(true);
               wavPressStartTime.current = Date.now();
               wavLongPressFired.current = false;
@@ -6016,12 +6017,15 @@ export function InteractiveGradient() {
             onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1); evolveWithFactor(factor); } }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             onDoubleClick={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); setIsWavHolding(false); evolveWithFactor(1); }}
-            className={`relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none${isWavHolding ? '' : ' wav-hue-drift'}`}
-            style={{ background: 'linear-gradient(to top, #7c3aed, #ec4899, #eab308)' }}
+            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
             title="Tap: evolve · Hold: new mood"
           >
-            {isWavHolding && <span className="wav-fill" />}
-            <Shuffle weight="regular" className="relative w-4 h-4 text-white" />
+            <span
+              aria-hidden="true"
+              className={`wav-btn-fill-reveal ${isWavHolding ? 'wav-revealing' : ''}`}
+              style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
+            />
+            <Shuffle weight="regular" className="relative w-4 h-4 text-black" />
           </button>
           <button
             onClick={undoLastChange}

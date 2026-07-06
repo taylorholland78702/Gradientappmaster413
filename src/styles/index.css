@@ -195,6 +195,20 @@
   animation: wav-reveal-rise 0.8s linear forwards, wav-flow-bottom-up 0.9s linear infinite;
 }
 
+/* Same bottom-up reveal, generalized for a plain box (the collapsed
+   shuffle button) instead of clipped text. */
+.wav-btn-fill-reveal {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  clip-path: inset(100% 0 0 0);
+  background-position-y: -20%;
+}
+
+.wav-btn-fill-reveal.wav-revealing {
+  animation: wav-reveal-rise 0.8s linear forwards, wav-flow-bottom-up 0.9s linear infinite;
+}
+
 /* Liquid fill rising from bottom over the hold duration */
 @keyframes wav-fill-rise {
   0%   { transform: translateY(100%); }
