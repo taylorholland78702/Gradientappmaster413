@@ -342,6 +342,7 @@ export function InteractiveGradient() {
   const [flowParticleCount, setFlowParticleCount] = useState(250);
   const [flowSpeed, setFlowSpeed] = useState(1);
   const [flowScale, setFlowScale] = useState(3);
+  const [flowThickness, setFlowThickness] = useState(1.5);
   // ASCII mosaic
   const [asciiSize, setAsciiSize] = useState(14);
   const [asciiColor, setAsciiColor] = useState(false);
@@ -987,7 +988,7 @@ export function InteractiveGradient() {
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
-      flowParticleCount, flowScale, flowSpeed,
+      flowParticleCount, flowScale, flowSpeed, flowThickness,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -1039,7 +1040,7 @@ export function InteractiveGradient() {
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
-      flowParticleCount, flowScale, flowSpeed,
+      flowParticleCount, flowScale, flowSpeed, flowThickness,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -1250,6 +1251,7 @@ export function InteractiveGradient() {
     setFlowParticleCount(snapshot.flowParticleCount ?? 250);
     setFlowScale(snapshot.flowScale ?? 3);
     setFlowSpeed(snapshot.flowSpeed ?? 1);
+    setFlowThickness(snapshot.flowThickness ?? 1.5);
     setFlowerCircles(snapshot.flowerCircles ?? 3);
     setFlowerRotation(snapshot.flowerRotation ?? 0);
     setFlowerScale(snapshot.flowerScale ?? 0.8);
@@ -2537,7 +2539,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, asciiSize, asciiColor, asciiChars, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -4059,7 +4061,7 @@ export function InteractiveGradient() {
           const ny = p.y + Math.sin(angle) * 1.5;
           const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
           fbCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`;
-          fbCtx.lineWidth = 1.5;
+          fbCtx.lineWidth = flowThickness;
           fbCtx.beginPath();
           fbCtx.moveTo(p.x, p.y);
           fbCtx.lineTo(nx, ny);
@@ -4985,21 +4987,31 @@ export function InteractiveGradient() {
             ctx.globalAlpha = 1.0;
             ctx.filter = 'none';
           } else if (blurType === 'radial') {
-            // Radial zoom blur (same as former zoom-blur effect)
+            // True rotational ("spin") blur: samples an arc around the
+            // center at a fixed radius, sweeping angle each step, instead of
+            // sampling along the radius toward center (that's a zoom blur —
+            // covered by Bloom/Zoom Blur elsewhere and wasn't distinct here,
+            // plus its effect was capped tiny enough at typical slider
+            // values to look like it barely did anything).
             if (canvas.width > 0 && canvas.height > 0) {
               try {
                 const zbSrc = getDisplayImageData();
                 const zbDst = ctx.createImageData(displayWidth, displayHeight);
                 const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
-                const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isFirstEffect && isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
-                const zbSteps = 10;
+                // Up to ~45 degrees of total sweep at max slider value.
+                const spinSweep = (blurRadialAmount / 50) * (Math.PI / 4) * (isFirstEffect && isAudioReactive ? 1 + audioMidsLevel * 2 : 1);
+                const zbSteps = 12;
                 for (let y = 0; y < displayHeight; y++) {
                   for (let x = 0; x < displayWidth; x++) {
+                    const dx = x - zbCx, dy = y - zbCy;
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    const baseAngle = Math.atan2(dy, dx);
                     let rr = 0, gg = 0, bb = 0;
                     for (let s = 0; s < zbSteps; s++) {
-                      const t = 1 - zbAmt * (s / zbSteps);
-                      const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(zbCx + (x - zbCx) * t)));
-                      const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(zbCy + (y - zbCy) * t)));
+                      const t = (s / (zbSteps - 1)) - 0.5;
+                      const a = baseAngle + t * spinSweep;
+                      const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(zbCx + Math.cos(a) * r)));
+                      const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(zbCy + Math.sin(a) * r)));
                       const si = (sy * displayWidth + sx) * 4;
                       rr += zbSrc.data[si]; gg += zbSrc.data[si+1]; bb += zbSrc.data[si+2];
                     }
@@ -6916,6 +6928,7 @@ export function InteractiveGradient() {
               { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
               { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
               { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
+              { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -7469,7 +7482,6 @@ export function InteractiveGradient() {
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
           <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="text-[10px] text-white font-semibold mb-2">Voronoi Controls</div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Cell Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -7531,7 +7543,6 @@ export function InteractiveGradient() {
         {/* Radar Controls */}
         {gradientType === 'radar' && (
           <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="text-[10px] text-white font-semibold mb-2">Radar Controls</div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Fade Length:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -7566,7 +7577,6 @@ export function InteractiveGradient() {
         {/* Flower Controls */}
         {gradientType === 'flower' && (
           <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="text-[10px] text-white font-semibold mb-2">Flower Controls</div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Circles:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -8135,8 +8145,6 @@ export function InteractiveGradient() {
               {activeEffects.includes('blur') && (
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1 mb-1">
-                    
-                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
