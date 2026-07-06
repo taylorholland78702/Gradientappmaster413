@@ -33,10 +33,12 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 }) => {
   return (
     <div className="flex items-stretch bg-black/25 rounded-lg w-full shadow-sm">
-      {/* Group 1 — widened slightly so the divider after it lines up with the
-          dividers in the rows above/below (Group 2's <<1x>> cluster had extra
-          breathing room, pushing this boundary too far left). */}
-      <div className="flex-[2.12] flex items-center justify-between">
+      {/* Group 1 — exact width of 2 of the reference rows' 5 equal columns
+          (icon row / tab row: 5 flex-1 buttons + 4 fixed 1px dividers). This
+          row only has 2 dividers, so the calc() accounts for that directly
+          instead of an empirically-tuned flex-grow ratio, guaranteeing the
+          divider below lands exactly on the same column boundary. */}
+      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
@@ -74,9 +76,8 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
       <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
-      {/* Group 2 — narrowed to give that space to Group 1 above, tightening
-          the <<1x>> cluster's internal breathing room. */}
-      <div className="flex-[1.88] flex items-center justify-between px-0.5">
+      {/* Group 2 — same exact-width formula, 2 of 5 reference columns. */}
+      <div className="basis-[calc((100%_-_2px)/5*2)] grow-0 shrink-0 flex items-center justify-between px-0.5">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
@@ -114,8 +115,8 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
       <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
-      {/* Group 3 (1/5 width) */}
-      <div className="flex-1 flex items-center justify-center">
+      {/* Group 3 — 1 of 5 reference columns. */}
+      <div className="basis-[calc((100%_-_2px)/5*1)] grow-0 shrink-0 flex items-center justify-center">
         <button
           onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
           className="p-2 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
