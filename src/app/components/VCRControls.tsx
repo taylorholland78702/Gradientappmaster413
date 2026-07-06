@@ -33,8 +33,10 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 }) => {
   return (
     <div className="flex items-stretch bg-black/25 rounded-lg w-full shadow-sm">
-      {/* Group 1 (2/5 width) — matches the 2-column span of the rows above/below */}
-      <div className="flex-[2] flex items-center justify-between">
+      {/* Group 1 — widened slightly so the divider after it lines up with the
+          dividers in the rows above/below (Group 2's <<1x>> cluster had extra
+          breathing room, pushing this boundary too far left). */}
+      <div className="flex-[2.12] flex items-center justify-between">
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
@@ -72,8 +74,9 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
       <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
 
-      {/* Group 2 (2/5 width) — compressed so its outer edges land on the same lines */}
-      <div className="flex-[2] flex items-center justify-between px-0.5">
+      {/* Group 2 — narrowed to give that space to Group 1 above, tightening
+          the <<1x>> cluster's internal breathing room. */}
+      <div className="flex-[1.88] flex items-center justify-between px-0.5">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
