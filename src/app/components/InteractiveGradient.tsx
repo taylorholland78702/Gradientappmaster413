@@ -3852,12 +3852,14 @@ export function InteractiveGradient() {
         const rows = Math.ceil(displayHeight / tSize) + 2;
         ctx.lineWidth = Math.max(1, truchetThickness);
         ctx.lineCap = 'round';
-        // Slow color drift via the shared playhead angle instead of its own
-        // separate rotation/animation state.
+        // Color drift AND the tile pattern itself both track the shared
+        // playhead angle (instead of just color before) — the seed's phase
+        // shifts as the playhead advances, so tiles progressively re-flip
+        // and the maze visibly evolves rather than only recoloring in place.
         const trAngleOffset = gradientAngle * 0.3;
         for (let row = -1; row < rows; row++) {
           for (let col = -1; col < cols; col++) {
-            const seed = Math.sin(col * 127.1 + row * 311.7 + 43.7) * 43758.5453;
+            const seed = Math.sin(col * 127.1 + row * 311.7 + 43.7 + trAngleOffset * 0.6) * 43758.5453;
             const seedFrac = seed - Math.floor(seed);
             const flip = seedFrac < truchetVariation;
             const cx0 = col * tSize, cy0 = row * tSize;
@@ -8023,7 +8025,7 @@ export function InteractiveGradient() {
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
-                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'gaussian'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8033,7 +8035,7 @@ export function InteractiveGradient() {
                       </button>
                       <button
                         onClick={() => setBlurType('motion')}
-                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'motion'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8043,7 +8045,7 @@ export function InteractiveGradient() {
                       </button>
                       <button
                         onClick={() => setBlurType('radial')}
-                        className={`flex-1 px-1 py-0.5 rounded text-xs transition-all ${
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'radial'
                             ? 'bg-white text-black'
                             : 'bg-black/25 text-white hover:bg-white/15'
@@ -8192,7 +8194,7 @@ export function InteractiveGradient() {
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
                         className={`px-2 py-1 text-xs rounded transition-all ${
                           halftoneCMYK
-                            ? 'bg-yellow-500 text-black'
+                            ? 'bg-blue-500 text-white'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
