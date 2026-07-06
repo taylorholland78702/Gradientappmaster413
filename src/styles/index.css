@@ -130,13 +130,23 @@
   transform: translateZ(0);
 }
 
-/* wāv wordmark: solid white fill with a gray stroke, visible over any
-   background (including white). Holding erases it from the bottom up
-   (clip-path wipe) to reveal the random gradient underneath, mirroring
-   the shuffle button's fill-rise; releasing snaps it straight back. */
+/* wāv wordmark stroke: thin gray outline that never erases and always
+   shows, painted behind everything else so the solid white fill on top
+   covers its inner half, leaving only the outer sliver visible — reads
+   as an outline sitting outside the white type rather than centered on it. */
+.wav-stroke-text {
+  color: transparent;
+  -webkit-text-stroke: 1px #9ca3af;
+  pointer-events: none;
+}
+
+/* Solid white fill, visible over any background (including white).
+   Holding erases it from the bottom up (clip-path wipe) to reveal the
+   random gradient underneath (itself bounded to the fill's own glyph
+   shape, so the color never bleeds past the stroke); releasing snaps
+   it straight back. */
 .wav-base-text {
   color: #ffffff;
-  -webkit-text-stroke: 2.5px #9ca3af;
   opacity: 1;
   clip-path: inset(0 0 0% 0);
 }
@@ -276,6 +286,7 @@
 /* The wāv wordmark keeps its own white/gray/gradient styling — exempt
    from the panel's flat black-text rule above. */
 .control-panel .wav-base-text,
+.control-panel .wav-stroke-text,
 .control-panel .wav-random-fill {
   text-shadow: none !important;
 }
@@ -286,7 +297,10 @@
 }
 .control-panel .wav-base-text {
   color: #ffffff !important;
-  -webkit-text-stroke: 2.5px #9ca3af;
+}
+.control-panel .wav-stroke-text {
+  color: transparent !important;
+  -webkit-text-stroke: 1px #9ca3af;
 }
 .control-panel .wav-random-fill {
   color: transparent !important;

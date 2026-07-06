@@ -6117,6 +6117,14 @@ export function InteractiveGradient() {
           <span className="relative w-full block wav-glow-wrap">
             <span
               aria-hidden="true"
+              className="absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-stroke-text"
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 900,
+              }}
+            >wāv</span>
+            <span
+              aria-hidden="true"
               className={`absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-random-fill ${isWavHolding ? 'wav-revealing' : ''}`}
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
