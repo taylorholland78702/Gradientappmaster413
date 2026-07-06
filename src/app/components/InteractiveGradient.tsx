@@ -1653,6 +1653,32 @@ export function InteractiveGradient() {
     setSubmittedAIPrompt('');
   }, [gradientColors, gradientAngle, zoom, activeEffects, saveCurrentState, feelingLucky, FEELING_LUCKY_GRADIENT_TYPES]);
 
+  // Mood presets (Presets tab "Moods" strip): curated gradient + effects +
+  // speed + sensitivity bundles, picking a random gradient/colors within
+  // the mood's defined ranges each time so the same mood doesn't look
+  // identical on repeat clicks.
+  const applyMood = useCallback((mood: typeof WAV_MOODS[number]) => {
+    saveCurrentState();
+    const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
+      s /= 100; l /= 100;
+      const k = (n: number) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+    };
+    const [satMin, satMax] = mood.sat;
+    const [litMin, litMax] = mood.lit;
+    const moodColors = mood.hues.map(h => hslToRgb(h, satMin + Math.random() * (satMax - satMin), litMin + Math.random() * (litMax - litMin)));
+    setGradientColors(moodColors);
+    setTargetColors(moodColors);
+    setGradientType(mood.gradients[Math.floor(Math.random() * mood.gradients.length)]);
+    setActiveEffects(mood.effects);
+    setVcrPlaybackSpeed(mood.speed);
+    setMasterSensitivity(mood.sensitivity);
+    setBaseAIColors(null);
+    setSubmittedAIPrompt('');
+  }, [saveCurrentState]);
+
   // Capture current state for rating
   const captureCurrentStateForRating = useCallback(() => {
     setPendingRatingState({
@@ -8634,6 +8660,22 @@ export function InteractiveGradient() {
 
         {/* ── Presets Tab ── */}
         {activeTab === 'presets' && (
+        <>
+        <div className="w-full p-2 bg-black/25 rounded-lg mb-1.5">
+          <p className="text-[10px] text-white/80 font-medium mb-1.5">Moods</p>
+          <div className="grid grid-cols-2 gap-1">
+            {WAV_MOODS.map((mood) => (
+              <button
+                key={mood.name}
+                onClick={() => applyMood(mood)}
+                className="px-1.5 py-1 rounded text-[10px] capitalize bg-black/25 text-white hover:bg-black/35 transition-all"
+                title={`${mood.name}: gradient + effects + speed + sensitivity`}
+              >
+                {mood.name}
+              </button>
+            ))}
+          </div>
+        </div>
         <PresetsPanel
           isPresetsDropdownOpen={isPresetsDropdownOpen}
           savedPresets={savedPresets}
@@ -8648,7 +8690,7 @@ export function InteractiveGradient() {
           updatePreset={updatePreset}
           savePresetWithName={savePresetWithName}
         />
-
+        </>
         )}
 
       </div>
