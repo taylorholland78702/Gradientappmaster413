@@ -9,32 +9,13 @@ export interface ColorRGB {
   b: number;
 }
 
-export interface PresetData {
-  gradientColors: ColorRGB[];
-  gradientAngle: number;
-  gradientType: string | null;
-  zoom: number;
-  activeEffects: string[];
-  kaleidoscopeSegments: number;
-  twistAmount: number;
-  pixelSize: number;
-  triangleSize: number;
-  chromaticOffset: number;
-  fisheyeStrength: number;
-  tileCount: number;
-  grainIntensity: number;
-  blurMotionAmount: number;
-  blurMotionDirection: number;
-  blurGaussianAmount: number;
-  blurRadialAmount: number;
-  posterizeLevels: number;
-  halftoneSize: number;
-  halftoneMove: boolean;
-  vignetteStrength: number;
-  colorShiftHue: number;
-  submittedAIPrompt: string;
-  baseAIColors: ColorRGB[] | null;
-}
+// A preset is now a full app-state snapshot (the same shape produced by
+// InteractiveGradient's buildSnapshot/applySnapshot, used for undo/redo) —
+// every gradient/effect parameter, not just the ~20 fields from before most
+// of the app's sliders existed. Left loose here since this hook doesn't need
+// to know the exact shape, only that it's a JSON-serializable object.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PresetData = Record<string, any>;
 
 export interface SavedPreset {
   name: string;

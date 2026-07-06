@@ -575,59 +575,21 @@ export function InteractiveGradient() {
 
   // usePresets — preset save/load/delete/rename
   const presets = usePresets({
-    getCurrentState: () => ({
-      gradientColors,
-      gradientAngle,
-      gradientType,
-      zoom,
-      activeEffects,
-      kaleidoscopeSegments,
-      twistAmount,
-      pixelSize,
-      triangleSize,
-      chromaticOffset,
-      fisheyeStrength,
-      grainIntensity,
-      blurMotionAmount,
-      blurMotionDirection,
-      blurGaussianAmount,
-      blurRadialAmount,
-      posterizeLevels,
-      halftoneSize,
-      halftoneMove,
-      vignetteStrength,
-      colorShiftHue,
-      submittedAIPrompt,
-      baseAIColors,
-    }),
-    applyPresetData: (data) => {
-      const colors = data.gradientColors || DEFAULT_COLORS;
-      setGradientColors(colors);
-      setTargetColors(colors);
-      setGradientAngle(data.gradientAngle ?? 45);
-      setTargetAngle(data.gradientAngle ?? 45);
-      setGradientType((data.gradientType ? migrateId(data.gradientType) : 'angle') as GradientType);
-      setZoom(data.zoom ?? 1);
-      setTargetZoom(data.zoom ?? 1);
-      setActiveEffects(migrateIds(data.activeEffects) as EffectType[]);
-      setKaleidoscopeSegments(data.kaleidoscopeSegments || 8);
-      setTwistAmount(data.twistAmount || 2);
-      setPixelSize(data.pixelSize || 20);
-      setTriangleSize(data.triangleSize || 40);
-      setChromaticOffset(data.chromaticOffset || 5);
-      setFisheyeStrength(data.fisheyeStrength || 0.5);
-      setGrainIntensity(data.grainIntensity || 0.1);
-      setBlurMotionAmount(data.blurMotionAmount || 5);
-      setBlurMotionDirection(data.blurMotionDirection || 0);
-      setBlurGaussianAmount(data.blurGaussianAmount || 5);
-      setBlurRadialAmount(data.blurRadialAmount || 5);
-      setPosterizeLevels(data.posterizeLevels || 8);
-      setHalftoneSize(data.halftoneSize || 4);
-      setHalftoneMove(data.halftoneMove || false);
-      setVignetteStrength(data.vignetteStrength || 0.5);
-      setColorShiftHue(data.colorShiftHue || 0);
-      setSubmittedAIPrompt(data.submittedAIPrompt || '');
-      setBaseAIColors(data.baseAIColors || null);
+    // Presets used to save/restore only ~20 fields — a leftover from before
+    // most of the app's gradient/effect-specific sliders existed — so a
+    // reloaded preset kept the right base colors/gradient type but every
+    // fine-tuned slider snapped back to whatever was already live instead of
+    // what was saved. buildSnapshot/applySnapshot (used by undo/redo) are
+    // kept in sync with every gradient/effect parameter that exists, so
+    // presets now reuse them directly instead of maintaining a second,
+    // perpetually-stale field list.
+    getCurrentState: () => buildSnapshot(),
+    applyPresetData: (data: any) => {
+      applySnapshot({
+        ...data,
+        gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
+        activeEffects: migrateIds(data.activeEffects),
+      });
     },
   });
 
@@ -1013,6 +975,44 @@ export function InteractiveGradient() {
       resolutionMultiplier,
       baseAIColors: baseAIColors ? [...baseAIColors] : null,
       submittedAIPrompt,
+      // Fields below were added after this snapshot was first written and
+      // had never been folded in — undo/redo and presets silently dropped
+      // every gradient/effect added since, snapping back to defaults on
+      // restore instead of the values that were actually live when saved.
+      asciiChars, asciiColor, asciiSize,
+      auroraBandCount, auroraBandHeight, auroraWaveSpeed,
+      bloomIntensity, bloomRadius,
+      causticsBrightness, causticsScale,
+      chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
+      ditherLevels, ditherType,
+      fadeDirection,
+      feedbackDecay, feedbackRotation, feedbackZoom,
+      fisheyeCenterX, fisheyeCenterY,
+      flowParticleCount, flowScale, flowSpeed,
+      flowerCircles, flowerRotation, flowerScale, flowerSpread,
+      grainType,
+      gridShapeSize, gridVariation,
+      halftoneCMYK,
+      isAudioEnabled, isAudioReactive,
+      kaleidoscopeRotateSpeed,
+      lavaBlobCount, lavaBlobSize, lavaSpeed,
+      liquidScale, liquidStrength,
+      marbleOctaves, marbleTurbulence, marbleVeinFreq,
+      meshJitter,
+      metaballCount, metaballSize, metaballSpeed,
+      mirrorMode, mirrorTileCount,
+      moireOffset, moireScale, moireSpeed,
+      noiseType, noiseWarp,
+      plasmaZoomScale,
+      pulseIntensity, pulseSpeed,
+      radarBeamWidth, radarFadeLength, radarSweepAngle,
+      radialSizeScale,
+      rippleAmplitude, rippleFrequency,
+      slitScanDirection, slitScanIntensity,
+      truchetSize, truchetThickness, truchetVariation,
+      vignetteSoftness,
+      voronoiCellCount, voronoiDistortion,
+      waveDistortionRotation, waveScale,
     };
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
       activeEffects, colorPins, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize,
@@ -1030,7 +1030,41 @@ export function InteractiveGradient() {
       conicalSpiralTurns, conicalSpiralTightness, gridRotation,
       angleStartOffset, angleCenterX, angleCenterY,
       iridescentAngle, iridescentIntensity, iridescentScale,
-      baseAIColors, submittedAIPrompt]);
+      baseAIColors, submittedAIPrompt,
+      asciiChars, asciiColor, asciiSize,
+      auroraBandCount, auroraBandHeight, auroraWaveSpeed,
+      bloomIntensity, bloomRadius,
+      causticsBrightness, causticsScale,
+      chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
+      ditherLevels, ditherType,
+      fadeDirection,
+      feedbackDecay, feedbackRotation, feedbackZoom,
+      fisheyeCenterX, fisheyeCenterY,
+      flowParticleCount, flowScale, flowSpeed,
+      flowerCircles, flowerRotation, flowerScale, flowerSpread,
+      grainType,
+      gridShapeSize, gridVariation,
+      halftoneCMYK,
+      isAudioEnabled, isAudioReactive,
+      kaleidoscopeRotateSpeed,
+      lavaBlobCount, lavaBlobSize, lavaSpeed,
+      liquidScale, liquidStrength,
+      marbleOctaves, marbleTurbulence, marbleVeinFreq,
+      meshJitter,
+      metaballCount, metaballSize, metaballSpeed,
+      mirrorMode, mirrorTileCount,
+      moireOffset, moireScale, moireSpeed,
+      noiseType, noiseWarp,
+      plasmaZoomScale,
+      pulseIntensity, pulseSpeed,
+      radarBeamWidth, radarFadeLength, radarSweepAngle,
+      radialSizeScale,
+      rippleAmplitude, rippleFrequency,
+      slitScanDirection, slitScanIntensity,
+      truchetSize, truchetThickness, truchetVariation,
+      vignetteSoftness,
+      voronoiCellCount, voronoiDistortion,
+      waveDistortionRotation, waveScale]);
 
   // Save current state for undo (defined early for use in other functions)
   const saveCurrentState = useCallback(() => {
@@ -1190,6 +1224,82 @@ export function InteractiveGradient() {
     setResolutionMultiplier(snapshot.resolutionMultiplier || 1);
     setBaseAIColors(snapshot.baseAIColors);
     setSubmittedAIPrompt(snapshot.submittedAIPrompt);
+    // Fields below were added after this function was first written (see
+    // matching note in buildSnapshot) — restored with the same defaults
+    // their own useState declarations use, for snapshots saved before they existed.
+    setAsciiChars(snapshot.asciiChars ?? ' .:-=+*x#%@');
+    setAsciiColor(snapshot.asciiColor ?? false);
+    setAsciiSize(snapshot.asciiSize ?? 14);
+    setAuroraBandCount(snapshot.auroraBandCount ?? 6);
+    setAuroraBandHeight(snapshot.auroraBandHeight ?? 1);
+    setAuroraWaveSpeed(snapshot.auroraWaveSpeed ?? 0.2);
+    setBloomIntensity(snapshot.bloomIntensity ?? 0.7);
+    setBloomRadius(snapshot.bloomRadius ?? 12);
+    setCausticsBrightness(snapshot.causticsBrightness ?? 1.5);
+    setCausticsScale(snapshot.causticsScale ?? 5);
+    setChromaticAngle(snapshot.chromaticAngle ?? 0);
+    setChromaticTrailsDecay(snapshot.chromaticTrailsDecay ?? 0.85);
+    setChromaticTrailsOffset(snapshot.chromaticTrailsOffset ?? 8);
+    setDitherLevels(snapshot.ditherLevels ?? 2);
+    setDitherType(snapshot.ditherType ?? 'bayer');
+    setFadeDirection(snapshot.fadeDirection ?? 0);
+    setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
+    setFeedbackRotation(snapshot.feedbackRotation ?? 0);
+    setFeedbackZoom(snapshot.feedbackZoom ?? 1.0);
+    setFisheyeCenterX(snapshot.fisheyeCenterX ?? 50);
+    setFisheyeCenterY(snapshot.fisheyeCenterY ?? 50);
+    setFlowParticleCount(snapshot.flowParticleCount ?? 250);
+    setFlowScale(snapshot.flowScale ?? 3);
+    setFlowSpeed(snapshot.flowSpeed ?? 1);
+    setFlowerCircles(snapshot.flowerCircles ?? 3);
+    setFlowerRotation(snapshot.flowerRotation ?? 0);
+    setFlowerScale(snapshot.flowerScale ?? 0.8);
+    setFlowerSpread(snapshot.flowerSpread ?? 0.6);
+    setGrainType(snapshot.grainType ?? 'medium');
+    setGridShapeSize(snapshot.gridShapeSize ?? 25);
+    setGridVariation(snapshot.gridVariation ?? 0);
+    setHalftoneCMYK(snapshot.halftoneCMYK ?? false);
+    setIsAudioEnabled(snapshot.isAudioEnabled ?? false);
+    setIsAudioReactive(snapshot.isAudioReactive ?? false);
+    setKaleidoscopeRotateSpeed(snapshot.kaleidoscopeRotateSpeed ?? 0.5);
+    setLavaBlobCount(snapshot.lavaBlobCount ?? 10);
+    setLavaBlobSize(snapshot.lavaBlobSize ?? 0.08);
+    setLavaSpeed(snapshot.lavaSpeed ?? 1);
+    setLiquidScale(snapshot.liquidScale ?? 3);
+    setLiquidStrength(snapshot.liquidStrength ?? 30);
+    setMarbleOctaves(snapshot.marbleOctaves ?? 5);
+    setMarbleTurbulence(snapshot.marbleTurbulence ?? 1.5);
+    setMarbleVeinFreq(snapshot.marbleVeinFreq ?? 2);
+    setMeshJitter(snapshot.meshJitter ?? 0);
+    setMetaballCount(snapshot.metaballCount ?? 6);
+    setMetaballSize(snapshot.metaballSize ?? 0.16);
+    setMetaballSpeed(snapshot.metaballSpeed ?? 1);
+    setMirrorMode(snapshot.mirrorMode ?? 'horizontal');
+    setMirrorTileCount(snapshot.mirrorTileCount ?? 2);
+    setMoireOffset(snapshot.moireOffset ?? 30);
+    setMoireScale(snapshot.moireScale ?? 10);
+    setMoireSpeed(snapshot.moireSpeed ?? 1);
+    setNoiseType(snapshot.noiseType ?? 'smooth');
+    setNoiseWarp(snapshot.noiseWarp ?? 0);
+    setPlasmaZoomScale(snapshot.plasmaZoomScale ?? 1);
+    setPulseIntensity(snapshot.pulseIntensity ?? 15);
+    setPulseSpeed(snapshot.pulseSpeed ?? 1);
+    setRadarBeamWidth(snapshot.radarBeamWidth ?? 30);
+    setRadarFadeLength(snapshot.radarFadeLength ?? 90);
+    setRadarSweepAngle(snapshot.radarSweepAngle ?? 0);
+    setRadialSizeScale(snapshot.radialSizeScale ?? 1.0);
+    setRippleAmplitude(snapshot.rippleAmplitude ?? 20);
+    setRippleFrequency(snapshot.rippleFrequency ?? 0.015);
+    setSlitScanDirection(snapshot.slitScanDirection ?? 'horizontal');
+    setSlitScanIntensity(snapshot.slitScanIntensity ?? 0.5);
+    setTruchetSize(snapshot.truchetSize ?? 40);
+    setTruchetThickness(snapshot.truchetThickness ?? 4);
+    setTruchetVariation(snapshot.truchetVariation ?? 0.5);
+    setVignetteSoftness(snapshot.vignetteSoftness ?? 50);
+    setVoronoiCellCount(snapshot.voronoiCellCount ?? 19);
+    setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
+    setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
+    setWaveScale(snapshot.waveScale ?? 1.0);
   }, []);
 
   const undoLastChange = useCallback(() => {
