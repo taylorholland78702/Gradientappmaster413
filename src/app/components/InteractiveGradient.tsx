@@ -6769,7 +6769,7 @@ export function InteractiveGradient() {
             </div>
 
             {isKeywordHelpOpen && (
-              <div className="mb-2 p-2 rounded bg-black/20 border border-white/8 text-[10px] text-white/70 leading-relaxed">
+              <div className="mb-2 p-2 rounded bg-black/20 border border-white/8 text-[10px] text-white/70 leading-relaxed max-h-52 overflow-y-auto">
                 <div className="font-bold text-white/90 mb-1">Themes</div>
                 <div className="mb-2 flex flex-wrap gap-1">
                   {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => {
