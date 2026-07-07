@@ -6383,12 +6383,12 @@ export function InteractiveGradient() {
           </span>
         </button>
 
-        {/* Icon row */}
+        {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows */}
         <div className="flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm">
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Hide Controls"
           >
             <Eye weight="regular" className="w-4 h-4" />
@@ -6396,7 +6396,7 @@ export function InteractiveGradient() {
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
             onClick={exportAsPNG}
-            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Save PNG"
           >
             <Camera weight="regular" className="w-4 h-4" />
@@ -6405,7 +6405,7 @@ export function InteractiveGradient() {
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`flex-1 py-2 transition-all flex items-center justify-center ${
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
               undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
@@ -6416,7 +6416,7 @@ export function InteractiveGradient() {
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`flex-1 py-2 transition-all flex items-center justify-center ${
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
               redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Redo (Cmd+Shift+Z)"
@@ -6437,57 +6437,61 @@ export function InteractiveGradient() {
               setSubmittedAIPrompt('');
               setAIPrompt('');
             }}
-            className="flex-1 py-2 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Reset"
           >
             <ArrowsClockwise weight="regular" className="w-4 h-4" />
           </button>
           </div>{/* end icon row */}
-        </div>{/* end top card */}
-        
-        {/* VCR Controls */}
-        <VCRControls
-          isRecording={isRecording}
-          isVCRPlaying={isVCRPlaying}
-          isAutoMode={isAutoMode}
-          vcrRecordedFrames={vcrRecordedFrames}
-          vcrPlaybackSpeed={vcrPlaybackSpeed}
-          rotationDirection={rotationDirection}
-          isEncoding={isEncoding}
-          encodingProgress={encodingProgress}
-          setVcrPlaybackSpeed={setVcrPlaybackSpeed}
-          setRotationDirection={setRotationDirection}
-          toggleVCRRecording={toggleVCRRecording}
-          handleStop={handleStop}
-          toggleVCRPlayback={toggleVCRPlayback}
-        />
-        
-        {/* Tab Bar */}
-        <div className="flex items-stretch w-full bg-black/25 rounded-lg shadow-sm overflow-hidden">
-          <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-            <Gradient weight="regular" className="w-4 h-4" />
-          </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-            <MagicWand weight="regular" className="w-4 h-4" />
-          </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button
-            onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
-            title="Audio"
-            className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
-          >
-            <SpeakerHigh weight="regular" className="w-4 h-4" />
-          </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-            <Palette weight="regular" className="w-4 h-4" />
-          </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-          <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets" className={`flex-1 flex items-center justify-center py-2 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-            <FloppyDisk weight="regular" className="w-4 h-4" />
-          </button>
-        </div>
+
+          <div className="h-px w-full bg-white/20 flex-shrink-0" />
+
+          {/* VCR Controls */}
+          <VCRControls
+            isRecording={isRecording}
+            isVCRPlaying={isVCRPlaying}
+            isAutoMode={isAutoMode}
+            vcrRecordedFrames={vcrRecordedFrames}
+            vcrPlaybackSpeed={vcrPlaybackSpeed}
+            rotationDirection={rotationDirection}
+            isEncoding={isEncoding}
+            encodingProgress={encodingProgress}
+            setVcrPlaybackSpeed={setVcrPlaybackSpeed}
+            setRotationDirection={setRotationDirection}
+            toggleVCRRecording={toggleVCRRecording}
+            handleStop={handleStop}
+            toggleVCRPlayback={toggleVCRPlayback}
+          />
+
+          <div className="h-px w-full bg-white/20 flex-shrink-0" />
+
+          {/* Tab Bar */}
+          <div className="flex items-stretch w-full">
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <Gradient weight="regular" className="w-4 h-4" />
+            </button>
+            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <MagicWand weight="regular" className="w-4 h-4" />
+            </button>
+            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <button
+              onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
+              title="Audio"
+              className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
+            >
+              <SpeakerHigh weight="regular" className="w-4 h-4" />
+            </button>
+            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <Palette weight="regular" className="w-4 h-4" />
+            </button>
+            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <FloppyDisk weight="regular" className="w-4 h-4" />
+            </button>
+          </div>
+        </div>{/* end merged card */}
 
         {/* ── Color Tab ── */}
         {activeTab === 'color' && (<>
