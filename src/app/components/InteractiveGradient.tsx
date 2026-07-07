@@ -6620,7 +6620,7 @@ export function InteractiveGradient() {
                 <button
                   key={type}
                   onClick={() => setGradientType(type)}
-                  className={`px-1 py-1 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                  className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                     gradientType === type
                       ? 'bg-white text-black'
                       : 'text-white hover:bg-white/10'
@@ -7816,23 +7816,23 @@ export function InteractiveGradient() {
 
         {/* ── Effects Tab ── */}
         {activeTab === 'effects' && (<>
-        {/* Top row: MULTI + Shuffle + RESET */}
-        <div className="w-full flex gap-0.5">
-          <button
-            onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all whitespace-nowrap shadow-sm ${isMultiFxMode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
-          >MULTI</button>
-          <button
-            onClick={randomizeEffects}
-            className="flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all bg-black/25 text-white hover:bg-white/15 shadow-sm flex items-center justify-center"
-            title="Shuffle Effects"
-          ><Shuffle weight="regular" className="w-4 h-4" /></button>
-          <button
-            onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
-            className={`flex-1 px-0.5 py-0.5 rounded text-[10px] font-semibold transition-all whitespace-nowrap shadow-sm ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
-          >RESET</button>
-        </div>
-        <div className="w-full">
+        <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
+          {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
+          <div className="w-full flex gap-0 border-b border-white/10">
+            <button
+              onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+            >MULTI</button>
+            <button
+              onClick={randomizeEffects}
+              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
+              title="Shuffle Effects"
+            ><Shuffle weight="regular" className="w-4 h-4" /></button>
+            <button
+              onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+            >RESET</button>
+          </div>
           {(() => {
             const effectsList = ([
               { value: 'ascii',          label: 'ASCII' },
@@ -7866,7 +7866,7 @@ export function InteractiveGradient() {
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
             const rows = Math.ceil(effectsList.length / 2);
             return (
-              <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+              <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {effectsList.map((effect, i) => {
                   const isLastInColumn = i % rows === rows - 1;
                   const isLeftColumn = i < rows;
@@ -7892,7 +7892,7 @@ export function InteractiveGradient() {
                           }
                         }
                       }}
-                      className={`px-1 py-1 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                      className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                         activeEffects.includes(effect.value)
                           ? 'bg-white text-black'
                           : 'text-white hover:bg-white/10'
@@ -7906,7 +7906,7 @@ export function InteractiveGradient() {
             );
           })()}
         </div>
-        
+
         {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (() => {
           const isMulti = activeEffects.length > 1;
 
