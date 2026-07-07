@@ -2648,6 +2648,21 @@ export function InteractiveGradient() {
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
   useEffect(() => { waveRotationRef.current = waveRotation; drawParamsDirtyRef.current = true; }, [waveRotation]);
 
+  // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
+  // repaint each frame — unlike every other gradient, a single dirty frame
+  // (all that fires while paused) only adds one faint short segment per
+  // particle on top of everything already drawn at the OLD scale, so the
+  // slider read as "doesn't work" unless you sat and watched Play run for
+  // several seconds while the old trails faded out. Clearing the buffer
+  // whenever Scale changes makes the new value visible immediately, even
+  // from a single paused-state frame.
+  useEffect(() => {
+    if (!flowBufferRef.current) return;
+    const fbCtx = flowBufferRef.current.getContext('2d');
+    fbCtx?.clearRect(0, 0, flowBufferRef.current.width, flowBufferRef.current.height);
+    drawParamsDirtyRef.current = true;
+  }, [flowScale]);
+
   // Draw gradient on canvas — stored imperatively in drawRef so the master RAF can call it
   // without triggering React reconciliation. Only re-assigned when non-animated params change.
   useEffect(() => {
@@ -5493,28 +5508,61 @@ export function InteractiveGradient() {
           if (!imageData) break;
           const eSize = Math.max(10, emojiSize);
           const emojis = splitGraphemes(emojiChars.trim().length > 0 ? emojiChars : '😴🙂😃🤩🔥');
-          const colsE = Math.ceil(displayWidth / eSize) + 1;
-          const rowsE = Math.ceil(displayHeight / eSize) + 1;
+          // Offset sliders are bounded to ±eSize (see the range inputs below),
+          // so one extra row/col of margin on EACH side is always enough to
+          // keep the grid fully covering the canvas at any offset — no modulo
+          // wrapping needed. (A previous version wrapped offset into [-eSize,0)
+          // via `((offset % eSize) + eSize) % eSize - eSize`, which maps an
+          // untouched offset of 0 to -eSize instead of 0: harmless for grid
+          // *coverage* since the pattern tiles, but it silently shifted which
+          // underlying pixel each cell sampled for brightness, so the default
+          // "no offset" state didn't match what Offset X/Y actually showed at 0.)
+          const colsE = Math.ceil(displayWidth / eSize) + 2;
+          const rowsE = Math.ceil(displayHeight / eSize) + 2;
           const idatE = imageData.data;
           const baseAngle = emojiAnimTime * (Math.PI / 180);
-          // Offset shifts the whole grid; wrapped into [-eSize, 0) so the
-          // pattern still tiles seamlessly instead of leaving a gap at one edge.
-          const offX = ((emojiOffsetX % eSize) + eSize) % eSize - eSize;
-          const offY = ((emojiOffsetY % eSize) + eSize) % eSize - eSize;
+          const offX = emojiOffsetX;
+          const offY = emojiOffsetY;
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           ctx.font = `${eSize}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          for (let r = 0; r < rowsE; r++) {
-            for (let c = 0; c < colsE; c++) {
+          // Auto-level pass: with many emoji in the ramp, a straight 0-255
+          // linear split meant most of them never got picked unless the
+          // current gradient's brightness happened to span the full range —
+          // typical smooth gradients only cover a narrow band, so entries
+          // near the ramp's ends (often exactly the ones just added from the
+          // picker) silently never appeared. Stretching the actual observed
+          // min-max range of THIS frame to fill 0-1 guarantees every entry in
+          // the ramp gets used somewhere, the same idea as the audio Auto Gain.
+          const cellBrightness: number[] = [];
+          let minBrightness = Infinity, maxBrightness = -Infinity;
+          for (let r = -1; r < rowsE; r++) {
+            for (let c = -1; c < colsE; c++) {
               const cellCx = c * eSize + Math.floor(eSize / 2) + offX;
               const cellCy = r * eSize + Math.floor(eSize / 2) + offY;
-              if (cellCx < 0 || cellCx >= displayWidth || cellCy < 0 || cellCy >= displayHeight) continue;
+              if (cellCx < 0 || cellCx >= displayWidth || cellCy < 0 || cellCy >= displayHeight) {
+                cellBrightness.push(-1);
+                continue;
+              }
               const pIdx = (Math.floor(cellCy) * displayWidth + Math.floor(cellCx)) * 4;
-              const pr = idatE[pIdx], pg = idatE[pIdx + 1], pb = idatE[pIdx + 2];
-              const brightness = (pr + pg + pb) / 3 / 255;
-              const emojiIdx = Math.min(emojis.length - 1, Math.floor(brightness * emojis.length));
+              const b = (idatE[pIdx] + idatE[pIdx + 1] + idatE[pIdx + 2]) / 3 / 255;
+              cellBrightness.push(b);
+              if (b < minBrightness) minBrightness = b;
+              if (b > maxBrightness) maxBrightness = b;
+            }
+          }
+          const brightnessRange = Math.max(0.001, maxBrightness - minBrightness);
+          let cellIdx = 0;
+          for (let r = -1; r < rowsE; r++) {
+            for (let c = -1; c < colsE; c++) {
+              const brightness = cellBrightness[cellIdx++];
+              if (brightness < 0) continue;
+              const cellCx = c * eSize + Math.floor(eSize / 2) + offX;
+              const cellCy = r * eSize + Math.floor(eSize / 2) + offY;
+              const normalizedBrightness = (brightness - minBrightness) / brightnessRange;
+              const emojiIdx = Math.min(emojis.length - 1, Math.floor(normalizedBrightness * emojis.length));
               const glyph = emojis[emojiIdx];
               if (!glyph || glyph === ' ') continue;
               // Deterministic per-cell jitter (stable across frames, no time
