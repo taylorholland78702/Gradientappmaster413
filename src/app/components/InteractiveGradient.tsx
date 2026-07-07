@@ -84,6 +84,22 @@ function pickRandomEmojiSet(count: number): string {
   return picked.join('');
 }
 
+// Splits a string into visual emoji units instead of raw codepoints. Flags
+// (regional-indicator pairs like 🇮🇹) and ZWJ sequences (🏳️‍🌈, 🏴‍☠️, skin-tone
+// modifiers) are made of 2+ codepoints each — Array.from(str) splits those
+// apart, and an isolated regional-indicator letter has no visible glyph on
+// most systems, so a flag in the Emoji effect's character ramp silently
+// rendered nothing every cell it was picked for (black canvas, no error).
+// Intl.Segmenter's grapheme granularity groups these correctly; it's been
+// supported in every major browser since 2021+ so no fallback is needed.
+function splitGraphemes(str: string): string[] {
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+    return Array.from(segmenter.segment(str), (s) => s.segment);
+  }
+  return Array.from(str);
+}
+
 // Small pill showing a hotkey label, used in the About/Info panel's shortcut list
 function Kbd({ label }: { label: string }) {
   return (
@@ -398,6 +414,9 @@ export function InteractiveGradient() {
   const [emojiChars, setEmojiChars] = useState('😴🙂😃🤩🔥');
   const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(41);
   const [emojiAnimTime, setEmojiAnimTime] = useState(0);
+  const [emojiOffsetX, setEmojiOffsetX] = useState(0);
+  const [emojiOffsetY, setEmojiOffsetY] = useState(0);
+  const [emojiSizeVariation, setEmojiSizeVariation] = useState(0);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   // Liquid displacement
   const [liquidAnimTime, setLiquidAnimTime] = useState(0);
@@ -1051,7 +1070,7 @@ export function InteractiveGradient() {
       // every gradient/effect added since, snapping back to defaults on
       // restore instead of the values that were actually live when saved.
       asciiChars, asciiColor, asciiSize,
-      emojiChars, emojiSize, emojiRotateSpeed,
+      emojiChars, emojiSize, emojiRotateSpeed, emojiOffsetX, emojiOffsetY, emojiSizeVariation,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
       causticsBrightness, causticsScale,
@@ -1104,7 +1123,7 @@ export function InteractiveGradient() {
       iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt,
       asciiChars, asciiColor, asciiSize,
-      emojiChars, emojiSize, emojiRotateSpeed,
+      emojiChars, emojiSize, emojiRotateSpeed, emojiOffsetX, emojiOffsetY, emojiSizeVariation,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
       causticsBrightness, causticsScale,
@@ -1310,6 +1329,9 @@ export function InteractiveGradient() {
     setEmojiChars(snapshot.emojiChars ?? '😴🙂😃🤩🔥');
     setEmojiSize(snapshot.emojiSize ?? 28);
     setEmojiRotateSpeed(snapshot.emojiRotateSpeed ?? 41);
+    setEmojiOffsetX(snapshot.emojiOffsetX ?? 0);
+    setEmojiOffsetY(snapshot.emojiOffsetY ?? 0);
+    setEmojiSizeVariation(snapshot.emojiSizeVariation ?? 0);
     setAuroraBandCount(snapshot.auroraBandCount ?? 6);
     setAuroraBandHeight(snapshot.auroraBandHeight ?? 1);
     setAuroraWaveSpeed(snapshot.auroraWaveSpeed ?? 0.2);
@@ -5470,11 +5492,15 @@ export function InteractiveGradient() {
           // cells freeze in place when paused instead of a wall-clock spin.
           if (!imageData) break;
           const eSize = Math.max(10, emojiSize);
-          const emojis = Array.from(emojiChars.trim().length > 0 ? emojiChars : '😴🙂😃🤩🔥');
-          const colsE = Math.ceil(displayWidth / eSize);
-          const rowsE = Math.ceil(displayHeight / eSize);
+          const emojis = splitGraphemes(emojiChars.trim().length > 0 ? emojiChars : '😴🙂😃🤩🔥');
+          const colsE = Math.ceil(displayWidth / eSize) + 1;
+          const rowsE = Math.ceil(displayHeight / eSize) + 1;
           const idatE = imageData.data;
           const baseAngle = emojiAnimTime * (Math.PI / 180);
+          // Offset shifts the whole grid; wrapped into [-eSize, 0) so the
+          // pattern still tiles seamlessly instead of leaving a gap at one edge.
+          const offX = ((emojiOffsetX % eSize) + eSize) % eSize - eSize;
+          const offY = ((emojiOffsetY % eSize) + eSize) % eSize - eSize;
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           ctx.font = `${eSize}px sans-serif`;
@@ -5482,17 +5508,26 @@ export function InteractiveGradient() {
           ctx.textBaseline = 'middle';
           for (let r = 0; r < rowsE; r++) {
             for (let c = 0; c < colsE; c++) {
-              const px = Math.min(displayWidth - 1, c * eSize + Math.floor(eSize / 2));
-              const py = Math.min(displayHeight - 1, r * eSize + Math.floor(eSize / 2));
-              const pIdx = (py * displayWidth + px) * 4;
+              const cellCx = c * eSize + Math.floor(eSize / 2) + offX;
+              const cellCy = r * eSize + Math.floor(eSize / 2) + offY;
+              if (cellCx < 0 || cellCx >= displayWidth || cellCy < 0 || cellCy >= displayHeight) continue;
+              const pIdx = (Math.floor(cellCy) * displayWidth + Math.floor(cellCx)) * 4;
               const pr = idatE[pIdx], pg = idatE[pIdx + 1], pb = idatE[pIdx + 2];
               const brightness = (pr + pg + pb) / 3 / 255;
               const emojiIdx = Math.min(emojis.length - 1, Math.floor(brightness * emojis.length));
               const glyph = emojis[emojiIdx];
               if (!glyph || glyph === ' ') continue;
+              // Deterministic per-cell jitter (stable across frames, no time
+              // dependency) so "variable size" reads as a fixed organic mosaic
+              // instead of flickering — same (row,col) always gets the same size.
+              const jitter = emojiSizeVariation > 0
+                ? Math.abs(Math.sin(r * 12.9898 + c * 78.233) * 43758.5453) % 1
+                : 0;
+              const sizeScale = 1 + (jitter * 2 - 1) * (emojiSizeVariation / 100) * 0.8;
               ctx.save();
-              ctx.translate(px, py);
+              ctx.translate(cellCx, cellCy);
               ctx.rotate(baseAngle);
+              if (sizeScale !== 1) ctx.scale(sizeScale, sizeScale);
               ctx.fillText(glyph, 0, 0);
               ctx.restore();
             }
@@ -8173,6 +8208,21 @@ export function InteractiveGradient() {
                     <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
                     <input type="range" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size Var:</label>
+                    <input type="range" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Offset X:</label>
+                    <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="flex-1" />
+                    <input type="number" value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Offset Y:</label>
+                    <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetY} onChange={(e) => setEmojiOffsetY(Number(e.target.value))} className="flex-1" />
+                    <input type="number" value={emojiOffsetY} onChange={(e) => setEmojiOffsetY(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
