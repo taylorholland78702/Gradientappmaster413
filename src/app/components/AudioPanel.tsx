@@ -7,6 +7,7 @@ export interface AudioPanelState {
   selectedAudioDeviceId: string;
   isAudioControlsOpen: boolean;
   masterSensitivity: number;
+  autoGainEnabled: boolean;
   bassMultiplier: number;
   midsMultiplier: number;
   trebleMultiplier: number;
@@ -32,6 +33,7 @@ export interface AudioPanelActions {
   setSelectedAudioDeviceId: (id: string) => void;
   setIsAudioControlsOpen: (open: boolean) => void;
   setMasterSensitivity: (v: number) => void;
+  setAutoGainEnabled: (v: boolean) => void;
   setBassMultiplier: (v: number) => void;
   setMidsMultiplier: (v: number) => void;
   setTrebleMultiplier: (v: number) => void;
@@ -61,7 +63,7 @@ const BEAT_BTN = (active: boolean) =>
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
     isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
-    masterSensitivity, bassMultiplier, midsMultiplier, trebleMultiplier,
+    masterSensitivity, autoGainEnabled, bassMultiplier, midsMultiplier, trebleMultiplier,
     bassBeatSync, midsBeatSync, trebleBeatSync,
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
@@ -71,7 +73,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
   const {
     setSelectedAudioDeviceId, setIsAudioControlsOpen,
-    setMasterSensitivity, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     setColorShiftHue, startMicVisualization, stopMicVisualization, onAudioFileClick,
@@ -142,19 +144,26 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
           <div className="flex flex-col gap-3">
 
-            {/* Intensity */}
+            {/* Intensity + Auto Gain */}
             <div className="flex items-center gap-2">
               <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Intensity</label>
               <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
               <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0" title="Normalizes each band against its own recent loudness instead of a fixed scale, so quiet passages still register and loud ones don't just max out">Auto Gain</label>
+              <button
+                onClick={() => setAutoGainEnabled(!autoGainEnabled)}
+                className={`ml-auto px-2 py-0.5 rounded text-[9px] font-bold transition-all ${autoGainEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
+              >{autoGainEnabled ? 'ON' : 'OFF'}</button>
+            </div>
 
-            {/* Band column headers */}
+            {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
-              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50">Sub</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50">Bass</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50">Mids</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50">Treble</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~20-60Hz — kick drum fundamental">Sub</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~60-250Hz">Bass</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~250Hz-2kHz">Mids</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~2-8kHz — hi-hats, snare crack, presence">Treble</div>
             </div>
 
             {/* Band columns — Sub / Bass / Mids / Treble */}

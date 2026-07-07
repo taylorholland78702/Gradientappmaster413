@@ -552,6 +552,7 @@ export function InteractiveGradient() {
     trebleMin, setTrebleMin,
     trebleMax, setTrebleMax,
     masterSensitivity, setMasterSensitivity,
+    autoGainEnabled, setAutoGainEnabled,
     bassBeatSync, setBassBeatSync,
     midsBeatSync, setMidsBeatSync,
     trebleBeatSync, setTrebleBeatSync,
@@ -9069,7 +9070,7 @@ export function InteractiveGradient() {
         <AudioPanel
           state={{
             isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
-            masterSensitivity, bassMultiplier, midsMultiplier, trebleMultiplier,
+            masterSensitivity, autoGainEnabled, bassMultiplier, midsMultiplier, trebleMultiplier,
             bassBeatSync, midsBeatSync, trebleBeatSync,
             liveBassLevel, liveMidsLevel, liveTrebleLevel,
             audioFileName, waveformData, audioFileMetadata,
@@ -9078,7 +9079,7 @@ export function InteractiveGradient() {
           }}
           actions={{
             setSelectedAudioDeviceId, setIsAudioControlsOpen,
-            setMasterSensitivity, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+            setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
             setSubBassMultiplier, setSubBassBeatSync,
             setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
             setColorShiftHue, startMicVisualization, stopMicVisualization,

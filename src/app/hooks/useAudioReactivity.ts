@@ -73,6 +73,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [isAudiovisualsOpen, setIsAudiovisualsOpen] = useState(false);
   const [isAudioControlsOpen, setIsAudioControlsOpen] = useState(false);
   const [audioReactiveColors, setAudioReactiveColors] = useState(false);
+  // Auto Gain: normalizes each band against its own slowly-decaying recent
+  // peak instead of a fixed 0-1 scale, so quiet passages still register and
+  // loud passages don't just slam into the multiplier's ceiling. Off falls
+  // back to the old raw-amplitude behavior.
+  const [autoGainEnabled, setAutoGainEnabled] = useState(true);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -102,6 +107,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const liveSubBassLevelRef = useRef(0);
   const subBassSmoothedRef = useRef(0);
   const lastSubBeatTimeRef = useRef(0);
+  // Auto Gain: slowly-decaying recent-peak trackers, one per band
+  const subBassPeakRef = useRef(0.05);
+  const bassPeakRef = useRef(0.05);
+  const midsPeakRef = useRef(0.05);
+  const treblePeakRef = useRef(0.05);
 
   // Functions
   const initAudioContext = useCallback((source: HTMLAudioElement | MediaStream, connectToOutput: boolean = true) => {
@@ -326,7 +336,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let subBassSum = 0;
       for (let i = subBassLo; i < subBassHi; i++) subBassSum += dataArray[i];
       const subBassAvgRaw = (subBassSum / (subBassHi - subBassLo)) / 255;
-      liveSubBassLevelRef.current = subBassAvgRaw;
+      // Auto Gain: normalize against a slowly-decaying recent peak (release
+      // ~0.999/frame ≈ 16s to fall to ~37%) so quiet passages still swing the
+      // full 0-1 range instead of needing to hit the loudest moment in the
+      // whole track to register at all.
+      subBassPeakRef.current = Math.max(subBassAvgRaw, subBassPeakRef.current * 0.999);
+      const subBassNorm = autoGainEnabled ? Math.min(1, subBassAvgRaw / Math.max(subBassPeakRef.current, 0.05)) : subBassAvgRaw;
+      liveSubBassLevelRef.current = subBassNorm;
 
       const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.08;
       if (subBassOnset && now - lastSubBeatTimeRef.current > 150) {
@@ -341,7 +357,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * masterSensitivity;
         subBassBeatPulseRef.current *= 0.6; // snappier decay = cleaner hits
       } else {
-        subBassRaw = subBassAvgRaw * subBassMultiplier * masterSensitivity;
+        subBassRaw = subBassNorm * subBassMultiplier * masterSensitivity;
       }
       subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
       const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
@@ -350,7 +366,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let bassSum = 0;
       for (let i = bassLo; i < bassHi; i++) bassSum += dataArray[i];
       const bassAvgRaw = (bassSum / (bassHi - bassLo)) / 255; // 0-1
-      liveBaseLevelRef.current = bassAvgRaw;
+      bassPeakRef.current = Math.max(bassAvgRaw, bassPeakRef.current * 0.999);
+      const bassNorm = autoGainEnabled ? Math.min(1, bassAvgRaw / Math.max(bassPeakRef.current, 0.05)) : bassAvgRaw;
+      liveBaseLevelRef.current = bassNorm;
 
       // Beat detection on bass band
       const bassOnset = bassAvgRaw > bassPrevRef.current * 1.3 && bassAvgRaw > bassThreshold + 0.05;
@@ -380,7 +398,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         bassRaw = bassBeatPulseRef.current * bassMultiplier * masterSensitivity;
         bassBeatPulseRef.current *= 0.85; // decay
       } else {
-        bassRaw = bassAboveThreshold ? bassAvgRaw * bassMultiplier * masterSensitivity : 0;
+        bassRaw = bassAboveThreshold ? bassNorm * bassMultiplier * masterSensitivity : 0;
       }
       bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
@@ -389,7 +407,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       setAudioSubBassLevel(subBassGradientValue);
 
       // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
-      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassAvgRaw * masterSensitivity) : 0;
+      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * masterSensitivity) : 0;
       setTargetZoom(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
@@ -403,7 +421,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let midsSum = 0;
       for (let i = midsLo; i < midsHi; i++) midsSum += dataArray[i];
       const midsAvgRaw = (midsSum / (midsHi - midsLo)) / 255;
-      liveMidsLevelRef.current = midsAvgRaw;
+      midsPeakRef.current = Math.max(midsAvgRaw, midsPeakRef.current * 0.999);
+      const midsNorm = autoGainEnabled ? Math.min(1, midsAvgRaw / Math.max(midsPeakRef.current, 0.05)) : midsAvgRaw;
+      liveMidsLevelRef.current = midsNorm;
 
       const midsAboveThreshold = midsAvgRaw > midsThreshold;
       let midsRaw: number;
@@ -411,7 +431,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         midsRaw = midsBeatPulseRef.current * midsMultiplier * masterSensitivity;
         midsBeatPulseRef.current *= 0.85;
       } else {
-        midsRaw = midsAboveThreshold ? midsAvgRaw * midsMultiplier * masterSensitivity : 0;
+        midsRaw = midsAboveThreshold ? midsNorm * midsMultiplier * masterSensitivity : 0;
       }
       midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
       const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
@@ -422,7 +442,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let trebleSum = 0;
       for (let i = trebleLo; i < trebleHi; i++) trebleSum += dataArray[i];
       const trebleAvgRaw = (trebleSum / (trebleHi - trebleLo)) / 255;
-      liveTrebleLevelRef.current = trebleAvgRaw;
+      treblePeakRef.current = Math.max(trebleAvgRaw, treblePeakRef.current * 0.999);
+      const trebleNorm = autoGainEnabled ? Math.min(1, trebleAvgRaw / Math.max(treblePeakRef.current, 0.05)) : trebleAvgRaw;
+      liveTrebleLevelRef.current = trebleNorm;
 
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
       let trebleRaw: number;
@@ -430,7 +452,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 90;
         trebleBeatPulseRef.current *= 0.85;
       } else {
-        trebleRaw = trebleAboveThreshold ? trebleAvgRaw * trebleMultiplier * masterSensitivity * 90 : 0;
+        trebleRaw = trebleAboveThreshold ? trebleNorm * trebleMultiplier * masterSensitivity * 90 : 0;
       }
       trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
       const trebleColorValue = Math.max(trebleMin * 90, Math.min(trebleMax * 90, trebleSmoothedRef.current));
@@ -458,7 +480,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom, zoomBeatEnabled]);
+  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom, zoomBeatEnabled, autoGainEnabled]);
 
   // Poll live level refs at ~15fps to drive the bar graph (every 4th frame)
   useEffect(() => {
@@ -467,10 +489,15 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     let frame = 0;
     const poll = () => {
       if (++frame % 4 === 0) {
-        setLiveBassLevel(liveBaseLevelRef.current);
-        setLiveMidsLevel(liveMidsLevelRef.current);
-        setLiveTrebleLevel(liveTrebleLevelRef.current);
-        setLiveSubBassLevel(liveSubBassLevelRef.current);
+        // sqrt-scale the meter bars (not the values driving effects) — human
+        // loudness perception is roughly logarithmic, so a raw linear 0-1
+        // level reads as "barely moving" at quiet-to-moderate volumes even
+        // when the underlying signal is legitimately present. sqrt pushes
+        // the low end up without blowing out the top like a full dB scale would.
+        setLiveBassLevel(Math.sqrt(Math.max(0, liveBaseLevelRef.current)));
+        setLiveMidsLevel(Math.sqrt(Math.max(0, liveMidsLevelRef.current)));
+        setLiveTrebleLevel(Math.sqrt(Math.max(0, liveTrebleLevelRef.current)));
+        setLiveSubBassLevel(Math.sqrt(Math.max(0, liveSubBassLevelRef.current)));
       }
       rafId = requestAnimationFrame(poll);
     };
@@ -554,6 +581,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     trebleMin, setTrebleMin,
     trebleMax, setTrebleMax,
     masterSensitivity, setMasterSensitivity,
+    autoGainEnabled, setAutoGainEnabled,
     bassBeatSync, setBassBeatSync,
     midsBeatSync, setMidsBeatSync,
     trebleBeatSync, setTrebleBeatSync,
