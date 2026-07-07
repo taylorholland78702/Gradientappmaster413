@@ -79,9 +79,9 @@ export function InteractiveGradient() {
   const [resolutionMultiplier, setResolutionMultiplier] = useState(() => window.devicePixelRatio || 1);
 
   // Per-effect beat toggles
-  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(false);
+  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
   const [shakeBeatEnabled, setShakeBeatEnabled] = useState(false);
-  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(false);
+  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(true);
   const [paletteBeatEnabled, setPaletteBeatEnabled] = useState(false);
   
   
