@@ -91,7 +91,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           together compactly at justify-center rather than spreading
           edge-to-edge, so the whole playhead control reads as one centered
           unit spanning exactly this 2-column width. */}
-      <div style={colStyle(2)} className="flex items-center justify-center gap-1 overflow-hidden">
+      <div style={colStyle(2)} className="flex items-center justify-center gap-0 overflow-hidden">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
@@ -102,13 +102,13 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(0.5);
             }
           }}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Slower"
         >
-          <Rewind weight="regular" className="w-4 h-4" />
+          <Rewind weight="regular" className="w-3.5 h-3.5" />
         </button>
 
-        <span className="text-[10px] text-white text-center w-6">{vcrPlaybackSpeed}x</span>
+        <span className="text-[10px] text-white text-center w-4">{vcrPlaybackSpeed}x</span>
 
         <button
           onClick={() => {
@@ -120,10 +120,10 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
               setVcrPlaybackSpeed(1);
             }
           }}
-          className="p-1 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Faster"
         >
-          <FastForward weight="regular" className="w-4 h-4" />
+          <FastForward weight="regular" className="w-3.5 h-3.5" />
         </button>
       </div>
 
