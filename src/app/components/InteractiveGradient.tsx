@@ -50,6 +50,23 @@ interface RecordingFrame {
   timestamp: number;
 }
 
+// Curated emoji set for the Emoji-effect picker, grouped by category. Not the
+// full ~3,700-emoji Unicode registry (that'd need a dedicated data package
+// and a search box to be usable) — a broad, popular selection across every
+// category instead, which the "Chars"-style text field can still be freely
+// hand-edited to extend with any other emoji via keyboard/OS picker.
+const EMOJI_PICKER_CATEGORIES: { label: string; emojis: string[] }[] = [
+  { label: 'Smileys', emojis: ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','🤖'] },
+  { label: 'Gestures', emojis: ['👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🙏','✍️','💅','🤳','💪','🦾','🦵','🦶','👂','🦻','👃','🧠','🦷','🦴','👀','👁️','👅','👄'] },
+  { label: 'Hearts', emojis: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','💌','💋'] },
+  { label: 'Animals', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🕸️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐆','🐅','🐃','🐂','🐄','🦌','🐪','🐫','🦙','🦒','🐘','🦏','🦛','🐐','🐏','🐑','🐎','🐖','🐕','🐩','🐈','🐓','🦃','🕊️','🐇','🐁','🐀','🐿️'] },
+  { label: 'Food', emojis: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🥪','🌮','🌯','🫔','🥙','🧆','🥗','🍿','🧈','🍩','🍪','🎂','🍰','🧁','🥧','🍫','🍬','🍭','🍮','🍯','☕','🍵','🥤','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹'] },
+  { label: 'Activities', emojis: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🥅','⛳','🏹','🎣','🥊','🥋','🎽','🛹','🛼','🎿','⛷️','🏂','🏋️','🤸','🤾','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵','🚴','🏆','🥇','🥈','🥉','🎖️','🎗️','🎫','🎟️','🎪','🤹','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎯','🎳','🎮','🎰'] },
+  { label: 'Travel', emojis: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','🏍️','🛺','🚲','🛴','✈️','🚀','🛸','🚁','⛵','🚤','🛳️','⛴️','🚢','⚓','🗽','🗼','🏰','🎡','🎢','🎠','⛱️','🏖️','🏝️','🏔️','⛰️','🌋','🏕️','🏜️','🌅','🌄','🌆','🌇','🌉','🌃','🌌'] },
+  { label: 'Objects', emojis: ['⌚','📱','💻','⌨️','🖥️','🖨️','🖱️','💽','💾','💿','📷','📸','📹','🎥','📞','☎️','📺','📻','🎙️','⏰','⏱️','⏲️','🕰️','💡','🔦','🏮','📔','📕','📗','📘','📙','📓','📒','📃','📜','📄','📰','🗞️','📚','🔖','💰','💴','💵','💶','💷','💳','💎','⚖️','🔧','🔨','⚒️','🛠️','⛏️','🔩','⚙️','🧲','🔫','💣','🧨','🔪','🗡️','⚔️','🛡️','🚬','⚰️','⚱️','🏺','🔮','📿','💈','⚗️','🔭','🔬','🕳️','💊','💉','🩸','🌡️','🧬'] },
+  { label: 'Symbols', emojis: ['✨','🎉','🎊','🎈','🎁','🏆','⭐','🌟','💫','⚡','🔥','💥','💢','💦','💨','🕳️','💬','💭','🗯️','♻️','⚠️','🚫','✅','❌','❓','❗','💯','🔆','🔅','🌈','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌊','💧','🌙','🌛','🌜','🌚','🌝','☄️','🪐'] },
+];
+
 function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   id: string; label: string; isMulti: boolean;
   expanded: boolean; onToggle: (id: string) => void;
@@ -355,6 +372,7 @@ export function InteractiveGradient() {
   const [emojiChars, setEmojiChars] = useState('😴🙂😃🤩🔥');
   const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(30);
   const [emojiBeatPulse, setEmojiBeatPulse] = useState(true);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   // Liquid displacement
   const [liquidAnimTime, setLiquidAnimTime] = useState(0);
   const [liquidStrength, setLiquidStrength] = useState(30);
@@ -8002,11 +8020,40 @@ export function InteractiveGradient() {
                       type="text"
                       value={emojiChars}
                       onChange={(e) => setEmojiChars(e.target.value)}
+                      onFocus={() => setIsEmojiPickerOpen(true)}
                       placeholder="😴🙂😃🤩🔥"
-                      title="Darkest to brightest, left to right"
+                      title="Darkest to brightest, left to right — click to pick from the emoji picker"
                       className="flex-1 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                     />
                   </div>
+                  {isEmojiPickerOpen && (
+                    <div className="mt-1 border border-white/20 rounded bg-black/40">
+                      <div className="flex items-center justify-between px-1 py-0.5 border-b border-white/10">
+                        <span className="text-[10px] text-white/70">Tap to add — tap done to close</span>
+                        <button
+                          onClick={() => setIsEmojiPickerOpen(false)}
+                          className="text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-0.5"
+                        >Done</button>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto px-1 py-1">
+                        {EMOJI_PICKER_CATEGORIES.map((cat) => (
+                          <div key={cat.label} className="mb-1">
+                            <div className="text-[9px] text-white/50 mb-0.5">{cat.label}</div>
+                            <div className="flex flex-wrap gap-0.5">
+                              {cat.emojis.map((em, i) => (
+                                <button
+                                  key={`${cat.label}-${i}`}
+                                  onClick={() => setEmojiChars(prev => prev + em)}
+                                  className="w-6 h-6 flex items-center justify-center text-base rounded hover:bg-white/15 transition-all"
+                                  title={em}
+                                >{em}</button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('liquid') && (
