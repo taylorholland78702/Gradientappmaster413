@@ -8182,7 +8182,7 @@ export function InteractiveGradient() {
                       onFocus={() => setIsEmojiPickerOpen(true)}
                       placeholder="😴🙂😃🤩🔥"
                       title="Darkest to brightest, left to right — click to pick from the emoji picker"
-                      className="flex-1 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                     />
                     {isEmojiPickerOpen && (
                       <button
