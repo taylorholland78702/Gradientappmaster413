@@ -91,7 +91,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           together compactly at justify-center rather than spreading
           edge-to-edge, so the whole playhead control reads as one centered
           unit spanning exactly this 2-column width. */}
-      <div style={colStyle(2)} className="flex items-center justify-center gap-0 overflow-hidden">
+      <div style={colStyle(2)} className="flex items-center justify-center gap-1.5 overflow-hidden">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
@@ -108,7 +108,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           <Rewind weight="regular" className="w-4 h-4" />
         </button>
 
-        <span className="text-[10px] text-white text-center w-4">{vcrPlaybackSpeed}x</span>
+        <span className="text-[10px] text-white text-center w-5">{vcrPlaybackSpeed}x</span>
 
         <button
           onClick={() => {
