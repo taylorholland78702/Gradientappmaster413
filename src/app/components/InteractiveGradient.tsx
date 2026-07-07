@@ -5508,20 +5508,17 @@ export function InteractiveGradient() {
           if (!imageData) break;
           const eSize = Math.max(10, emojiSize);
           const emojis = splitGraphemes(emojiChars.trim().length > 0 ? emojiChars : '😴🙂😃🤩🔥');
-          // Offset sliders are bounded to ±eSize (see the range inputs below),
-          // so one extra row/col of margin on EACH side is always enough to
-          // keep the grid fully covering the canvas at any offset — no modulo
-          // wrapping needed. (A previous version wrapped offset into [-eSize,0)
-          // via `((offset % eSize) + eSize) % eSize - eSize`, which maps an
-          // untouched offset of 0 to -eSize instead of 0: harmless for grid
-          // *coverage* since the pattern tiles, but it silently shifted which
-          // underlying pixel each cell sampled for brightness, so the default
-          // "no offset" state didn't match what Offset X/Y actually showed at 0.)
+          // "Offset" means a brick/halftone-style stagger: every other row is
+          // shifted horizontally (like the classic polka-dot pattern), not a
+          // uniform pan of the whole grid. Offset sliders are bounded to
+          // ±eSize, so one extra row/col of margin on each side is always
+          // enough to keep the grid fully covering the canvas at any stagger
+          // amount — no modulo wrapping needed.
           const colsE = Math.ceil(displayWidth / eSize) + 2;
           const rowsE = Math.ceil(displayHeight / eSize) + 2;
           const idatE = imageData.data;
           const baseAngle = emojiAnimTime * (Math.PI / 180);
-          const offX = emojiOffsetX;
+          const rowStaggerX = emojiOffsetX;
           const offY = emojiOffsetY;
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -5540,7 +5537,7 @@ export function InteractiveGradient() {
           let minBrightness = Infinity, maxBrightness = -Infinity;
           for (let r = -1; r < rowsE; r++) {
             for (let c = -1; c < colsE; c++) {
-              const cellCx = c * eSize + Math.floor(eSize / 2) + offX;
+              const cellCx = c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
               const cellCy = r * eSize + Math.floor(eSize / 2) + offY;
               if (cellCx < 0 || cellCx >= displayWidth || cellCy < 0 || cellCy >= displayHeight) {
                 cellBrightness.push(-1);
@@ -5559,7 +5556,7 @@ export function InteractiveGradient() {
             for (let c = -1; c < colsE; c++) {
               const brightness = cellBrightness[cellIdx++];
               if (brightness < 0) continue;
-              const cellCx = c * eSize + Math.floor(eSize / 2) + offX;
+              const cellCx = c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
               const cellCy = r * eSize + Math.floor(eSize / 2) + offY;
               const normalizedBrightness = (brightness - minBrightness) / brightnessRange;
               const emojiIdx = Math.min(emojis.length - 1, Math.floor(normalizedBrightness * emojis.length));
@@ -8263,7 +8260,7 @@ export function InteractiveGradient() {
                     <input type="number" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Offset X:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap" title="Shifts every other row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
                     <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="flex-1" />
                     <input type="number" value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
