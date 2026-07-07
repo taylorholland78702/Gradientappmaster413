@@ -67,6 +67,22 @@ const EMOJI_PICKER_CATEGORIES: { label: string; emojis: string[] }[] = [
   { label: 'Symbols', emojis: ['✨','🎉','🎊','🎈','🎁','🏆','⭐','🌟','💫','⚡','🔥','💥','💢','💦','💨','🕳️','💬','💭','🗯️','♻️','⚠️','🚫','✅','❌','❓','❗','💯','🔆','🔅','🌈','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌊','💧','🌙','🌛','🌜','🌚','🌝','☄️','🪐'] },
 ];
 
+// Flat pool used to draw a fresh random emoji set for the Emoji effect
+// whenever a shuffle (Effects-tab or WAV button) lands on it.
+const EMOJI_POOL: string[] = EMOJI_PICKER_CATEGORIES.flatMap(cat => cat.emojis);
+function pickRandomEmojiSet(count: number): string {
+  const pool = EMOJI_POOL;
+  const usedIdx = new Set<number>();
+  const picked: string[] = [];
+  while (picked.length < count && picked.length < pool.length) {
+    const idx = Math.floor(Math.random() * pool.length);
+    if (usedIdx.has(idx)) continue;
+    usedIdx.add(idx);
+    picked.push(pool[idx]);
+  }
+  return picked.join('');
+}
+
 function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   id: string; label: string; isMulti: boolean;
   expanded: boolean; onToggle: (id: string) => void;
@@ -1160,6 +1176,7 @@ export function InteractiveGradient() {
     const selectedEffects = shuffled.slice(0, numEffects);
 
     setActiveEffects(selectedEffects);
+    if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
     if (selectedEffects.length > 1) {
       setIsMultiFxMode(true);
     }
@@ -1483,6 +1500,7 @@ export function InteractiveGradient() {
         }
       }
       setActiveEffects(keptEffects);
+      if (keptEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
       
       // Blend numerical parameters with base result
@@ -1586,6 +1604,7 @@ export function InteractiveGradient() {
       }
 
       setActiveEffects(selectedEffects);
+      if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
 
       setTargetAngle(Math.random() * 360);
@@ -1949,7 +1968,8 @@ export function InteractiveGradient() {
     }
     
     setActiveEffects(selectedEffects);
-    
+    if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
+
     // Randomize all FX slider variables
     setKaleidoscopeSegments(Math.floor(Math.random() * 20) + 3); // 3-22
     setTwistAmount(Math.random() * 5); // 0-5
