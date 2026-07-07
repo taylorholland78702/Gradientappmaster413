@@ -105,7 +105,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Slower"
         >
-          <Rewind weight="regular" className="w-3.5 h-3.5" />
+          <Rewind weight="regular" className="w-4 h-4" />
         </button>
 
         <span className="text-[10px] text-white text-center w-4">{vcrPlaybackSpeed}x</span>
@@ -123,7 +123,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title="Faster"
         >
-          <FastForward weight="regular" className="w-3.5 h-3.5" />
+          <FastForward weight="regular" className="w-4 h-4" />
         </button>
       </div>
 
