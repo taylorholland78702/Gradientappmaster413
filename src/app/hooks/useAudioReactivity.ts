@@ -110,7 +110,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       audioContextRef.current = audioContext;
 
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
+      // 2048 gives ~21.5Hz/bin at 44.1kHz (vs 256's ~172Hz/bin) — fine enough
+      // resolution to actually isolate sub-bass/bass instead of cramming them
+      // into 2-3 coarse bins. smoothingTimeConstant=0 disables the analyser's
+      // own built-in smoothing since the app already does its own per-band EMA
+      // smoothing below — stacking both made everything feel sluggish.
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0;
       analyserRef.current = analyser;
 
       const audioSource = source instanceof HTMLAudioElement
@@ -200,7 +206,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       audioContextRef.current = audioContext;
 
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0;
       analyserRef.current = analyser;
 
       const source = audioContext.createMediaStreamSource(stream);
@@ -292,20 +299,33 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
+    // Bin ranges depend on the actual device/mic sample rate (44.1kHz, 48kHz,
+    // etc.), so compute them from it instead of hardcoding bin indices that
+    // silently assumed 44.1kHz. Boundaries are perceptual bands, not a linear
+    // split of the spectrum: most tracks have almost no energy above ~8kHz
+    // (mastering rolloff, MP3/streaming compression, speaker/mic response),
+    // so the old bass/mids/treble = bins 0-9/10-49/50-119 (~0-1.7kHz/1.7-8.6kHz/
+    // 8.6-20.6kHz) dumped hi-hats and snare crack — the stuff that actually
+    // reads as "treble" — into the mids band, leaving treble to average
+    // near-silent ultrasonic bins.
+    const nyquist = (audioContextRef.current?.sampleRate || 44100) / 2;
+    const hzToBin = (hz: number) => Math.min(bufferLength - 1, Math.max(0, Math.round((hz / nyquist) * bufferLength)));
+    const subBassLo = hzToBin(20), subBassHi = Math.max(subBassLo + 1, hzToBin(60));
+    const bassLo = subBassHi, bassHi = Math.max(bassLo + 1, hzToBin(250));
+    const midsLo = bassHi, midsHi = Math.max(midsLo + 1, hzToBin(2000));
+    const trebleLo = midsHi, trebleHi = Math.max(trebleLo + 1, hzToBin(8000));
+
     const analyzeAudio = () => {
       if (!isAudioEnabled || !isAudioReactive) return;
 
       analyser.getByteFrequencyData(dataArray);
 
-      // ---- Read frequency data ----
-      analyser.getByteFrequencyData(dataArray);
-
       const now = performance.now();
 
-      // ---- SUB-BASS (bins 0–2, ~0–170Hz — kick drum fundamental) ----
+      // ---- SUB-BASS (~20-60Hz — kick drum fundamental) ----
       let subBassSum = 0;
-      for (let i = 0; i < 3 && i < bufferLength; i++) subBassSum += dataArray[i];
-      const subBassAvgRaw = (subBassSum / 3) / 255;
+      for (let i = subBassLo; i < subBassHi; i++) subBassSum += dataArray[i];
+      const subBassAvgRaw = (subBassSum / (subBassHi - subBassLo)) / 255;
       liveSubBassLevelRef.current = subBassAvgRaw;
 
       const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.08;
@@ -326,10 +346,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
       const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
 
-      // ---- BASS (bins 0–9) ----
+      // ---- BASS (~60-250Hz) ----
       let bassSum = 0;
-      for (let i = 0; i < 10 && i < bufferLength; i++) bassSum += dataArray[i];
-      const bassAvgRaw = (bassSum / 10) / 255; // 0-1
+      for (let i = bassLo; i < bassHi; i++) bassSum += dataArray[i];
+      const bassAvgRaw = (bassSum / (bassHi - bassLo)) / 255; // 0-1
       liveBaseLevelRef.current = bassAvgRaw;
 
       // Beat detection on bass band
@@ -379,10 +399,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         return decayed;
       });
 
-      // ---- MIDS (bins 10–49) ----
+      // ---- MIDS (~250Hz-2kHz) ----
       let midsSum = 0;
-      for (let i = 10; i < 50 && i < bufferLength; i++) midsSum += dataArray[i];
-      const midsAvgRaw = (midsSum / 40) / 255;
+      for (let i = midsLo; i < midsHi; i++) midsSum += dataArray[i];
+      const midsAvgRaw = (midsSum / (midsHi - midsLo)) / 255;
       liveMidsLevelRef.current = midsAvgRaw;
 
       const midsAboveThreshold = midsAvgRaw > midsThreshold;
@@ -398,10 +418,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveMidsSmoothedRef.current = midsEffectValue;
       setAudioMidsLevel(midsEffectValue);
 
-      // ---- TREBLE (bins 50–119) ----
+      // ---- TREBLE (~2-8kHz — hi-hats, snare crack, presence) ----
       let trebleSum = 0;
-      for (let i = 50; i < 120 && i < bufferLength; i++) trebleSum += dataArray[i];
-      const trebleAvgRaw = (trebleSum / 70) / 255;
+      for (let i = trebleLo; i < trebleHi; i++) trebleSum += dataArray[i];
+      const trebleAvgRaw = (trebleSum / (trebleHi - trebleLo)) / 255;
       liveTrebleLevelRef.current = trebleAvgRaw;
 
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
