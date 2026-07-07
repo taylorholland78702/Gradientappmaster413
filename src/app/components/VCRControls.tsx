@@ -54,7 +54,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           onClick={toggleVCRRecording}
           disabled={isEncoding}
           className="flex-1 p-1.5 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
-          title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video'}
+          title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video (V)'}
         >
           {isEncoding ? (
             <svg width="16" height="16" viewBox="0 0 16 16">
@@ -79,7 +79,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         <button
           onClick={toggleVCRPlayback}
           className="flex-1 p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
+          title={(isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")) + " (Space)"}
         >
           {(isVCRPlaying || isAutoMode) ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
         </button>
@@ -103,7 +103,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
             }
           }}
           className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title="Slower"
+          title="Slower ([)"
         >
           <Rewind weight="regular" className="w-4 h-4" />
         </button>
@@ -121,7 +121,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
             }
           }}
           className="p-0.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title="Faster"
+          title="Faster (])"
         >
           <FastForward weight="regular" className="w-4 h-4" />
         </button>
@@ -134,7 +134,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         <button
           onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
           className="p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
+          title={(rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise') + " (D)"}
         >
           {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
         </button>

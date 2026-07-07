@@ -83,6 +83,15 @@ function pickRandomEmojiSet(count: number): string {
   return picked.join('');
 }
 
+// Small pill showing a hotkey label, used in the About/Info panel's shortcut list
+function Kbd({ label }: { label: string }) {
+  return (
+    <span className="shrink-0 text-[10px] text-white/70 bg-white/10 border border-white/15 rounded px-1.5 py-0.5 font-mono">
+      {label}
+    </span>
+  );
+}
+
 function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   id: string; label: string; isMulti: boolean;
   expanded: boolean; onToggle: (id: string) => void;
@@ -1398,21 +1407,19 @@ export function InteractiveGradient() {
     undoLastChange();
   }, [undoLastChange]);
 
-  // Keyboard shortcuts - Cmd/Ctrl+Z for undo, Cmd/Ctrl+Shift+Z for redo
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        undoLastChange();
-      } else if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
-        e.preventDefault();
-        redoLastChange();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undoLastChange, redoLastChange]);
+  // Reset everything to defaults — shared by the Reset button and the "R" hotkey
+  const resetToDefaults = useCallback(() => {
+    setGradientType('angle');
+    setGradientColors(DEFAULT_COLORS);
+    setTargetColors(DEFAULT_COLORS);
+    setActiveEffects([]);
+    setIsMultiFxMode(false);
+    setIsAutoColor(true);
+    setActiveTab(null);
+    setBaseAIColors(null);
+    setSubmittedAIPrompt('');
+    setAIPrompt('');
+  }, []);
 
   // Memoize gradient and effect type arrays (constant values)
   const GRADIENT_TYPES: GradientType[] = useMemo(() => 
@@ -6119,13 +6126,123 @@ export function InteractiveGradient() {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
-  
+
+  // Global hotkeys. Bare letters (no Cmd/Ctrl/Alt) so nothing collides with
+  // browser shortcuts; suppressed while typing in any text field so letters
+  // like "g" or "f" still type normally there.
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redoLastChange(); else undoLastChange();
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+
+      switch (e.key) {
+        case 'g': case 'G':
+          e.preventDefault();
+          if (e.shiftKey) shuffleGradientType();
+          else setActiveTab(prev => prev === 'gradients' ? null : 'gradients');
+          break;
+        case 'f': case 'F':
+          e.preventDefault();
+          if (e.shiftKey) randomizeEffects();
+          else setActiveTab(prev => prev === 'effects' ? null : 'effects');
+          break;
+        case 'a': case 'A':
+          e.preventDefault();
+          setActiveTab(prev => prev === 'audio' ? null : 'audio');
+          break;
+        case 'c': case 'C':
+          e.preventDefault();
+          setActiveTab(prev => prev === 'color' ? null : 'color');
+          break;
+        case 'p': case 'P':
+          e.preventDefault();
+          setActiveTab(prev => prev === 'presets' ? null : 'presets');
+          break;
+        case 'h': case 'H':
+          e.preventDefault();
+          setIsControlsVisible(prev => !prev);
+          break;
+        case 's': case 'S':
+          e.preventDefault();
+          exportAsPNG();
+          break;
+        case 'r': case 'R':
+          e.preventDefault();
+          resetToDefaults();
+          break;
+        case 'v': case 'V':
+          e.preventDefault();
+          toggleVCRRecording();
+          break;
+        case ' ':
+          e.preventDefault();
+          toggleVCRPlayback();
+          break;
+        case '[':
+          e.preventDefault();
+          setVcrPlaybackSpeed(prev => {
+            if (prev > 2) return prev - 1;
+            if (prev === 2) return 1;
+            if (prev === 1) return 0.5;
+            return prev;
+          });
+          break;
+        case ']':
+          e.preventDefault();
+          setVcrPlaybackSpeed(prev => {
+            if (prev >= 2) return Math.min(10, prev + 1);
+            if (prev >= 1) return 2;
+            return 1;
+          });
+          break;
+        case 'd': case 'D':
+          e.preventDefault();
+          setRotationDirection(prev => prev === 'clockwise' ? 'counter' : 'clockwise');
+          break;
+        case 'w': case 'W':
+          e.preventDefault();
+          evolveWithFactor(e.shiftKey ? 1 : 0.15);
+          break;
+        case 'm': case 'M':
+          e.preventDefault();
+          setIsMultiFxMode(prev => !prev);
+          break;
+        case '?':
+          e.preventDefault();
+          setIsAboutOpen(prev => !prev);
+          break;
+        case 'Escape':
+          if (isAboutOpen) { e.preventDefault(); setIsAboutOpen(false); }
+          else if (activeTab) { e.preventDefault(); setActiveTab(null); }
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [
+    undoLastChange, redoLastChange, shuffleGradientType, randomizeEffects,
+    setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
+    toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
+    evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
+  ]);
+
   return (
     <div className="fixed inset-0 overflow-hidden cursor-crosshair bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
       <div ref={shakeWrapperRef} className="w-full h-full">
@@ -6235,7 +6352,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => setIsControlsVisible(true)}
             className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
-            title="Show Controls"
+            title="Show Controls (H)"
           >
             <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
@@ -6251,7 +6368,7 @@ export function InteractiveGradient() {
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
             onDoubleClick={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); setIsWavHolding(false); evolveWithFactor(1); }}
             className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
-            title="Tap: evolve · Hold: new mood"
+            title="Tap: evolve (W) · Hold/Shift+W: new mood"
           >
             <span
               aria-hidden="true"
@@ -6279,7 +6396,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
             className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
-            title="Presets"
+            title="Presets (P)"
           >
             <Plus weight="regular" className="w-4 h-4" />
           </button>
@@ -6389,7 +6506,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => setIsControlsVisible(false)}
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title="Hide Controls"
+            title="Hide Controls (H)"
           >
             <Eye weight="regular" className="w-4 h-4" />
           </button>
@@ -6397,7 +6514,7 @@ export function InteractiveGradient() {
           <button
             onClick={exportAsPNG}
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title="Save PNG"
+            title="Save PNG (S)"
           >
             <Camera weight="regular" className="w-4 h-4" />
           </button>
@@ -6425,20 +6542,9 @@ export function InteractiveGradient() {
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
-            onClick={() => {
-              setGradientType('angle');
-              setGradientColors(DEFAULT_COLORS);
-              setTargetColors(DEFAULT_COLORS);
-              setActiveEffects([]);
-              setIsMultiFxMode(false);
-              setIsAutoColor(true);
-              setActiveTab(null);
-              setBaseAIColors(null);
-              setSubmittedAIPrompt('');
-              setAIPrompt('');
-            }}
+            onClick={resetToDefaults}
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title="Reset"
+            title="Reset (R)"
           >
             <ArrowsClockwise weight="regular" className="w-4 h-4" />
           </button>
@@ -6467,27 +6573,27 @@ export function InteractiveGradient() {
 
           {/* Tab Bar */}
           <div className="flex items-stretch w-full">
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX (F)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
             <button
               onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
-              title="Audio"
+              title="Audio (A)"
               className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
             >
               <SpeakerHigh weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
@@ -7826,11 +7932,12 @@ export function InteractiveGradient() {
             <button
               onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+              title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
               onClick={randomizeEffects}
               className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
-              title="Shuffle Effects"
+              title="Shuffle Effects (Shift+F)"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
@@ -9000,7 +9107,7 @@ export function InteractiveGradient() {
       <button
         onClick={() => setIsAboutOpen(true)}
         className="absolute bottom-4 right-4 pointer-events-auto w-8 h-8 rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
-        title="About wāv"
+        title="About wāv (?)"
       >
         <Info weight="regular" className="w-4 h-4" />
       </button>
@@ -9026,33 +9133,45 @@ export function InteractiveGradient() {
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">The wāv header</p>
-                <p>Tap the wordmark to alter the artwork. Hold for a full beat or double-click, to completely remix the artwork.</p>
+                <p className="flex items-center justify-between gap-2">Tap the wordmark to alter the artwork. Hold for a full beat or double-click, to completely remix the artwork.</p>
+                <p className="flex items-center justify-between gap-2"><span>Alter (tap-equivalent)</span><Kbd label="W" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Full remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Top icon row</p>
-                <p className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</p>
-                <p className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</p>
-                <p className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</p>
-                <p className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Refresh — reset to defaults</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</span><Kbd label="H" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Refresh — reset to defaults</span><Kbd label="R" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Playback row</p>
-                <p className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</p>
-                <p className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Pause weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / pause — start or stop all motion and audio reactivity</p>
-                <p className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</p>
-                <p className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Pause weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / pause — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</span><Kbd label="D" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Tabs</p>
-                <p className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</p>
-                <p className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> FX — layer on effects; toggle Multi to stack several at once</p>
-                <p className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</p>
-                <p className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</p>
-                <p className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> FX — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">More shortcuts</p>
+                <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Shuffle effects</span><Kbd label="Shift+F" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Shuffle gradient type</span><Kbd label="Shift+G" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
+                <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
               </div>
             </div>
           </div>
