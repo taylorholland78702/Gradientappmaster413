@@ -6771,8 +6771,8 @@ export function InteractiveGradient() {
             {isKeywordHelpOpen && (
               <div className="mb-2 p-2 rounded bg-black/20 border border-white/8 text-[10px] text-white/70 leading-relaxed max-h-52 overflow-y-auto">
                 <div className="font-bold text-white/90 mb-1">Themes</div>
-                <div className="mb-0.5 flex flex-wrap gap-1">
-                  {['sunset','sunrise','ocean','forest','fire','ice','tropical','neon','pastel','autumn','spring','winter','galaxy','desert','candy','earth','rainbow','monochrome','midnight','cherry'].map(t => {
+                <div className="mb-0.5 flex flex-wrap gap-x-1 gap-y-0.5 leading-none">
+                  {['autumn','candy','cherry','desert','earth','fire','forest','galaxy','ice','midnight','monochrome','neon','ocean','pastel','rainbow','spring','sunrise','sunset','tropical','winter'].map(t => {
                     const selected = aiPrompt.split(' ').filter(Boolean).includes(t);
                     const full = aiPrompt.split(' ').filter(Boolean).length >= 8;
                     return (
@@ -6785,8 +6785,8 @@ export function InteractiveGradient() {
                   })}
                 </div>
                 <div className="font-bold text-white/90 mb-1">Colors</div>
-                <div className="flex flex-wrap gap-1">
-                  {['red','orange','yellow','green','blue','purple','pink','cyan','magenta','lime','teal','indigo','violet','brown','black','white','gray','gold','silver','coral','peach','lavender','mint','rose','sky','navy','maroon','olive','turquoise','salmon'].map(c => {
+                <div className="flex flex-wrap gap-x-1 gap-y-0.5 leading-none">
+                  {['black','blue','brown','coral','cyan','gold','gray','green','indigo','lavender','lime','magenta','maroon','mint','navy','olive','orange','peach','pink','purple','red','rose','salmon','silver','sky','teal','turquoise','violet','white','yellow'].map(c => {
                     const selected = aiPrompt.split(' ').filter(Boolean).includes(c);
                     const full = aiPrompt.split(' ').filter(Boolean).length >= 8;
                     return (
