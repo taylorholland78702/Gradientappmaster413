@@ -91,7 +91,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           together compactly at justify-center rather than spreading
           edge-to-edge, so the whole playhead control reads as one centered
           unit spanning exactly this 2-column width. */}
-      <div style={colStyle(2)} className="flex items-center justify-center gap-1 overflow-hidden">
+      <div style={colStyle(2)} className="flex items-center justify-center gap-0.5 overflow-hidden">
         <button
           onClick={() => {
             if (vcrPlaybackSpeed > 2) {
