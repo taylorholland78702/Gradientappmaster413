@@ -191,6 +191,9 @@ export function InteractiveGradient() {
   const [halftoneMove, setHalftoneMove] = useState(false);
   const [halftoneMoveSpeed, setHalftoneMoveSpeed] = useState(1);
   const [vignetteStrength, setVignetteStrength] = useState(0.5);
+  const [scanlineIntensity, setScanlineIntensity] = useState(0.4);
+  const [scanlineSpacing, setScanlineSpacing] = useState(4);
+  const [scanlineSpeed, setScanlineSpeed] = useState(1);
   const [colorShiftHue, setColorShiftHue] = useState(5);
   const [charcoalIntensity, setCharcoalIntensity] = useState(0.5);
   const [digitalNoiseIntensity, setDigitalNoiseIntensity] = useState(0.3);
@@ -916,6 +919,9 @@ export function InteractiveGradient() {
       halftoneMove,
       halftoneMoveSpeed,
       vignetteStrength,
+      scanlineIntensity,
+      scanlineSpacing,
+      scanlineSpeed,
       colorShiftHue,
       charcoalIntensity,
       digitalNoiseIntensity,
@@ -1166,6 +1172,9 @@ export function InteractiveGradient() {
     setHalftoneMove(snapshot.halftoneMove);
     setHalftoneMoveSpeed(snapshot.halftoneMoveSpeed);
     setVignetteStrength(snapshot.vignetteStrength);
+    setScanlineIntensity(snapshot.scanlineIntensity ?? 0.4);
+    setScanlineSpacing(snapshot.scanlineSpacing ?? 4);
+    setScanlineSpeed(snapshot.scanlineSpeed ?? 1);
     setColorShiftHue(snapshot.colorShiftHue);
     setCharcoalIntensity(snapshot.charcoalIntensity);
     setDigitalNoiseIntensity(snapshot.digitalNoiseIntensity);
@@ -2519,7 +2528,7 @@ export function InteractiveGradient() {
     kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength,
     grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
     blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
-    halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness,
+    halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness,
     dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength,
     waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor,
@@ -2539,7 +2548,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -4906,7 +4915,21 @@ export function InteractiveGradient() {
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           break;
         }
-        
+
+        case 'scanlines': {
+          // CRT-style horizontal scanlines that scroll downward over time;
+          // bass hits punch up the darkness so they feel like they "react to the beat"
+          const spacing = Math.max(2, scanlineSpacing);
+          const audioScanBoost = isFirstEffect && isAudioReactive ? (audioSubBassLevel / 5) * 0.4 : 0;
+          const effectiveScanlineIntensity = Math.min(1, scanlineIntensity + audioScanBoost);
+          const scroll = (Date.now() / 1000) * scanlineSpeed * 20;
+          ctx.fillStyle = `rgba(0,0,0,${effectiveScanlineIntensity})`;
+          for (let y = -spacing + (scroll % spacing); y < displayHeight; y += spacing) {
+            ctx.fillRect(0, y, displayWidth, Math.max(1, spacing / 2));
+          }
+          break;
+        }
+
         case 'grid': {
           if (canvas.width === 0 || canvas.height === 0) break;
           const tempCanvas = document.createElement('canvas');
@@ -7718,7 +7741,7 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(13, auto)' }}>
+          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
             {([
               { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
@@ -7740,6 +7763,7 @@ export function InteractiveGradient() {
               { value: 'posterize',      label: 'Posterize' },
               { value: 'pulse',          label: 'Pulse' },
               { value: 'ripple',         label: 'Ripple' },
+              { value: 'scanlines',      label: 'Scanlines' },
               { value: 'shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
               { value: 'triangulate',    label: 'Triangulate' },
@@ -8071,6 +8095,25 @@ export function InteractiveGradient() {
                     <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
                     <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('scanlines') && (
+                <EffectSection id="scanlines" label="Scanlines" isMulti={isMulti} expanded={expandedEffects.has('scanlines')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Spacing:</label>
+                    <input type="range" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpacing}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <input type="range" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpeed}</span>
                   </div>
                 </EffectSection>
               )}
