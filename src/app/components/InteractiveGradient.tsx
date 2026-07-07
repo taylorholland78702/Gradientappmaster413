@@ -93,12 +93,12 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
     <div className="border-b border-white/10 last:border-0">
       <button
         onClick={() => onToggle(id)}
-        className="flex items-center justify-between w-full py-1.5 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
+        className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
       >
         <span className="text-[10px] text-white/80 font-medium">{label}</span>
         <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
-      {expanded && <div className="flex flex-col gap-1 pb-2">{children}</div>}
+      {expanded && <div className="flex flex-col gap-1 pb-1">{children}</div>}
     </div>
   );
 }
@@ -7915,7 +7915,7 @@ export function InteractiveGradient() {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className="w-full bg-black/20 px-3 py-2 rounded-lg">
+          <div className="w-full bg-black/20 px-3 py-1 rounded-lg">
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
