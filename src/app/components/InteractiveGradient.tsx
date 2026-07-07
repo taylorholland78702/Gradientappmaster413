@@ -4820,15 +4820,26 @@ export function InteractiveGradient() {
         case 'mirror': {
           if (canvas.width === 0 || canvas.height === 0) break;
           const mw = displayWidth, mh = displayHeight;
+          // canvas.width/height are physical pixels (CSS size × resolutionMultiplier
+          // on Retina). drawImage's source rect is always in the source's native
+          // pixel space, so passing CSS-pixel-sized rects (mw, mh, tileW, tileH…)
+          // straight against `canvas` only sampled a top-left fraction of the real
+          // image — the smaller the requested region, the smaller a corner it grabbed
+          // (visibly "coming from the corner", and at high grid tile counts, too tiny
+          // a sliver to read as anything). Downsample to display resolution once and
+          // mirror from that instead, matching getDisplayImageData's approach.
+          const mirrorSrc = document.createElement('canvas');
+          mirrorSrc.width = mw; mirrorSrc.height = mh;
+          mirrorSrc.getContext('2d')!.drawImage(canvas, 0, 0, mw, mh);
           const mirrorTemp = document.createElement('canvas');
           mirrorTemp.width = mw; mirrorTemp.height = mh;
           const mCtx = mirrorTemp.getContext('2d')!;
           if (mirrorMode === 'horizontal') {
-            mCtx.drawImage(canvas, 0, 0, mw/2, mh, 0, 0, mw/2, mh);
-            mCtx.save(); mCtx.scale(-1, 1); mCtx.drawImage(canvas, 0, 0, mw/2, mh, -mw, 0, mw/2, mh); mCtx.restore();
+            mCtx.drawImage(mirrorSrc, 0, 0, mw/2, mh, 0, 0, mw/2, mh);
+            mCtx.save(); mCtx.scale(-1, 1); mCtx.drawImage(mirrorSrc, 0, 0, mw/2, mh, -mw, 0, mw/2, mh); mCtx.restore();
           } else if (mirrorMode === 'vertical') {
-            mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, 0, mw, mh/2);
-            mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(canvas, 0, 0, mw, mh/2, 0, -mh, mw, mh/2); mCtx.restore();
+            mCtx.drawImage(mirrorSrc, 0, 0, mw, mh/2, 0, 0, mw, mh/2);
+            mCtx.save(); mCtx.scale(1, -1); mCtx.drawImage(mirrorSrc, 0, 0, mw, mh/2, 0, -mh, mw, mh/2); mCtx.restore();
           } else {
             // Generalized N×N mirrored tiling (quad was the fixed N=2 case) — samples
             // the top-left corner of the source and tiles it across an N×N grid,
@@ -4851,7 +4862,7 @@ export function InteractiveGradient() {
                 mCtx.save();
                 mCtx.translate(x0 + (flipX ? w - 1 : 0), y0 + (flipY ? h - 1 : 0));
                 mCtx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-                mCtx.drawImage(canvas, 0, 0, tileW, tileH, 0, 0, w, h);
+                mCtx.drawImage(mirrorSrc, 0, 0, tileW, tileH, 0, 0, w, h);
                 mCtx.restore();
               }
             }
