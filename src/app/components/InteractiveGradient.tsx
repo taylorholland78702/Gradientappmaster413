@@ -201,7 +201,11 @@ export function InteractiveGradient() {
     const h1 = hue(), h2 = (h1 + 60 + Math.random() * 120) % 360, h3 = (h2 + 60 + Math.random() * 120) % 360;
     setWavRandomGradient(`linear-gradient(to top, hsl(${h1}, 85%, 60%), hsl(${h2}, 85%, 60%), hsl(${h3}, 85%, 60%))`);
   };
-  const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  // Single-open accordion: expanding one effect's controls collapses whichever
+  // other one was open, instead of letting all active effects stack their
+  // sliders open simultaneously — with 4-7 effects active that wall of
+  // controls was the main driver of the control panel's excessive height.
+  const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => prev.has(id) ? new Set() : new Set([id]));
   
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
   const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
@@ -8129,7 +8133,7 @@ export function InteractiveGradient() {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className="w-full bg-black/20 px-3 py-1 rounded-lg">
+          <div className={`w-full bg-black/20 px-3 py-1 rounded-lg ${isMulti ? 'max-h-64 overflow-y-auto' : ''}`}>
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
