@@ -790,7 +790,15 @@ export function InteractiveGradient() {
       const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
 
       if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {
-        drawRef.current();
+        // A throw here (e.g. from a malformed preset value) must not kill the
+        // rest of this function — requestAnimationFrame(loop) below is what
+        // keeps the animation alive, and an uncaught exception would skip it,
+        // permanently freezing the canvas until a full page reload.
+        try {
+          drawRef.current();
+        } catch (err) {
+          console.error('Draw failed, will retry next frame:', err);
+        }
         if (hasConverged && !isAnimating) drawParamsDirtyRef.current = false;
       }
 
