@@ -65,6 +65,7 @@ const EMOJI_PICKER_CATEGORIES: { label: string; emojis: string[] }[] = [
   { label: 'Travel', emojis: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','🏍️','🛺','🚲','🛴','✈️','🚀','🛸','🚁','⛵','🚤','🛳️','⛴️','🚢','⚓','🗽','🗼','🏰','🎡','🎢','🎠','⛱️','🏖️','🏝️','🏔️','⛰️','🌋','🏕️','🏜️','🌅','🌄','🌆','🌇','🌉','🌃','🌌'] },
   { label: 'Objects', emojis: ['⌚','📱','💻','⌨️','🖥️','🖨️','🖱️','💽','💾','💿','📷','📸','📹','🎥','📞','☎️','📺','📻','🎙️','⏰','⏱️','⏲️','🕰️','💡','🔦','🏮','📔','📕','📗','📘','📙','📓','📒','📃','📜','📄','📰','🗞️','📚','🔖','💰','💴','💵','💶','💷','💳','💎','⚖️','🔧','🔨','⚒️','🛠️','⛏️','🔩','⚙️','🧲','🔫','💣','🧨','🔪','🗡️','⚔️','🛡️','🚬','⚰️','⚱️','🏺','🔮','📿','💈','⚗️','🔭','🔬','🕳️','💊','💉','🩸','🌡️','🧬'] },
   { label: 'Symbols', emojis: ['✨','🎉','🎊','🎈','🎁','🏆','⭐','🌟','💫','⚡','🔥','💥','💢','💦','💨','🕳️','💬','💭','🗯️','♻️','⚠️','🚫','✅','❌','❓','❗','💯','🔆','🔅','🌈','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌊','💧','🌙','🌛','🌜','🌚','🌝','☄️','🪐'] },
+  { label: 'Flags', emojis: ['🏳️','🏴','🏁','🚩','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇺🇸','🇬🇧','🇨🇦','🇲🇽','🇧🇷','🇦🇷','🇫🇷','🇩🇪','🇮🇹','🇪🇸','🇵🇹','🇳🇱','🇸🇪','🇳🇴','🇩🇰','🇫🇮','🇮🇪','🇨🇭','🇦🇹','🇬🇷','🇵🇱','🇺🇦','🇷🇺','🇹🇷','🇮🇱','🇸🇦','🇦🇪','🇮🇳','🇨🇳','🇯🇵','🇰🇷','🇹🇭','🇻🇳','🇵🇭','🇮🇩','🇦🇺','🇳🇿','🇿🇦','🇪🇬','🇳🇬','🇰🇪'] },
 ];
 
 // Flat pool used to draw a fresh random emoji set for the Emoji effect
@@ -395,8 +396,8 @@ export function InteractiveGradient() {
   // Emoji mosaic — ASCII's sibling, brightness maps to an emoji ramp instead of a character ramp
   const [emojiSize, setEmojiSize] = useState(28);
   const [emojiChars, setEmojiChars] = useState('😴🙂😃🤩🔥');
-  const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(30);
-  const [emojiBeatPulse, setEmojiBeatPulse] = useState(true);
+  const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(41);
+  const [emojiAnimTime, setEmojiAnimTime] = useState(0);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   // Liquid displacement
   const [liquidAnimTime, setLiquidAnimTime] = useState(0);
@@ -945,6 +946,13 @@ export function InteractiveGradient() {
     return () => clearInterval(id);
   }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, pulseSpeed]);
 
+  // Emoji cells only spin while Play is active — frozen in place otherwise
+  useEffect(() => {
+    if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setEmojiAnimTime(t => t + (emojiRotateSpeed / 60) * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, emojiRotateSpeed]);
+
   // Build a snapshot of all mutable gradient/effect state (used by undo, redo, and saveCurrentState)
   const buildSnapshot = useCallback(() => {
     return {
@@ -1042,7 +1050,7 @@ export function InteractiveGradient() {
       // every gradient/effect added since, snapping back to defaults on
       // restore instead of the values that were actually live when saved.
       asciiChars, asciiColor, asciiSize,
-      emojiChars, emojiSize, emojiRotateSpeed, emojiBeatPulse,
+      emojiChars, emojiSize, emojiRotateSpeed,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
       causticsBrightness, causticsScale,
@@ -1095,7 +1103,7 @@ export function InteractiveGradient() {
       iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt,
       asciiChars, asciiColor, asciiSize,
-      emojiChars, emojiSize, emojiRotateSpeed, emojiBeatPulse,
+      emojiChars, emojiSize, emojiRotateSpeed,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
       causticsBrightness, causticsScale,
@@ -1300,8 +1308,7 @@ export function InteractiveGradient() {
     setAsciiSize(snapshot.asciiSize ?? 14);
     setEmojiChars(snapshot.emojiChars ?? '😴🙂😃🤩🔥');
     setEmojiSize(snapshot.emojiSize ?? 28);
-    setEmojiRotateSpeed(snapshot.emojiRotateSpeed ?? 30);
-    setEmojiBeatPulse(snapshot.emojiBeatPulse ?? true);
+    setEmojiRotateSpeed(snapshot.emojiRotateSpeed ?? 41);
     setAuroraBandCount(snapshot.auroraBandCount ?? 6);
     setAuroraBandHeight(snapshot.auroraBandHeight ?? 1);
     setAuroraWaveSpeed(snapshot.auroraWaveSpeed ?? 0.2);
@@ -2612,7 +2619,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiBeatPulse, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -5445,16 +5452,17 @@ export function InteractiveGradient() {
 
         case 'emoji': {
           // ASCII's sibling — brightness maps to an emoji ramp instead of a
-          // character ramp, with each cell continuously rotating and a
-          // bass-reactive scale pulse in place of ASCII's flat/color toggle.
+          // character ramp, with each cell spinning about its own center.
+          // Rotation only advances while Play is active (emojiAnimTime is
+          // gated the same way as flowAnimTime/liquidAnimTime/etc.), so the
+          // cells freeze in place when paused instead of a wall-clock spin.
           if (!imageData) break;
           const eSize = Math.max(10, emojiSize);
           const emojis = Array.from(emojiChars.trim().length > 0 ? emojiChars : '😴🙂😃🤩🔥');
           const colsE = Math.ceil(displayWidth / eSize);
           const rowsE = Math.ceil(displayHeight / eSize);
           const idatE = imageData.data;
-          const baseAngle = (Date.now() / 1000) * emojiRotateSpeed * (Math.PI / 180);
-          const beatScale = emojiBeatPulse && isFirstEffect && isAudioReactive ? 1 + (audioSubBassLevel / 5) * 0.5 : 1;
+          const baseAngle = emojiAnimTime * (Math.PI / 180);
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           ctx.font = `${eSize}px sans-serif`;
@@ -5473,7 +5481,6 @@ export function InteractiveGradient() {
               ctx.save();
               ctx.translate(px, py);
               ctx.rotate(baseAngle);
-              ctx.scale(beatScale, beatScale);
               ctx.fillText(glyph, 0, 0);
               ctx.restore();
             }
@@ -8155,19 +8162,6 @@ export function InteractiveGradient() {
                     <input type="range" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Beat:</label>
-                      <button
-                        onClick={() => setEmojiBeatPulse(!emojiBeatPulse)}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          emojiBeatPulse ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        {emojiBeatPulse ? 'ON' : 'OFF'}
-                      </button>
-                    </div>
-                  </div>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
                     <input
@@ -8179,16 +8173,15 @@ export function InteractiveGradient() {
                       title="Darkest to brightest, left to right — click to pick from the emoji picker"
                       className="flex-1 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                     />
+                    {isEmojiPickerOpen && (
+                      <button
+                        onClick={() => setIsEmojiPickerOpen(false)}
+                        className="shrink-0 text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-1"
+                      >Done</button>
+                    )}
                   </div>
                   {isEmojiPickerOpen && (
                     <div className="mt-1 border border-white/20 rounded bg-black/40">
-                      <div className="flex items-center justify-between px-1 py-0.5 border-b border-white/10">
-                        <span className="text-[10px] text-white/70">Tap to add — tap done to close</span>
-                        <button
-                          onClick={() => setIsEmojiPickerOpen(false)}
-                          className="text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-0.5"
-                        >Done</button>
-                      </div>
                       <div className="max-h-40 overflow-y-auto px-1 py-1">
                         {EMOJI_PICKER_CATEGORIES.map((cat) => (
                           <div key={cat.label} className="mb-1">
