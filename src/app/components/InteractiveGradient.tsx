@@ -6609,22 +6609,27 @@ export function InteractiveGradient() {
         {/* ── Gradients Tab ── */}
         {activeTab === 'gradients' && (<>
 
-        {/* Gradient Type Buttons - 2 Column Grid */}
+        {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(12, auto)' }}>
-            {FULL_GRADIENT_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => setGradientType(type)}
-                className={`px-0.5 py-0.5 rounded text-[10px] capitalize transition-all whitespace-nowrap ${
-                  gradientType === type
-                    ? 'bg-white text-black shadow-sm'
-                    : 'bg-black/25 text-white hover:bg-black/35'
-                }`}
-              >
-                {getGradientDisplayName(type)}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${Math.ceil(FULL_GRADIENT_TYPES.length / 2)}, auto)` }}>
+            {FULL_GRADIENT_TYPES.map((type, i) => {
+              const rows = Math.ceil(FULL_GRADIENT_TYPES.length / 2);
+              const isLastInColumn = i % rows === rows - 1;
+              const isLeftColumn = i < rows;
+              return (
+                <button
+                  key={type}
+                  onClick={() => setGradientType(type)}
+                  className={`px-1 py-1 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                    gradientType === type
+                      ? 'bg-white text-black'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  {getGradientDisplayName(type)}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -7828,8 +7833,8 @@ export function InteractiveGradient() {
           >RESET</button>
         </div>
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0.5" style={{ gridAutoFlow: 'column', gridTemplateRows: 'repeat(14, auto)' }}>
-            {([
+          {(() => {
+            const effectsList = ([
               { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
@@ -7858,38 +7863,48 @@ export function InteractiveGradient() {
               { value: 'vhs',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave',label: 'Wave' },
-            ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none').map((effect) => (
-              <button
-                key={effect.value}
-                onClick={() => {
-                  if (isMultiFxMode) {
-                    // Multi-FX mode: toggle effects on/off
-                    if (activeEffects.includes(effect.value)) {
-                      setActiveEffects(activeEffects.filter(e => e !== effect.value));
-                    } else {
-                      setActiveEffects([...activeEffects, effect.value]);
-                    }
-                  } else {
-                    // Single-FX mode: select only this effect
-                    if (activeEffects.includes(effect.value) && activeEffects.length === 1) {
-                      // If clicking the only active effect, clear it
-                      setActiveEffects([]);
-                    } else {
-                      // Otherwise, set only this effect
-                      setActiveEffects([effect.value]);
-                    }
-                  }
-                }}
-                className={`px-0.5 py-0.5 rounded text-[10px] transition-all whitespace-nowrap shadow-sm ${
-                  activeEffects.includes(effect.value)
-                    ? 'bg-white text-black shadow-sm'
-                    : 'bg-black/25 text-white hover:bg-black/35'
-                }`}
-              >
-                {effect.label}
-              </button>
-            ))}
-          </div>
+            ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
+            const rows = Math.ceil(effectsList.length / 2);
+            return (
+              <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+                {effectsList.map((effect, i) => {
+                  const isLastInColumn = i % rows === rows - 1;
+                  const isLeftColumn = i < rows;
+                  return (
+                    <button
+                      key={effect.value}
+                      onClick={() => {
+                        if (isMultiFxMode) {
+                          // Multi-FX mode: toggle effects on/off
+                          if (activeEffects.includes(effect.value)) {
+                            setActiveEffects(activeEffects.filter(e => e !== effect.value));
+                          } else {
+                            setActiveEffects([...activeEffects, effect.value]);
+                          }
+                        } else {
+                          // Single-FX mode: select only this effect
+                          if (activeEffects.includes(effect.value) && activeEffects.length === 1) {
+                            // If clicking the only active effect, clear it
+                            setActiveEffects([]);
+                          } else {
+                            // Otherwise, set only this effect
+                            setActiveEffects([effect.value]);
+                          }
+                        }
+                      }}
+                      className={`px-1 py-1 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                        activeEffects.includes(effect.value)
+                          ? 'bg-white text-black'
+                          : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {effect.label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
         
         {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (() => {
