@@ -1089,6 +1089,13 @@ export function InteractiveGradient() {
       gridShapeSize, gridVariation,
       halftoneCMYK,
       isAudioEnabled, isAudioReactive,
+      bassMultiplier, midsMultiplier, trebleMultiplier, subBassMultiplier,
+      masterSensitivity, autoGainEnabled,
+      bassBeatSync, midsBeatSync, trebleBeatSync, subBassBeatSync,
+      bassSmoothing, midsSmoothing, trebleSmoothing,
+      bassThreshold, midsThreshold, trebleThreshold,
+      bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax,
+      zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
       liquidScale, liquidStrength,
@@ -1142,6 +1149,13 @@ export function InteractiveGradient() {
       gridShapeSize, gridVariation,
       halftoneCMYK,
       isAudioEnabled, isAudioReactive,
+      bassMultiplier, midsMultiplier, trebleMultiplier, subBassMultiplier,
+      masterSensitivity, autoGainEnabled,
+      bassBeatSync, midsBeatSync, trebleBeatSync, subBassBeatSync,
+      bassSmoothing, midsSmoothing, trebleSmoothing,
+      bassThreshold, midsThreshold, trebleThreshold,
+      bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax,
+      zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
       liquidScale, liquidStrength,
@@ -1368,6 +1382,35 @@ export function InteractiveGradient() {
     setHalftoneCMYK(snapshot.halftoneCMYK ?? false);
     setIsAudioEnabled(snapshot.isAudioEnabled ?? false);
     setIsAudioReactive(snapshot.isAudioReactive ?? false);
+    // Audio reactivity tuning — previously only isAudioEnabled/isAudioReactive
+    // were saved, so presets silently forgot every band multiplier, beat-sync
+    // toggle, and FX-on-beat setting and reset them to defaults on load.
+    setBassMultiplier(snapshot.bassMultiplier ?? 3.5);
+    setMidsMultiplier(snapshot.midsMultiplier ?? 2.5);
+    setTrebleMultiplier(snapshot.trebleMultiplier ?? 2);
+    setSubBassMultiplier(snapshot.subBassMultiplier ?? 3.0);
+    setMasterSensitivity(snapshot.masterSensitivity ?? 1.2);
+    setAutoGainEnabled(snapshot.autoGainEnabled ?? true);
+    setBassBeatSync(snapshot.bassBeatSync ?? true);
+    setMidsBeatSync(snapshot.midsBeatSync ?? false);
+    setTrebleBeatSync(snapshot.trebleBeatSync ?? false);
+    setSubBassBeatSync(snapshot.subBassBeatSync ?? true);
+    setBassSmoothing(snapshot.bassSmoothing ?? 0.2);
+    setMidsSmoothing(snapshot.midsSmoothing ?? 0.2);
+    setTrebleSmoothing(snapshot.trebleSmoothing ?? 0.2);
+    setBassThreshold(snapshot.bassThreshold ?? 0);
+    setMidsThreshold(snapshot.midsThreshold ?? 0);
+    setTrebleThreshold(snapshot.trebleThreshold ?? 0);
+    setBassMin(snapshot.bassMin ?? 0);
+    setBassMax(snapshot.bassMax ?? 5);
+    setMidsMin(snapshot.midsMin ?? 0);
+    setMidsMax(snapshot.midsMax ?? 2);
+    setTrebleMin(snapshot.trebleMin ?? 0);
+    setTrebleMax(snapshot.trebleMax ?? 2);
+    setZoomBeatEnabled(snapshot.zoomBeatEnabled ?? true);
+    setShakeBeatEnabled(snapshot.shakeBeatEnabled ?? false);
+    setContrastBeatEnabled(snapshot.contrastBeatEnabled ?? true);
+    setPaletteBeatEnabled(snapshot.paletteBeatEnabled ?? false);
     setKaleidoscopeRotateSpeed(snapshot.kaleidoscopeRotateSpeed ?? 0.5);
     setLavaBlobCount(snapshot.lavaBlobCount ?? 10);
     setLavaBlobSize(snapshot.lavaBlobSize ?? 0.08);
