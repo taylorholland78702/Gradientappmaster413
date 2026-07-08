@@ -189,6 +189,10 @@ export function InteractiveGradient() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
+  // Second hide tier for live/projector output — drops even the collapsed
+  // mini icon strip, leaving pure canvas. Cycled via the same H hotkey:
+  // visible -> mini strip -> fully hidden -> mini strip -> ...
+  const [isFullyHidden, setIsFullyHidden] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -6354,7 +6358,13 @@ export function InteractiveGradient() {
           break;
         case 'h': case 'H':
           e.preventDefault();
-          setIsControlsVisible(prev => !prev);
+          if (isFullyHidden) {
+            setIsFullyHidden(false);
+          } else if (isControlsVisible) {
+            setIsControlsVisible(false);
+          } else {
+            setIsFullyHidden(true);
+          }
           break;
         case 's': case 'S':
           e.preventDefault();
@@ -6421,6 +6431,7 @@ export function InteractiveGradient() {
     setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
+    isControlsVisible, isFullyHidden,
   ]);
 
   return (
@@ -6524,8 +6535,8 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* Collapsed cluster — only rendered while the panel is hidden */}
-      {!isControlsVisible && (
+      {/* Collapsed cluster — only rendered while the panel is hidden but not fully hidden */}
+      {!isControlsVisible && !isFullyHidden && (
         <div
           className="absolute pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left"
           style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
