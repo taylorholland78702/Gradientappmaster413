@@ -439,10 +439,6 @@ export function InteractiveGradient() {
   // Chromatic trails
   const [chromaticTrailsDecay, setChromaticTrailsDecay] = useState(0.85);
   const [chromaticTrailsOffset, setChromaticTrailsOffset] = useState(8);
-  // Pulse
-  const [pulseAnimTime, setPulseAnimTime] = useState(0);
-  const [pulseIntensity, setPulseIntensity] = useState(15);
-  const [pulseSpeed, setPulseSpeed] = useState(1);
   const [vignetteSoftness, setVignetteSoftness] = useState(50);
   const [fisheyeCenterX, setFisheyeCenterX] = useState(50);
   const [fisheyeCenterY, setFisheyeCenterY] = useState(50);
@@ -988,12 +984,6 @@ export function InteractiveGradient() {
     return () => clearInterval(id);
   }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
-  useEffect(() => {
-    if (!activeEffects.includes('pulse') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setPulseAnimTime(t => t + 0.05 * vcrPlaybackSpeed * pulseSpeed), 16);
-    return () => clearInterval(id);
-  }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, pulseSpeed]);
-
   // Emoji cells only spin while Play is active — frozen in place otherwise
   useEffect(() => {
     if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
@@ -1131,7 +1121,6 @@ export function InteractiveGradient() {
       moireOffset, moireScale, moireSpeed,
       noiseType, noiseWarp,
       plasmaZoomScale,
-      pulseIntensity, pulseSpeed,
       radarBeamWidth, radarFadeLength, radarSweepAngle,
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
@@ -1192,7 +1181,6 @@ export function InteractiveGradient() {
       moireOffset, moireScale, moireSpeed,
       noiseType, noiseWarp,
       plasmaZoomScale,
-      pulseIntensity, pulseSpeed,
       radarBeamWidth, radarFadeLength, radarSweepAngle,
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
@@ -1463,8 +1451,6 @@ export function InteractiveGradient() {
     setNoiseType(snapshot.noiseType ?? 'smooth');
     setNoiseWarp(snapshot.noiseWarp ?? 0);
     setPlasmaZoomScale(snapshot.plasmaZoomScale ?? 1);
-    setPulseIntensity(snapshot.pulseIntensity ?? 15);
-    setPulseSpeed(snapshot.pulseSpeed ?? 1);
     setRadarBeamWidth(snapshot.radarBeamWidth ?? 30);
     setRadarFadeLength(snapshot.radarFadeLength ?? 90);
     setRadarSweepAngle(snapshot.radarSweepAngle ?? 0);
@@ -2720,7 +2706,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, pulseAnimTime, pulseIntensity, pulseSpeed, photoVersion, photoBlendMode, photoOpacity]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -4985,27 +4971,6 @@ export function InteractiveGradient() {
           }
           ctx.clearRect(0, 0, mw, mh);
           ctx.drawImage(mirrorTemp, 0, 0);
-          break;
-        }
-
-        case 'pulse': {
-          // Rhythmic scale throb around center, synced to sub-bass when
-          // audio-reactive — a cheap transform-only redraw (no pixel loop)
-          // for a fast, very visible "breathing" motion effect.
-          if (canvas.width === 0 || canvas.height === 0) break;
-          const pulseAudio = (isAudioEnabled && isAudioReactive) ? 1 + audioSubBassLevel * 1.5 : 1;
-          const pulseScale = 1 + ((Math.sin(pulseAnimTime) * 0.5 + 0.5) * (pulseIntensity / 100)) * pulseAudio;
-          const pulseTemp = document.createElement('canvas');
-          pulseTemp.width = displayWidth; pulseTemp.height = displayHeight;
-          const pulseCtx = pulseTemp.getContext('2d')!;
-          pulseCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
-          ctx.clearRect(0, 0, displayWidth, displayHeight);
-          ctx.save();
-          ctx.translate(displayWidth / 2, displayHeight / 2);
-          ctx.scale(pulseScale, pulseScale);
-          ctx.translate(-displayWidth / 2, -displayHeight / 2);
-          ctx.drawImage(pulseTemp, 0, 0, displayWidth, displayHeight);
-          ctx.restore();
           break;
         }
 
@@ -8182,7 +8147,6 @@ export function InteractiveGradient() {
               { value: 'photo',          label: 'Photo' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
-              { value: 'pulse',          label: 'Pulse' },
               { value: 'ripple',         label: 'Ripple' },
               { value: 'scanlines',      label: 'Scanlines' },
               { value: 'shift',    label: 'Shift' },
@@ -8479,22 +8443,6 @@ export function InteractiveGradient() {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('pulse') && (
-                <EffectSection id="pulse" label="Pulse" isMulti={isMulti} expanded={expandedEffects.has('pulse')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="1" max="50" step="1" value={pulseIntensity} onChange={(e) => setPulseIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="1" max="50" step="1" value={pulseIntensity} onChange={(e) => setPulseIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="5" step="0.1" value={pulseSpeed} onChange={(e) => setPulseSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="5" step="0.1" value={pulseSpeed} onChange={(e) => setPulseSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
