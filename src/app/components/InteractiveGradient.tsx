@@ -146,6 +146,7 @@ const DISPLAY_SYNC_KEY = 'wav-display-sync';
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastBroadcastSnapshotRef = useRef<string>('');
+  const syncChannelRef = useRef<BroadcastChannel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
@@ -1535,27 +1536,34 @@ export function InteractiveGradient() {
     };
   }, [applySnapshot]);
 
+  // Open the broadcast channel once for the controller's lifetime.
   useEffect(() => {
     if (IS_DISPLAY_MODE) return;
-    const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
-    const id = setInterval(() => {
-      try {
-        const snapshot = buildSnapshot();
-        const serialized = JSON.stringify(snapshot);
-        if (serialized === lastBroadcastSnapshotRef.current) return;
-        lastBroadcastSnapshotRef.current = serialized;
-        localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
-        channel?.postMessage(serialized);
-      } catch (err) {
-        // A bad tick (e.g. a non-serializable value slipping into state)
-        // must not permanently break future ticks — log and keep polling.
-        console.error('wāv display sync tick failed:', err);
-      }
-    }, 100);
-    return () => {
-      clearInterval(id);
-      channel?.close();
-    };
+    syncChannelRef.current = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
+    return () => { syncChannelRef.current?.close(); syncChannelRef.current = null; };
+  }, []);
+
+  // Broadcast immediately whenever buildSnapshot's identity changes (i.e.
+  // on every real state change), rather than polling on a setInterval.
+  // Chrome (and others) throttle setInterval/setTimeout in windows that
+  // aren't OS-focused — even if fully visible on screen — which silently
+  // stalled the old polling loop the moment the user's focus moved to the
+  // newly-opened Display window. An effect fired off React's commit phase,
+  // itself triggered synchronously by the user's click in the controller,
+  // isn't subject to that same timer throttling.
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    try {
+      const snapshot = buildSnapshot();
+      const serialized = JSON.stringify(snapshot);
+      if (serialized === lastBroadcastSnapshotRef.current) return;
+      lastBroadcastSnapshotRef.current = serialized;
+      localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
+      syncChannelRef.current?.postMessage(serialized);
+    } catch (err) {
+      // A bad snapshot must not permanently break future broadcasts.
+      console.error('wāv display sync failed:', err);
+    }
   }, [buildSnapshot]);
 
   // Shift+P: copy the Display link — a second, always-fully-hidden-UI tab
