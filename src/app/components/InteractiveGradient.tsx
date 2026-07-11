@@ -610,7 +610,7 @@ export function InteractiveGradient() {
     audioSubBassLevel, setAudioSubBassLevel,
     audioMidsLevel, setAudioMidsLevel,
     audioTrebleLevel, setAudioTrebleLevel,
-    audioEnergy,
+    audioEnergy, setAudioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
     audioInputDevices, setAudioInputDevices,
@@ -1531,6 +1531,20 @@ export function InteractiveGradient() {
     setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
     setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
     setWaveScale(snapshot.waveScale ?? 1.0);
+
+    // Live audio-reactivity levels are part of buildSnapshot's output (so
+    // the config sync actually carries them), but must NOT be restored here
+    // for undo/redo/preset-load in the controller — that would freeze or
+    // stomp on its own live mic/file analysis. Only the Display tab, which
+    // has no audio input of its own, should adopt the controller's levels;
+    // otherwise a huge amount of audio-reactive color/brightness logic
+    // throughout the draw code silently diverges between the two windows.
+    if (IS_DISPLAY_MODE) {
+      setAudioSubBassLevel(snapshot.audioSubBassLevel ?? 0);
+      setAudioMidsLevel(snapshot.audioMidsLevel ?? 0);
+      setAudioTrebleLevel(snapshot.audioTrebleLevel ?? 0);
+      setAudioEnergy(snapshot.audioEnergy ?? 0);
+    }
   }, []);
 
   // Display-window sync: the controller tab periodically diffs its own

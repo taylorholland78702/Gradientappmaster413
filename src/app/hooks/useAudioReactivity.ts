@@ -560,7 +560,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioSubBassLevel, setAudioSubBassLevel,
     audioMidsLevel, setAudioMidsLevel,
     audioTrebleLevel, setAudioTrebleLevel,
-    audioEnergy,
+    audioEnergy, setAudioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
     audioInputDevices, setAudioInputDevices,
