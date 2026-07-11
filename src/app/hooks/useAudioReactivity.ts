@@ -49,9 +49,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [bassMin, setBassMin] = useState(0);
   const [bassMax, setBassMax] = useState(5);
   const [midsMin, setMidsMin] = useState(0);
-  const [midsMax, setMidsMax] = useState(2);
+  // Was 2 — the Mids/Treble multiplier sliders go up to 5, so anything
+  // above a multiplier setting of ~2 was clamped away entirely and had no
+  // audible/visible effect no matter how high the slider went. Matches
+  // bassMax's headroom now.
+  const [midsMax, setMidsMax] = useState(5);
   const [trebleMin, setTrebleMin] = useState(0);
-  const [trebleMax, setTrebleMax] = useState(2);
+  const [trebleMax, setTrebleMax] = useState(5);
   const [masterSensitivity, setMasterSensitivity] = useState(1.2);
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
@@ -89,8 +93,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const lastBeatTimeRef = useRef(0);
   const beatIntervalsRef = useRef<number[]>([]);
   const bassPrevRef = useRef(0);
+  const midsPrevRef = useRef(0);
+  const lastMidsBeatTimeRef = useRef(0);
   const treblePrevRef = useRef(0);
   const lastTrebleBeatRef = useRef(0);
+  const lastTreblePulseTimeRef = useRef(0);
   const bassBeatPulseRef = useRef(0);
   const midsBeatPulseRef = useRef(0);
   const trebleBeatPulseRef = useRef(0);
@@ -391,8 +398,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         lastBeatTimeRef.current = now;
         setBassOnsetTick(t => t + 1);
         if (bassBeatSync) bassBeatPulseRef.current = 1.0;
-        if (midsBeatSync) midsBeatPulseRef.current = 1.0;
-        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
+        // Mids/treble BEAT pulses used to also fire here, off the bass
+        // band's onset — so "Mids BEAT" and "Treble BEAT" weren't actually
+        // detecting mids or treble transients at all, just flashing in sync
+        // with bass hits. Each band now has its own onset detector below
+        // and drives its own pulse independently.
         // Trigger beat flash indicators
         setBassFlash(true); setMidsFlash(true); setTrebleFlash(true); setBpmFlash(true);
         setTimeout(() => { setBassFlash(false); setMidsFlash(false); setTrebleFlash(false); setBpmFlash(false); }, 120);
@@ -433,6 +443,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const midsNorm = autoGainEnabled ? Math.min(1, midsAvgRaw / Math.max(midsPeakRef.current, 0.05)) : midsAvgRaw;
       liveMidsLevelRef.current = midsNorm;
 
+      // Mids' own onset detector — previously mids BEAT just rode on bass
+      // hits (see comment above) instead of reacting to actual mids-band
+      // transients (vocals, snare body, melodic content).
+      const midsOnset = midsAvgRaw > midsPrevRef.current * 1.3 && midsAvgRaw > midsThreshold + 0.05;
+      if (midsBeatSync && midsOnset && now - lastMidsBeatTimeRef.current > 150) {
+        lastMidsBeatTimeRef.current = now;
+        midsBeatPulseRef.current = 1.0;
+      }
+      midsPrevRef.current = midsAvgRaw;
+
       const midsAboveThreshold = midsAvgRaw > midsThreshold;
       let midsRaw: number;
       if (midsBeatSync) {
@@ -454,6 +474,19 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const trebleNorm = autoGainEnabled ? Math.min(1, trebleAvgRaw / Math.max(treblePeakRef.current, 0.05)) : trebleAvgRaw;
       liveTrebleLevelRef.current = trebleNorm;
 
+      // Single onset detector shared by two independently-cadenced
+      // triggers below: a fast one (150ms) for the beat pulse that drives
+      // the actual Color effect intensity, and the original slow one
+      // (800ms) for randomizing the palette — treble's own transients
+      // (hi-hats, snare crack) are frequent enough that randomizing colors
+      // on every single one would strobe, but the visual pulse should
+      // still track them closely, similar to sub-bass/bass/mids.
+      const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
+      if (trebleBeatSync && trebleOnset && now - lastTreblePulseTimeRef.current > 150) {
+        lastTreblePulseTimeRef.current = now;
+        trebleBeatPulseRef.current = 1.0;
+      }
+
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
       let trebleRaw: number;
       if (trebleBeatSync) {
@@ -467,8 +500,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioTrebleLevel(trebleColorValue);
 
-      // Treble onset detection for Color BEAT — only update target so lerp eases in smoothly
-      const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
+      // Color BEAT — randomize the palette on treble onsets, capped to
+      // once per 800ms so it reads as a deliberate palette change rather
+      // than a strobe.
       if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 800) {
         lastTrebleBeatRef.current = now;
         setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));

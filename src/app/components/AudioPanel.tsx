@@ -42,7 +42,6 @@ export interface AudioPanelActions {
   setBassBeatSync: (v: boolean) => void;
   setMidsBeatSync: (v: boolean) => void;
   setTrebleBeatSync: (v: boolean) => void;
-  setColorShiftHue: (v: number) => void;
   startMicVisualization: (deviceId?: string) => void;
   stopMicVisualization: () => void;
   onAudioFileClick: () => void;
@@ -76,7 +75,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
-    setColorShiftHue, startMicVisualization, stopMicVisualization, onAudioFileClick,
+    startMicVisualization, stopMicVisualization, onAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
   } = actions;
 
@@ -218,7 +217,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => { const v = Number(e.target.value); setTrebleMultiplier(v); setColorShiftHue(Math.round(v * 51)); }} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
+                    <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-white/60">Color</span>

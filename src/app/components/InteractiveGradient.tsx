@@ -974,7 +974,12 @@ export function InteractiveGradient() {
         } else {
           rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.03125 : -0.03125;
         }
-        const midsBoost = isAudioActiveRef.current ? 1 + audioMidsLevelRef.current * 4 : 1;
+        // audioMidsLevel's natural range depends on the Mids multiplier
+        // slider (0-5) and master sensitivity, not a fixed 0-1 — clamping
+        // to 1 here keeps the speed boost within its documented "up to 5x"
+        // intent regardless of how those are set, instead of autonomous
+        // rotation occasionally spinning up to 20x+ on loud mids content.
+        const midsBoost = isAudioActiveRef.current ? 1 + Math.min(1, audioMidsLevelRef.current) * 4 : 1;
         // These types rotate at 2x across every speed step. (Noise and Radial are
         // intentionally excluded — neither uses the rotation angle at all, so there's
         // no existing motion for them to speed up; see conversation for details.)
@@ -3093,9 +3098,15 @@ export function InteractiveGradient() {
     const maxRadius = Math.max(displayWidth, displayHeight);
     const fitRadius = Math.min(displayWidth, displayHeight) / 2;
     
-    // Apply audio reactivity to gradient angle if enabled
-    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive) 
-      ? gradientAngle + (audioSubBassLevel * 360) // Bass affects angle by up to 360 degrees
+    // Apply audio reactivity to gradient angle if enabled. audioSubBassLevel
+    // isn't naturally 0-1 — its range depends on the Sub multiplier slider
+    // (0-5) and master sensitivity — so without the clamp this could add
+    // several multiples of 360° in a single frame on loud sub-bass, an
+    // unbounded snap that fights the smooth autonomous rotation happening
+    // in the same frame rather than the intended "up to one full turn"
+    // wobble on top of it.
+    const audioAdjustedAngle = (isAudioEnabled && isAudioReactive)
+      ? gradientAngle + (Math.min(1, audioSubBassLevel) * 360)
       : gradientAngle;
     
     const angleRad = audioAdjustedAngle * DEG_TO_RAD;
@@ -3789,9 +3800,11 @@ export function InteractiveGradient() {
         ctx.scale(gridZoom, gridZoom);
         ctx.translate(-centerX, -centerY);
 
-        // Audio reactivity: bass affects gradient animation in cells
+        // Audio reactivity: bass affects gradient animation in cells.
+        // Clamped for the same reason as audioAdjustedAngle above —
+        // audioSubBassLevel isn't naturally 0-1.
         const audioGridOffset = (isAudioEnabled && isAudioReactive)
-          ? audioSubBassLevel * 360 : 0;
+          ? Math.min(1, audioSubBassLevel) * 360 : 0;
 
         // Expand draw area to cover canvas when zoomed out
         const gridOverdraw = Math.max(1, 1 / gridZoom);
@@ -9561,7 +9574,7 @@ export function InteractiveGradient() {
             setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
             setSubBassMultiplier, setSubBassBeatSync,
             setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
-            setColorShiftHue, startMicVisualization, stopMicVisualization,
+            startMicVisualization, stopMicVisualization,
             onAudioFileClick: handleAudioFileClick,
             setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
           }}
