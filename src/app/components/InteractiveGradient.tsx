@@ -587,13 +587,14 @@ export function InteractiveGradient() {
     // ever changed by the user (or by feelingLucky's randomizer).
     onMidsFlash: () => {},
     onTrebleFlash: () => {
+      if (IS_DISPLAY_MODE) return;
       if (!isAutoColorRef.current) return;
       if (gradientType === 'windmill' || gradientType === 'angle') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
       setTargetColors(prev => prev.map(() => randomC()));
     },
-    setTargetColors: (updater) => { if (isAutoColorRef.current) setTargetColors(updater); },
-    setGradientColors: (updater) => { if (isAutoColorRef.current) setGradientColors(updater); },
+    setTargetColors: (updater) => { if (!IS_DISPLAY_MODE && isAutoColorRef.current) setTargetColors(updater); },
+    setGradientColors: (updater) => { if (!IS_DISPLAY_MODE && isAutoColorRef.current) setGradientColors(updater); },
     setTargetZoom: (updater) => { if (gradientType !== 'windmill' && gradientType !== 'angle') setTargetZoom(updater); },
     zoomBeatEnabled,
   });
@@ -2840,8 +2841,16 @@ export function InteractiveGradient() {
     setAIPrompt('');
   };
 
-  // Color AUTO PLAY — cycles colors independently of gradient AUTO PLAY
+  // Color AUTO PLAY — cycles colors independently of gradient AUTO PLAY.
+  // Skipped entirely in Display mode: this uses Math.random() every 800ms,
+  // so two windows each running their own copy would diverge in color
+  // immediately even with identical gradient type/shape/animation phase —
+  // exactly the "shape matches, colors don't" symptom reported. The
+  // resulting gradientColors/targetColors are already part of
+  // buildSnapshot, so the Display tab gets the controller's actual colors
+  // via the existing sync instead of rolling its own.
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (!isAutoColor) return;
 
     const applyColorShift = (color: ColorRGB, baseColor: ColorRGB | null, shiftRange: number): ColorRGB => {
