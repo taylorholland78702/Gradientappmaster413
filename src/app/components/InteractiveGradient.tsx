@@ -1339,6 +1339,116 @@ export function InteractiveGradient() {
     return GRADIENT_DISPLAY_NAMES[type] ?? type;
   }, []);
 
+  // Randomizes every gradient-type and effect parameter that feelingLucky's
+  // original randomization blocks never covered — an audit found the WAV
+  // button/Shuffle/hold-evolve randomizers were written incrementally and
+  // never updated as new gradient types and effects were added, so 10 of
+  // 24 gradient types (aurora, caustics, lava-lamp, marble, metaballs,
+  // truchet, moire, flow-field, flower, radar) and ~13 of 27 effects
+  // (bloom, chromatic-trails, dither, feedback, mirror, ripple, scanlines,
+  // ascii, and emoji's size/rotate/variation among them) always looked
+  // identical on shuffle — only color/angle/zoom ever changed, never their
+  // own defining shape parameters. Also fixed a few older types that were
+  // only partially covered (radialBurstSize, gridShapeSize/gridVariation).
+  // Called unconditionally (regardless of which type/effects actually got
+  // selected this round) to match the existing style in feelingLucky's own
+  // blocks below — setting a param for a type/effect that isn't currently
+  // active is harmless, since the draw code never reads it. Whenever a new
+  // gradient type or effect is added, its randomization belongs here.
+  const randomizeUncoveredParams = useCallback(() => {
+    // Previously-partial gradient types
+    setRadialBurstSize(Math.floor(Math.random() * 190) + 10);          // 10–199
+    setGridShapeSize(Math.floor(Math.random() * 99) + 1);              // 1–99
+    setGridVariation(Math.random());                                    // 0–1
+
+    // Aurora
+    setAuroraBandCount(Math.floor(Math.random() * 10) + 2);            // 2–11
+    setAuroraBandHeight(Math.random() * 3.5 + 0.5);                    // 0.5–4
+    setAuroraWaveSpeed(Math.random() * 2.9 + 0.1);                     // 0.1–3
+
+    // Caustics
+    setCausticsBrightness(Math.random() * 4.5 + 0.5);                  // 0.5–5
+    setCausticsScale(Math.random() * 11 + 1);                          // 1–12
+
+    // Lava Lamp
+    setLavaBlobCount(Math.floor(Math.random() * 10) + 2);              // 2–11
+    setLavaBlobSize(Math.random() * 0.35 + 0.05);                      // 0.05–0.4
+
+    // Marble
+    setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10
+    setMarbleTurbulence(Math.random() * 5);                            // 0–5
+    setMarbleOctaves(Math.floor(Math.random() * 8) + 1);               // 1–8
+
+    // Metaballs
+    setMetaballCount(Math.floor(Math.random() * 12) + 2);              // 2–13
+    setMetaballSize(Math.random() * 0.35 + 0.05);                      // 0.05–0.4
+    setMetaballSpeed(Math.random() * 4.9 + 0.1);                       // 0.1–5
+
+    // Truchet
+    setTruchetSize(Math.floor(Math.random() * 85) + 15);               // 15–99
+    setTruchetVariation(Math.random());                                 // 0–1
+    setTruchetThickness(Math.floor(Math.random() * 14) + 1);           // 1–14
+
+    // Moire
+    setMoireScale(Math.floor(Math.random() * 37) + 3);                 // 3–39
+    setMoireOffset(Math.floor(Math.random() * 100));                   // 0–99
+    setMoireSpeed(Math.random() * 4.9 + 0.1);                          // 0.1–5
+
+    // Flow Field
+    setFlowParticleCount(Math.floor(Math.random() * 780) + 20);        // 20–799
+    setFlowSpeed(Math.random() * 4.9 + 0.1);                           // 0.1–5
+    setFlowScale(Math.random() * 9.5 + 0.5);                           // 0.5–10
+    setFlowThickness(Math.random() * 5.5 + 0.5);                       // 0.5–6
+
+    // Flower
+    setFlowerCircles(Math.floor(Math.random() * 11) + 1);              // 1–11
+    setFlowerScale(Math.random() * 2.9 + 0.1);                         // 0.1–3
+    setFlowerSpread(Math.random() * 2.2 + 0.3);                        // 0.3–2.5
+
+    // Radar
+    setRadarFadeLength(Math.floor(Math.random() * 170) + 10);          // 10–179
+    setRadarBeamWidth(Math.floor(Math.random() * 89) + 1);             // 1–89
+
+    // Bloom
+    setBloomIntensity(Math.random() * 2);                              // 0–2
+    setBloomRadius(Math.floor(Math.random() * 38) + 2);                // 2–39
+
+    // Chromatic Trails
+    setChromaticTrailsDecay(Math.random() * 0.49 + 0.5);               // 0.5–0.99
+    setChromaticTrailsOffset(Math.floor(Math.random() * 29) + 1);      // 1–29
+
+    // Dither
+    setDitherLevels(Math.floor(Math.random() * 14) + 2);               // 2–15
+    setDitherType(Math.random() < 0.5 ? 'bayer' : 'floyd-steinberg');
+
+    // Feedback
+    setFeedbackDecay(Math.random() * 0.47 + 0.5);                      // 0.5–0.97
+    setFeedbackZoom(Math.random() * 5);                                // 0–5
+    setFeedbackRotation(Math.random() * 20 - 10);                      // -10–10
+
+    // Mirror
+    setMirrorTileCount(Math.floor(Math.random() * 14) + 2);            // 2–15
+    setMirrorMode((['horizontal', 'vertical', 'grid'] as const)[Math.floor(Math.random() * 3)]);
+
+    // Ripple
+    setRippleAmplitude(Math.floor(Math.random() * 45) + 5);            // 5–49
+
+    // Scanlines
+    setScanlineIntensity(Math.random());                                // 0–1
+    setScanlineSpacing(Math.floor(Math.random() * 18) + 2);            // 2–19
+    setScanlineSpeed(Math.random() * 5);                                // 0–5
+
+    // ASCII
+    setAsciiSize(Math.floor(Math.random() * 34) + 6);                  // 6–39
+
+    // Emoji — was only ever randomizing which characters, never size/
+    // rotation/variation, so every emoji-effect shuffle looked identical
+    // apart from which glyphs were picked.
+    setEmojiSize(Math.floor(Math.random() * 50) + 10);                 // 10–59
+    setEmojiRotateSpeed(Math.floor(Math.random() * 180));              // 0–179
+    setEmojiSizeVariation(Math.floor(Math.random() * 100));            // 0–99
+  }, []);
+
   // Shuffle gradient type
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();
@@ -1348,7 +1458,12 @@ export function InteractiveGradient() {
       newIndex = Math.floor(Math.random() * FULL_GRADIENT_TYPES.length);
     } while (newIndex === currentIndex && FULL_GRADIENT_TYPES.length > 1);
     setGradientType(FULL_GRADIENT_TYPES[newIndex]);
-  }, [gradientType, FULL_GRADIENT_TYPES, saveCurrentState]);
+    // Also randomize the new type's own shape params — previously this
+    // button only ever changed WHICH type was selected, leaving every
+    // type's own sliders exactly where they were (often just defaults),
+    // so e.g. shuffling onto Radial Burst always showed the same size.
+    randomizeUncoveredParams();
+  }, [gradientType, FULL_GRADIENT_TYPES, saveCurrentState, randomizeUncoveredParams]);
 
   // Randomize effects
   const randomizeEffects = useCallback(() => {
@@ -1365,7 +1480,12 @@ export function InteractiveGradient() {
     if (selectedEffects.length > 1) {
       setIsMultiFxMode(true);
     }
-  }, [saveCurrentState]);
+    // Previously this button only ever picked WHICH effects were active —
+    // every effect's own sliders (bloom radius, mirror tiles, emoji size,
+    // etc.) stayed wherever they last were, so repeated shuffles looked
+    // identical apart from which effects were on.
+    randomizeUncoveredParams();
+  }, [saveCurrentState, randomizeUncoveredParams]);
 
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
@@ -2098,8 +2218,10 @@ export function InteractiveGradient() {
     setColorPins(newPins);
     setSelectedPinId(null);
 
+    randomizeUncoveredParams();
+
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams]);
 
   // ─── Unified evolve: factor 0 = subtle nudge, 1 = full random ───────────────
   const evolveWithFactor = useCallback((factor: number) => {
@@ -2164,7 +2286,11 @@ export function InteractiveGradient() {
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
     }
 
-    // Effect params — always nudged, range scales with factor
+    // Effect params — always nudged, range scales with factor. Was a fixed
+    // 9-effect list (kaleidoscope/chromatic/vignette/blur/grain/wave/
+    // pixelate/shift/twist) — any other active effect sat frozen through
+    // every hold/evolve. Extended to match the same coverage
+    // randomizeUncoveredParams brings to the Shuffle/WAV-click paths.
     const rng = (min: number, max: number) => min + Math.random() * (max - min) * (0.3 + factor * 0.7);
     for (const eff of activeEffects) {
       if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.round(rng(3, 20)));
@@ -2176,16 +2302,44 @@ export function InteractiveGradient() {
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(5, 50)));
       else if (eff === 'shift') setColorShiftHue(Math.round(rng(5, 180)));
       else if (eff === 'twist') setTwistAmount(rng(0, 5));
+      else if (eff === 'triangulate') setTriangleSize(Math.round(rng(10, 200)));
+      else if (eff === 'bloom') { setBloomIntensity(rng(0, 2)); setBloomRadius(Math.round(rng(2, 40))); }
+      else if (eff === 'chromatic-trails') { setChromaticTrailsDecay(rng(0.5, 0.99)); setChromaticTrailsOffset(Math.round(rng(1, 30))); }
+      else if (eff === 'dither') setDitherLevels(Math.round(rng(2, 16)));
+      else if (eff === 'feedback') { setFeedbackDecay(rng(0.5, 0.97)); setFeedbackZoom(rng(0, 5)); }
+      else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
+      else if (eff === 'ripple') setRippleAmplitude(Math.round(rng(5, 50)));
+      else if (eff === 'scanlines') { setScanlineIntensity(rng(0, 1)); setScanlineSpacing(Math.round(rng(2, 20))); }
+      else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));
+      else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }
     }
 
-    // Gradient-specific params — scale range with factor
-    setSpiralTightness(Math.round(rng(1, 20)));
-    setWaveAmplitude(Math.round(rng(10, 80)));
-    setWaveFrequency(Math.round(rng(1, 8)));
-    setNoiseScale(Math.round(rng(10, 70)));
-    setPlasmaSpeed(rng(0.5, 3.5));
+    // Gradient-specific params — scale range with factor. Was always the
+    // same 7 params regardless of the current gradient type; now gated to
+    // only nudge the params the active type actually uses, and extended to
+    // cover the 10 types that previously had none here at all.
+    if (gradientType === 'windmill') setSpiralTightness(Math.round(rng(1, 20)));
+    else if (gradientType === 'waves') { setWaveAmplitude(Math.round(rng(10, 80))); setWaveFrequency(Math.round(rng(1, 8))); }
+    else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
+    else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
+    else if (gradientType === 'shapes') setConcentricRingWidth(Math.round(rng(20, 180)));
+    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); }
+    else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
+    else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
+    else if (gradientType === 'aurora') { setAuroraBandCount(Math.round(rng(2, 12))); setAuroraWaveSpeed(rng(0.1, 3)); }
+    else if (gradientType === 'caustics') setCausticsScale(rng(1, 12));
+    else if (gradientType === 'lava-lamp') { setLavaBlobCount(Math.round(rng(2, 12))); setLavaBlobSize(rng(0.05, 0.4)); }
+    else if (gradientType === 'marble') setMarbleTurbulence(rng(0, 5));
+    else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSpeed(rng(0.1, 5)); }
+    else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
+    else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
+    else if (gradientType === 'flow-field') { setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
+    else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
+    else if (gradientType === 'radar') setRadarBeamWidth(Math.round(rng(1, 90)));
+    // kaleidoscope's own segment count isn't tied to a gradient type — it's
+    // effect-driven above — but was always nudged here too regardless of
+    // whether the effect is active; kept as-is (harmless) for continuity.
     setKaleidoscopeSegments(Math.round(rng(3, 20)));
-    setConcentricRingWidth(Math.round(rng(20, 180)));
 
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
