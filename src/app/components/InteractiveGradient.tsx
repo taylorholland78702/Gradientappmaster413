@@ -159,6 +159,7 @@ export function InteractiveGradient() {
     voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, causticsAnimTime: 0,
     lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0,
+    audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
   });
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
@@ -1060,8 +1061,9 @@ export function InteractiveGradient() {
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime,
       lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime,
       flowAnimTime, liquidAnimTime, emojiAnimTime,
+      audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
     };
-  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime]);
+  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
 
   // Build a snapshot of all mutable gradient/effect state (used by undo, redo, and saveCurrentState)
   const buildSnapshot = useCallback(() => {
@@ -1539,20 +1541,10 @@ export function InteractiveGradient() {
     setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
     setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
     setWaveScale(snapshot.waveScale ?? 1.0);
-
-    // Live audio-reactivity levels are part of buildSnapshot's output (so
-    // the config sync actually carries them), but must NOT be restored here
-    // for undo/redo/preset-load in the controller — that would freeze or
-    // stomp on its own live mic/file analysis. Only the Display tab, which
-    // has no audio input of its own, should adopt the controller's levels;
-    // otherwise a huge amount of audio-reactive color/brightness logic
-    // throughout the draw code silently diverges between the two windows.
-    if (IS_DISPLAY_MODE) {
-      setAudioSubBassLevel(snapshot.audioSubBassLevel ?? 0);
-      setAudioMidsLevel(snapshot.audioMidsLevel ?? 0);
-      setAudioTrebleLevel(snapshot.audioTrebleLevel ?? 0);
-      setAudioEnergy(snapshot.audioEnergy ?? 0);
-    }
+    // Live audio-reactivity levels (audioSubBassLevel etc.) are NOT part of
+    // buildSnapshot's output — they're continuously-changing values synced
+    // separately over the per-frame anim channel (see below), same as
+    // gradientColors, rather than through this discrete-change snapshot.
   }, []);
 
   // Display-window sync: the controller tab periodically diffs its own
@@ -1618,6 +1610,10 @@ export function InteractiveGradient() {
       setFlowAnimTime(v.flowAnimTime);
       setLiquidAnimTime(v.liquidAnimTime);
       setEmojiAnimTime(v.emojiAnimTime);
+      setAudioSubBassLevel(v.audioSubBassLevel ?? 0);
+      setAudioMidsLevel(v.audioMidsLevel ?? 0);
+      setAudioTrebleLevel(v.audioTrebleLevel ?? 0);
+      setAudioEnergy(v.audioEnergy ?? 0);
       // Write the live, already-eased color straight into the ref the draw
       // loop actually reads (see gradientColorsRef above) — not through
       // setGradientColors/applySnapshot, which only update React state and
