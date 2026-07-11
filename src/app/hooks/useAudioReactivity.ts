@@ -344,11 +344,19 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const subBassNorm = autoGainEnabled ? Math.min(1, subBassAvgRaw / Math.max(subBassPeakRef.current, 0.05)) : subBassAvgRaw;
       liveSubBassLevelRef.current = subBassNorm;
 
-      const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.08;
+      // Threshold raised from 0.08 and the beat pulse's peak knocked down
+      // from a hardcoded 1.0 to 0.6 — every qualifying hit used to snap to
+      // the exact same full-scale spike regardless of how strong it
+      // actually was, so even a marginal, barely-there sub-bass twitch
+      // produced the same violent Shape jump as a real kick. This was the
+      // "too sensitive when BEAT is pressed" complaint: no proportionality
+      // at all in beat mode, unlike continuous mode which tracks the
+      // live-normalized level smoothly.
+      const subBassOnset = subBassAvgRaw > subBassPrevRef.current * 1.4 && subBassAvgRaw > 0.12;
       if (subBassOnset && now - lastSubBeatTimeRef.current > 150) {
         setSubBassOnsetTick(t => t + 1);
         lastSubBeatTimeRef.current = now;
-        if (subBassBeatSync) subBassBeatPulseRef.current = 1.0;
+        if (subBassBeatSync) subBassBeatPulseRef.current = 0.6;
       }
       subBassPrevRef.current = subBassAvgRaw;
 
