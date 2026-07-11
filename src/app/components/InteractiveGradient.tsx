@@ -1539,12 +1539,18 @@ export function InteractiveGradient() {
     if (IS_DISPLAY_MODE) return;
     const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
     const id = setInterval(() => {
-      const snapshot = buildSnapshot();
-      const serialized = JSON.stringify(snapshot);
-      if (serialized === lastBroadcastSnapshotRef.current) return;
-      lastBroadcastSnapshotRef.current = serialized;
-      localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
-      channel?.postMessage(serialized);
+      try {
+        const snapshot = buildSnapshot();
+        const serialized = JSON.stringify(snapshot);
+        if (serialized === lastBroadcastSnapshotRef.current) return;
+        lastBroadcastSnapshotRef.current = serialized;
+        localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
+        channel?.postMessage(serialized);
+      } catch (err) {
+        // A bad tick (e.g. a non-serializable value slipping into state)
+        // must not permanently break future ticks — log and keep polling.
+        console.error('wāv display sync tick failed:', err);
+      }
     }, 100);
     return () => {
       clearInterval(id);
