@@ -2553,12 +2553,23 @@ export function InteractiveGradient() {
     setDuotoneColor3(randomHexColor());
   }, [ALL_EFFECTS, randomHexColor]);
 
-  // Shuffle Audiovisuals - randomize audio reactivity multipliers
+  // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
+  // BEAT/FX-on-Beat toggles), matching each control's actual slider range.
+  // Leaves Auto Gain untouched — it's a mode switch, not a randomizable range.
   const shuffleAudiovisuals = useCallback(() => {
-    // Random values between 0 and 2 for each multiplier
-    setBassMultiplier(Math.random() * 2);
-    setMidsMultiplier(Math.random() * 2);
-    setTrebleMultiplier(Math.random() * 2);
+    setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
+    setSubBassMultiplier(Math.random() * 5);
+    setBassMultiplier(Math.random() * 5);
+    setMidsMultiplier(Math.random() * 5);
+    setTrebleMultiplier(Math.random() * 5);
+    setSubBassBeatSync(Math.random() < 0.5);
+    setBassBeatSync(Math.random() < 0.5);
+    setMidsBeatSync(Math.random() < 0.5);
+    setTrebleBeatSync(Math.random() < 0.5);
+    setZoomBeatEnabled(Math.random() < 0.5);
+    setShakeBeatEnabled(Math.random() < 0.5);
+    setContrastBeatEnabled(Math.random() < 0.5);
+    setPaletteBeatEnabled(Math.random() < 0.5);
   }, []);
 
   // Helper function to add color stops to gradient with optional hue shift
@@ -9731,6 +9742,7 @@ export function InteractiveGradient() {
             startMicVisualization, stopMicVisualization,
             onAudioFileClick: handleAudioFileClick,
             setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+            onShuffleAudio: shuffleAudiovisuals,
           }}
         />
         )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash } from '@phosphor-icons/react';
+import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash, Shuffle } from '@phosphor-icons/react';
 
 export interface AudioPanelState {
   isMicActive: boolean;
@@ -49,6 +49,7 @@ export interface AudioPanelActions {
   setShakeBeatEnabled: (v: boolean) => void;
   setContrastBeatEnabled: (v: boolean) => void;
   setPaletteBeatEnabled: (v: boolean) => void;
+  onShuffleAudio: () => void;
 }
 
 interface AudioPanelProps {
@@ -77,6 +78,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+    onShuffleAudio,
   } = actions;
 
   return (
@@ -153,8 +155,15 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0" title="Normalizes each band against its own recent loudness instead of a fixed scale, so quiet passages still register and loud ones don't just max out">Auto Gain</label>
               <button
                 onClick={() => setAutoGainEnabled(!autoGainEnabled)}
-                className={`ml-auto px-2 py-0.5 rounded text-[9px] font-bold transition-all ${autoGainEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${autoGainEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
               >{autoGainEnabled ? 'ON' : 'OFF'}</button>
+              <button
+                onClick={onShuffleAudio}
+                className="ml-auto p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center"
+                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, and FX on Beat"
+              >
+                <Shuffle weight="regular" className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
