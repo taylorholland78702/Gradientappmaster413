@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown } from '@phosphor-icons/react';
+import React, { useState, useMemo } from 'react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus } from '@phosphor-icons/react';
 
 interface Preset {
   id: string;
@@ -48,20 +48,15 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   deleteFolder,
 }) => {
   const [newPresetName, setNewPresetName] = useState('');
-  const [isAddingPreset, setIsAddingPreset] = useState(true);
+  const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [isAddingFolder, setIsAddingFolder] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
   const [renamingFolderValue, setRenamingFolderValue] = useState('');
   const [draggingPresetId, setDraggingPresetId] = useState<string | null>(null);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
-
-  // Show the new-preset input whenever the panel mounts
-  useEffect(() => {
-    setIsAddingPreset(true);
-    setNewPresetName('');
-  }, []);
 
   const confirmAdd = () => {
     if (newPresetName.trim()) {
@@ -165,7 +160,9 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
-      {/* New folder row — either the "+ New Folder" trigger or its input */}
+      {/* Add row — a single "+" trigger with a small menu, or whichever
+          input it opened. Merged from two always-visible rows into one so
+          the list isn't permanently pushed down by two "new..." prompts. */}
       {isAddingFolder ? (
         <div className="flex items-center border-b border-white/10">
           <input
@@ -194,18 +191,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
             ✕
           </button>
         </div>
-      ) : (
-        <button
-          onClick={() => setIsAddingFolder(true)}
-          className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors border-b border-white/10 font-semibold"
-        >
-          <FolderPlus weight="regular" className="w-4 h-4" />
-          New Folder
-        </button>
-      )}
-
-      {/* New preset input — shown on open, dismissed on load or explicit cancel */}
-      {isAddingPreset && (
+      ) : isAddingPreset ? (
         <div className="flex items-center border-b border-white/10">
           <input
             autoFocus
@@ -232,6 +218,38 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           >
             ✕
           </button>
+        </div>
+      ) : (
+        <div className="relative border-b border-white/10">
+          <button
+            onClick={() => setIsAddMenuOpen(prev => !prev)}
+            className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
+          >
+            <Plus weight="regular" className="w-4 h-4" />
+            Add
+          </button>
+          {isAddMenuOpen && (
+            <>
+              {/* Click-away catcher */}
+              <div className="fixed inset-0 z-10" onClick={() => setIsAddMenuOpen(false)} />
+              <div className="absolute left-2 right-2 top-full mt-1 z-20 bg-[#2a2a3a] border border-white/15 rounded-lg shadow-lg overflow-hidden">
+                <button
+                  onClick={() => { setIsAddMenuOpen(false); setIsAddingPreset(true); }}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors"
+                >
+                  <Plus weight="regular" className="w-4 h-4" />
+                  New Preset
+                </button>
+                <button
+                  onClick={() => { setIsAddMenuOpen(false); setIsAddingFolder(true); }}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors"
+                >
+                  <FolderPlus weight="regular" className="w-4 h-4" />
+                  New Folder
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -275,7 +293,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                 )}
                 {!isUncategorized && renamingFolder !== folder && (
-                  <>
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenamingFolder(folder); setRenamingFolderValue(folder); }}
                       className="px-2 py-1.5 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
@@ -290,7 +308,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     >
                       <Minus weight="regular" className="w-3.5 h-3.5" />
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
               {!isCollapsed && items.map((preset) => (
@@ -316,11 +334,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   ) : (
                     <button
                       onClick={() => handleLoadPreset(preset)}
+                      onDoubleClick={(e) => { e.stopPropagation(); setRenamingPresetId(preset.id); setRenamingPresetValue(preset.name); }}
+                      title="Click to load, double-click to rename"
                       className="flex-1 min-w-0 px-4 py-2 text-xs text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
                     >
                       {preset.name}
                     </button>
                   )}
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button
                     onClick={(e) => { e.stopPropagation(); updatePreset(preset.id); }}
                     className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
@@ -329,19 +350,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     <FloppyDisk weight="regular" className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); setRenamingPresetId(preset.id); setRenamingPresetValue(preset.name); }}
-                    className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
-                    title="Rename preset"
-                  >
-                    <PencilSimple weight="regular" className="w-4 h-4" />
-                  </button>
-                  <button
                     onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}
                     className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                     title="Delete preset"
                   >
                     <Minus weight="regular" className="w-4 h-4" />
                   </button>
+                  </div>
                 </div>
               ))}
             </div>
