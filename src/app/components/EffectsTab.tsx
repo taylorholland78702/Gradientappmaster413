@@ -1,0 +1,1312 @@
+import React from 'react';
+import { Shuffle } from '@phosphor-icons/react';
+import { type EffectType } from '../constants/gradientEffects';
+import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
+
+export interface EffectsTabProps {
+  activeEffects: EffectType[];
+  setActiveEffects: (v: EffectType[]) => void;
+  isMultiFxMode: boolean; setIsMultiFxMode: (v: boolean) => void;
+  expandedEffects: Set<string>;
+  toggleEffectExpanded: (id: string) => void;
+  randomizeEffects: () => void;
+
+  // Kaleidoscope
+  kaleidoscopeSegments: number; setKaleidoscopeSegments: (v: number) => void;
+  kaleidoscopeRotateSpeed: number; setKaleidoscopeRotateSpeed: (v: number) => void;
+  // Ripple
+  rippleFrequency: number; setRippleFrequency: (v: number) => void;
+  rippleAmplitude: number; setRippleAmplitude: (v: number) => void;
+  // ASCII
+  asciiSize: number; setAsciiSize: (v: number) => void;
+  asciiChars: string; setAsciiChars: (v: string) => void;
+  asciiColor: string; setAsciiColor: (v: string) => void;
+  // Emoji
+  emojiChars: string; setEmojiChars: (v: string) => void;
+  emojiSize: number; setEmojiSize: (v: number) => void;
+  emojiRotateSpeed: number; setEmojiRotateSpeed: (v: number) => void;
+  emojiSizeVariation: number; setEmojiSizeVariation: (v: number) => void;
+  emojiOffsetX: number; setEmojiOffsetX: (v: number) => void;
+  isEmojiPickerOpen: boolean; setIsEmojiPickerOpen: (v: boolean) => void;
+  emojiPickerSearch: string; setEmojiPickerSearch: (v: string) => void;
+  // Liquid
+  liquidStrength: number; setLiquidStrength: (v: number) => void;
+  liquidScale: number; setLiquidScale: (v: number) => void;
+  // Photo
+  handlePhotoFileClick: () => void;
+  photoFileName: string;
+  photoBlendMode: 'source-over' | 'multiply' | 'screen' | 'overlay'; setPhotoBlendMode: (v: 'source-over' | 'multiply' | 'screen' | 'overlay') => void;
+  photoOpacity: number; setPhotoOpacity: (v: number) => void;
+  // Chromatic Trails
+  chromaticTrailsDecay: number; setChromaticTrailsDecay: (v: number) => void;
+  chromaticTrailsOffset: number; setChromaticTrailsOffset: (v: number) => void;
+  // Pixelate
+  pixelSize: number; setPixelSize: (v: number) => void;
+  // Triangulate
+  triangleSize: number; setTriangleSize: (v: number) => void;
+  // Chromatic
+  chromaticOffset: number; setChromaticOffset: (v: number) => void;
+  chromaticAngle: number; setChromaticAngle: (v: number) => void;
+  // Fisheye
+  fisheyeStrength: number; setFisheyeStrength: (v: number) => void;
+  fisheyeCenterX: number; setFisheyeCenterX: (v: number) => void;
+  fisheyeCenterY: number; setFisheyeCenterY: (v: number) => void;
+  // Bloom
+  bloomIntensity: number; setBloomIntensity: (v: number) => void;
+  bloomRadius: number; setBloomRadius: (v: number) => void;
+  // Feedback
+  feedbackDecay: number; setFeedbackDecay: (v: number) => void;
+  feedbackZoom: number; setFeedbackZoom: (v: number) => void;
+  feedbackRotation: number; setFeedbackRotation: (v: number) => void;
+  // Mirror
+  mirrorMode: 'horizontal' | 'vertical' | 'grid'; setMirrorMode: (v: 'horizontal' | 'vertical' | 'grid') => void;
+  mirrorTileCount: number; setMirrorTileCount: (v: number) => void;
+  // Vignette
+  vignetteStrength: number; setVignetteStrength: (v: number) => void;
+  vignetteSoftness: number; setVignetteSoftness: (v: number) => void;
+  // Scanlines
+  scanlineIntensity: number; setScanlineIntensity: (v: number) => void;
+  scanlineSpacing: number; setScanlineSpacing: (v: number) => void;
+  scanlineSpeed: number; setScanlineSpeed: (v: number) => void;
+  // Shift
+  colorShiftHue: number; setColorShiftHue: (v: number) => void;
+  // Grain
+  grainIntensity: number; setGrainIntensity: (v: number) => void;
+  grainType: 'fine' | 'medium' | 'coarse' | 'film'; setGrainType: (v: 'fine' | 'medium' | 'coarse' | 'film') => void;
+  // Blur
+  blurType: 'gaussian' | 'motion' | 'radial'; setBlurType: (v: 'gaussian' | 'motion' | 'radial') => void;
+  blurGaussianAmount: number; setBlurGaussianAmount: (v: number) => void;
+  blurMotionAmount: number; setBlurMotionAmount: (v: number) => void;
+  blurMotionDirection: number; setBlurMotionDirection: (v: number) => void;
+  blurRadialAmount: number; setBlurRadialAmount: (v: number) => void;
+  // Posterize
+  posterizeLevels: number; setPosterizeLevels: (v: number) => void;
+  // Halftone
+  halftoneSize: number; setHalftoneSize: (v: number) => void;
+  halftoneCMYK: boolean; setHalftoneCMYK: (v: boolean) => void;
+  halftoneMove: boolean; setHalftoneMove: (v: boolean) => void;
+  halftoneVariation: number; setHalftoneVariation: (v: number) => void;
+  // Saturate (charcoal id)
+  charcoalIntensity: number; setCharcoalIntensity: (v: number) => void;
+  // Duotone
+  duotoneColor1: string; setDuotoneColor1: (v: string) => void;
+  duotoneColor2: string; setDuotoneColor2: (v: string) => void;
+  duotoneColor3: string; setDuotoneColor3: (v: string) => void;
+  duotoneThreeColor: boolean; setDuotoneThreeColor: (v: boolean) => void;
+  duotoneIntensity: number; setDuotoneIntensity: (v: number) => void;
+  // Grid (effect)
+  gridRows: number; setGridRows: (v: number) => void;
+  gridColumns: number; setGridColumns: (v: number) => void;
+  gridSides: number; setGridSides: (v: number) => void;
+  gridShapeSize: number; setGridShapeSize: (v: number) => void;
+  gridVariation: number; setGridVariation: (v: number) => void;
+  gridRotationDirection: 'none' | 'clockwise' | 'counterclockwise'; setGridRotationDirection: (v: 'none' | 'clockwise' | 'counterclockwise') => void;
+  // VHS
+  vhsGlitchIntensity: number; setVhsGlitchIntensity: (v: number) => void;
+  dustCrackleIntensity: number; setDustCrackleIntensity: (v: number) => void;
+  // Wave
+  waveDistortionStrength: number; setWaveDistortionStrength: (v: number) => void;
+  waveDistortionRotation: number; setWaveDistortionRotation: (v: number) => void;
+  // Slit-Scan
+  slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
+  slitScanDirection: 'horizontal' | 'vertical' | 'radial' | 'circular'; setSlitScanDirection: (v: 'horizontal' | 'vertical' | 'radial' | 'circular') => void;
+  // Dither
+  ditherLevels: number; setDitherLevels: (v: number) => void;
+  ditherType: 'bayer' | 'floyd-steinberg'; setDitherType: (v: 'bayer' | 'floyd-steinberg') => void;
+}
+
+const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
+  const {
+    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
+    kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
+    rippleFrequency, setRippleFrequency, rippleAmplitude, setRippleAmplitude,
+    asciiSize, setAsciiSize, asciiChars, setAsciiChars, asciiColor, setAsciiColor,
+    emojiChars, setEmojiChars, emojiSize, setEmojiSize, emojiRotateSpeed, setEmojiRotateSpeed,
+    emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
+    isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
+    liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
+    handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
+    chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
+    pixelSize, setPixelSize, triangleSize, setTriangleSize,
+    chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle,
+    fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY,
+    bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius,
+    feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation,
+    mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount,
+    vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness,
+    scanlineIntensity, setScanlineIntensity, scanlineSpacing, setScanlineSpacing, scanlineSpeed, setScanlineSpeed,
+    colorShiftHue, setColorShiftHue,
+    grainIntensity, setGrainIntensity, grainType, setGrainType,
+    blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
+    blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
+    posterizeLevels, setPosterizeLevels,
+    halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
+    charcoalIntensity, setCharcoalIntensity,
+    duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
+    duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
+    gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
+    gridShapeSize, setGridShapeSize, gridVariation, setGridVariation, gridRotationDirection, setGridRotationDirection,
+    vhsGlitchIntensity, setVhsGlitchIntensity, dustCrackleIntensity, setDustCrackleIntensity,
+    waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
+    slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
+    ditherLevels, setDitherLevels, ditherType, setDitherType,
+  } = props;
+
+  return (
+    <>
+        <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
+          {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
+          <div className="w-full flex gap-0 border-b border-white/10">
+            <button
+              onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+              title="Toggle Multi-FX (M)"
+            >MULTI</button>
+            <button
+              onClick={randomizeEffects}
+              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
+              title="Shuffle Effects (Shift+F)"
+            ><Shuffle weight="regular" className="w-4 h-4" /></button>
+            <button
+              onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+            >RESET</button>
+          </div>
+          {(() => {
+            const effectsList = ([
+              { value: 'ascii',          label: 'ASCII' },
+              { value: 'bloom',          label: 'Bloom' },
+              { value: 'blur',           label: 'Blur' },
+              { value: 'chromatic',      label: 'Chromatic' },
+              { value: 'chromatic-trails', label: 'Chroma Trails' },
+              { value: 'dither',         label: 'Dither' },
+              { value: 'duotone',        label: 'Duotone' },
+              { value: 'emoji',          label: 'Emoji' },
+              { value: 'feedback',       label: 'Feedback' },
+              { value: 'fisheye',        label: 'Fisheye' },
+              { value: 'grain',     label: 'Grain' },
+              { value: 'grid',           label: 'Grid' },
+              { value: 'halftone',       label: 'Halftone' },
+              { value: 'invert',         label: 'Invert' },
+              { value: 'kaleidoscope',   label: 'Kaleido' },
+              { value: 'liquid',         label: 'Liquid' },
+              { value: 'mirror',         label: 'Mirror' },
+              { value: 'photo',          label: 'Photo' },
+              { value: 'pixelate',       label: 'Pixelate' },
+              { value: 'posterize',      label: 'Posterize' },
+              { value: 'ripple',         label: 'Ripple' },
+              { value: 'scanlines',      label: 'Scanlines' },
+              { value: 'shift',    label: 'Shift' },
+              { value: 'slit-scan',      label: 'Slit-Scan' },
+              { value: 'triangulate',    label: 'Triangulate' },
+              { value: 'vhs',     label: 'VHS' },
+              { value: 'vignette',       label: 'Vignette' },
+              { value: 'wave',label: 'Wave' },
+            ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
+            const rows = Math.ceil(effectsList.length / 2);
+            return (
+              <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+                {effectsList.map((effect, i) => {
+                  const isLastInColumn = i % rows === rows - 1;
+                  const isLeftColumn = i < rows;
+                  return (
+                    <button
+                      key={effect.value}
+                      onClick={() => {
+                        if (isMultiFxMode) {
+                          // Multi-FX mode: toggle effects on/off
+                          if (activeEffects.includes(effect.value)) {
+                            setActiveEffects(activeEffects.filter(e => e !== effect.value));
+                          } else {
+                            setActiveEffects([...activeEffects, effect.value]);
+                          }
+                        } else {
+                          // Single-FX mode: select only this effect
+                          if (activeEffects.includes(effect.value) && activeEffects.length === 1) {
+                            // If clicking the only active effect, clear it
+                            setActiveEffects([]);
+                          } else {
+                            // Otherwise, set only this effect
+                            setActiveEffects([effect.value]);
+                          }
+                        }
+                      }}
+                      className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                        activeEffects.includes(effect.value)
+                          ? 'bg-white text-black'
+                          : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {effect.label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+
+        {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (() => {
+          const isMulti = activeEffects.length > 1;
+
+          return (
+          <div className={`w-full bg-black/20 px-3 py-1 rounded-lg ${isMulti ? 'max-h-64 overflow-y-auto' : ''}`}>
+            <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
+              {activeEffects.includes('kaleidoscope') && (
+                <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Segments:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="2"
+                        max="50"
+                        value={kaleidoscopeSegments}
+                        onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="2"
+                        max="50"
+                        value={kaleidoscopeSegments}
+                        onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
+                        className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('ripple') && (
+                <EffectSection id="ripple" label="Ripple" isMulti={isMulti} expanded={expandedEffects.has('ripple')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Frequency:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="1"
+                        max="100"
+                        step="1"
+                        value={Math.round(rippleFrequency * 2000)}
+                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        step="1"
+                        value={Math.round(rippleFrequency * 2000)}
+                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Amplitude:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="5"
+                        max="50"
+                        value={rippleAmplitude}
+                        onChange={(e) => setRippleAmplitude(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="5"
+                        max="50"
+                        value={rippleAmplitude}
+                        onChange={(e) => setRippleAmplitude(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('ascii') && (
+                <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={expandedEffects.has('ascii')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
+                    <input type="range" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
+                      <button
+                        onClick={() => setAsciiColor(!asciiColor)}
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
+                          asciiColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {asciiColor ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Chars:</label>
+                    <input
+                      type="text"
+                      value={asciiChars}
+                      onChange={(e) => setAsciiChars(e.target.value)}
+                      placeholder=" .:-=+*x#%@"
+                      title="Darkest to brightest, left to right"
+                      className="flex-1 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                    />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('emoji') && (
+                <EffectSection id="emoji" label="Emoji" isMulti={isMulti} expanded={expandedEffects.has('emoji')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
+                    <input type="range" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
+                    <input type="range" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size Var:</label>
+                    <input type="range" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap" title="Shifts every other row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
+                    <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="flex-1" />
+                    <input type="number" value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
+                    <input
+                      type="text"
+                      value={emojiChars}
+                      onChange={(e) => setEmojiChars(e.target.value)}
+                      onFocus={() => setIsEmojiPickerOpen(true)}
+                      placeholder="😴🙂😃🤩🔥"
+                      title="Darkest to brightest, left to right — click to pick from the emoji picker"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                    />
+                    {isEmojiPickerOpen && (
+                      <button
+                        onClick={() => setIsEmojiPickerOpen(false)}
+                        className="shrink-0 text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-1"
+                      >Done</button>
+                    )}
+                  </div>
+                  {isEmojiPickerOpen && (
+                    <div className="mt-1 border border-white/20 rounded bg-black/40">
+                      <input
+                        type="text"
+                        value={emojiPickerSearch}
+                        onChange={(e) => setEmojiPickerSearch(e.target.value)}
+                        placeholder="Search emoji…"
+                        className="w-full text-[10px] text-white bg-black/25 border-b border-white/20 px-1.5 py-1 outline-none"
+                      />
+                      <div className="max-h-40 overflow-y-auto px-1 py-1">
+                        {(() => {
+                          const q = emojiPickerSearch.trim().toLowerCase();
+                          const categories = q
+                            ? EMOJI_PICKER_CATEGORIES.map(cat => ({ ...cat, emojis: cat.emojis.filter(em => em.name.includes(q)) })).filter(cat => cat.emojis.length > 0)
+                            : EMOJI_PICKER_CATEGORIES;
+                          if (categories.length === 0) {
+                            return <div className="text-[10px] text-white/40 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
+                          }
+                          return categories.map((cat) => (
+                            <div key={cat.label} className="mb-1">
+                              <div className="text-[9px] text-white/50 mb-0.5">{cat.label}</div>
+                              <div className="flex flex-wrap gap-0.5">
+                                {cat.emojis.map((em, i) => (
+                                  <button
+                                    key={`${cat.label}-${i}`}
+                                    onClick={() => setEmojiChars(prev => prev + em.char)}
+                                    className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-white/15 transition-all"
+                                    title={em.name}
+                                  >{em.char}</button>
+                                ))}
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('liquid') && (
+                <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={expandedEffects.has('liquid')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                    <input type="range" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('photo') && (
+                <EffectSection id="photo" label="Photo" isMulti={isMulti} expanded={expandedEffects.has('photo')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <button
+                      onClick={handlePhotoFileClick}
+                      className="flex-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/15 text-white hover:bg-white/25 transition-all truncate"
+                      title={photoFileName || 'Upload a photo'}
+                    >{photoFileName ? `📷 ${photoFileName}` : 'Upload Photo…'}</button>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Blend:</label>
+                    <div className="flex-1 flex gap-0.5">
+                      {(['overlay', 'multiply', 'screen', 'source-over'] as const).map(mode => (
+                        <button
+                          key={mode}
+                          onClick={() => setPhotoBlendMode(mode)}
+                          className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                        >{mode === 'source-over' ? 'Normal' : mode[0].toUpperCase() + mode.slice(1)}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <input type="range" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  {!photoFileName && (
+                    <div className="text-[9px] text-white/40 mt-1">No photo uploaded — this effect is invisible until you upload one.</div>
+                  )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('chromatic-trails') && (
+                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={expandedEffects.has('chromatic-trails')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
+                    <input type="range" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('pixelate') && (
+                <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={expandedEffects.has('pixelate')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
+                  <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('triangulate') && (
+                <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={expandedEffects.has('triangulate')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
+                  <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('chromatic') && (
+                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={expandedEffects.has('chromatic')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
+                  <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Angle:</label>
+                    <input type="range" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('fisheye') && (
+                <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={expandedEffects.has('fisheye')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                  <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Center X:</label>
+                    <input type="range" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Center Y:</label>
+                    <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('bloom') && (
+                <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={expandedEffects.has('bloom')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Radius:</label>
+                    <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{bloomRadius}</span>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('feedback') && (
+                <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={expandedEffects.has('feedback')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
+                    <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Zoom:</label>
+                    <input type="range" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{feedbackZoom.toFixed(1)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Spin:</label>
+                    <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('zoom-blur') && (
+                <EffectSection id="zoom-blur" label="Zoom Blur" isMulti={isMulti} expanded={expandedEffects.has('zoom-blur')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                  <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
+                  <span className="text-[10px] text-white w-8 text-right">{blurRadialAmount}</span>
+                </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('mirror') && (
+                <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={expandedEffects.has('mirror')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Mode:</label>
+                    <div className="flex gap-1 flex-1">
+                      {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
+                        <button key={mode} onClick={() => setMirrorMode(mode)}
+                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}>
+                          {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {mirrorMode === 'grid' && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
+                      <input type="range" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="flex-1" />
+                      <span className="text-[10px] text-white w-8 text-right">{mirrorTileCount}</span>
+                    </div>
+                  )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('vignette') && (
+                <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={expandedEffects.has('vignette')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                  <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
+                    <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('scanlines') && (
+                <EffectSection id="scanlines" label="Scanlines" isMulti={isMulti} expanded={expandedEffects.has('scanlines')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Spacing:</label>
+                    <input type="range" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpacing}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <input type="range" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="flex-1" />
+                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpeed}</span>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('shift') && (
+                <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('shift')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
+                  <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('grain') && (
+                <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
+                    <div className="flex gap-0.5 flex-1">
+                      <button
+                        onClick={() => setGrainType('fine')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          grainType === 'fine'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Fine
+                      </button>
+                      <button
+                        onClick={() => setGrainType('medium')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          grainType === 'medium'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Med
+                      </button>
+                      <button
+                        onClick={() => setGrainType('coarse')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          grainType === 'coarse'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Coarse
+                      </button>
+                      <button
+                        onClick={() => setGrainType('film')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          grainType === 'film'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Film
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('blur') && (
+                <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1 mb-1">
+                    <div className="flex gap-0.5 flex-1">
+                      <button
+                        onClick={() => setBlurType('gaussian')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          blurType === 'gaussian'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Gaussian
+                      </button>
+                      <button
+                        onClick={() => setBlurType('motion')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          blurType === 'motion'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Motion
+                      </button>
+                      <button
+                        onClick={() => setBlurType('radial')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          blurType === 'radial'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Radial
+                      </button>
+                    </div>
+                  </div>
+                  {blurType === 'gaussian' && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                      <div className="flex items-center gap-1 flex-1">
+                        <input
+                          type="range"
+                          min="1"
+                          max="50"
+                          value={blurGaussianAmount}
+                          onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
+                          className="flex-1"
+                        />
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={blurGaussianAmount}
+                        onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                      </div>
+                    </div>
+                  )}
+                  {blurType === 'motion' && (
+                    <>
+                      <div className="flex items-center justify-between gap-1">
+                        <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                        <div className="flex items-center gap-1 flex-1">
+                          <input
+                            type="range"
+                            min="1"
+                            max="50"
+                            value={blurMotionAmount}
+                            onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
+                            className="flex-1"
+                          />
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={blurMotionAmount}
+                        onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-1">
+                        <label className="text-[10px] text-white whitespace-nowrap">Direction:</label>
+                        <div className="flex items-center gap-1 flex-1">
+                          <input
+                            type="range"
+                            min="0"
+                            max="360"
+                            value={blurMotionDirection}
+                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            max="360"
+                            value={Math.round(blurMotionDirection)}
+                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
+                            className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {blurType === 'radial' && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                      <div className="flex items-center gap-1 flex-1">
+                        <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
+                        <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                      </div>
+                    </div>
+                  )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('posterize') && (
+                <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={expandedEffects.has('posterize')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
+                  <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('halftone') && (
+                <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={expandedEffects.has('halftone')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Dot Size:</label>
+                    <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={halftoneVariation}
+                        onChange={(e) => setHalftoneVariation(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={halftoneVariation}
+                        onChange={(e) => setHalftoneVariation(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
+                      <button
+                        onClick={() => setHalftoneMove(!halftoneMove)}
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
+                          halftoneMove
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {halftoneMove ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
+                      <button
+                        onClick={() => setHalftoneCMYK(!halftoneCMYK)}
+                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
+                          halftoneCMYK
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {halftoneCMYK ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('charcoal') && (
+                <EffectSection id="charcoal" label="Saturate" isMulti={isMulti} expanded={expandedEffects.has('charcoal')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                  <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+
+              
+              {activeEffects.includes('duotone') && (
+                <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Color 1:</label>
+                    <input
+                      type="color"
+                      value={duotoneColor1}
+                      onChange={(e) => setDuotoneColor1(e.target.value)}
+                      className="w-12 h-6 rounded cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Color 2:</label>
+                    <input
+                      type="color"
+                      value={duotoneColor2}
+                      onChange={(e) => setDuotoneColor2(e.target.value)}
+                      className="w-12 h-6 rounded cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Tritone:</label>
+                    <button
+                      onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
+                      className={`px-2 py-0.5 rounded text-[10px] transition-all ${
+                        duotoneThreeColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                      }`}
+                    >
+                      {duotoneThreeColor ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  {duotoneThreeColor && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Color 3:</label>
+                      <input
+                        type="color"
+                        value={duotoneColor3}
+                        onChange={(e) => setDuotoneColor3(e.target.value)}
+                        className="w-12 h-6 rounded cursor-pointer"
+                      />
+                    </div>
+                  )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('grid') && (
+                <EffectSection id="grid" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Sides:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={gridSides}
+                        onChange={(e) => setGridSides(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={gridSides}
+                        onChange={(e) => setGridSides(Number(e.target.value))}
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Rows:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="2"
+                        max="50"
+                        value={gridRows}
+                        onChange={(e) => setGridRows(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="2"
+                        max="50"
+                        value={gridRows}
+                        onChange={(e) => setGridRows(Number(e.target.value))}
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Columns:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="2"
+                        max="50"
+                        value={gridColumns}
+                        onChange={(e) => setGridColumns(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="2"
+                        max="50"
+                        value={gridColumns}
+                        onChange={(e) => setGridColumns(Number(e.target.value))}
+                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  {/* Grid Effect Shape Size Control */}
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white/80 whitespace-nowrap">Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min={1}
+                        max={100}
+                        step={1}
+                        value={gridShapeSize}
+                        onChange={(e) => setGridShapeSize(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={gridShapeSize}
+                        onChange={(e) => setGridShapeSize(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={gridVariation}
+                        onChange={(e) => setGridVariation(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={gridVariation}
+                        onChange={(e) => setGridVariation(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
+                    <div className="flex gap-0.5 flex-1">
+                      <button
+                        onClick={() => setGridRotationDirection('none')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'none'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        OFF
+                      </button>
+                      <button
+                        onClick={() => setGridRotationDirection('clockwise')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'clockwise'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        ⟳
+                      </button>
+                      <button
+                        onClick={() => setGridRotationDirection('counterclockwise')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'counterclockwise'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        ⟲
+                      </button>
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+
+              
+              
+              
+              
+              {activeEffects.includes('vhs') && (
+                <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={vhsGlitchIntensity}
+                        onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={vhsGlitchIntensity}
+                        onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('wave') && (
+                <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                    <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotation:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={waveDistortionRotation}
+                        onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="360"
+                        value={waveDistortionRotation}
+                        onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('slit-scan') && (
+                <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={expandedEffects.has('slit-scan')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setSlitScanDirection('horizontal')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          slitScanDirection === 'horizontal'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Horz
+                      </button>
+                      <button
+                        onClick={() => setSlitScanDirection('vertical')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          slitScanDirection === 'vertical'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Vert
+                      </button>
+                      <button
+                        onClick={() => setSlitScanDirection('radial')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          slitScanDirection === 'radial'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Radial
+                      </button>
+                      <button
+                        onClick={() => setSlitScanDirection('circular')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          slitScanDirection === 'circular'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Circle
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                        value={slitScanIntensity}
+                        onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                        value={slitScanIntensity}
+                        onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('dither') && (
+                <EffectSection id="dither" label="Dither" isMulti={isMulti} expanded={expandedEffects.has('dither')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
+                    <div className="flex gap-1 flex-1">
+                      <button
+                        onClick={() => setDitherType('bayer')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          ditherType === 'bayer'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Bayer
+                      </button>
+                      <button
+                        onClick={() => setDitherType('floyd-steinberg')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          ditherType === 'floyd-steinberg'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Floyd-Steinberg
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="range"
+                        min="2"
+                        max="16"
+                        step="1"
+                        value={ditherLevels}
+                        onChange={(e) => setDitherLevels(Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <input
+                        type="number"
+                        min="2"
+                        max="16"
+                        step="1"
+                        value={ditherLevels}
+                        onChange={(e) => setDitherLevels(Number(e.target.value))}
+                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                      />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+            </div>
+          </div>
+          );
+        })()}
+
+    </>
+  );
+};
+
+export const EffectsTab = React.memo(EffectsTabInner);
