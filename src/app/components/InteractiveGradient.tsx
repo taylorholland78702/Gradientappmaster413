@@ -149,19 +149,6 @@ const DISPLAY_SYNC_KEY = 'wav-display-sync';
 // localStorage writes, and mixing them into buildSnapshot would make ITS
 // identity (and therefore every undo/preset snapshot) change every frame.
 const DISPLAY_ANIM_SYNC_KEY = 'wav-display-sync-anim';
-// WebRTC signaling channel: streams the controller's actual canvas pixels
-// (via HTMLCanvasElement.captureStream) to the Display tab, rather than
-// re-deriving them from synced state. State-sync gets everything visually
-// very close, but a handful of effects pick colors by discontinuous index
-// (Math.floor(audioLevel * colors.length) % colors.length) — a one-frame
-// timing difference between two independently-rendering windows can round
-// to a different index there, i.e. a genuinely different color, not just a
-// slightly-off one. Piping actual pixels sidesteps that class of mismatch
-// entirely. The two tabs have no direct object reference to hand a
-// MediaStream through (the copy-link flow means no window.opener relation),
-// so BroadcastChannel carries the SDP/ICE signaling instead; the stream
-// itself then flows peer-to-peer once connected.
-const WEBRTC_SIGNAL_KEY = 'wav-webrtc-signal';
 
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -174,11 +161,6 @@ export function InteractiveGradient() {
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
   });
-  const webrtcChannelRef = useRef<BroadcastChannel | null>(null);
-  const webrtcPeerRef = useRef<RTCPeerConnection | null>(null);
-  const webrtcIdRef = useRef<string>(Math.random().toString(36).slice(2));
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMirrorConnected, setIsMirrorConnected] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
@@ -1671,106 +1653,6 @@ export function InteractiveGradient() {
     if (IS_DISPLAY_MODE) return;
     syncChannelRef.current = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
     return () => { syncChannelRef.current?.close(); syncChannelRef.current = null; };
-  }, []);
-
-  // WebRTC canvas mirroring — pipes the controller's actual rendered pixels
-  // to the Display tab instead of re-deriving them from synced state, so
-  // even discontinuous/index-based audio-color effects match exactly. Only
-  // one Display tab is mirrored at a time (the most recently connected);
-  // typical live-performance use is a single projector output.
-  useEffect(() => {
-    if (typeof RTCPeerConnection === 'undefined' || typeof BroadcastChannel === 'undefined') return;
-    const channel = new BroadcastChannel(WEBRTC_SIGNAL_KEY);
-    webrtcChannelRef.current = channel;
-    const myId = webrtcIdRef.current;
-    const closePeer = () => { webrtcPeerRef.current?.close(); webrtcPeerRef.current = null; };
-
-    if (IS_DISPLAY_MODE) {
-      const connect = () => {
-        closePeer();
-        const pc = new RTCPeerConnection();
-        webrtcPeerRef.current = pc;
-        pc.onicecandidate = (e) => {
-          if (e.candidate) channel.postMessage({ type: 'ice', id: myId, from: 'display', candidate: e.candidate });
-        };
-        pc.ontrack = (e) => {
-          if (videoRef.current) videoRef.current.srcObject = e.streams[0];
-          setIsMirrorConnected(true);
-        };
-        pc.onconnectionstatechange = () => {
-          if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
-            setIsMirrorConnected(false);
-          }
-        };
-        channel.postMessage({ type: 'hello', id: myId });
-      };
-      connect();
-      // Retry periodically in case the controller tab opens/reloads after
-      // this one, or the first handshake attempt is simply missed.
-      const retryId = setInterval(() => {
-        if (webrtcPeerRef.current?.connectionState !== 'connected') connect();
-      }, 3000);
-
-      channel.onmessage = async (e) => {
-        const msg = e.data;
-        if (!msg || msg.id !== myId) return;
-        const pc = webrtcPeerRef.current;
-        if (!pc) return;
-        try {
-          if (msg.type === 'offer') {
-            await pc.setRemoteDescription(msg.sdp);
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            channel.postMessage({ type: 'answer', id: myId, sdp: answer });
-          } else if (msg.type === 'ice' && msg.from === 'controller') {
-            await pc.addIceCandidate(msg.candidate);
-          }
-        } catch (err) {
-          console.error('wāv canvas-mirror (display) signaling failed:', err);
-        }
-      };
-
-      return () => {
-        clearInterval(retryId);
-        channel.close();
-        closePeer();
-      };
-    }
-
-    // Controller: wait for a Display tab to announce itself, then offer it
-    // a live capture of this canvas.
-    channel.onmessage = async (e) => {
-      const msg = e.data;
-      if (!msg) return;
-      try {
-        if (msg.type === 'hello') {
-          closePeer();
-          const pc = new RTCPeerConnection();
-          webrtcPeerRef.current = pc;
-          const canvas = canvasRef.current as (HTMLCanvasElement & { captureStream?: (fps?: number) => MediaStream }) | null;
-          const stream = canvas?.captureStream?.(30);
-          if (!stream) return;
-          stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-          pc.onicecandidate = (ev) => {
-            if (ev.candidate) channel.postMessage({ type: 'ice', id: msg.id, from: 'controller', candidate: ev.candidate });
-          };
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          channel.postMessage({ type: 'offer', id: msg.id, sdp: offer });
-        } else if (msg.type === 'answer') {
-          await webrtcPeerRef.current?.setRemoteDescription(msg.sdp);
-        } else if (msg.type === 'ice' && msg.from === 'display') {
-          await webrtcPeerRef.current?.addIceCandidate(msg.candidate);
-        }
-      } catch (err) {
-        console.error('wāv canvas-mirror (controller) signaling failed:', err);
-      }
-    };
-
-    return () => {
-      channel.close();
-      closePeer();
-    };
   }, []);
 
   // Broadcast immediately whenever buildSnapshot's identity changes (i.e.
@@ -6799,24 +6681,7 @@ export function InteractiveGradient() {
           style={{ touchAction: 'none' }}
         />
       </div>
-
-      {/* Display mode: once the WebRTC canvas mirror connects, show the
-          controller's actual pixels instead of this tab's own state-synced
-          render — guarantees an exact match for every effect, including the
-          audio-index-driven color picks that pure state-sync can't fully
-          close. The state-synced canvas underneath keeps rendering as a
-          fallback (instant on load, and if the peer connection ever drops). */}
-      {IS_DISPLAY_MODE && (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          style={{ opacity: isMirrorConnected ? 1 : 0 }}
-        />
-      )}
-
+      
       {/* Freeform Pins Overlay */}
       {gradientType === 'freeform' && (
         <FreeformPinsOverlay
