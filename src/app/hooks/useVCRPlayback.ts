@@ -97,6 +97,10 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const muxerRef = useRef<any>(null);
   const videoFrameIndexRef = useRef(0);
   const usingWebCodecsRef = useRef(false);
+  // First rAF timestamp of the current recording — frame PTS is measured
+  // from this, not from frame count, so the exported video's timeline
+  // always matches real elapsed time (see startRecordingWebCodecs).
+  const recordingStartTimestampRef = useRef(0);
 
   // VCR Recording effect
   useEffect(() => {
@@ -281,6 +285,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     audioChunksRef.current = [];
     isCapturingRef.current = true;
     lastFrameTimeRef.current = 0;
+    recordingStartTimestampRef.current = 0;
     isRecordingRef.current = true;
     setIsRecording(true);
 
@@ -290,7 +295,18 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       if (!isCapturingRef.current) return;
       if (timestamp - lastFrameTimeRef.current >= FRAME_INTERVAL_MS) {
         lastFrameTimeRef.current = timestamp;
-        const frameTimestampUs = (videoFrameIndexRef.current * 1e6) / CAPTURE_FPS;
+        if (recordingStartTimestampRef.current === 0) recordingStartTimestampRef.current = timestamp;
+        // PTS is measured from real elapsed wall-clock time, not from
+        // videoFrameIndexRef * (1/CAPTURE_FPS). That assumed every capture
+        // landed exactly one frame-interval apart — under heavy draw load
+        // (dense effects, large emoji grids) frames land further apart than
+        // that, so fewer of them cover the same real recording duration.
+        // Timestamping by index alone squeezed those into a proportionally
+        // shorter video timeline, which is exactly why exports played back
+        // faster than the real-time preview: same content, less declared
+        // duration. Real-elapsed-time timestamps keep the exported
+        // duration correct regardless of how many frames actually landed.
+        const frameTimestampUs = (timestamp - recordingStartTimestampRef.current) * 1000;
         const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs });
         // Keyframe every 2 seconds so the file is seekable without being too big.
         encoder.encode(frame, { keyFrame: videoFrameIndexRef.current % (CAPTURE_FPS * 2) === 0 });
@@ -380,11 +396,23 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
 
     startAudioCapture();
 
-    // Capture video frames via RAF
+    // Capture video frames via RAF. ffmpeg encodes this sequence of images
+    // at a fixed -framerate, so frame COUNT is what determines the exported
+    // duration — if draw work is heavy enough that real time between
+    // captures exceeds FRAME_INTERVAL_MS, a single "if" here would silently
+    // drop frames, shrinking the declared duration below the real recording
+    // time and playing back faster than the live preview. The while loop
+    // below pushes one duplicate capture per missed interval to keep frame
+    // count in lockstep with real elapsed time (capped per tick so a long
+    // stall, e.g. a backgrounded tab, catches up over a few frames instead
+    // of one giant burst).
     const captureFrame = (timestamp: number) => {
       if (!isCapturingRef.current) return;
-      if (timestamp - lastFrameTimeRef.current >= FRAME_INTERVAL_MS) {
-        lastFrameTimeRef.current = timestamp;
+      if (lastFrameTimeRef.current === 0) lastFrameTimeRef.current = timestamp;
+      let caughtUp = 0;
+      while (timestamp - lastFrameTimeRef.current >= FRAME_INTERVAL_MS && caughtUp < CAPTURE_FPS) {
+        lastFrameTimeRef.current += FRAME_INTERVAL_MS;
+        caughtUp += 1;
         canvas.toBlob((blob) => {
           if (blob && isCapturingRef.current) {
             blob.arrayBuffer().then(buf => {
