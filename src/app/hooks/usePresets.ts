@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
-import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 
 export interface ColorRGB {
@@ -78,6 +78,11 @@ export function usePresets(params: UsePresetsParams) {
   const [renamingPresetId, setRenamingPresetId] = useState<string | null>(null);
   const [renamingPresetValue, setRenamingPresetValue] = useState('');
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
+  // Explicit list of folder names — kept separate from the folder tags on
+  // individual presets so an empty folder (just created, or emptied out by
+  // moving its last preset elsewhere) still shows up and can be renamed or
+  // deleted rather than silently disappearing.
+  const [folderNames, setFolderNames] = useState<string[]>([]);
 
   // Load presets — localStorage first (reliable), then Firebase (sync).
   // Presets from before `id` existed get one assigned here so every
@@ -97,6 +102,11 @@ export function usePresets(params: UsePresetsParams) {
         safeSetLocalStorage('gradientPresets', JSON.stringify(parsed));
       } catch {}
     }
+    const localFolders = localStorage.getItem('gradientPresetFolders');
+    if (localFolders) {
+      try { setFolderNames(JSON.parse(localFolders)); } catch {}
+    }
+
     signInAnonymously(auth).then(async (cred) => {
       const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
       if (!snap.empty) {
@@ -116,8 +126,34 @@ export function usePresets(params: UsePresetsParams) {
           return presets;
         });
       }
+
+      const folderDoc = await getDoc(doc(db, 'users', cred.user.uid, 'meta', 'presetFolders'));
+      const fromFirestoreFolders: string[] = folderDoc.exists() ? (folderDoc.data().names ?? []) : [];
+      setFolderNames(prev => {
+        // Union with whatever's already showing (localStorage) rather than
+        // replacing outright, same reasoning as the presets merge above.
+        const merged = [...new Set([...prev, ...fromFirestoreFolders])];
+        safeSetLocalStorage('gradientPresetFolders', JSON.stringify(merged));
+        return merged;
+      });
     });
   }, []);
+
+  // Any folder tag present on a preset but missing from the explicit
+  // folderNames list (e.g. data saved before folder management existed)
+  // should still show up as a manageable folder rather than a dangling tag.
+  const allFolderNames = [...new Set([
+    ...folderNames,
+    ...savedPresets.map(p => p.folder).filter((f): f is string => !!f),
+  ])];
+
+  const persistFolderNames = async (names: string[]) => {
+    setFolderNames(names);
+    safeSetLocalStorage('gradientPresetFolders', JSON.stringify(names));
+    if (auth.currentUser) {
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'meta', 'presetFolders'), { names });
+    }
+  };
 
   // Save preset
   const savePreset = async () => {
@@ -218,6 +254,59 @@ export function usePresets(params: UsePresetsParams) {
       if (payload.folder === undefined) delete payload.folder;
       await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), existing.id), payload);
     }
+    if (trimmed && !folderNames.includes(trimmed)) {
+      await persistFolderNames([...folderNames, trimmed]);
+    }
+  };
+
+  // Create an empty folder — shows up in the panel immediately, before any
+  // preset is moved into it.
+  const addFolder = async (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed || allFolderNames.includes(trimmed)) return;
+    await persistFolderNames([...folderNames, trimmed]);
+  };
+
+  // Rename a folder — relabels the folder itself and every preset tagged
+  // with it. Id-based, like every other preset write here, so a mid-flight
+  // reorder can't cause it to touch the wrong preset.
+  const renameFolder = async (oldName: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) return;
+    const affected = savedPresets.filter(p => p.folder === oldName);
+    const newPresets = savedPresets.map(p => p.folder === oldName ? { ...p, folder: trimmed } : p);
+    setSavedPresets(newPresets);
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser) {
+      await Promise.all(affected.map(p =>
+        setDoc(doc(collection(db, 'users', auth.currentUser!.uid, 'presets'), p.id), { ...p, folder: trimmed })
+      ));
+    }
+    await persistFolderNames(folderNames.filter(f => f !== oldName).concat(trimmed));
+  };
+
+  // Delete a folder — this only ever clears the folder tag on its presets
+  // (they land back in Uncategorized), never the presets themselves. After
+  // the earlier incident where an indexing bug deleted real presets, this
+  // function deliberately has no code path that can call deletePreset or
+  // deleteDoc on a presets/* document.
+  const deleteFolder = async (name: string) => {
+    if (!window.confirm(`Delete folder "${name}"? Its presets will move to Uncategorized — they won't be deleted.`)) return;
+    const affected = savedPresets.filter(p => p.folder === name);
+    const newPresets = savedPresets.map(p => {
+      if (p.folder !== name) return p;
+      const { folder, ...rest } = p;
+      return rest;
+    });
+    setSavedPresets(newPresets);
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser) {
+      await Promise.all(affected.map(p => {
+        const { folder, ...rest } = p;
+        return setDoc(doc(collection(db, 'users', auth.currentUser!.uid, 'presets'), p.id), rest);
+      }));
+    }
+    await persistFolderNames(folderNames.filter(f => f !== name));
   };
 
   return {
@@ -228,6 +317,7 @@ export function usePresets(params: UsePresetsParams) {
     renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
+    folderNames: allFolderNames,
     // Functions
     savePreset,
     savePresetWithName,
@@ -236,5 +326,8 @@ export function usePresets(params: UsePresetsParams) {
     renamePreset,
     updatePreset,
     movePresetToFolder,
+    addFolder,
+    renameFolder,
+    deleteFolder,
   };
 }

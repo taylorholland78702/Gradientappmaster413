@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, CaretDown } from '@phosphor-icons/react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown } from '@phosphor-icons/react';
 
 interface Preset {
   id: string;
@@ -15,6 +15,7 @@ interface PresetsPanelProps {
   savedPresets: Preset[];
   renamingPresetId: string | null;
   renamingPresetValue: string;
+  folderNames: string[];
   setIsPresetsDropdownOpen: (open: boolean) => void;
   setRenamingPresetId: (id: string | null) => void;
   setRenamingPresetValue: (value: string) => void;
@@ -24,12 +25,16 @@ interface PresetsPanelProps {
   updatePreset: (id: string) => void;
   savePresetWithName: (name: string) => void;
   movePresetToFolder: (id: string, folder: string) => void;
+  addFolder: (name: string) => void;
+  renameFolder: (oldName: string, newName: string) => void;
+  deleteFolder: (name: string) => void;
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   savedPresets,
   renamingPresetId,
   renamingPresetValue,
+  folderNames,
   setRenamingPresetId,
   setRenamingPresetValue,
   loadPreset,
@@ -38,12 +43,19 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   updatePreset,
   savePresetWithName,
   movePresetToFolder,
+  addFolder,
+  renameFolder,
+  deleteFolder,
 }) => {
   const [newPresetName, setNewPresetName] = useState('');
   const [isAddingPreset, setIsAddingPreset] = useState(true);
+  const [isAddingFolder, setIsAddingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [folderDraft, setFolderDraft] = useState('');
+  const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
+  const [renamingFolderValue, setRenamingFolderValue] = useState('');
 
   // Show the new-preset input whenever the panel mounts
   useEffect(() => {
@@ -62,6 +74,19 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const cancelAdd = () => {
     setIsAddingPreset(false);
     setNewPresetName('');
+  };
+
+  const confirmAddFolder = () => {
+    if (newFolderName.trim()) {
+      addFolder(newFolderName.trim());
+    }
+    setIsAddingFolder(false);
+    setNewFolderName('');
+  };
+
+  const cancelAddFolder = () => {
+    setIsAddingFolder(false);
+    setNewFolderName('');
   };
 
   const handleLoadPreset = (preset: Preset) => {
@@ -90,10 +115,21 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     setFolderDraft('');
   };
 
+  const commitFolderRename = (oldName: string) => {
+    if (renamingFolderValue.trim() && renamingFolderValue.trim() !== oldName) {
+      renameFolder(oldName, renamingFolderValue);
+    }
+    setRenamingFolder(null);
+    setRenamingFolderValue('');
+  };
+
   // Group presets by folder, preserving each folder's first-seen order;
-  // Uncategorized always sorts last so named folders stay up top.
+  // Uncategorized always sorts last so named folders stay up top. Folders
+  // with no presets in them yet (or any more) still show up, sourced from
+  // folderNames, so they stay manageable instead of vanishing.
   const grouped = useMemo(() => {
     const groups = new Map<string, Preset[]>();
+    folderNames.forEach(name => { if (!groups.has(name)) groups.set(name, []); });
     savedPresets.forEach((preset) => {
       const key = preset.folder?.trim() || UNCATEGORIZED;
       if (!groups.has(key)) groups.set(key, []);
@@ -105,7 +141,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       return a.localeCompare(b);
     });
     return folders.map(folder => ({ folder, items: groups.get(folder)! }));
-  }, [savedPresets]);
+  }, [savedPresets, folderNames]);
 
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
@@ -140,23 +176,97 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         </div>
       )}
 
+      {/* New folder row — either the "+ New Folder" trigger or its input */}
+      {isAddingFolder ? (
+        <div className="flex items-center border-b border-white/10">
+          <input
+            autoFocus
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') confirmAddFolder();
+              if (e.key === 'Escape') cancelAddFolder();
+            }}
+            placeholder="New folder name..."
+            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
+          />
+          {newFolderName.trim() && (
+            <button
+              onClick={confirmAddFolder}
+              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+            >
+              Save
+            </button>
+          )}
+          <button
+            onClick={cancelAddFolder}
+            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsAddingFolder(true)}
+          className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors border-b border-white/10 font-semibold"
+        >
+          <FolderPlus weight="regular" className="w-4 h-4" />
+          New Folder
+        </button>
+      )}
+
       {/* Saved presets list, grouped by folder */}
-      {savedPresets.length === 0 && !isAddingPreset ? (
+      {savedPresets.length === 0 && !isAddingPreset && grouped.length === 0 ? (
         <div className="px-4 py-2 text-xs text-white/50 italic">No saved presets</div>
       ) : (
         grouped.map(({ folder, items }) => {
           const isCollapsed = collapsedFolders.has(folder);
+          const isUncategorized = folder === UNCATEGORIZED;
           return (
             <div key={folder} className="border-t border-white/5 first:border-t-0">
-              <button
-                onClick={() => toggleFolder(folder)}
-                className="flex items-center gap-1.5 w-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
-              >
-                <FolderSimple weight="regular" className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="flex-1 text-left truncate">{folder}</span>
-                <span className="text-white/30">{items.length}</span>
-                <CaretDown weight="regular" className={`w-3 h-3 flex-shrink-0 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
-              </button>
+              <div className="flex items-center w-full group">
+                {renamingFolder === folder ? (
+                  <input
+                    autoFocus
+                    value={renamingFolderValue}
+                    onChange={(e) => setRenamingFolderValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitFolderRename(folder);
+                      if (e.key === 'Escape') { setRenamingFolder(null); setRenamingFolderValue(''); }
+                    }}
+                    onBlur={() => commitFolderRename(folder)}
+                    className="flex-1 min-w-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-black/20 text-white focus:outline-none"
+                  />
+                ) : (
+                  <button
+                    onClick={() => toggleFolder(folder)}
+                    className="flex items-center gap-1.5 flex-1 min-w-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
+                  >
+                    <FolderSimple weight="regular" className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="flex-1 text-left truncate">{folder}</span>
+                    <span className="text-white/30">{items.length}</span>
+                    <CaretDown weight="regular" className={`w-3 h-3 flex-shrink-0 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+                  </button>
+                )}
+                {!isUncategorized && renamingFolder !== folder && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setRenamingFolder(folder); setRenamingFolderValue(folder); }}
+                      className="px-2 py-1.5 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
+                      title="Rename folder"
+                    >
+                      <PencilSimple weight="regular" className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteFolder(folder); }}
+                      className="px-2 py-1.5 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
+                      title="Delete folder (presets move to Uncategorized)"
+                    >
+                      <Minus weight="regular" className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
               {!isCollapsed && items.map((preset) => (
                 <div key={preset.id} className="flex items-center w-full group border-t border-white/5">
                   {renamingPresetId === preset.id ? (
