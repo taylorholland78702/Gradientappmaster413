@@ -130,16 +130,22 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
 }
 
 // Live-performance "Display" window: a second, UI-less tab that mirrors the
-// controller's canvas over BroadcastChannel so the operator can drive the
-// app from one screen while a clean, hotkey-only-hidden output projects on
-// another. Read once at module load — the URL flag never changes mid-session.
+// controller's canvas so the operator can drive the app from one screen
+// while a clean, hotkey-only-hidden output projects on another. Synced via
+// localStorage + the 'storage' event rather than BroadcastChannel — popups
+// opened via window.open can land in a different agent cluster (browsers
+// vary on this, especially under COOP), which silently breaks
+// BroadcastChannel between opener and popup even same-origin; localStorage
+// is origin-scoped and doesn't have that failure mode. The 'storage' event
+// conveniently never fires in the tab that made the write, so no echo
+// filtering is needed. Read once at module load — the URL flag never
+// changes mid-session.
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
-const DISPLAY_SYNC_CHANNEL = 'wav-display-sync';
+const DISPLAY_SYNC_KEY = 'wav-display-sync';
 
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const displayWindowRef = useRef<Window | null>(null);
-  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
   const lastBroadcastSnapshotRef = useRef<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
@@ -1486,30 +1492,26 @@ export function InteractiveGradient() {
   }, []);
 
   // Display-window sync: the controller tab periodically diffs its own
-  // buildSnapshot() and posts changes over BroadcastChannel; any tab opened
-  // with ?display=1 just listens and applies. Polling (rather than wiring
-  // into every setter) reuses the existing snapshot machinery instead of
-  // duplicating its huge dependency surface a third time.
+  // buildSnapshot() and writes changes to localStorage; any tab opened with
+  // ?display=1 picks them up via the 'storage' event. Polling (rather than
+  // wiring into every setter) reuses the existing snapshot machinery
+  // instead of duplicating its huge dependency surface a third time.
   useEffect(() => {
-    const channel = new BroadcastChannel(DISPLAY_SYNC_CHANNEL);
-    broadcastChannelRef.current = channel;
-
-    if (IS_DISPLAY_MODE) {
-      channel.onmessage = (e) => {
-        if (e.data?.type === 'state') applySnapshot(e.data.snapshot);
-      };
-      channel.postMessage({ type: 'request-state' });
-    } else {
-      channel.onmessage = (e) => {
-        if (e.data?.type === 'request-state') {
-          const snapshot = buildSnapshot();
-          lastBroadcastSnapshotRef.current = JSON.stringify(snapshot);
-          channel.postMessage({ type: 'state', snapshot });
-        }
-      };
-    }
-
-    return () => channel.close();
+    if (!IS_DISPLAY_MODE) return;
+    const applyStored = (raw: string | null) => {
+      if (!raw) return;
+      try {
+        applySnapshot(JSON.parse(raw));
+      } catch {
+        // Ignore a partial/corrupt write — the next tick will overwrite it.
+      }
+    };
+    applyStored(localStorage.getItem(DISPLAY_SYNC_KEY));
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === DISPLAY_SYNC_KEY) applyStored(e.newValue);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, [applySnapshot]);
 
   useEffect(() => {
@@ -1519,7 +1521,7 @@ export function InteractiveGradient() {
       const serialized = JSON.stringify(snapshot);
       if (serialized === lastBroadcastSnapshotRef.current) return;
       lastBroadcastSnapshotRef.current = serialized;
-      broadcastChannelRef.current?.postMessage({ type: 'state', snapshot });
+      localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
     }, 100);
     return () => clearInterval(id);
   }, [buildSnapshot]);
