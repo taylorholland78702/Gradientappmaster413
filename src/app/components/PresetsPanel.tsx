@@ -52,8 +52,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
-  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  const [folderDraft, setFolderDraft] = useState('');
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
   const [renamingFolderValue, setRenamingFolderValue] = useState('');
   const [draggingPresetId, setDraggingPresetId] = useState<string | null>(null);
@@ -104,17 +102,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       else next.add(folder);
       return next;
     });
-  };
-
-  const startEditingFolder = (id: string, current: string | undefined) => {
-    setEditingFolderId(id);
-    setFolderDraft(current ?? '');
-  };
-
-  const commitFolderEdit = (id: string) => {
-    movePresetToFolder(id, folderDraft);
-    setEditingFolderId(null);
-    setFolderDraft('');
   };
 
   const commitFolderRename = (oldName: string) => {
@@ -178,37 +165,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
-      {/* New preset input — shown on open, dismissed on load or explicit cancel */}
-      {isAddingPreset && (
-        <div className="flex items-center border-b border-white/10">
-          <input
-            autoFocus
-            value={newPresetName}
-            onChange={(e) => setNewPresetName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') confirmAdd();
-              if (e.key === 'Escape') cancelAdd();
-            }}
-            placeholder="New preset name..."
-            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
-          />
-          {newPresetName.trim() && (
-            <button
-              onClick={confirmAdd}
-              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
-            >
-              Save
-            </button>
-          )}
-          <button
-            onClick={cancelAdd}
-            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* New folder row — either the "+ New Folder" trigger or its input */}
       {isAddingFolder ? (
         <div className="flex items-center border-b border-white/10">
@@ -246,6 +202,37 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           <FolderPlus weight="regular" className="w-4 h-4" />
           New Folder
         </button>
+      )}
+
+      {/* New preset input — shown on open, dismissed on load or explicit cancel */}
+      {isAddingPreset && (
+        <div className="flex items-center border-b border-white/10">
+          <input
+            autoFocus
+            value={newPresetName}
+            onChange={(e) => setNewPresetName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') confirmAdd();
+              if (e.key === 'Escape') cancelAdd();
+            }}
+            placeholder="New preset name..."
+            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
+          />
+          {newPresetName.trim() && (
+            <button
+              onClick={confirmAdd}
+              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+            >
+              Save
+            </button>
+          )}
+          <button
+            onClick={cancelAdd}
+            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {/* Saved presets list, grouped by folder */}
@@ -309,7 +296,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               {!isCollapsed && items.map((preset) => (
                 <div
                   key={preset.id}
-                  draggable={renamingPresetId !== preset.id && editingFolderId !== preset.id}
+                  draggable={renamingPresetId !== preset.id}
                   onDragStart={(e) => handleDragStart(e, preset.id)}
                   onDragEnd={handleDragEnd}
                   className={`flex items-center w-full group border-t border-white/5 cursor-grab active:cursor-grabbing ${draggingPresetId === preset.id ? 'opacity-40' : ''}`}
@@ -326,19 +313,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       onBlur={() => { if (renamingPresetValue.trim()) renamePreset(preset.id, renamingPresetValue); setRenamingPresetId(null); }}
                       className="flex-1 px-4 py-2 text-xs bg-black/20 text-white focus:outline-none"
                     />
-                  ) : editingFolderId === preset.id ? (
-                    <input
-                      autoFocus
-                      value={folderDraft}
-                      onChange={(e) => setFolderDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') commitFolderEdit(preset.id);
-                        if (e.key === 'Escape') { setEditingFolderId(null); setFolderDraft(''); }
-                      }}
-                      onBlur={() => commitFolderEdit(preset.id)}
-                      placeholder="Folder name (blank = Uncategorized)"
-                      className="flex-1 px-4 py-2 text-xs bg-black/20 text-white placeholder-white/40 focus:outline-none"
-                    />
                   ) : (
                     <button
                       onClick={() => handleLoadPreset(preset)}
@@ -347,13 +321,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       {preset.name}
                     </button>
                   )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); startEditingFolder(preset.id, preset.folder); }}
-                    className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
-                    title="Move to folder"
-                  >
-                    <FolderSimple weight="regular" className="w-4 h-4" />
-                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); updatePreset(preset.id); }}
                     className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
