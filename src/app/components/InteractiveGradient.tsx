@@ -1369,13 +1369,21 @@ export function InteractiveGradient() {
     const targets = snapshot.targetColors || colors;
     setGradientColors(colors);
     setTargetColors(targets);
-    setGradientType(snapshot.gradientType);
-    setGradientAngle(snapshot.gradientAngle);
-    setTargetAngle(snapshot.targetAngle);
-    setZoom(snapshot.zoom);
-    setTargetZoom(snapshot.targetZoom);
-    setActiveEffects(snapshot.activeEffects);
-    setColorPins(snapshot.colorPins);
+    // gradientType and activeEffects gate whether the draw loop renders
+    // anything at all — a preset saved by older code (missing a field that
+    // didn't exist yet) or a partially-written one (e.g. a localStorage
+    // quota failure mid-save) would otherwise set these to undefined,
+    // which the huge switch-case draw logic has no guard for: the canvas
+    // goes solid black, and since the bad state is already applied by the
+    // time anything throws, the ErrorBoundary's remount just reapplies the
+    // same broken preset and crash-loops instead of recovering.
+    setGradientType(snapshot.gradientType ?? 'angle');
+    setGradientAngle(snapshot.gradientAngle ?? 45);
+    setTargetAngle(snapshot.targetAngle ?? snapshot.gradientAngle ?? 45);
+    setZoom(snapshot.zoom ?? 1);
+    setTargetZoom(snapshot.targetZoom ?? snapshot.zoom ?? 1);
+    setActiveEffects(snapshot.activeEffects ?? []);
+    setColorPins(snapshot.colorPins ?? []);
     setKaleidoscopeSegments(snapshot.kaleidoscopeSegments);
     setTwistAmount(snapshot.twistAmount);
     setPixelSize(snapshot.pixelSize);
@@ -2289,7 +2297,15 @@ export function InteractiveGradient() {
       const newRatedResult = { rating, data: pendingRatingState };
       const updatedRatings = [...ratedResults, newRatedResult];
       setRatedResults(updatedRatings);
-      localStorage.setItem('gradientRatings', JSON.stringify(updatedRatings));
+      // Never let a full localStorage quota (shared with presets) throw
+      // uncaught here — this ran as a side effect of rating, not something
+      // the user consciously "saved", so it should degrade quietly rather
+      // than surface an alert.
+      try {
+        localStorage.setItem('gradientRatings', JSON.stringify(updatedRatings));
+      } catch (err) {
+        console.error('Failed to persist gradientRatings to localStorage:', err);
+      }
     }
     setShowRatingUI(false);
     setPendingRatingState(null);

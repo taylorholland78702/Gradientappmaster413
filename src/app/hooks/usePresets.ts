@@ -18,6 +18,10 @@ export interface ColorRGB {
 export type PresetData = Record<string, any>;
 
 export interface SavedPreset {
+  // Stable identity, independent of array position — the Firestore doc ID.
+  // Presets saved before this field existed get one assigned on first load
+  // (see the migration in the load effect below).
+  id: string;
   name: string;
   data: PresetData;
 }
@@ -25,6 +29,32 @@ export interface SavedPreset {
 export interface UsePresetsParams {
   getCurrentState: () => PresetData;
   applyPresetData: (data: PresetData) => void;
+}
+
+const genId = () =>
+  (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+// localStorage has a hard ~5-10MB per-origin quota shared with everything
+// else this app stores there (rated results, etc.), and full-state preset
+// snapshots add up. Every write used to be unguarded — a QuotaExceededError
+// threw silently after React state had already been updated, so the UI kept
+// showing the preset as "saved" while the persisted copy silently never
+// wrote, and it vanished on next reload. This surfaces that failure instead
+// of hiding it.
+function safeSetLocalStorage(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error(`Failed to persist ${key} to localStorage:`, err);
+    alert(
+      "Couldn't save — your browser's local storage is full. " +
+      'Try deleting a few old presets (or rated results) and saving again.'
+    );
+    return false;
+  }
 }
 
 export function usePresets(params: UsePresetsParams) {
@@ -38,18 +68,31 @@ export function usePresets(params: UsePresetsParams) {
   const [renamingPresetValue, setRenamingPresetValue] = useState('');
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
 
-  // Load presets — localStorage first (reliable), then Firebase (sync)
+  // Load presets — localStorage first (reliable), then Firebase (sync).
+  // Presets from before `id` existed get one assigned here so every
+  // subsequent save/delete/rename can target its own doc directly instead
+  // of the old "wipe the whole collection and rewrite it by array index"
+  // approach, which raced with itself once there were enough presets that
+  // the rewrite took long enough for another action to land mid-flight.
   useEffect(() => {
+    const migrate = (list: SavedPreset[]): SavedPreset[] =>
+      list.map(p => (p.id ? p : { ...p, id: genId() }));
+
     const local = localStorage.getItem('gradientPresets');
     if (local) {
-      try { setSavedPresets(JSON.parse(local)); } catch {}
+      try {
+        const parsed = migrate(JSON.parse(local));
+        setSavedPresets(parsed);
+        safeSetLocalStorage('gradientPresets', JSON.stringify(parsed));
+      } catch {}
     }
     signInAnonymously(auth).then(async (cred) => {
       const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
       if (!snap.empty) {
-        const presets = snap.docs.map((d: any) => d.data()) as SavedPreset[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const presets = migrate(snap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
         setSavedPresets(presets);
-        localStorage.setItem('gradientPresets', JSON.stringify(presets));
+        safeSetLocalStorage('gradientPresets', JSON.stringify(presets));
       }
     });
   }, []);
@@ -68,17 +111,18 @@ export function usePresets(params: UsePresetsParams) {
   const savePresetWithName = async (name: string) => {
     if (!name.trim()) return;
     const preset: SavedPreset = {
+      id: genId(),
       name: name.trim(),
       data: getCurrentState(),
     };
     const newPresets = [...savedPresets, preset];
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
     if (auth.currentUser) {
-      await setDoc(
-        doc(collection(db, 'users', auth.currentUser.uid, 'presets'), String(newPresets.length - 1)),
-        newPresets[newPresets.length - 1]
-      );
+      // Writes only the new doc — no read-modify-write of the whole
+      // collection, so this can't race with another save/delete/rename
+      // that's still in flight.
+      await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), preset.id), preset);
     }
   };
 
@@ -90,28 +134,25 @@ export function usePresets(params: UsePresetsParams) {
 
   // Delete preset
   const deletePreset = async (index: number) => {
+    const target = savedPresets[index];
     const newPresets = savedPresets.filter((_, i) => i !== index);
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) {
-      const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets');
-      const snap = await getDocs(presetsRef);
-      snap.docs.forEach(d => deleteDoc(d.ref));
-      newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p));
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser && target) {
+      await deleteDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id));
     }
   };
 
   // Rename preset
   const renamePreset = async (index: number, newName: string) => {
     if (!newName.trim()) return;
-    const newPresets = savedPresets.map((p, i) => i === index ? { ...p, name: newName.trim() } : p);
+    const target = savedPresets[index];
+    const updated = { ...target, name: newName.trim() };
+    const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) {
-      const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets');
-      const snap = await getDocs(presetsRef);
-      snap.docs.forEach(d => deleteDoc(d.ref));
-      newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p));
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser && target) {
+      await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id), updated);
     }
   };
 
@@ -124,12 +165,9 @@ export function usePresets(params: UsePresetsParams) {
     };
     const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
     setSavedPresets(newPresets);
-    localStorage.setItem('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser) {
-      const presetsRef = collection(db, 'users', auth.currentUser.uid, 'presets');
-      const snap = await getDocs(presetsRef);
-      snap.docs.forEach(d => deleteDoc(d.ref));
-      newPresets.forEach((p, i) => setDoc(doc(presetsRef, String(i)), p));
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser && existing) {
+      await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), existing.id), updated);
     }
   };
 

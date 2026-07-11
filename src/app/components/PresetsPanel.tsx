@@ -99,7 +99,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         <div className="px-4 py-2 text-xs text-white/50 italic">No saved presets</div>
       ) : (
         savedPresets.map((preset, index) => (
-          <div key={index} className="flex items-center w-full group border-t border-white/5 first:border-t-0">
+          <div key={preset.id ?? index} className="flex items-center w-full group border-t border-white/5 first:border-t-0">
             {renamingPresetIndex === index ? (
               <input
                 autoFocus
