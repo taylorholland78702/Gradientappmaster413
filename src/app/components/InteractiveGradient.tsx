@@ -1615,19 +1615,21 @@ export function InteractiveGradient() {
     return () => channel.close();
   }, []);
 
-  // Broadcast the anim-time fields (controller only) on a throttled
-  // requestAnimationFrame loop rather than setInterval — rAF keeps running
+  // Broadcast the anim-time fields (controller only) on every
+  // requestAnimationFrame tick rather than setInterval — rAF keeps running
   // for a visible-but-unfocused window in every major browser, unlike
   // setInterval, which is exactly the throttling that broke the main config
-  // sync before it was switched to an event-driven broadcast.
+  // sync before it was switched to an event-driven broadcast. Was throttled
+  // to every 3rd frame (~20fps) to keep messaging light, but that meant the
+  // Display tab was always trailing by roughly that interval — a small,
+  // constant, noticeable-in-a-live-performance-context lag. A same-origin
+  // BroadcastChannel message is cheap enough to just send every frame.
   useEffect(() => {
     if (IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
     animSyncChannelRef.current = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
     let rafId: number;
-    let frame = 0;
     const tick = () => {
-      frame++;
-      if (frame % 3 === 0) animSyncChannelRef.current?.postMessage(animValuesRef.current);
+      animSyncChannelRef.current?.postMessage(animValuesRef.current);
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
