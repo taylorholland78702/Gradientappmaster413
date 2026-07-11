@@ -56,6 +56,8 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const [folderDraft, setFolderDraft] = useState('');
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
   const [renamingFolderValue, setRenamingFolderValue] = useState('');
+  const [draggingPresetId, setDraggingPresetId] = useState<string | null>(null);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
 
   // Show the new-preset input whenever the panel mounts
   useEffect(() => {
@@ -121,6 +123,37 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     }
     setRenamingFolder(null);
     setRenamingFolderValue('');
+  };
+
+  // Drag a preset row onto a folder header (or another preset within a
+  // different folder) to move it there. Uses the native HTML5 DnD API —
+  // dataTransfer carries the dragged preset's id so the actual move still
+  // goes through movePresetToFolder's id-based lookup, same as the
+  // folder-icon button, not any index-based shortcut.
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggingPresetId(id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingPresetId(null);
+    setDragOverFolder(null);
+  };
+
+  const handleFolderDragOver = (e: React.DragEvent, folder: string) => {
+    if (!draggingPresetId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverFolder !== folder) setDragOverFolder(folder);
+  };
+
+  const handleFolderDrop = (e: React.DragEvent, folder: string) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain') || draggingPresetId;
+    if (id) movePresetToFolder(id, folder === UNCATEGORIZED ? '' : folder);
+    setDraggingPresetId(null);
+    setDragOverFolder(null);
   };
 
   // Group presets by folder, preserving each folder's first-seen order;
@@ -222,9 +255,15 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         grouped.map(({ folder, items }) => {
           const isCollapsed = collapsedFolders.has(folder);
           const isUncategorized = folder === UNCATEGORIZED;
+          const isDropTarget = dragOverFolder === folder;
           return (
             <div key={folder} className="border-t border-white/5 first:border-t-0">
-              <div className="flex items-center w-full group">
+              <div
+                onDragOver={(e) => handleFolderDragOver(e, folder)}
+                onDragLeave={() => setDragOverFolder(prev => prev === folder ? null : prev)}
+                onDrop={(e) => handleFolderDrop(e, folder)}
+                className={`flex items-center w-full group transition-colors ${isDropTarget ? 'bg-white/20 ring-1 ring-inset ring-white/40' : ''}`}
+              >
                 {renamingFolder === folder ? (
                   <input
                     autoFocus
@@ -268,7 +307,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                 )}
               </div>
               {!isCollapsed && items.map((preset) => (
-                <div key={preset.id} className="flex items-center w-full group border-t border-white/5">
+                <div
+                  key={preset.id}
+                  draggable={renamingPresetId !== preset.id && editingFolderId !== preset.id}
+                  onDragStart={(e) => handleDragStart(e, preset.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`flex items-center w-full group border-t border-white/5 cursor-grab active:cursor-grabbing ${draggingPresetId === preset.id ? 'opacity-40' : ''}`}
+                >
                   {renamingPresetId === preset.id ? (
                     <input
                       autoFocus
