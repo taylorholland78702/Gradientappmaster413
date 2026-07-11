@@ -844,20 +844,27 @@ export function InteractiveGradient() {
     const loop = () => {
       const spd = vcrPlaybackSpeedRef.current;
 
-      // Lerp colors directly in ref, track max channel diff for convergence check
+      // Lerp colors directly in ref, track max channel diff for convergence check.
+      // Skipped in Display mode — that ref is instead written directly from the
+      // controller's live value every frame (see the anim-sync receiver below),
+      // since this ~2-second ease was previously always restarting from the
+      // Display tab's own stale ref position instead of tracking the
+      // controller's actual current color.
       const colors = gradientColorsRef.current;
       const targets = targetColorsRef.current;
-      const colorSpd = 0.025 * spd;
       let maxColorDiff = 0;
-      for (let i = 0; i < colors.length; i++) {
-        const c = colors[i];
-        const t = targets[i];
-        if (!c || !t) continue;
-        const nr = c.r + (t.r - c.r) * colorSpd;
-        const ng = c.g + (t.g - c.g) * colorSpd;
-        const nb = c.b + (t.b - c.b) * colorSpd;
-        colors[i] = (isNaN(nr) || isNaN(ng) || isNaN(nb)) ? t : { r: nr, g: ng, b: nb };
-        maxColorDiff = Math.max(maxColorDiff, Math.abs(t.r - nr), Math.abs(t.g - ng), Math.abs(t.b - nb));
+      if (!IS_DISPLAY_MODE) {
+        const colorSpd = 0.025 * spd;
+        for (let i = 0; i < colors.length; i++) {
+          const c = colors[i];
+          const t = targets[i];
+          if (!c || !t) continue;
+          const nr = c.r + (t.r - c.r) * colorSpd;
+          const ng = c.g + (t.g - c.g) * colorSpd;
+          const nb = c.b + (t.b - c.b) * colorSpd;
+          colors[i] = (isNaN(nr) || isNaN(ng) || isNaN(nb)) ? t : { r: nr, g: ng, b: nb };
+          maxColorDiff = Math.max(maxColorDiff, Math.abs(t.r - nr), Math.abs(t.g - ng), Math.abs(t.b - nb));
+        }
       }
 
       const angleDiff = Math.abs(targetAngleRef.current - gradientAngleRef.current);
@@ -1611,6 +1618,11 @@ export function InteractiveGradient() {
       setFlowAnimTime(v.flowAnimTime);
       setLiquidAnimTime(v.liquidAnimTime);
       setEmojiAnimTime(v.emojiAnimTime);
+      // Write the live, already-eased color straight into the ref the draw
+      // loop actually reads (see gradientColorsRef above) — not through
+      // setGradientColors/applySnapshot, which only update React state and
+      // would leave this tab re-easing from its own stale ref position.
+      if (v.gradientColors) gradientColorsRef.current = v.gradientColors;
     };
     return () => channel.close();
   }, []);
@@ -1629,7 +1641,7 @@ export function InteractiveGradient() {
     animSyncChannelRef.current = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
     let rafId: number;
     const tick = () => {
-      animSyncChannelRef.current?.postMessage(animValuesRef.current);
+      animSyncChannelRef.current?.postMessage({ ...animValuesRef.current, gradientColors: gradientColorsRef.current });
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
