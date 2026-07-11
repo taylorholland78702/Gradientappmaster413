@@ -24,6 +24,7 @@ import { VCRControls } from './VCRControls';
 import { AudioPanel } from './AudioPanel';
 import { PresetsPanel } from './PresetsPanel';
 import { ColorTab } from './ColorTab';
+import { GradientsTab } from './GradientsTab';
 import { FreeformPinsOverlay } from './FreeformPinsOverlay';
 import {
   type ColorRGB, type GradientType, type EffectType,
@@ -33,7 +34,7 @@ import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
 
-interface ColorPin {
+export interface ColorPin {
   id: string;
   x: number; // 0-1 normalized position
   y: number; // 0-1 normalized position
@@ -7266,1212 +7267,152 @@ export function InteractiveGradient() {
         )}
 
         {/* ── Gradients Tab ── */}
-        {activeTab === 'gradients' && (<>
-
-        {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
-        <div className="w-full">
-          <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${Math.ceil(FULL_GRADIENT_TYPES.length / 2)}, auto)` }}>
-            {FULL_GRADIENT_TYPES.map((type, i) => {
-              const rows = Math.ceil(FULL_GRADIENT_TYPES.length / 2);
-              const isLastInColumn = i % rows === rows - 1;
-              const isLeftColumn = i < rows;
-              return (
-                <button
-                  key={type}
-                  onClick={() => setGradientType(type)}
-                  className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
-                    gradientType === type
-                      ? 'bg-white text-black'
-                      : 'text-white hover:bg-white/10'
-                  }`}
-                >
-                  {getGradientDisplayName(type)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Gradient-specific Controls */}
-        {/* Grid Controls */}
-        {gradientType === 'grid' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Rows:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="2"
-                  max="50"
-                  value={gridRows}
-                  onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="2"
-                  max="50"
-                  value={gridRows}
-                  onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Columns:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="2"
-                  max="50"
-                  value={gridColumns}
-                  onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="2"
-                  max="50"
-                  value={gridColumns}
-                  onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
+        {activeTab === 'gradients' && (
+          <GradientsTab
+            gradientType={gradientType}
+            setGradientType={setGradientType}
+            getGradientDisplayName={getGradientDisplayName}
+            colorPins={colorPins}
+            setColorPins={setColorPins}
+            selectedPinId={selectedPinId}
+            setSelectedPinId={setSelectedPinId}
+            gridRows={gridRows}
+            setGridRows={setGridRows}
+            gridColumns={gridColumns}
+            setGridColumns={setGridColumns}
+            polygonSides={polygonSides}
+            setPolygonSides={setPolygonSides}
+            polygon2Sides={polygon2Sides}
+            setPolygon2Sides={setPolygon2Sides}
+            concentricRingCount={concentricRingCount}
+            setConcentricRingCount={setConcentricRingCount}
+            iridescentIntensity={iridescentIntensity}
+            setIridescentIntensity={setIridescentIntensity}
+            iridescentScale={iridescentScale}
+            setIridescentScale={setIridescentScale}
+            auroraBandCount={auroraBandCount}
+            setAuroraBandCount={setAuroraBandCount}
+            auroraBandHeight={auroraBandHeight}
+            setAuroraBandHeight={setAuroraBandHeight}
+            auroraWaveSpeed={auroraWaveSpeed}
+            setAuroraWaveSpeed={setAuroraWaveSpeed}
+            causticsBrightness={causticsBrightness}
+            setCausticsBrightness={setCausticsBrightness}
+            causticsScale={causticsScale}
+            setCausticsScale={setCausticsScale}
+            lavaBlobCount={lavaBlobCount}
+            setLavaBlobCount={setLavaBlobCount}
+            lavaBlobSize={lavaBlobSize}
+            setLavaBlobSize={setLavaBlobSize}
+            marbleVeinFreq={marbleVeinFreq}
+            setMarbleVeinFreq={setMarbleVeinFreq}
+            marbleTurbulence={marbleTurbulence}
+            setMarbleTurbulence={setMarbleTurbulence}
+            marbleOctaves={marbleOctaves}
+            setMarbleOctaves={setMarbleOctaves}
+            metaballCount={metaballCount}
+            setMetaballCount={setMetaballCount}
+            metaballSize={metaballSize}
+            setMetaballSize={setMetaballSize}
+            metaballSpeed={metaballSpeed}
+            setMetaballSpeed={setMetaballSpeed}
+            truchetSize={truchetSize}
+            setTruchetSize={setTruchetSize}
+            truchetVariation={truchetVariation}
+            setTruchetVariation={setTruchetVariation}
+            truchetThickness={truchetThickness}
+            setTruchetThickness={setTruchetThickness}
+            moireScale={moireScale}
+            setMoireScale={setMoireScale}
+            moireOffset={moireOffset}
+            setMoireOffset={setMoireOffset}
+            moireSpeed={moireSpeed}
+            setMoireSpeed={setMoireSpeed}
+            flowParticleCount={flowParticleCount}
+            setFlowParticleCount={setFlowParticleCount}
+            flowSpeed={flowSpeed}
+            setFlowSpeed={setFlowSpeed}
+            flowScale={flowScale}
+            setFlowScale={setFlowScale}
+            flowThickness={flowThickness}
+            setFlowThickness={setFlowThickness}
+            angleStartOffset={angleStartOffset}
+            setAngleStartOffset={setAngleStartOffset}
+            angleCenterX={angleCenterX}
+            setAngleCenterX={setAngleCenterX}
+            angleCenterY={angleCenterY}
+            setAngleCenterY={setAngleCenterY}
+            radialSizeScale={radialSizeScale}
+            setRadialSizeScale={setRadialSizeScale}
+            concentricRingWidth={concentricRingWidth}
+            setConcentricRingWidth={setConcentricRingWidth}
+            shapesSides={shapesSides}
+            setShapesSides={setShapesSides}
+            shapesCount={shapesCount}
+            setShapesCount={setShapesCount}
+            spiralTightness={spiralTightness}
+            setSpiralTightness={setSpiralTightness}
+            spiralRotations={spiralRotations}
+            setSpiralRotations={setSpiralRotations}
+            spiralThickness={spiralThickness}
+            setSpiralThickness={setSpiralThickness}
+            waveAmplitude={waveAmplitude}
+            setWaveAmplitude={setWaveAmplitude}
+            waveFrequency={waveFrequency}
+            setWaveFrequency={setWaveFrequency}
+            waveNumber={waveNumber}
+            setWaveNumber={setWaveNumber}
+            waveNumberRef={waveNumberRef}
+            waveRotation={waveRotation}
+            setWaveRotation={setWaveRotation}
+            waveRotationRef={waveRotationRef}
+            drawParamsDirtyRef={drawParamsDirtyRef}
+            meshGridSize={meshGridSize}
+            setMeshGridSize={setMeshGridSize}
+            meshJitter={meshJitter}
+            setMeshJitter={setMeshJitter}
+            noiseScale={noiseScale}
+            setNoiseScale={setNoiseScale}
+            noiseOctaves={noiseOctaves}
+            setNoiseOctaves={setNoiseOctaves}
+            noiseDirection={noiseDirection}
+            setNoiseDirection={setNoiseDirection}
+            noiseWarp={noiseWarp}
+            setNoiseWarp={setNoiseWarp}
+            noiseType={noiseType}
+            setNoiseType={setNoiseType}
+            plasmaComplexity={plasmaComplexity}
+            setPlasmaComplexity={setPlasmaComplexity}
+            plasmaZoomScale={plasmaZoomScale}
+            setPlasmaZoomScale={setPlasmaZoomScale}
+            radialBurstCount={radialBurstCount}
+            setRadialBurstCount={setRadialBurstCount}
+            radialBurstSpread={radialBurstSpread}
+            setRadialBurstSpread={setRadialBurstSpread}
+            radialBurstSize={radialBurstSize}
+            setRadialBurstSize={setRadialBurstSize}
+            voronoiCellCount={voronoiCellCount}
+            setVoronoiCellCount={setVoronoiCellCount}
+            voronoiDistortion={voronoiDistortion}
+            setVoronoiDistortion={setVoronoiDistortion}
+            fadeDirection={fadeDirection}
+            setFadeDirection={setFadeDirection}
+            radarFadeLength={radarFadeLength}
+            setRadarFadeLength={setRadarFadeLength}
+            radarBeamWidth={radarBeamWidth}
+            setRadarBeamWidth={setRadarBeamWidth}
+            flowerCircles={flowerCircles}
+            setFlowerCircles={setFlowerCircles}
+            flowerScale={flowerScale}
+            setFlowerScale={setFlowerScale}
+            flowerSpread={flowerSpread}
+            setFlowerSpread={setFlowerSpread}
+            conicalSpiralTurns={conicalSpiralTurns}
+            setConicalSpiralTurns={setConicalSpiralTurns}
+            conicalSpiralTightness={conicalSpiralTightness}
+            setConicalSpiralTightness={setConicalSpiralTightness}
+          />
         )}
-        
-        {/* Freeform Controls */}
-        {gradientType === 'freeform' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={(e) => {
-                  // Add a new pin at center with random color
-                  const newPin: ColorPin = {
-                    id: Date.now().toString(),
-                    x: 0.5 + (Math.random() - 0.5) * 0.3,
-                    y: 0.5 + (Math.random() - 0.5) * 0.3,
-                    color: {
-                      r: Math.floor(Math.random() * 255),
-                      g: Math.floor(Math.random() * 255),
-                      b: Math.floor(Math.random() * 255),
-                    },
-                    radius: 300,
-                  };
-                  setColorPins(prev => [...prev, newPin]);
-                  setSelectedPinId(newPin.id);
-                }}
-                className="px-2 py-1 rounded text-xs bg-white/20 text-white hover:bg-white/30 transition-all"
-              >
-                + Add Pin
-              </button>
-              
-              {selectedPinId && (
-                <>
-                  <button
-                    onClick={() => {
-                      setColorPins(prev => prev.filter(p => p.id !== selectedPinId));
-                      setSelectedPinId(null);
-                    }}
-                    className="px-2 py-1 rounded text-xs bg-red-500/50 text-white hover:bg-red-500/70 transition-all"
-                  >
-                    Delete Selected
-                  </button>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] text-white">Radius:</label>
-                    <div className="flex items-center gap-1 flex-1 ml-2">
-                      <input
-                        type="range"
-                        min="100"
-                        max="800"
-                        value={colorPins.find(p => p.id === selectedPinId)?.radius || 300}
-                        onChange={(e) => {
-                          const newRadius = Number(e.target.value);
-                          setColorPins(prev => prev.map(p =>
-                            p.id === selectedPinId ? { ...p, radius: newRadius } : p
-                          ));
-                        }}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="100"
-                        max="800"
-                        value={colorPins.find(p => p.id === selectedPinId)?.radius || 300}
-                        onChange={(e) => {
-                          const newRadius = Number(e.target.value);
-                          setColorPins(prev => prev.map(p =>
-                            p.id === selectedPinId ? { ...p, radius: newRadius } : p
-                          ));
-                        }}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] text-white">Color:</label>
-                    <input
-                      type="color"
-                      value={(() => {
-                        const pin = colorPins.find(p => p.id === selectedPinId);
-                        if (!pin) return '#000000';
-                        const r = pin.color.r.toString(16).padStart(2, '0');
-                        const g = pin.color.g.toString(16).padStart(2, '0');
-                        const b = pin.color.b.toString(16).padStart(2, '0');
-                        return `#${r}${g}${b}`;
-                      })()}
-                      onChange={(e) => {
-                        const hex = e.target.value;
-                        const r = parseInt(hex.slice(1, 3), 16);
-                        const g = parseInt(hex.slice(3, 5), 16);
-                        const b = parseInt(hex.slice(5, 7), 16);
-                        setColorPins(prev => prev.map(p => 
-                          p.id === selectedPinId ? { ...p, color: { r, g, b } } : p
-                        ));
-                      }}
-                      className="ml-2 w-12 h-8 rounded cursor-pointer"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Polygon Controls */}
-        {gradientType === 'polygon' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Sides:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={polygonSides}
-                  onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={polygonSides}
-                  onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Polar Grid Controls */}
-        {gradientType === 'polar-grid' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Radials:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="24"
-                  value={polygon2Sides}
-                  onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={polygon2Sides}
-                  onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Ring Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="30"
-                  value={concentricRingCount}
-                  onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={concentricRingCount}
-                  onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Iridescent Controls */}
-        {gradientType === 'iridescent' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Intensity:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={iridescentIntensity}
-                  onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={iridescentIntensity}
-                  onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  value={iridescentScale}
-                  onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  value={iridescentScale}
-                  onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Aurora Controls */}
-        {gradientType === 'aurora' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
-              { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
-              { label: 'Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 3, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Caustics Controls */}
-        {gradientType === 'caustics' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
-              { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Lava Lamp Controls */}
-        {gradientType === 'lava-lamp' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
-              { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Marble Controls */}
-        {gradientType === 'marble' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
-              { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
-              { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {gradientType === 'metaballs' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Count', value: metaballCount, set: setMetaballCount, min: 2, max: 14, step: 1 },
-              { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
-              { label: 'Speed', value: metaballSpeed, set: setMetaballSpeed, min: 0.1, max: 5, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {gradientType === 'truchet' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Tile Size', value: truchetSize, set: setTruchetSize, min: 15, max: 100, step: 5 },
-              { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
-              { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {gradientType === 'moire' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Scale', value: moireScale, set: setMoireScale, min: 3, max: 40, step: 1 },
-              { label: 'Offset', value: moireOffset, set: setMoireOffset, min: 0, max: 100, step: 1 },
-              { label: 'Speed', value: moireSpeed, set: setMoireSpeed, min: 0.1, max: 5, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {gradientType === 'flow-field' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            {[
-              { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
-              { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
-              { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
-              { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Angle Gradient Controls */}
-        {gradientType === 'angle' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Start Angle:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={angleStartOffset}
-                  onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={angleStartOffset}
-                  onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Center X:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Center Y:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Shapes Controls */}
-        {gradientType === 'shapes' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="300"
-                  value={concentricRingWidth}
-                  onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <span className="text-[10px] text-white w-10 text-right">{concentricRingWidth}</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Sides:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={shapesSides}
-                  onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={shapesSides}
-                  onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={shapesCount}
-                  onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={shapesCount}
-                  onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Spiral Controls */}
-        {gradientType === 'windmill' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Tightness:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={spiralTightness}
-                  onChange={(e) => setSpiralTightness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={spiralTightness}
-                  onChange={(e) => setSpiralTightness(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Rotations:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={spiralRotations}
-                  onChange={(e) => setSpiralRotations(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={spiralRotations}
-                  onChange={(e) => setSpiralRotations(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Thickness:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="5"
-                  max="100"
-                  value={spiralThickness}
-                  onChange={(e) => setSpiralThickness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={spiralThickness}
-                  onChange={(e) => setSpiralThickness(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Waves Controls */}
-        {gradientType === 'waves' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Amplitude:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={waveAmplitude}
-                  onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="200"
-                  value={waveAmplitude}
-                  onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Frequency:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={waveFrequency}
-                  onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={waveFrequency}
-                  onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Number:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={waveNumber}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={waveNumber}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={waveRotation}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={waveRotation}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mesh Controls */}
-        {gradientType === 'mesh' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Grid Size:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={meshGridSize}
-                  onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={meshGridSize}
-                        onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Jitter:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Noise Controls */}
-        {gradientType === 'noise' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={noiseScale}
-                  onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="200"
-                  value={noiseScale}
-                  onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Detail:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="8"
-                  value={noiseOctaves}
-                  onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={noiseOctaves}
-                  onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Warp:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
-                <span className="text-[10px] text-white w-10 text-right">{noiseWarp.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
-              <div className="flex gap-1 flex-1">
-                {(['smooth', 'ridged'] as const).map(t => (
-                  <button key={t} onClick={() => setNoiseType(t)} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-white/8 text-white hover:bg-white/15'}`}>{t}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Plasma Gradient Controls */}
-        {gradientType === 'plasma' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Complexity:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Radial Controls */}
-        {gradientType === 'radial' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Center X:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Center Y:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
-                <span className="text-[10px] text-white w-10 text-right">{radialSizeScale.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Radial Burst Controls */}
-        {gradientType === 'radial-burst' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Burst Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="3"
-                  max="16"
-                  value={radialBurstCount}
-                  onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="16"
-                  value={radialBurstCount}
-                  onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Spread:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value={radialBurstSpread}
-                  onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="100"
-                  value={radialBurstSpread}
-                  onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Size:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={radialBurstSize}
-                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="200"
-                  value={radialBurstSize}
-                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Voronoi Controls */}
-        {gradientType === 'voronoi' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Cell Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="3"
-                  max="30"
-                  value={voronoiCellCount}
-                  onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="3"
-                        max="30"
-                        value={voronoiCellCount}
-                        onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Distortion:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={voronoiDistortion}
-                  onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={voronoiDistortion}
-                  onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Fade Controls */}
-        {gradientType === 'fade' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Radar Controls */}
-        {gradientType === 'radar' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Fade Length:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="180"
-                  value={radarFadeLength}
-                  onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="180"
-                  value={radarFadeLength}
-                  onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Beam Width:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Flower Controls */}
-        {gradientType === 'flower' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Circles:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="12"
-                  value={flowerCircles}
-                  onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={flowerCircles}
-                  onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={flowerScale}
-                  onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={flowerScale}
-                  onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Spread:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.3"
-                  max="2.5"
-                  step="0.05"
-                  value={flowerSpread}
-                  onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.3"
-                  max="2.5"
-                  step="0.05"
-                  value={flowerSpread}
-                  onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Conical Spiral Controls */}
-        {gradientType === 'helix' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-white">Turns:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={conicalSpiralTurns}
-                  onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={conicalSpiralTurns}
-                  onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Tightness:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={conicalSpiralTightness}
-                  onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="2"
-                        step="0.1"
-                        value={conicalSpiralTightness}
-                        onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-          </div>
-        )}
-
-        </>)}
 
         {/* ── Effects Tab ── */}
         {activeTab === 'effects' && (<>
