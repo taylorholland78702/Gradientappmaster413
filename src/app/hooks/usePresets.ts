@@ -24,6 +24,10 @@ export interface SavedPreset {
   id: string;
   name: string;
   data: PresetData;
+  // Free-text folder tag for grouping in the Presets panel. Presets saved
+  // before this field existed simply have no folder and show under
+  // "Uncategorized" — no migration needed since it's optional.
+  folder?: string;
 }
 
 export interface UsePresetsParams {
@@ -64,7 +68,14 @@ export function usePresets(params: UsePresetsParams) {
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [presetName, setPresetName] = useState('');
   const [savedPresets, setSavedPresets] = useState<SavedPreset[]>([]);
-  const [renamingPresetIndex, setRenamingPresetIndex] = useState<number | null>(null);
+  // Keyed by stable preset id, not array position — the array's order isn't
+  // guaranteed stable (see the load effect below: localStorage's order and
+  // Firestore's order can differ, and Firestore's async fetch can replace
+  // the array between when a row renders and when a button on it is
+  // clicked). An index captured in a click handler's closure could end up
+  // pointing at a different preset than the one the user actually clicked;
+  // this bit us for real once already (a preset was deleted by accident).
+  const [renamingPresetId, setRenamingPresetId] = useState<string | null>(null);
   const [renamingPresetValue, setRenamingPresetValue] = useState('');
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
 
@@ -90,9 +101,20 @@ export function usePresets(params: UsePresetsParams) {
       const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
       if (!snap.empty) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const presets = migrate(snap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
-        setSavedPresets(presets);
-        safeSetLocalStorage('gradientPresets', JSON.stringify(presets));
+        const fromFirestore = migrate(snap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
+        // getDocs returns docs sorted by document ID, not creation order —
+        // reorder to match whatever's already on screen (from localStorage)
+        // so this async update doesn't silently reshuffle the list under a
+        // user who's mid-click on a row.
+        setSavedPresets(prevOrder => {
+          const byId = new Map(fromFirestore.map(p => [p.id, p]));
+          const ordered = prevOrder.map(p => byId.get(p.id)).filter((p): p is SavedPreset => !!p);
+          const seen = new Set(ordered.map(p => p.id));
+          const appended = fromFirestore.filter(p => !seen.has(p.id));
+          const presets = [...ordered, ...appended];
+          safeSetLocalStorage('gradientPresets', JSON.stringify(presets));
+          return presets;
+        });
       }
     });
   }, []);
@@ -132,42 +154,69 @@ export function usePresets(params: UsePresetsParams) {
     setIsPresetModalOpen(false);
   };
 
-  // Delete preset
-  const deletePreset = async (index: number) => {
-    const target = savedPresets[index];
-    const newPresets = savedPresets.filter((_, i) => i !== index);
+  // Delete preset — keyed by stable id, not array position (see the note
+  // by renamingPresetId above for why position isn't safe to use here).
+  // Firestore's deleteDoc has no undo, so this is a hard confirm, not a
+  // dismissible toast — a real preset was lost to a bug that triggered
+  // this path without any user-visible delete click, so the confirmation
+  // is the actual safety net now, not just UX friction.
+  const deletePreset = async (id: string) => {
+    const target = savedPresets.find(p => p.id === id);
+    if (!target) return;
+    if (!window.confirm(`Delete preset "${target.name}"? This can't be undone.`)) return;
+    const newPresets = savedPresets.filter(p => p.id !== id);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser && target) {
+    if (auth.currentUser) {
       await deleteDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id));
     }
   };
 
   // Rename preset
-  const renamePreset = async (index: number, newName: string) => {
+  const renamePreset = async (id: string, newName: string) => {
     if (!newName.trim()) return;
-    const target = savedPresets[index];
+    const target = savedPresets.find(p => p.id === id);
+    if (!target) return;
     const updated = { ...target, name: newName.trim() };
-    const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
+    const newPresets = savedPresets.map(p => p.id === id ? updated : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser && target) {
+    if (auth.currentUser) {
       await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id), updated);
     }
   };
 
   // Update preset
-  const updatePreset = async (index: number) => {
-    const existing = savedPresets[index];
+  const updatePreset = async (id: string) => {
+    const existing = savedPresets.find(p => p.id === id);
+    if (!existing) return;
     const updated: SavedPreset = {
       ...existing,
       data: getCurrentState(),
     };
-    const newPresets = savedPresets.map((p, i) => i === index ? updated : p);
+    const newPresets = savedPresets.map(p => p.id === id ? updated : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
-    if (auth.currentUser && existing) {
+    if (auth.currentUser) {
       await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), existing.id), updated);
+    }
+  };
+
+  // Move preset into a folder (empty/whitespace-only clears it back to Uncategorized)
+  const movePresetToFolder = async (id: string, folder: string) => {
+    const existing = savedPresets.find(p => p.id === id);
+    if (!existing) return;
+    const trimmed = folder.trim();
+    const updated: SavedPreset = { ...existing, folder: trimmed || undefined };
+    const newPresets = savedPresets.map(p => p.id === id ? updated : p);
+    setSavedPresets(newPresets);
+    safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    if (auth.currentUser) {
+      // Firestore rejects `undefined` field values — omit the key entirely
+      // when clearing a preset's folder rather than writing `folder: undefined`.
+      const payload: SavedPreset = { ...updated };
+      if (payload.folder === undefined) delete payload.folder;
+      await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), existing.id), payload);
     }
   };
 
@@ -176,7 +225,7 @@ export function usePresets(params: UsePresetsParams) {
     isPresetModalOpen, setIsPresetModalOpen,
     presetName, setPresetName,
     savedPresets, setSavedPresets,
-    renamingPresetIndex, setRenamingPresetIndex,
+    renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
     // Functions
@@ -186,5 +235,6 @@ export function usePresets(params: UsePresetsParams) {
     deletePreset,
     renamePreset,
     updatePreset,
+    movePresetToFolder,
   };
 }

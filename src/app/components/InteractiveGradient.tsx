@@ -766,7 +766,7 @@ export function InteractiveGradient() {
     isPresetModalOpen, setIsPresetModalOpen,
     presetName, setPresetName,
     savedPresets, setSavedPresets,
-    renamingPresetIndex, setRenamingPresetIndex,
+    renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
     savePreset,
@@ -775,6 +775,7 @@ export function InteractiveGradient() {
     deletePreset,
     renamePreset,
     updatePreset,
+    movePresetToFolder,
   } = presets;
 
   // ─── End Custom Hooks ────────────────────────────────────────────────────────
@@ -3714,16 +3715,17 @@ export function InteractiveGradient() {
         <PresetsPanel
           isPresetsDropdownOpen={isPresetsDropdownOpen}
           savedPresets={savedPresets}
-          renamingPresetIndex={renamingPresetIndex}
+          renamingPresetId={renamingPresetId}
           renamingPresetValue={renamingPresetValue}
           setIsPresetsDropdownOpen={setIsPresetsDropdownOpen}
-          setRenamingPresetIndex={setRenamingPresetIndex}
+          setRenamingPresetId={setRenamingPresetId}
           setRenamingPresetValue={setRenamingPresetValue}
           loadPreset={loadPreset}
           deletePreset={deletePreset}
           renamePreset={renamePreset}
           updatePreset={updatePreset}
           savePresetWithName={savePresetWithName}
+          movePresetToFolder={movePresetToFolder}
         />
         )}
 
