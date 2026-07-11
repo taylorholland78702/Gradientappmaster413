@@ -50,7 +50,6 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const [newPresetName, setNewPresetName] = useState('');
   const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [isAddingFolder, setIsAddingFolder] = useState(false);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
@@ -220,36 +219,22 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           </button>
         </div>
       ) : (
-        <div className="relative border-b border-white/10">
+        <div className="flex items-stretch border-b border-white/10">
           <button
-            onClick={() => setIsAddMenuOpen(prev => !prev)}
-            className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
+            onClick={() => setIsAddingPreset(true)}
+            className="flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
           >
             <Plus weight="regular" className="w-4 h-4" />
-            Add
+            Preset
           </button>
-          {isAddMenuOpen && (
-            <>
-              {/* Click-away catcher */}
-              <div className="fixed inset-0 z-10" onClick={() => setIsAddMenuOpen(false)} />
-              <div className="absolute left-2 right-2 top-full mt-1 z-20 bg-[#2a2a3a] border border-white/15 rounded-lg shadow-lg overflow-hidden">
-                <button
-                  onClick={() => { setIsAddMenuOpen(false); setIsAddingPreset(true); }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors"
-                >
-                  <Plus weight="regular" className="w-4 h-4" />
-                  New Preset
-                </button>
-                <button
-                  onClick={() => { setIsAddMenuOpen(false); setIsAddingFolder(true); }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors"
-                >
-                  <FolderPlus weight="regular" className="w-4 h-4" />
-                  New Folder
-                </button>
-              </div>
-            </>
-          )}
+          <div className="w-px bg-white/10" />
+          <button
+            onClick={() => setIsAddingFolder(true)}
+            className="flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
+          >
+            <FolderPlus weight="regular" className="w-4 h-4" />
+            Folder
+          </button>
         </div>
       )}
 
