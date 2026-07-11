@@ -1492,13 +1492,22 @@ export function InteractiveGradient() {
   }, []);
 
   // Display-window sync: the controller tab periodically diffs its own
-  // buildSnapshot() and writes changes to localStorage; any tab opened with
-  // ?display=1 picks them up via the 'storage' event. Polling (rather than
-  // wiring into every setter) reuses the existing snapshot machinery
-  // instead of duplicating its huge dependency surface a third time.
+  // buildSnapshot() and pushes changes out to any ?display=1 tab. Sent over
+  // BOTH BroadcastChannel and localStorage — redundant on purpose. Neither
+  // is bulletproof alone: BroadcastChannel can be isolated across a
+  // window.open() popup/opener pair in some browsers (the reason we moved
+  // off window.open entirely), while localStorage's 'storage' event has
+  // been reported unreliable between fully independent top-level windows
+  // (as opposed to tabs) in at least one real setup. Between two ordinary,
+  // independently-opened tabs/windows of the same origin — which is what
+  // the copy-link flow produces — BroadcastChannel is the more standard
+  // mechanism, so it's primary; localStorage is the fallback. Polling
+  // (rather than wiring into every setter) reuses the existing snapshot
+  // machinery instead of duplicating its huge dependency surface a third
+  // time.
   useEffect(() => {
     if (!IS_DISPLAY_MODE) return;
-    const applyStored = (raw: string | null) => {
+    const applyRaw = (raw: string | null | undefined) => {
       if (!raw) return;
       try {
         applySnapshot(JSON.parse(raw));
@@ -1506,24 +1515,41 @@ export function InteractiveGradient() {
         // Ignore a partial/corrupt write — the next tick will overwrite it.
       }
     };
-    applyStored(localStorage.getItem(DISPLAY_SYNC_KEY));
+
+    applyRaw(localStorage.getItem(DISPLAY_SYNC_KEY));
+
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === DISPLAY_SYNC_KEY) applyStored(e.newValue);
+      if (e.key === DISPLAY_SYNC_KEY) applyRaw(e.newValue);
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+
+    let channel: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      channel = new BroadcastChannel(DISPLAY_SYNC_KEY);
+      channel.onmessage = (e) => applyRaw(e.data);
+    }
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      channel?.close();
+    };
   }, [applySnapshot]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE) return;
+    const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
     const id = setInterval(() => {
       const snapshot = buildSnapshot();
       const serialized = JSON.stringify(snapshot);
       if (serialized === lastBroadcastSnapshotRef.current) return;
       lastBroadcastSnapshotRef.current = serialized;
       localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
+      channel?.postMessage(serialized);
     }, 100);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      channel?.close();
+    };
   }, [buildSnapshot]);
 
   // Shift+P: copy the Display link — a second, always-fully-hidden-UI tab
