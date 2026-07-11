@@ -129,8 +129,18 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   );
 }
 
+// Live-performance "Display" window: a second, UI-less tab that mirrors the
+// controller's canvas over BroadcastChannel so the operator can drive the
+// app from one screen while a clean, hotkey-only-hidden output projects on
+// another. Read once at module load — the URL flag never changes mid-session.
+const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
+const DISPLAY_SYNC_CHANNEL = 'wav-display-sync';
+
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const displayWindowRef = useRef<Window | null>(null);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+  const lastBroadcastSnapshotRef = useRef<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
@@ -188,11 +198,13 @@ export function InteractiveGradient() {
   ]);
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [isDraggingPin, setIsDraggingPin] = useState(false);
-  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [isControlsVisible, setIsControlsVisible] = useState(!IS_DISPLAY_MODE);
   // Second hide tier for live/projector output — drops even the collapsed
   // mini icon strip, leaving pure canvas. Cycled via the same H hotkey:
   // visible -> mini strip -> fully hidden -> mini strip -> ...
-  const [isFullyHidden, setIsFullyHidden] = useState(false);
+  // A ?display=1 tab starts (and stays) in this tier permanently — see the
+  // 'h' key handler below, which is a no-op in display mode.
+  const [isFullyHidden, setIsFullyHidden] = useState(IS_DISPLAY_MODE);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -1471,6 +1483,58 @@ export function InteractiveGradient() {
     setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
     setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
     setWaveScale(snapshot.waveScale ?? 1.0);
+  }, []);
+
+  // Display-window sync: the controller tab periodically diffs its own
+  // buildSnapshot() and posts changes over BroadcastChannel; any tab opened
+  // with ?display=1 just listens and applies. Polling (rather than wiring
+  // into every setter) reuses the existing snapshot machinery instead of
+  // duplicating its huge dependency surface a third time.
+  useEffect(() => {
+    const channel = new BroadcastChannel(DISPLAY_SYNC_CHANNEL);
+    broadcastChannelRef.current = channel;
+
+    if (IS_DISPLAY_MODE) {
+      channel.onmessage = (e) => {
+        if (e.data?.type === 'state') applySnapshot(e.data.snapshot);
+      };
+      channel.postMessage({ type: 'request-state' });
+    } else {
+      channel.onmessage = (e) => {
+        if (e.data?.type === 'request-state') {
+          const snapshot = buildSnapshot();
+          lastBroadcastSnapshotRef.current = JSON.stringify(snapshot);
+          channel.postMessage({ type: 'state', snapshot });
+        }
+      };
+    }
+
+    return () => channel.close();
+  }, [applySnapshot]);
+
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    const id = setInterval(() => {
+      const snapshot = buildSnapshot();
+      const serialized = JSON.stringify(snapshot);
+      if (serialized === lastBroadcastSnapshotRef.current) return;
+      lastBroadcastSnapshotRef.current = serialized;
+      broadcastChannelRef.current?.postMessage({ type: 'state', snapshot });
+    }, 100);
+    return () => clearInterval(id);
+  }, [buildSnapshot]);
+
+  // Shift+P: open (or focus) the Display window — a second tab, always
+  // fully hidden UI, that mirrors this tab's canvas for live/projector use.
+  const toggleDisplayWindow = useCallback(() => {
+    if (IS_DISPLAY_MODE) return;
+    if (displayWindowRef.current && !displayWindowRef.current.closed) {
+      displayWindowRef.current.close();
+      displayWindowRef.current = null;
+      return;
+    }
+    const url = `${window.location.origin}${window.location.pathname}?display=1`;
+    displayWindowRef.current = window.open(url, 'wav-display', 'width=1280,height=800');
   }, []);
 
   const undoLastChange = useCallback(() => {
@@ -6354,10 +6418,12 @@ export function InteractiveGradient() {
           break;
         case 'p': case 'P':
           e.preventDefault();
-          setActiveTab(prev => prev === 'presets' ? null : 'presets');
+          if (e.shiftKey) toggleDisplayWindow();
+          else setActiveTab(prev => prev === 'presets' ? null : 'presets');
           break;
         case 'h': case 'H':
           e.preventDefault();
+          if (IS_DISPLAY_MODE) break;
           if (isFullyHidden) {
             setIsFullyHidden(false);
           } else if (isControlsVisible) {
@@ -6431,7 +6497,7 @@ export function InteractiveGradient() {
     setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
-    isControlsVisible, isFullyHidden,
+    isControlsVisible, isFullyHidden, toggleDisplayWindow,
   ]);
 
   return (
@@ -9311,14 +9377,17 @@ export function InteractiveGradient() {
         />
       )}
 
-      {/* About button — bottom-right corner */}
-      <button
-        onClick={() => setIsAboutOpen(true)}
-        className="absolute bottom-4 right-4 pointer-events-auto w-8 h-8 rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
-        title="About wāv (?)"
-      >
-        <Info weight="regular" className="w-4 h-4" />
-      </button>
+      {/* About button — bottom-right corner. Hidden entirely in Display
+          mode (?display=1) so the projected output has zero UI, ever. */}
+      {!IS_DISPLAY_MODE && (
+        <button
+          onClick={() => setIsAboutOpen(true)}
+          className="absolute bottom-4 right-4 pointer-events-auto w-8 h-8 rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+          title="About wāv (?)"
+        >
+          <Info weight="regular" className="w-4 h-4" />
+        </button>
+      )}
 
       {/* About panel */}
       {isAboutOpen && (
@@ -9375,6 +9444,7 @@ export function InteractiveGradient() {
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">More shortcuts</p>
+                <p className="flex items-center justify-between gap-2"><span>Open/close Display window — a UI-less second tab that mirrors this one, for live/projector output</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Shuffle effects</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Shuffle gradient type</span><Kbd label="Shift+G" /></p>
