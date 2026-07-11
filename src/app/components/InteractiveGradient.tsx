@@ -145,7 +145,6 @@ const DISPLAY_SYNC_KEY = 'wav-display-sync';
 
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const displayWindowRef = useRef<Window | null>(null);
   const lastBroadcastSnapshotRef = useRef<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
@@ -212,6 +211,7 @@ export function InteractiveGradient() {
   // 'h' key handler below, which is a no-op in display mode.
   const [isFullyHidden, setIsFullyHidden] = useState(IS_DISPLAY_MODE);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isDisplayLinkCopied, setIsDisplayLinkCopied] = useState(false);
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
@@ -1526,17 +1526,19 @@ export function InteractiveGradient() {
     return () => clearInterval(id);
   }, [buildSnapshot]);
 
-  // Shift+P: open (or focus) the Display window — a second tab, always
-  // fully hidden UI, that mirrors this tab's canvas for live/projector use.
+  // Shift+P: copy the Display link — a second, always-fully-hidden-UI tab
+  // that mirrors this one, for live/projector use. Deliberately does NOT
+  // call window.open(): popup blockers treat keydown-triggered opens as
+  // untrusted in several browsers (confirmed directly — even a real
+  // keyboard-dispatched window.open() came back null), so the window would
+  // silently fail to appear. Copying the link and letting the user open it
+  // themselves (new tab, or drag to a second monitor) always works.
   const toggleDisplayWindow = useCallback(() => {
     if (IS_DISPLAY_MODE) return;
-    if (displayWindowRef.current && !displayWindowRef.current.closed) {
-      displayWindowRef.current.close();
-      displayWindowRef.current = null;
-      return;
-    }
     const url = `${window.location.origin}${window.location.pathname}?display=1`;
-    displayWindowRef.current = window.open(url, 'wav-display', 'width=1280,height=800');
+    navigator.clipboard?.writeText(url).catch(() => {});
+    setIsDisplayLinkCopied(true);
+    setTimeout(() => setIsDisplayLinkCopied(false), 2500);
   }, []);
 
   const undoLastChange = useCallback(() => {
@@ -9379,6 +9381,13 @@ export function InteractiveGradient() {
         />
       )}
 
+      {/* Display-link-copied toast — brief confirmation for Shift+P */}
+      {isDisplayLinkCopied && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-black/70 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
+          Display link copied — open it in a new tab/window for live output
+        </div>
+      )}
+
       {/* About button — bottom-right corner. Hidden entirely in Display
           mode (?display=1) so the projected output has zero UI, ever. */}
       {!IS_DISPLAY_MODE && (
@@ -9446,7 +9455,7 @@ export function InteractiveGradient() {
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">More shortcuts</p>
-                <p className="flex items-center justify-between gap-2"><span>Open/close Display window — a UI-less second tab that mirrors this one, for live/projector output</span><Kbd label="Shift+P" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Copy Display link — open it in a new tab/window for a UI-less, live-mirrored output on a projector or second screen</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Shuffle effects</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Shuffle gradient type</span><Kbd label="Shift+G" /></p>
