@@ -142,11 +142,24 @@ function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
 // changes mid-session.
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
 const DISPLAY_SYNC_KEY = 'wav-display-sync';
+// Separate, higher-frequency channel just for the handful of continuously-
+// ticking "AnimTime" fields (marble swirl, moire, aurora bands, etc.) that
+// live outside buildSnapshot. Kept off the main config channel/localStorage
+// on purpose — these tick every 16ms while playing, far too often for
+// localStorage writes, and mixing them into buildSnapshot would make ITS
+// identity (and therefore every undo/preset snapshot) change every frame.
+const DISPLAY_ANIM_SYNC_KEY = 'wav-display-sync-anim';
 
 export function InteractiveGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastBroadcastSnapshotRef = useRef<string>('');
   const syncChannelRef = useRef<BroadcastChannel | null>(null);
+  const animSyncChannelRef = useRef<BroadcastChannel | null>(null);
+  const animValuesRef = useRef({
+    voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, causticsAnimTime: 0,
+    lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
+    flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0,
+  });
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
@@ -903,8 +916,10 @@ export function InteractiveGradient() {
 
       const isPlayActive = isAutoModeRef.current || isVCRPlayingRef.current || isMicActiveRef.current;
 
-      // Voronoi morphing — PLAY or mic active
-      if (gradientTypeRef.current === 'voronoi' && isPlayActive) {
+      // Voronoi morphing — PLAY or mic active. Skipped in Display mode:
+      // that clock is pushed from the controller instead, so both windows
+      // stay frame-locked rather than drifting apart over time.
+      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'voronoi' && isPlayActive) {
         setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1));
       }
 
@@ -939,8 +954,9 @@ export function InteractiveGradient() {
         });
       }
 
-      // Flower rotation — only when PLAY is active
-      if (gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+      // Flower rotation — only when PLAY is active. Skipped in Display
+      // mode; see the Voronoi comment above.
+      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         setFlowerAnimTime(prev => prev + 0.5 * spd);
       }
 
@@ -959,49 +975,61 @@ export function InteractiveGradient() {
 
   const [halftoneAnimTrigger, setHalftoneAnimTrigger] = useState(0);
 
+  // Each of these local clocks is skipped entirely in Display mode — that
+  // tab's copies are pushed from the controller instead (see the animation
+  // sync effect below), so the two windows stay frame-locked instead of
+  // drifting apart.
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'aurora' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setAuroraAnimTime(t => t + 0.016 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'lava-lamp' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setLavaAnimTime(t => t + 0.008 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'metaballs' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * metaballSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, metaballSpeed]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'moire' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMoireAnimTime(t => t + 0.015 * vcrPlaybackSpeed * moireSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, moireSpeed]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'flow-field' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * flowSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, flowSpeed]);
 
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
@@ -1009,10 +1037,23 @@ export function InteractiveGradient() {
 
   // Emoji cells only spin while Play is active — frozen in place otherwise
   useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setEmojiAnimTime(t => t + (emojiRotateSpeed / 60) * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, emojiRotateSpeed]);
+
+  // Keep a ref mirror of the anim-time fields so the rAF broadcast loop
+  // below can read fresh values every frame without itself needing to be
+  // torn down and recreated on every tick (which a dependency array would
+  // force, since these change ~60x/sec while playing).
+  useEffect(() => {
+    animValuesRef.current = {
+      voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime,
+      lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime,
+      flowAnimTime, liquidAnimTime, emojiAnimTime,
+    };
+  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime]);
 
   // Build a snapshot of all mutable gradient/effect state (used by undo, redo, and saveCurrentState)
   const buildSnapshot = useCallback(() => {
@@ -1535,6 +1576,52 @@ export function InteractiveGradient() {
       channel?.close();
     };
   }, [applySnapshot]);
+
+  // Receive the anim-time fields (Display mode only) — applied directly via
+  // their setters since these aren't part of buildSnapshot/applySnapshot.
+  useEffect(() => {
+    if (!IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
+    const channel = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
+    channel.onmessage = (e) => {
+      const v = e.data;
+      if (!v) return;
+      setVoronoiAnimTime(v.voronoiAnimTime);
+      setFlowerAnimTime(v.flowerAnimTime);
+      setAuroraAnimTime(v.auroraAnimTime);
+      setCausticsAnimTime(v.causticsAnimTime);
+      setLavaAnimTime(v.lavaAnimTime);
+      setMarbleAnimTime(v.marbleAnimTime);
+      setMetaballAnimTime(v.metaballAnimTime);
+      setMoireAnimTime(v.moireAnimTime);
+      setFlowAnimTime(v.flowAnimTime);
+      setLiquidAnimTime(v.liquidAnimTime);
+      setEmojiAnimTime(v.emojiAnimTime);
+    };
+    return () => channel.close();
+  }, []);
+
+  // Broadcast the anim-time fields (controller only) on a throttled
+  // requestAnimationFrame loop rather than setInterval — rAF keeps running
+  // for a visible-but-unfocused window in every major browser, unlike
+  // setInterval, which is exactly the throttling that broke the main config
+  // sync before it was switched to an event-driven broadcast.
+  useEffect(() => {
+    if (IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
+    animSyncChannelRef.current = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
+    let rafId: number;
+    let frame = 0;
+    const tick = () => {
+      frame++;
+      if (frame % 3 === 0) animSyncChannelRef.current?.postMessage(animValuesRef.current);
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+      animSyncChannelRef.current?.close();
+      animSyncChannelRef.current = null;
+    };
+  }, []);
 
   // Open the broadcast channel once for the controller's lifetime.
   useEffect(() => {
