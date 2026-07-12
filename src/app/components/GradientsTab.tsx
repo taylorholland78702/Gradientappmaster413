@@ -74,6 +74,11 @@ export interface GradientsTabProps {
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
   reactionDiffusionSpeed: number; setReactionDiffusionSpeed: (v: number) => void;
 
+  // Topographic
+  topographicScale: number; setTopographicScale: (v: number) => void;
+  topographicBands: number; setTopographicBands: (v: number) => void;
+  topographicLineWidth: number; setTopographicLineWidth: (v: number) => void;
+
   // Angle / Radial
   angleStartOffset: number; setAngleStartOffset: (v: number) => void;
   angleCenterX: number; setAngleCenterX: (v: number) => void;
@@ -157,6 +162,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
+    topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
@@ -620,6 +626,24 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
               { label: 'Speed', value: reactionDiffusionSpeed, set: setReactionDiffusionSpeed, min: 0.2, max: 3, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'topographic' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Scale', value: topographicScale, set: setTopographicScale, min: 10, max: 100, step: 1 },
+              { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
+              { label: 'Line Width', value: topographicLineWidth, set: setTopographicLineWidth, min: 0.01, max: 0.15, step: 0.005 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
