@@ -25,7 +25,8 @@ export function useSnapshot(params: SnapshotParams) {
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
     flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
-    topographicScale, topographicBands, topographicLineWidth, flowerCircles, flowerRotation,
+    topographicScale, topographicBands, topographicLineWidth,
+    juliaReal, juliaImaginary, juliaZoom, juliaIterations, flowerCircles, flowerRotation,
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity,
     grainType, gridColumns, gridRotation, gridRows, gridShapeSize, gridSides,
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
@@ -54,6 +55,7 @@ export function useSnapshot(params: SnapshotParams) {
     setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
+    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread,
     setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK,
@@ -195,6 +197,7 @@ export function useSnapshot(params: SnapshotParams) {
       attractorPointCount, attractorScale, attractorSpeed,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
+      juliaReal, juliaImaginary, juliaZoom, juliaIterations,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -259,6 +262,7 @@ export function useSnapshot(params: SnapshotParams) {
       attractorPointCount, attractorScale, attractorSpeed,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
+      juliaReal, juliaImaginary, juliaZoom, juliaIterations,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -437,6 +441,10 @@ export function useSnapshot(params: SnapshotParams) {
     setTopographicScale(snapshot.topographicScale ?? 40);
     setTopographicBands(snapshot.topographicBands ?? 10);
     setTopographicLineWidth(snapshot.topographicLineWidth ?? 0.04);
+    setJuliaReal(snapshot.juliaReal ?? -0.7);
+    setJuliaImaginary(snapshot.juliaImaginary ?? 0.27);
+    setJuliaZoom(snapshot.juliaZoom ?? 1);
+    setJuliaIterations(snapshot.juliaIterations ?? 60);
     setFlowerCircles(snapshot.flowerCircles ?? 3);
     setFlowerRotation(snapshot.flowerRotation ?? 0);
     setFlowerScale(snapshot.flowerScale ?? 0.8);

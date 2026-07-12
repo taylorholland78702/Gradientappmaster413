@@ -79,6 +79,12 @@ export interface GradientsTabProps {
   topographicBands: number; setTopographicBands: (v: number) => void;
   topographicLineWidth: number; setTopographicLineWidth: (v: number) => void;
 
+  // Julia Set
+  juliaReal: number; setJuliaReal: (v: number) => void;
+  juliaImaginary: number; setJuliaImaginary: (v: number) => void;
+  juliaZoom: number; setJuliaZoom: (v: number) => void;
+  juliaIterations: number; setJuliaIterations: (v: number) => void;
+
   // Angle / Radial
   angleStartOffset: number; setAngleStartOffset: (v: number) => void;
   angleCenterX: number; setAngleCenterX: (v: number) => void;
@@ -163,6 +169,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
+    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
@@ -644,6 +651,25 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Scale', value: topographicScale, set: setTopographicScale, min: 10, max: 100, step: 1 },
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
               { label: 'Line Width', value: topographicLineWidth, set: setTopographicLineWidth, min: 0.01, max: 0.15, step: 0.005 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'julia' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg">
+            {[
+              { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
+              { label: 'Imag (c)', value: juliaImaginary, set: setJuliaImaginary, min: -1, max: 1, step: 0.01 },
+              { label: 'Zoom', value: juliaZoom, set: setJuliaZoom, min: 0.3, max: 3, step: 0.1 },
+              { label: 'Detail', value: juliaIterations, set: setJuliaIterations, min: 20, max: 120, step: 5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
