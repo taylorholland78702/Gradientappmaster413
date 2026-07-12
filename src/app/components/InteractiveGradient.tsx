@@ -317,14 +317,6 @@ export function InteractiveGradient() {
       if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
     }
   };
-  // Brings the hint bubble back on demand — the first-run hint dismisses
-  // permanently, so this is the only way back to it short of clearing
-  // localStorage. Surfaced as a link in the About modal (the one place
-  // that's always reachable, even on touch, once the hint itself is gone).
-  const replayWavHint = () => {
-    setIsAboutOpen(false);
-    setShowWavHint(true);
-  };
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
@@ -3859,12 +3851,6 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
-                <button
-                  onClick={replayWavHint}
-                  className="self-start text-white/60 hover:text-white underline underline-offset-2 transition-colors"
-                >
-                  Show this hint again
-                </button>
               </div>
 
               <div className="flex flex-col gap-3">
