@@ -21,16 +21,16 @@ export function useRandomization(params: RandomizationParams) {
     activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
     kaleidoscopeSegments, pixelSize,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
-    setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAuroraBandCount, setAuroraBandHeight,
+    setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
-    setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDustCrackleIntensity, setEmojiChars,
+    setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGridColumns,
-    setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove,
+    setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
@@ -135,6 +135,14 @@ export function useRandomization(params: RandomizationParams) {
 
     // ASCII
     setAsciiSize(Math.floor(Math.random() * 34) + 6);                  // 6–39
+    setAsciiColor(Math.random() < 0.5);
+
+    // Duotone
+    setDuotoneThreeColor(Math.random() < 0.5);
+
+    // Halftone
+    setHalftoneMove(Math.random() < 0.4);
+    setHalftoneCMYK(Math.random() < 0.4);
 
     // Emoji — was only ever randomizing which characters, never size/
     // rotation/variation, so every emoji-effect shuffle looked identical
