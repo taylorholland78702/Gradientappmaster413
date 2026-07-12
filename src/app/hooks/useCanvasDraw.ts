@@ -1606,6 +1606,26 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 6));
         const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
 
+        // Gray-Scott is a fully deterministic PDE on a wrapped (toroidal)
+        // grid with no boundary noise — once it settles into a local
+        // equilibrium there is nothing left to perturb it, so it goes
+        // completely and permanently static within a few seconds (this is
+        // correct PDE behavior, not a bug, but reads as "broken" for a
+        // live visual). Periodically injecting a fresh seed blob — same
+        // shape as the initial seeding — keeps the system perpetually
+        // disturbed so it never fully locks up, similar to how real
+        // Gray-Scott art demos stay alive via continuous small perturbations.
+        if (Math.random() < 0.004 * reactionDiffusionSpeed) {
+          const bcx = Math.floor(Math.random() * RD_W);
+          const bcy = Math.floor(Math.random() * RD_H);
+          for (let dy = -3; dy <= 3; dy++) {
+            for (let dx = -3; dx <= 3; dx++) {
+              if (dx * dx + dy * dy > 9) continue;
+              v[idx(bcx + dx, bcy + dy)] = 1;
+            }
+          }
+        }
+
         for (let s = 0; s < steps; s++) {
           for (let y = 0; y < RD_H; y++) {
             for (let x = 0; x < RD_W; x++) {
