@@ -116,6 +116,7 @@ export interface EffectsTabProps {
   // Glitch
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
+  glitchChromaSplit: number; setGlitchChromaSplit: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -153,7 +154,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
-    glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize,
+    glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
   } = props;
 
   return (
@@ -1318,6 +1319,13 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Chroma Split:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
