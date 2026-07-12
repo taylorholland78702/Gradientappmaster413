@@ -1,5 +1,6 @@
 import React from 'react';
 import { Circle, Play, Pause, FastForward, Rewind, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Divider } from './Divider';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -87,7 +88,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         </button>
       </div>
 
-      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
+      <Divider />
 
       {/* Cols 3-4 — under Audio + Color. The three items (<< 1x >>) cluster
           together compactly at justify-center rather than spreading
@@ -131,7 +132,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         </button>
       </div>
 
-      <div className="w-px self-stretch bg-white/20 flex-shrink-0"></div>
+      <Divider />
 
       {/* Col 5 — under Presets, far right */}
       <div style={colStyle(1)} className="flex items-center justify-center">

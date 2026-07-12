@@ -27,6 +27,8 @@ import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
 import { useRandomization } from '../hooks/useRandomization';
+import { useWavGesture } from '../hooks/useWavGesture';
+import { Divider } from './Divider';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import { FreeformPinsOverlay } from './FreeformPinsOverlay';
@@ -238,18 +240,6 @@ export function InteractiveGradient() {
   const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
   const drawParamsDirtyRef = useRef(true); // true until first draw
-  const wavLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wavLongPressFired = useRef(false);
-  const wavPressStartTime = useRef<number>(0);
-  // Manual double-tap detection: native `dblclick` is unreliable when mixed
-  // with Pointer Events on the same element (pointer capture/state churn can
-  // suppress it), which caused double-presses to silently fall back to two
-  // small single-tap nudges instead of a full remix. A pending single-tap
-  // evolve is delayed briefly so a fast second tap can upgrade it to a full
-  // evolveWithFactor(1) instead of stacking two tiny nudges first.
-  const wavTapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wavLastPointerUpTime = useRef<number>(0);
-  const WAV_DOUBLE_TAP_MS = 350;
   const waveNumberRef = useRef<number>(20);
   const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
@@ -275,7 +265,6 @@ export function InteractiveGradient() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
   const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
-  const [isWavHolding, setIsWavHolding] = useState(false);
   const [wavRandomGradient, setWavRandomGradient] = useState('linear-gradient(to top, #7c3aed, #ec4899, #eab308)');
   const randomizeWavGradient = () => {
     const hue = () => Math.floor(Math.random() * 360);
@@ -1280,6 +1269,15 @@ export function InteractiveGradient() {
     zoom,
   });
 
+  // Shared tap/hold/double-tap gesture handling for the WĀV button — one
+  // instance, spread onto both the collapsed-cluster button and the
+  // main-panel wordmark below (they're mutually exclusive: only one is ever
+  // interactive at a time since the other is opacity-0/pointer-events-none).
+  const wavGesture = useWavGesture(evolveWithFactor, () => {
+    dismissWavHint();
+    randomizeWavGradient();
+  });
+  const { isWavHolding } = wavGesture;
 
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
@@ -3138,31 +3136,9 @@ export function InteractiveGradient() {
             <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
           <button
-            onPointerDown={() => {
-              dismissWavHint();
-              randomizeWavGradient();
-              setIsWavHolding(true);
-              wavPressStartTime.current = Date.now();
-              wavLongPressFired.current = false;
-              wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 800);
-            }}
-            onPointerUp={() => {
-              setIsWavHolding(false);
-              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-              if (wavLongPressFired.current) return;
-              const now = Date.now();
-              const isDoubleTap = now - wavLastPointerUpTime.current < WAV_DOUBLE_TAP_MS;
-              wavLastPointerUpTime.current = now;
-              if (isDoubleTap) {
-                if (wavTapTimeoutRef.current) { clearTimeout(wavTapTimeoutRef.current); wavTapTimeoutRef.current = null; }
-                wavLastPointerUpTime.current = 0;
-                evolveWithFactor(1);
-              } else {
-                const factor = Math.min((now - wavPressStartTime.current) / 800, 1);
-                wavTapTimeoutRef.current = setTimeout(() => { evolveWithFactor(factor); wavTapTimeoutRef.current = null; }, WAV_DOUBLE_TAP_MS);
-              }
-            }}
-            onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
+            onPointerDown={wavGesture.onPointerDown}
+            onPointerUp={wavGesture.onPointerUp}
+            onPointerLeave={wavGesture.onPointerLeave}
             className="relative overflow-hidden w-[44px] h-[44px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
             title="Tap: evolve (W) · Hold/Double-tap: new mood"
             aria-label="Shuffle: tap to nudge, hold or double-tap to remix"
@@ -3246,38 +3222,9 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          onPointerDown={() => {
-            dismissWavHint();
-            randomizeWavGradient();
-            setIsWavHolding(true);
-            wavPressStartTime.current = Date.now();
-            wavLongPressFired.current = false;
-            wavLongPressTimer.current = setTimeout(() => {
-              wavLongPressFired.current = true;
-              setIsWavHolding(false);
-              evolveWithFactor(1);
-            }, 800);
-          }}
-          onPointerUp={() => {
-            setIsWavHolding(false);
-            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-            if (wavLongPressFired.current) return;
-            const now = Date.now();
-            const isDoubleTap = now - wavLastPointerUpTime.current < WAV_DOUBLE_TAP_MS;
-            wavLastPointerUpTime.current = now;
-            if (isDoubleTap) {
-              if (wavTapTimeoutRef.current) { clearTimeout(wavTapTimeoutRef.current); wavTapTimeoutRef.current = null; }
-              wavLastPointerUpTime.current = 0;
-              evolveWithFactor(1);
-            } else {
-              const factor = Math.min((now - wavPressStartTime.current) / 800, 1);
-              wavTapTimeoutRef.current = setTimeout(() => { evolveWithFactor(factor); wavTapTimeoutRef.current = null; }, WAV_DOUBLE_TAP_MS);
-            }
-          }}
-          onPointerLeave={() => {
-            setIsWavHolding(false);
-            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-          }}
+          onPointerDown={wavGesture.onPointerDown}
+          onPointerUp={wavGesture.onPointerUp}
+          onPointerLeave={wavGesture.onPointerLeave}
           className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
           title="Tap: evolve · Hold or double-tap: new mood"
           aria-label="Shuffle: tap to nudge the current look, hold or double-tap for a full remix"
@@ -3345,7 +3292,7 @@ export function InteractiveGradient() {
           >
             <Eye weight="regular" className="w-4 h-4" />
           </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <Divider />
           <button
             onClick={exportAsPNG}
             className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
@@ -3354,7 +3301,7 @@ export function InteractiveGradient() {
           >
             <Camera weight="regular" className="w-4 h-4" />
           </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <Divider />
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
@@ -3366,7 +3313,7 @@ export function InteractiveGradient() {
           >
             <ArrowUUpLeft weight="regular" className="w-4 h-4" />
           </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <Divider />
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
@@ -3378,7 +3325,7 @@ export function InteractiveGradient() {
           >
             <ArrowUUpRight weight="regular" className="w-4 h-4" />
           </button>
-          <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+          <Divider />
           <button
             onClick={resetToDefaults}
             className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
@@ -3389,7 +3336,7 @@ export function InteractiveGradient() {
           </button>
           </div>{/* end icon row */}
 
-          <div className="h-px w-full bg-white/20 flex-shrink-0" />
+          <Divider orientation="horizontal" />
 
           {/* VCR Controls */}
           <VCRControls
@@ -3408,18 +3355,18 @@ export function InteractiveGradient() {
             toggleVCRPlayback={toggleVCRPlayback}
           />
 
-          <div className="h-px w-full bg-white/20 flex-shrink-0" />
+          <Divider orientation="horizontal" />
 
           {/* Tab Bar */}
           <div className="flex items-stretch w-full">
             <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
-            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <Divider />
             <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX (F)" aria-label="Effects tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
-            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <Divider />
             <button
               onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
               title="Audio (A)"
@@ -3428,11 +3375,11 @@ export function InteractiveGradient() {
             >
               <SpeakerHigh weight="regular" className="w-4 h-4" />
             </button>
-            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <Divider />
             <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
-            <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
+            <Divider />
             <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>

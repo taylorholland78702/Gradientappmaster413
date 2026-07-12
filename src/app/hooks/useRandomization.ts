@@ -4,6 +4,8 @@ import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FEELING_LUCKY_GRADIENT_TYPES, FULL_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
 import { pickRandomEmojiSet } from '../components/InteractiveGradient';
+import { hslToRgb, rgbToHsl } from '../utils/color';
+import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
 // nearly every piece of app state (randomization touches everything by
@@ -289,13 +291,6 @@ export function useRandomization(params: RandomizationParams) {
       // Full random generation — curated ranges for better results
 
       // Harmonious color generation: pick a base hue, generate analogous/complementary palette
-      const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
-        s /= 100; l /= 100;
-        const k = (n: number) => (n + h / 30) % 12;
-        const a = s * Math.min(l, 1 - l);
-        const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
-      };
       const baseHue = Math.random() * 360;
       const colorScheme = Math.random();
       const harmonyColors = gradientColors.map((_, i) => {
@@ -367,11 +362,11 @@ export function useRandomization(params: RandomizationParams) {
 
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
 
-      setKaleidoscopeSegments(Math.floor(Math.random() * 16) + 4);  // 4–19
-      setTwistAmount(Math.random() * 3);                              // 0–3
-      setPixelSize(Math.floor(Math.random() * 30) + 8);              // 8–37
-      setTriangleSize(Math.floor(Math.random() * 60) + 20);          // 20–79
-      setChromaticOffset(Math.floor(Math.random() * 150) + 30);      // 30–179
+      setKaleidoscopeSegments(randIntInRange(RANGES.kaleidoscopeSegments));
+      setTwistAmount(randInRange(RANGES.twistAmount));
+      setPixelSize(randIntInRange(RANGES.pixelSize));
+      setTriangleSize(randIntInRange(RANGES.triangleSize));
+      setChromaticOffset(randIntInRange(RANGES.chromaticOffset));
       setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
     }
@@ -380,15 +375,15 @@ export function useRandomization(params: RandomizationParams) {
     setSubmittedAIPrompt('');
     setBlurMotionAmount(Math.floor(Math.random() * 50) + 10);        // 10–59
     setBlurMotionDirection(Math.floor(Math.random() * 360));           // 0–360
-    setBlurGaussianAmount(Math.floor(Math.random() * 15) + 3);        // 3–17
+    setBlurGaussianAmount(randIntInRange(RANGES.blurGaussianAmount));
     setBlurRadialAmount(Math.floor(Math.random() * 15) + 3);          // 3–17
     setPosterizeLevels(Math.floor(Math.random() * 10) + 4);           // 4–13
     setHalftoneSize(Math.floor(Math.random() * 25) + 5);              // 5–29
     setHalftoneVariation(Math.random() * 0.5);                        // 0–0.5
     setHalftoneMove(Math.random() > 0.6);
     setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
-    setVignetteStrength(Math.random() * 0.6 + 0.2);                   // 0.2–0.8
-    setColorShiftHue(Math.floor(Math.random() * 120) + 5);            // 5–124
+    setVignetteStrength(randInRange(RANGES.vignetteStrength));
+    setColorShiftHue(randIntInRange(RANGES.colorShiftHue));
     setCharcoalIntensity(Math.random() * 0.6 + 0.2);                  // 0.2–0.8
     setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
     setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
@@ -409,7 +404,7 @@ export function useRandomization(params: RandomizationParams) {
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
     setPolygonSides(Math.floor(Math.random() * 8) + 3);               // 3–10
     setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
-    setWaveDistortionStrength(Math.floor(Math.random() * 80) + 20);   // 20–99
+    setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
 
     // Randomize gradient-specific controls
     setSpiralTightness(Math.floor(Math.random() * 19) + 1); // 1-20
@@ -484,27 +479,6 @@ export function useRandomization(params: RandomizationParams) {
 
     saveCurrentState();
 
-    const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
-      s /= 100; l /= 100;
-      const k = (n: number) => (n + h / 30) % 12;
-      const a = s * Math.min(l, 1 - l);
-      const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-      return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
-    };
-    const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
-      r /= 255; g /= 255; b /= 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      const l = (max + min) / 2;
-      if (max === min) return [0, 0, l * 100];
-      const d = max - min;
-      const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      let h = 0;
-      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-      else if (max === g) h = ((b - r) / d + 2) / 6;
-      else h = ((r - g) / d + 4) / 6;
-      return [h * 360, s * 100, l * 100];
-    };
-
     // Scale color drift: ±15° at factor=0, ±160° at factor=1
     const hueDrift = 15 + factor * 145;
     const satDrift = 8 + factor * 30;
@@ -547,16 +521,16 @@ export function useRandomization(params: RandomizationParams) {
     // randomizeUncoveredParams brings to the Shuffle/WAV-click paths.
     const rng = (min: number, max: number) => min + Math.random() * (max - min) * (0.3 + factor * 0.7);
     for (const eff of activeEffects) {
-      if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.round(rng(3, 20)));
-      else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(10, 180)));
-      else if (eff === 'vignette') setVignetteStrength(rng(0.1, 0.9));
-      else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(2, 18)));
+      if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.round(rng(...RANGES.kaleidoscopeSegments)));
+      else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(...RANGES.chromaticOffset)));
+      else if (eff === 'vignette') setVignetteStrength(rng(...RANGES.vignetteStrength));
+      else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(...RANGES.blurGaussianAmount)));
       else if (eff === 'grain') setGrainIntensity(rng(0, 0.5));
-      else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(10, 100)));
-      else if (eff === 'pixelate') setPixelSize(Math.round(rng(5, 50)));
-      else if (eff === 'shift') setColorShiftHue(Math.round(rng(5, 180)));
-      else if (eff === 'twist') setTwistAmount(rng(0, 5));
-      else if (eff === 'triangulate') setTriangleSize(Math.round(rng(10, 200)));
+      else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(...RANGES.waveDistortionStrength)));
+      else if (eff === 'pixelate') setPixelSize(Math.round(rng(...RANGES.pixelSize)));
+      else if (eff === 'shift') setColorShiftHue(Math.round(rng(...RANGES.colorShiftHue)));
+      else if (eff === 'twist') setTwistAmount(rng(...RANGES.twistAmount));
+      else if (eff === 'triangulate') setTriangleSize(Math.round(rng(...RANGES.triangleSize)));
       else if (eff === 'bloom') { setBloomIntensity(rng(0, 2)); setBloomRadius(Math.round(rng(2, 40))); }
       else if (eff === 'chromatic-trails') { setChromaticTrailsDecay(rng(0.5, 0.99)); setChromaticTrailsOffset(Math.round(rng(1, 30))); }
       else if (eff === 'dither') setDitherLevels(Math.round(rng(2, 16)));
@@ -593,7 +567,7 @@ export function useRandomization(params: RandomizationParams) {
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.
-    setKaleidoscopeSegments(Math.round(rng(3, 20)));
+    setKaleidoscopeSegments(Math.round(rng(...RANGES.kaleidoscopeSegments)));
 
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
