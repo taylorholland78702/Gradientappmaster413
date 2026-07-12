@@ -54,7 +54,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         <button
           onClick={toggleVCRRecording}
           disabled={isEncoding}
-          className="flex-1 min-h-[44px] p-1.5 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
+          className="flex-1 p-1.5 rounded hover:bg-white/15 text-white transition-all relative flex items-center justify-center"
           title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video (V)'}
           aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
         >
@@ -80,7 +80,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
 
         <button
           onClick={toggleVCRPlayback}
-          className="flex-1 min-h-[44px] p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          className="flex-1 p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title={(isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")) + " (Space)"}
           aria-label={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
@@ -138,7 +138,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
       <div style={colStyle(1)} className="flex items-center justify-center">
         <button
           onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-          className="min-h-[44px] p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
+          className="p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
           title={(rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise') + " (D)"}
           aria-label={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
         >

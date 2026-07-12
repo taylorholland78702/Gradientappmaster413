@@ -3322,7 +3322,7 @@ export function InteractiveGradient() {
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Hide Controls (H)"
             aria-label="Hide Controls"
           >
@@ -3331,7 +3331,7 @@ export function InteractiveGradient() {
           <Divider />
           <button
             onClick={exportAsPNG}
-            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Save PNG (S)"
             aria-label="Save PNG"
           >
@@ -3341,7 +3341,7 @@ export function InteractiveGradient() {
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`flex-1 min-h-[44px] py-1.5 transition-all flex items-center justify-center ${
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
               undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
@@ -3353,7 +3353,7 @@ export function InteractiveGradient() {
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`flex-1 min-h-[44px] py-1.5 transition-all flex items-center justify-center ${
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
               redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Redo (Cmd+Shift+Z)"
@@ -3364,7 +3364,7 @@ export function InteractiveGradient() {
           <Divider />
           <button
             onClick={resetToDefaults}
-            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Reset (R)"
             aria-label="Reset to defaults"
           >
@@ -3395,11 +3395,11 @@ export function InteractiveGradient() {
 
           {/* Tab Bar */}
           <div className="flex items-stretch w-full">
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
@@ -3407,16 +3407,16 @@ export function InteractiveGradient() {
               onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
               title="Audio (A)"
               aria-label="Audio tab"
-              className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
+              className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
             >
               <SpeakerHigh weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
