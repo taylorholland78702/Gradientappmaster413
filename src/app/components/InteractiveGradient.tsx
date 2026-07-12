@@ -310,6 +310,16 @@ export function InteractiveGradient() {
     return null;
   });
   const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
+  // First-run hint explaining the tap/hold/double-tap gesture vocabulary —
+  // tooltips (title attrs) never surface on touch devices, which is this
+  // app's primary target, so without this the gestures are undiscoverable.
+  const [showWavHint, setShowWavHint] = useState(() => {
+    try { return !localStorage.getItem('wavGestureHintSeen'); } catch { return true; }
+  });
+  const dismissWavHint = () => {
+    setShowWavHint(false);
+    try { localStorage.setItem('wavGestureHintSeen', '1'); } catch {}
+  };
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
@@ -3121,13 +3131,15 @@ export function InteractiveGradient() {
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className="w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Show Controls (H)"
+            aria-label="Show Controls"
           >
             <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
           <button
             onPointerDown={() => {
+              dismissWavHint();
               randomizeWavGradient();
               setIsWavHolding(true);
               wavPressStartTime.current = Date.now();
@@ -3151,8 +3163,9 @@ export function InteractiveGradient() {
               }
             }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
-            className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
-            title="Tap: evolve (W) · Hold/Shift+W: new mood"
+            className="relative overflow-hidden w-[44px] h-[44px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
+            title="Tap: evolve (W) · Hold/Double-tap: new mood"
+            aria-label="Shuffle: tap to nudge, hold or double-tap to remix"
           >
             <span
               aria-hidden="true"
@@ -3164,23 +3177,26 @@ export function InteractiveGradient() {
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Undo (Cmd+Z)"
+            aria-label="Undo"
           >
             <ArrowUUpLeft weight="regular" className="w-4 h-4" />
           </button>
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Redo (Cmd+Shift+Z)"
+            aria-label="Redo"
           >
             <ArrowUUpRight weight="regular" className="w-4 h-4" />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
-            className="w-[32px] h-[32px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className="w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Presets (P)"
+            aria-label="Presets"
           >
             <Plus weight="regular" className="w-4 h-4" />
           </button>
@@ -3199,19 +3215,28 @@ export function InteractiveGradient() {
             const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
             const rect = panel.getBoundingClientRect();
             panelDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+            // Clamp to the viewport, leaving at least this much of the panel
+            // on-screen — otherwise a user can drag the panel fully off the
+            // edge and lose access to every control (no way to recover short
+            // of clearing localStorage).
+            const MIN_VISIBLE = 40;
+            const clamp = (x: number, y: number) => ({
+              x: Math.min(Math.max(x, MIN_VISIBLE - rect.width), window.innerWidth - MIN_VISIBLE),
+              y: Math.min(Math.max(y, 0), window.innerHeight - MIN_VISIBLE),
+            });
             const onMove = (ev: MouseEvent) => {
               if (!panelDragRef.current) return;
-              setPanelPos({
-                x: panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
-                y: panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
-              });
+              setPanelPos(clamp(
+                panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
+                panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
+              ));
             };
             const onUp = (ev: MouseEvent) => {
               if (panelDragRef.current) {
-                const pos = {
-                  x: panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
-                  y: panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
-                };
+                const pos = clamp(
+                  panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
+                  panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
+                );
                 try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch {}
               }
               panelDragRef.current = null;
@@ -3222,6 +3247,7 @@ export function InteractiveGradient() {
             window.addEventListener('mouseup', onUp);
           }}
           onPointerDown={() => {
+            dismissWavHint();
             randomizeWavGradient();
             setIsWavHolding(true);
             wavPressStartTime.current = Date.now();
@@ -3253,7 +3279,8 @@ export function InteractiveGradient() {
             if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
           }}
           className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
-          title="Press to Alter, Long Press / Double Click to Remix"
+          title="Tap: evolve · Hold or double-tap: new mood"
+          aria-label="Shuffle: tap to nudge the current look, hold or double-tap for a full remix"
         >
           <span className="relative w-full block wav-glow-wrap">
             <span
@@ -3287,21 +3314,43 @@ export function InteractiveGradient() {
           </span>
         </button>
 
+        {/* First-run gesture hint — tooltips (title attrs) never surface on
+            touch, which is this app's primary target device, so the
+            tap/hold/double-tap vocabulary needs a visible explanation at
+            least once. Dismissed permanently on first interaction. */}
+        {showWavHint && (
+          <div className="relative w-full -mt-1 mb-1 flex justify-center">
+            <div className="flex items-center gap-1.5 bg-black/70 text-white text-[10px] leading-tight px-2.5 py-1.5 rounded-lg shadow-sm">
+              <span>Tap wāv to nudge · Hold or double-tap to remix</span>
+              <button
+                onClick={dismissWavHint}
+                className="text-white/60 hover:text-white shrink-0 w-[18px] h-[18px] flex items-center justify-center"
+                aria-label="Dismiss hint"
+                title="Dismiss"
+              >
+                <X weight="bold" className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows */}
         <div className="flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm">
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Hide Controls (H)"
+            aria-label="Hide Controls"
           >
             <Eye weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
             onClick={exportAsPNG}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Save PNG (S)"
+            aria-label="Save PNG"
           >
             <Camera weight="regular" className="w-4 h-4" />
           </button>
@@ -3309,10 +3358,11 @@ export function InteractiveGradient() {
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
+            className={`flex-1 min-h-[44px] py-1.5 transition-all flex items-center justify-center ${
               undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Undo (Cmd+Z)"
+            aria-label="Undo"
           >
             <ArrowUUpLeft weight="regular" className="w-4 h-4" />
           </button>
@@ -3320,18 +3370,20 @@ export function InteractiveGradient() {
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
+            className={`flex-1 min-h-[44px] py-1.5 transition-all flex items-center justify-center ${
               redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
             }`}
             title="Redo (Cmd+Shift+Z)"
+            aria-label="Redo"
           >
             <ArrowUUpRight weight="regular" className="w-4 h-4" />
           </button>
           <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
           <button
             onClick={resetToDefaults}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 min-h-[44px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Reset (R)"
+            aria-label="Reset to defaults"
           >
             <ArrowsClockwise weight="regular" className="w-4 h-4" />
           </button>
@@ -3360,27 +3412,28 @@ export function InteractiveGradient() {
 
           {/* Tab Bar */}
           <div className="flex items-stretch w-full">
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX (F)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX (F)" aria-label="Effects tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
             <button
               onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
               title="Audio (A)"
-              className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
+              aria-label="Audio tab"
+              className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
             >
               <SpeakerHigh weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
             <div className="w-px self-stretch bg-white/20 flex-shrink-0" />
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" className={`flex-1 flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
@@ -3784,8 +3837,9 @@ export function InteractiveGradient() {
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className="absolute bottom-4 right-4 pointer-events-auto w-8 h-8 rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+          className="absolute bottom-4 right-4 pointer-events-auto w-[44px] h-[44px] rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
           title="About wāv (?)"
+          aria-label="About wāv"
         >
           <Info weight="regular" className="w-4 h-4" />
         </button>
