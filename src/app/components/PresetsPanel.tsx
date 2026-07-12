@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus } from '@phosphor-icons/react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check } from '@phosphor-icons/react';
+import { encodePresetData } from '../utils/presetShare';
 
 interface Preset {
   id: string;
@@ -56,6 +57,20 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const [renamingFolderValue, setRenamingFolderValue] = useState('');
   const [draggingPresetId, setDraggingPresetId] = useState<string | null>(null);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+
+  // Encode the preset's full state snapshot directly into the URL (no
+  // backend round-trip — this app doesn't control its own Firestore
+  // security rules from the client, so a new public collection can't be
+  // assumed safe/readable by other users). Whoever opens the link gets the
+  // exact same look via the ?preset= param handled in InteractiveGradient.
+  const handleCopyLink = (preset: Preset) => {
+    const encoded = encodePresetData(preset.data);
+    const url = `${window.location.origin}${window.location.pathname}?preset=${encoded}`;
+    navigator.clipboard?.writeText(url).catch(() => {});
+    setCopiedLinkId(preset.id);
+    setTimeout(() => setCopiedLinkId(prev => (prev === preset.id ? null : prev)), 2000);
+  };
 
   const confirmAdd = () => {
     if (newPresetName.trim()) {
@@ -326,7 +341,16 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       {preset.name}
                     </button>
                   )}
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <div className={`flex items-center transition-opacity flex-shrink-0 ${copiedLinkId === preset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCopyLink(preset); }}
+                    className={`px-2 py-2 hover:bg-white/15 transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
+                    title={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
+                  >
+                    {copiedLinkId === preset.id
+                      ? <Check weight="bold" className="w-4 h-4" />
+                      : <LinkSimple weight="regular" className="w-4 h-4" />}
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); updatePreset(preset.id); }}
                     className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"

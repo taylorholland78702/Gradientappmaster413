@@ -29,6 +29,7 @@ import { EffectsTab } from './EffectsTab';
 import { useRandomization } from '../hooks/useRandomization';
 import { useWavGesture } from '../hooks/useWavGesture';
 import { Divider } from './Divider';
+import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import { FreeformPinsOverlay } from './FreeformPinsOverlay';
@@ -315,6 +316,14 @@ export function InteractiveGradient() {
     try { localStorage.setItem('wavGestureHintSeen', '1'); } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
     }
+  };
+  // Brings the hint bubble back on demand — the first-run hint dismisses
+  // permanently, so this is the only way back to it short of clearing
+  // localStorage. Surfaced as a link in the About modal (the one place
+  // that's always reachable, even on touch, once the hint itself is gone).
+  const replayWavHint = () => {
+    setIsAboutOpen(false);
+    setShowWavHint(true);
   };
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
@@ -775,6 +784,35 @@ export function InteractiveGradient() {
       });
     },
   });
+
+  // Load a shared preset from ?preset=<encoded> if present (see
+  // PresetsPanel's "Copy shareable link" button). The full snapshot is
+  // embedded directly in the URL rather than looked up from Firestore —
+  // this app doesn't control its own Firestore security rules from the
+  // client, so a new public collection can't be assumed readable by other
+  // users. Runs once on mount; strips the param afterward so a reload
+  // doesn't keep re-applying it (and so undo/redo/edits aren't fighting a
+  // giant URL sitting in the address bar).
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('preset');
+    if (!encoded) return;
+    try {
+      const data = decodePresetData(encoded) as Record<string, any>;
+      applySnapshot({
+        ...data,
+        gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
+        activeEffects: migrateIds(data.activeEffects),
+      });
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to load shared preset from URL:', err);
+    }
+    params.delete('preset');
+    const newSearch = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     isPresetModalOpen, setIsPresetModalOpen,
@@ -3821,6 +3859,12 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
+                <button
+                  onClick={replayWavHint}
+                  className="self-start text-white/60 hover:text-white underline underline-offset-2 transition-colors"
+                >
+                  Show this hint again
+                </button>
               </div>
 
               <div className="flex flex-col gap-3">
