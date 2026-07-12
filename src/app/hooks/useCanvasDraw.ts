@@ -2343,8 +2343,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         
         case 'blur': {
           if (blurType === 'gaussian') {
-            ctx.filter = `blur(${blurGaussianAmount + (isFirstEffect ? audioModulation * 10 : 0)}px)`;
-            ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+            // Canvas filter-blur samples transparency beyond the source's
+            // edges, so drawing the source at its native size leaves a thin
+            // unblurred/faded seam right at the border. Overdrawing slightly
+            // past the edges (a tiny zoom of the same source) gives the blur
+            // kernel real pixel data out there instead, so the visible frame
+            // is blurred edge-to-edge with no seam.
+            const gaussAmt = blurGaussianAmount + (isFirstEffect ? audioModulation * 10 : 0);
+            const gaussPad = gaussAmt * 2;
+            ctx.filter = `blur(${gaussAmt}px)`;
+            ctx.drawImage(canvas, -gaussPad, -gaussPad, displayWidth + gaussPad * 2, displayHeight + gaussPad * 2);
             ctx.filter = 'none';
           } else if (blurType === 'motion') {
             const amt = blurMotionAmount + (isFirstEffect ? audioModulation * 10 : 0);
