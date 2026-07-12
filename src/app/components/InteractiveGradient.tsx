@@ -241,6 +241,15 @@ export function InteractiveGradient() {
   const wavLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wavLongPressFired = useRef(false);
   const wavPressStartTime = useRef<number>(0);
+  // Manual double-tap detection: native `dblclick` is unreliable when mixed
+  // with Pointer Events on the same element (pointer capture/state churn can
+  // suppress it), which caused double-presses to silently fall back to two
+  // small single-tap nudges instead of a full remix. A pending single-tap
+  // evolve is delayed briefly so a fast second tap can upgrade it to a full
+  // evolveWithFactor(1) instead of stacking two tiny nudges first.
+  const wavTapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wavLastPointerUpTime = useRef<number>(0);
+  const WAV_DOUBLE_TAP_MS = 350;
   const waveNumberRef = useRef<number>(20);
   const waveRotationRef = useRef<number>(45);
   const lerpSyncFrameRef = useRef(0);
@@ -3125,9 +3134,23 @@ export function InteractiveGradient() {
               wavLongPressFired.current = false;
               wavLongPressTimer.current = setTimeout(() => { wavLongPressFired.current = true; setIsWavHolding(false); evolveWithFactor(1); }, 800);
             }}
-            onPointerUp={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); if (!wavLongPressFired.current) { const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1); evolveWithFactor(factor); } }}
+            onPointerUp={() => {
+              setIsWavHolding(false);
+              if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
+              if (wavLongPressFired.current) return;
+              const now = Date.now();
+              const isDoubleTap = now - wavLastPointerUpTime.current < WAV_DOUBLE_TAP_MS;
+              wavLastPointerUpTime.current = now;
+              if (isDoubleTap) {
+                if (wavTapTimeoutRef.current) { clearTimeout(wavTapTimeoutRef.current); wavTapTimeoutRef.current = null; }
+                wavLastPointerUpTime.current = 0;
+                evolveWithFactor(1);
+              } else {
+                const factor = Math.min((now - wavPressStartTime.current) / 800, 1);
+                wavTapTimeoutRef.current = setTimeout(() => { evolveWithFactor(factor); wavTapTimeoutRef.current = null; }, WAV_DOUBLE_TAP_MS);
+              }
+            }}
             onPointerLeave={() => { setIsWavHolding(false); if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); }}
-            onDoubleClick={() => { if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current); setIsWavHolding(false); evolveWithFactor(1); }}
             className="relative overflow-hidden w-[32px] h-[32px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
             title="Tap: evolve (W) · Hold/Shift+W: new mood"
           >
@@ -3212,19 +3235,22 @@ export function InteractiveGradient() {
           onPointerUp={() => {
             setIsWavHolding(false);
             if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-            if (!wavLongPressFired.current) {
-              const factor = Math.min((Date.now() - wavPressStartTime.current) / 800, 1);
-              evolveWithFactor(factor);
+            if (wavLongPressFired.current) return;
+            const now = Date.now();
+            const isDoubleTap = now - wavLastPointerUpTime.current < WAV_DOUBLE_TAP_MS;
+            wavLastPointerUpTime.current = now;
+            if (isDoubleTap) {
+              if (wavTapTimeoutRef.current) { clearTimeout(wavTapTimeoutRef.current); wavTapTimeoutRef.current = null; }
+              wavLastPointerUpTime.current = 0;
+              evolveWithFactor(1);
+            } else {
+              const factor = Math.min((now - wavPressStartTime.current) / 800, 1);
+              wavTapTimeoutRef.current = setTimeout(() => { evolveWithFactor(factor); wavTapTimeoutRef.current = null; }, WAV_DOUBLE_TAP_MS);
             }
           }}
           onPointerLeave={() => {
             setIsWavHolding(false);
             if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-          }}
-          onDoubleClick={() => {
-            if (wavLongPressTimer.current) clearTimeout(wavLongPressTimer.current);
-            setIsWavHolding(false);
-            evolveWithFactor(1);
           }}
           className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
           title="Press to Alter, Long Press / Double Click to Remix"
