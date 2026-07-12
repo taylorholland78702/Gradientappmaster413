@@ -36,8 +36,9 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
       <div className="flex gap-2 w-full">
         <button
           onClick={() => setIsAutoColor(prev => !prev)}
-          className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white/30 text-white' : 'bg-black/25 text-white/50 hover:bg-white/15 hover:text-white'}`}
+          className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white text-black' : 'bg-black/25 text-white/50 hover:bg-white/15 hover:text-white'}`}
           title={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
+          aria-label={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
         >{isAutoColor ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}</button>
         <button
           onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
