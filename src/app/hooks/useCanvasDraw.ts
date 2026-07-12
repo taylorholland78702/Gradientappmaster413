@@ -31,6 +31,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
+    glitchIntensity, glitchBlockSize,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
@@ -1896,6 +1897,55 @@ export function useCanvasDraw(params: CanvasDrawParams) {
             }
             ctx.restore(); // undo kaleidoscope rotation
             ctx.imageSmoothingEnabled = true;
+          }
+          break;
+        }
+
+        case 'glitch': {
+          // Block-shuffle/datamosh: occasional full-row tears (classic
+          // datamoshing look) plus individually displaced blocks, each with
+          // a chance of a faint RGB-offset ghost copy for extra bite.
+          // Distinct from VHS (continuous scanline wobble) and Slit-Scan
+          // (temporal buffer scan) — this is spatial displacement, not a
+          // wobble or time-based effect.
+          if (canvas.width === 0 || canvas.height === 0) break;
+          const glitchTmp = document.createElement('canvas');
+          glitchTmp.width = displayWidth;
+          glitchTmp.height = displayHeight;
+          const gtc = glitchTmp.getContext('2d');
+          if (gtc) {
+            gtc.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+            const gBlock = Math.max(4, Math.round(glitchBlockSize));
+            const gAmt = Math.max(0, Math.min(1, glitchIntensity));
+            const gRows = Math.ceil(displayHeight / gBlock);
+            const gCols = Math.ceil(displayWidth / gBlock);
+
+            for (let r = 0; r < gRows; r++) {
+              if (Math.random() < gAmt * 0.15) {
+                const rowShift = (Math.random() - 0.5) * displayWidth * 0.15;
+                const sy = r * gBlock;
+                const sh = Math.min(gBlock, displayHeight - sy);
+                ctx.drawImage(glitchTmp, 0, sy, displayWidth, sh, rowShift, sy, displayWidth, sh);
+              }
+            }
+            for (let r = 0; r < gRows; r++) {
+              for (let c = 0; c < gCols; c++) {
+                if (Math.random() < gAmt * 0.06) {
+                  const sx = c * gBlock, sy = r * gBlock;
+                  const sw = Math.min(gBlock, displayWidth - sx);
+                  const sh = Math.min(gBlock, displayHeight - sy);
+                  const dx = Math.max(0, Math.min(displayWidth - sw, sx + (Math.random() - 0.5) * gBlock * 4));
+                  ctx.drawImage(glitchTmp, sx, sy, sw, sh, dx, sy, sw, sh);
+                  if (Math.random() < 0.3) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighten';
+                    ctx.globalAlpha = 0.5;
+                    ctx.drawImage(glitchTmp, sx, sy, sw, sh, dx + 3, sy, sw, sh);
+                    ctx.restore();
+                  }
+                }
+              }
+            }
           }
           break;
         }

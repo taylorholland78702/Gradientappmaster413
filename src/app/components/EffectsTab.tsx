@@ -113,6 +113,9 @@ export interface EffectsTabProps {
   // Dither
   ditherLevels: number; setDitherLevels: (v: number) => void;
   ditherType: 'bayer' | 'floyd-steinberg'; setDitherType: (v: 'bayer' | 'floyd-steinberg') => void;
+  // Glitch
+  glitchIntensity: number; setGlitchIntensity: (v: number) => void;
+  glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -150,6 +153,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
+    glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize,
   } = props;
 
   return (
@@ -184,6 +188,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'emoji',          label: 'Emoji' },
               { value: 'feedback',       label: 'Feedback' },
               { value: 'fisheye',        label: 'Fisheye' },
+              { value: 'glitch',         label: 'Glitch' },
               { value: 'grain',     label: 'Grain' },
               { value: 'grid-effect',    label: 'Grid' },
               { value: 'halftone',       label: 'Halftone' },
@@ -1297,6 +1302,22 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onChange={(e) => setDitherLevels(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('glitch') && (
+                <EffectSection id="glitch" label="Glitch" isMulti={isMulti} expanded={expandedEffects.has('glitch')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0.05" max="1" step="0.05" value={glitchIntensity} onChange={(e) => setGlitchIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0.05" max="1" step="0.05" value={glitchIntensity} onChange={(e) => setGlitchIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Block Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
