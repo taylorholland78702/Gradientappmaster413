@@ -3,7 +3,7 @@ import {
   type ColorRGB, type GradientType, type EffectType,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FEELING_LUCKY_GRADIENT_TYPES, FULL_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
-import { pickRandomEmojiSet } from '../components/InteractiveGradient';
+import { pickRandomEmojiSet, type ColorPin } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 
@@ -18,11 +18,11 @@ export type RandomizationParams = Record<string, any>;
 
 export function useRandomization(params: RandomizationParams) {
   const {
-    activeEffects, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
+    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
     kaleidoscopeSegments, pixelSize,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAuroraBandCount, setAuroraBandHeight,
-    setAuroraWaveSpeed, setBaseAIColors, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
+    setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setConicalSpiralTightness, setConicalSpiralTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
@@ -33,16 +33,18 @@ export function useRandomization(params: RandomizationParams) {
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
+    setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
-    setMarbleVeinFreq, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
+    setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setSpiralRotations, setSpiralThickness, setSpiralTightness,
-    setSpiralZoom, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
-    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteStrength,
+    setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setTrebleBeatSync, setTrebleMultiplier,
+    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
     setWaveRotation, setZoom, setZoomBeatEnabled, spiralTightness, twistAmount, vignetteStrength,
     zoom,

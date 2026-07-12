@@ -44,7 +44,7 @@ export interface ColorPin {
   id: string;
   x: number; // 0-1 normalized position
   y: number; // 0-1 normalized position
-  color: RGB;
+  color: ColorRGB;
   radius: number; // influence radius in pixels
 }
 
@@ -288,7 +288,9 @@ export function InteractiveGradient() {
     try {
       const s = localStorage.getItem('panelPos');
       if (s) return JSON.parse(s);
-    } catch {}
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to parse stored panelPos:', err);
+    }
     // First load, no saved position: center the panel horizontally on
     // narrow (mobile) viewports instead of defaulting to the top-left
     // corner. Desktop keeps the old null -> {top:16, left:16} fallback.
@@ -303,11 +305,16 @@ export function InteractiveGradient() {
   // tooltips (title attrs) never surface on touch devices, which is this
   // app's primary target, so without this the gestures are undiscoverable.
   const [showWavHint, setShowWavHint] = useState(() => {
-    try { return !localStorage.getItem('wavGestureHintSeen'); } catch { return true; }
+    try { return !localStorage.getItem('wavGestureHintSeen'); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to read wavGestureHintSeen:', err);
+      return true;
+    }
   });
   const dismissWavHint = () => {
     setShowWavHint(false);
-    try { localStorage.setItem('wavGestureHintSeen', '1'); } catch {}
+    try { localStorage.setItem('wavGestureHintSeen', '1'); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
+    }
   };
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
@@ -1231,6 +1238,50 @@ export function InteractiveGradient() {
     return GRADIENT_DISPLAY_NAMES[type] ?? type;
   }, []);
 
+  // Helper function to adjust color array to target length — hoisted above
+  // useRandomization() since feelingLucky's preference-blend branch calls it
+  // directly (it must exist in the params object passed to that hook, and
+  // that call happens at render time, before a definition further down the
+  // component body would be initialized).
+  const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
+    if (colors.length === targetLength) {
+      return colors;
+    }
+
+    if (colors.length > targetLength) {
+      // If we have more colors than needed, evenly sample them
+      const step = colors.length / targetLength;
+      return Array.from({ length: targetLength }, (_, i) => {
+        const index = Math.floor(i * step);
+        return colors[index];
+      });
+    }
+
+    // If we need more colors, interpolate between existing ones
+    const result: ColorRGB[] = [];
+    const step = (colors.length - 1) / (targetLength - 1);
+
+    for (let i = 0; i < targetLength; i++) {
+      const position = i * step;
+      const index = Math.floor(position);
+      const fraction = position - index;
+
+      if (index >= colors.length - 1) {
+        result.push(colors[colors.length - 1]);
+      } else {
+        const color1 = colors[index];
+        const color2 = colors[index + 1];
+        result.push({
+          r: Math.round(color1.r + (color2.r - color1.r) * fraction),
+          g: Math.round(color1.g + (color2.g - color1.g) * fraction),
+          b: Math.round(color1.b + (color2.b - color1.b) * fraction),
+        });
+      }
+    }
+
+    return result;
+  }, []);
+
   // WAV button / Shuffle randomization — extracted to useRandomization.ts
   // (splitting-plan step 2). Wires ~150 setters spanning nearly every
   // piece of gradient/effect state, since randomization touches everything
@@ -1239,11 +1290,11 @@ export function InteractiveGradient() {
     randomizeUncoveredParams, shuffleGradientType, randomizeEffects,
     feelingLucky, evolveWithFactor, shuffleAudiovisuals,
   } = useRandomization({
-    activeEffects, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
+    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
     kaleidoscopeSegments, pixelSize,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAuroraBandCount, setAuroraBandHeight,
-    setAuroraWaveSpeed, setBaseAIColors, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
+    setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setConicalSpiralTightness, setConicalSpiralTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
@@ -1254,16 +1305,18 @@ export function InteractiveGradient() {
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
+    setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
-    setMarbleVeinFreq, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
+    setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setSpiralRotations, setSpiralThickness, setSpiralTightness,
-    setSpiralZoom, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
-    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteStrength,
+    setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setTrebleBeatSync, setTrebleMultiplier,
+    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
     setWaveRotation, setZoom, setZoomBeatEnabled, spiralTightness, twistAmount, vignetteStrength,
     zoom,
@@ -1855,46 +1908,6 @@ export function InteractiveGradient() {
     setGradientColors(() => newColors);
     setTargetColors(() => newColors);
   }, [bassOnsetTick, paletteBeatEnabled, isAudioEnabled, isAudioReactive, gradientColors.length]);
-
-  // Helper function to adjust color array to target length
-  const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
-    if (colors.length === targetLength) {
-      return colors;
-    }
-    
-    if (colors.length > targetLength) {
-      // If we have more colors than needed, evenly sample them
-      const step = colors.length / targetLength;
-      return Array.from({ length: targetLength }, (_, i) => {
-        const index = Math.floor(i * step);
-        return colors[index];
-      });
-    }
-    
-    // If we need more colors, interpolate between existing ones
-    const result: ColorRGB[] = [];
-    const step = (colors.length - 1) / (targetLength - 1);
-    
-    for (let i = 0; i < targetLength; i++) {
-      const position = i * step;
-      const index = Math.floor(position);
-      const fraction = position - index;
-      
-      if (index >= colors.length - 1) {
-        result.push(colors[colors.length - 1]);
-      } else {
-        const color1 = colors[index];
-        const color2 = colors[index + 1];
-        result.push({
-          r: Math.round(color1.r + (color2.r - color1.r) * fraction),
-          g: Math.round(color1.g + (color2.g - color1.g) * fraction),
-          b: Math.round(color1.b + (color2.b - color1.b) * fraction),
-        });
-      }
-    }
-    
-    return result;
-  }, []);
 
   // Generate colors from AI prompt
   const generateAIColors = (prompt: string) => {
@@ -2791,7 +2804,7 @@ export function InteractiveGradient() {
     if (!currentRef) return;
     
     try {
-      if (isFullScreen) {
+      if (isFullscreen) {
         if (document.exitFullscreen) {
           document.exitFullscreen();
         } else if ((document as any).mozCancelFullScreen) {
@@ -2852,7 +2865,7 @@ export function InteractiveGradient() {
     const currentRef = containerRef.current;
     if (currentRef) {
       const handleFullScreenChange = () => {
-        setIsFullScreen(!!document.fullscreenElement);
+        setIsFullscreen(!!document.fullscreenElement);
           };
 
       currentRef.addEventListener('fullscreenchange', handleFullScreenChange);
@@ -3213,7 +3226,9 @@ export function InteractiveGradient() {
                   panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
                   panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
                 );
-                try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch {}
+                try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch (err) {
+                  if (import.meta.env.DEV) console.warn('Failed to persist panelPos:', err);
+                }
               }
               panelDragRef.current = null;
               window.removeEventListener('mousemove', onMove);

@@ -2218,12 +2218,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           break;
         }
 
-        case 'motion-blur':
-          ctx.filter = `blur(${blurAmount}px)`;
-          ctx.drawImage(canvas, 5, 0, displayWidth, displayHeight);
-          ctx.filter = 'none';
-          break;
-        
         case 'zoom-blur': {
           // True zoom blur: per-pixel multi-sample toward center (flying-toward-camera look)
           if (canvas.width === 0 || canvas.height === 0) break;

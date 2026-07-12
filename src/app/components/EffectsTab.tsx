@@ -20,9 +20,9 @@ export interface EffectsTabProps {
   // ASCII
   asciiSize: number; setAsciiSize: (v: number) => void;
   asciiChars: string; setAsciiChars: (v: string) => void;
-  asciiColor: string; setAsciiColor: (v: string) => void;
+  asciiColor: boolean; setAsciiColor: (v: boolean) => void;
   // Emoji
-  emojiChars: string; setEmojiChars: (v: string) => void;
+  emojiChars: string; setEmojiChars: React.Dispatch<React.SetStateAction<string>>;
   emojiSize: number; setEmojiSize: (v: number) => void;
   emojiRotateSpeed: number; setEmojiRotateSpeed: (v: number) => void;
   emojiSizeVariation: number; setEmojiSizeVariation: (v: number) => void;
@@ -202,6 +202,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'vhs',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave',label: 'Wave' },
+              { value: 'zoom-blur',       label: 'Zoom Blur' },
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
             const rows = Math.ceil(effectsList.length / 2);
             return (

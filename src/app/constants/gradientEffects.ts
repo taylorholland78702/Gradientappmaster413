@@ -12,7 +12,7 @@ export interface ColorRGB {
 
 export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field';
 
-export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'motion-blur' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo';
+export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid' | 'dither' | 'slit-scan' | 'oil-paint' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo';
 
 export const DEFAULT_COLORS: ColorRGB[] = [
   { r: 255, g: 100, b: 200 }, // Pink
@@ -87,7 +87,7 @@ export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'aurora', 
 // the WAV button) can pick it, and nothing without a button should be listed.
 // Exception: 'photo' has a button but is deliberately left out of this pool — it's a no-op
 // until the user uploads an image, so a random shuffle landing on it would just look broken.
-export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'ripple', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave'];
+export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'grain', 'grid', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'ripple', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'zoom-blur'];
 
 // Gradients that pulse/react visibly with audio
 export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble'];

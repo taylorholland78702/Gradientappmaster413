@@ -100,11 +100,15 @@ export function usePresets(params: UsePresetsParams) {
         const parsed = migrate(JSON.parse(local));
         setSavedPresets(parsed);
         safeSetLocalStorage('gradientPresets', JSON.stringify(parsed));
-      } catch {}
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn('Failed to parse stored gradientPresets:', err);
+      }
     }
     const localFolders = localStorage.getItem('gradientPresetFolders');
     if (localFolders) {
-      try { setFolderNames(JSON.parse(localFolders)); } catch {}
+      try { setFolderNames(JSON.parse(localFolders)); } catch (err) {
+        if (import.meta.env.DEV) console.warn('Failed to parse stored gradientPresetFolders:', err);
+      }
     }
 
     signInAnonymously(auth).then(async (cred) => {
