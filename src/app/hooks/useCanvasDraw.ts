@@ -45,7 +45,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     meshJitter, metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     moireAnimTime, moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
-    plasmaComplexity, plasmaZoomScale, polygon2Sides, polygonSides, posterizeLevels, prevBassForRippleRef,
+    plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
@@ -241,46 +241,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
 
 
-      case 'polygon':
-        // Create a polygon pattern - centered and sized to fit window on load
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        const polygonScale = 1 / zoom;
-        const polygonRadius = fitRadius; // Use fitRadius to ensure shape fits
-        const sides = Math.max(1, polygonSides); // Ensure at least 1 side
-        const anglePerSide = 360 / sides;
-        const sectorHalf = Math.PI / sides;
-        
-        const drawPolygon = () => {
-          for (let i = 0; i < sides; i++) {
-            const angle = (i * anglePerSide + gradientAngle) * DEG_TO_RAD;
-            const gradient = ctx.createLinearGradient(
-              centerX,
-              centerY,
-              centerX + Math.cos(angle) * polygonRadius * polygonScale,
-              centerY + Math.sin(angle) * polygonRadius * polygonScale
-            );
-            
-            addGradientStops(gradient, gradientColors);
-            
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            // Extend the arc to overlap slightly and prevent gaps
-            const angleStart = angle - sectorHalf - 0.01;
-            const angleEnd = angle + sectorHalf + 0.01;
-            ctx.arc(centerX, centerY, maxRadius, angleStart, angleEnd);
-            ctx.closePath();
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            ctx.restore();
-          }
-        };
-        
-        drawPolygon();
-        break;
-
       case 'polar-grid':
         // Create a polygon pattern with solid colors and concentric rings - centered and sized to fit window on load
         ctx.fillStyle = '#000000';
@@ -333,46 +293,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         
         drawPolygonSolid();
         break;
-
-      case 'star':
-        // Create a five-pointed star pattern
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        const starScale = 1 / zoom;
-        const starRadius = fitRadius; // Use fitRadius to ensure shape fits
-        
-        const drawStar = () => {
-          const points = 5;
-          for (let i = 0; i < points; i++) {
-            const angle = (i * 72 + gradientAngle) * DEG_TO_RAD;
-            const gradient = ctx.createLinearGradient(
-              centerX,
-              centerY,
-              centerX + Math.cos(angle) * starRadius * starScale,
-              centerY + Math.sin(angle) * starRadius * starScale
-            );
-            
-            addGradientStops(gradient, gradientColors);
-            
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            // Extend the arc to overlap slightly and prevent gaps
-            const angleStart = angle - Math.PI / 5 - 0.01;
-            const angleEnd = angle + Math.PI / 5 + 0.01;
-            ctx.arc(centerX, centerY, maxRadius, angleStart, angleEnd);
-            ctx.closePath();
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            ctx.restore();
-          }
-        };
-        
-        drawStar();
-        break;
-
-
 
       case 'windmill': {
         ctx.fillStyle = '#000000';
@@ -427,47 +347,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         ctx.restore(); // undo windmillZoom scale
         break;
       }
-
-      case 'starburst':
-        // Create a starburst/sunburst gradient - centered and sized to fit window on load
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-        const starburstScale = 1 / zoom;
-        const starburstRadius = fitRadius; // Use fitRadius to ensure shape fits
-        const rays = 12;
-        
-        for (let i = 0; i < rays; i++) {
-          const angle = (i * (360 / rays) + gradientAngle) * DEG_TO_RAD;
-          const gradient = ctx.createLinearGradient(
-            centerX,
-            centerY,
-            centerX + Math.cos(angle) * starburstRadius * starburstScale,
-            centerY + Math.sin(angle) * starburstRadius * starburstScale
-          );
-          
-          gradientColors.forEach((color, index) => {
-            const stop = gradientColors.length > 1 
-              ? index / (gradientColors.length - 1)
-              : 0;
-            if (isFinite(stop)) {
-              gradient.addColorStop(stop, `rgb(${color.r}, ${color.g}, ${color.b})`);
-            }
-          });
-          
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          // Extend the arc to overlap slightly and prevent gaps
-          const angleStart = angle - Math.PI / rays - 0.01;
-          const angleEnd = angle + Math.PI / rays + 0.01;
-          ctx.arc(centerX, centerY, maxRadius, angleStart, angleEnd);
-          ctx.closePath();
-          ctx.fillStyle = gradient;
-          ctx.fill();
-          ctx.restore();
-        }
-        break;
 
       case 'waves':
         // Create horizontal wave pattern with infinite width coverage
@@ -892,27 +771,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         break;
       }
       
-      case 'checkerboard':
-        // Checkerboard pattern with exact squares
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-        const checkSize = Math.max(10, Math.round(100 / zoom)); // Ensure integer size
-        const checksX = Math.ceil(displayWidth / checkSize);
-        const checksY = Math.ceil(displayHeight / checkSize);
-        
-        for (let row = 0; row < checksY; row++) {
-          for (let col = 0; col < checksX; col++) {
-            const checkIdx = (col + row) % gradientColors.length;
-            const checkColor = gradientColors[checkIdx];
-            if (!checkColor) continue;
-            ctx.fillStyle = `rgb(${checkColor.r}, ${checkColor.g}, ${checkColor.b})`;
-            // Draw exact squares
-            ctx.fillRect(col * checkSize, row * checkSize, checkSize, checkSize);
-          }
-        }
-        break;
-      
-
       case 'helix':
         // Conical gradient with spiral
         ctx.fillStyle = '#000000';
@@ -1714,7 +1572,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
 
     // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'checkerboard', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower', 'radar'];
+    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower', 'radar'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
         addGradientStops(gradient, gradientColors);

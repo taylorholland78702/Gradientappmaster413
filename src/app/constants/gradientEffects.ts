@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'polygon' | 'star' | 'starburst' | 'checkerboard' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field';
+export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'freeform' | 'shapes' | 'voronoi' | 'mesh' | 'iridescent' | 'radar' | 'flower' | 'linear' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -80,10 +80,9 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   freeform: 'Freeform', grid: 'Grid', iridescent: 'Iridescent',
   'lava-lamp': 'Lava Lamp', linear: 'Linear', marble: 'Marble',
   mesh: 'Mesh', noise: 'Noise', plasma: 'Plasma',
-  polygon: 'Polygon', 'polar-grid': 'Polar Grid',
+  'polar-grid': 'Polar Grid',
   radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
-  shapes: 'Shapes', windmill: 'Windmill', star: 'Star',
-  starburst: 'Starburst', checkerboard: 'Checkerboard',
+  shapes: 'Shapes', windmill: 'Windmill',
   voronoi: 'Voronoi', waves: 'Waves',
   metaballs: 'Metaballs', truchet: 'Truchet', moire: 'Moire', 'flow-field': 'Flow Field',
 };

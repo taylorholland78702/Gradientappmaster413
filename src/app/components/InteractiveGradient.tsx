@@ -372,7 +372,6 @@ export function InteractiveGradient() {
   const [gridColumns, setGridColumns] = useState(3);
   const [gridRotation, setGridRotation] = useState(0);
   const [gridRotationDirection, setGridRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
-  const [polygonSides, setPolygonSides] = useState(5);
   const [polygon2Sides, setPolygon2Sides] = useState(5); // For polar-grid gradient
   const [angleStartOffset, setAngleStartOffset] = useState(0);
   const [angleCenterX, setAngleCenterX] = useState(50);
@@ -1151,7 +1150,7 @@ export function InteractiveGradient() {
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount, moireOffset,
     moireScale, moireSpeed, noiseDirection, noiseOctaves, noiseScale, noiseType,
     noiseWarp, paletteBeatEnabled, photoBlendMode, photoImageRef, photoOpacity, pinchStrength,
-    pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides, polygonSides,
+    pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides,
     posterizeLevels, radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize,
     radialBurstSpread, radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleFrequency, scanLineSize,
     scanlineIntensity, scanlineSpacing, scanlineSpeed, sepiaIntensity, setActiveEffects, setAngleCenterX,
@@ -1177,7 +1176,7 @@ export function InteractiveGradient() {
     setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed,
     setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBeatEnabled,
     setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
-    setPlasmaZoomScale, setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
+    setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
@@ -1310,7 +1309,7 @@ export function InteractiveGradient() {
     setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
-    setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
+    setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
@@ -1592,7 +1591,6 @@ export function InteractiveGradient() {
       vhsGlitchIntensity,
       gridRows,
       gridColumns,
-      polygonSides,
       polygon2Sides,
       waveDistortionStrength,
       windmillTightness,
@@ -1637,7 +1635,7 @@ export function InteractiveGradient() {
     hexGridSize, lightLeakIntensity, linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
     scanLineSize, sepiaIntensity, solarizeThreshold,
     gridSides, duotoneColor3, duotoneThreeColor,
-    vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
+    vhsGlitchIntensity, gridRows, gridColumns, polygon2Sides, waveDistortionStrength,
     windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
     noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
@@ -1739,7 +1737,6 @@ export function InteractiveGradient() {
     setVhsGlitchIntensity(Math.random()); // 0-1
     setGridRows(Math.floor(Math.random() * 50) + 1); // 1-50
     setGridColumns(Math.floor(Math.random() * 50) + 1); // 1-50
-    setPolygonSides(Math.floor(Math.random() * 10) + 1); // 1-10
     setPolygon2Sides(Math.floor(Math.random() * 10) + 1); // 1-10
     setWaveDistortionStrength(Math.floor(Math.random() * 80) + 10); // 10-89
 
@@ -2342,7 +2339,7 @@ export function InteractiveGradient() {
     meshJitter, metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     moireAnimTime, moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
-    plasmaComplexity, plasmaZoomScale, polygon2Sides, polygonSides, posterizeLevels, prevBassForRippleRef,
+    plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
@@ -3431,8 +3428,6 @@ export function InteractiveGradient() {
             setGridRows={setGridRows}
             gridColumns={gridColumns}
             setGridColumns={setGridColumns}
-            polygonSides={polygonSides}
-            setPolygonSides={setPolygonSides}
             polygon2Sides={polygon2Sides}
             setPolygon2Sides={setPolygon2Sides}
             concentricRingCount={concentricRingCount}

@@ -17,8 +17,7 @@ export interface GradientsTabProps {
   gridRows: number; setGridRows: (v: number) => void;
   gridColumns: number; setGridColumns: (v: number) => void;
 
-  // Polygon / Polar Grid
-  polygonSides: number; setPolygonSides: (v: number) => void;
+  // Polar Grid
   polygon2Sides: number; setPolygon2Sides: (v: number) => void;
   concentricRingCount: number; setConcentricRingCount: (v: number) => void;
 
@@ -136,7 +135,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     gradientType, setGradientType, getGradientDisplayName,
     colorPins, setColorPins, selectedPinId, setSelectedPinId,
     gridRows, setGridRows, gridColumns, setGridColumns,
-    polygonSides, setPolygonSides, polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
+    polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
@@ -338,33 +337,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Polygon Controls */}
-        {gradientType === 'polygon' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Sides:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={polygonSides}
-                  onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={polygonSides}
-                  onChange={(e) => setPolygonSides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
         {/* Polar Grid Controls */}
         {gradientType === 'polar-grid' && (
           <div className="w-full p-2 bg-black/25 rounded-lg">

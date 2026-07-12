@@ -38,7 +38,7 @@ export function useRandomization(params: RandomizationParams) {
     setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
-    setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
+    setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
@@ -404,7 +404,6 @@ export function useRandomization(params: RandomizationParams) {
     setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
     setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
-    setPolygonSides(Math.floor(Math.random() * 8) + 3);               // 3–10
     setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
     setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
 

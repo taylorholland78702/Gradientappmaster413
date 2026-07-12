@@ -34,7 +34,7 @@ export function useSnapshot(params: SnapshotParams) {
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount, moireOffset,
     moireScale, moireSpeed, noiseDirection, noiseOctaves, noiseScale, noiseType,
     noiseWarp, paletteBeatEnabled, photoBlendMode, photoImageRef, photoOpacity, pinchStrength,
-    pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides, polygonSides,
+    pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides,
     posterizeLevels, radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize,
     radialBurstSpread, radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleFrequency, scanLineSize,
     scanlineIntensity, scanlineSpacing, scanlineSpeed, sepiaIntensity, setActiveEffects, setAngleCenterX,
@@ -60,7 +60,7 @@ export function useSnapshot(params: SnapshotParams) {
     setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed,
     setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBeatEnabled,
     setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
-    setPlasmaZoomScale, setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
+    setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
@@ -134,7 +134,6 @@ export function useSnapshot(params: SnapshotParams) {
       duotoneColor3,
       duotoneThreeColor,
       vhsGlitchIntensity,
-      polygonSides,
       polygon2Sides,
       waveDistortionStrength,
       windmillTightness,
@@ -226,7 +225,7 @@ export function useSnapshot(params: SnapshotParams) {
       linesThickness, liquifyStrength, pinchStrength,
       scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
       duotoneColor3, duotoneThreeColor, vhsGlitchIntensity,
-      polygonSides, polygon2Sides, waveDistortionStrength,
+      polygon2Sides, waveDistortionStrength,
       windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
       waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
       plasmaComplexity, radialBurstCount, radialBurstSpread,
@@ -341,7 +340,6 @@ export function useSnapshot(params: SnapshotParams) {
     setVhsGlitchIntensity(snapshot.vhsGlitchIntensity);
     setGridRows(snapshot.gridRows);
     setGridColumns(snapshot.gridColumns);
-    setPolygonSides(snapshot.polygonSides);
     setPolygon2Sides(snapshot.polygon2Sides);
     setWaveDistortionStrength(snapshot.waveDistortionStrength);
     setWindmillTightness(snapshot.windmillTightness);
