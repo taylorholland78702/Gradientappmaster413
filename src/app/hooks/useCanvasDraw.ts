@@ -29,7 +29,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
-    concentricRingWidth, conicalSpiralTightness, conicalSpiralTurns, ditherLevels, ditherType, drawParams,
+    concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
@@ -49,7 +49,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
-    slitScanIntensity, spiralRotations, spiralThickness, spiralTightness, spiralZoom, triangleSize,
+    slitScanIntensity, windmillRotations, windmillThickness, windmillTightness, windmillZoom, triangleSize,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
     voronoiAnimTime, voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
     waveFrequency, waveNumberRef, waveRotationRef, waveScale, zoom, zoomRef,
@@ -381,7 +381,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         const spiralAudioActive = isAudioEnabled && isAudioReactive;
 
         // 1. Bass pulses blade thickness
-        const audioThickness = spiralAudioActive ? spiralThickness + audioSubBassLevel * spiralThickness * 1.2 : spiralThickness;
+        const audioThickness = spiralAudioActive ? windmillThickness + audioSubBassLevel * windmillThickness * 1.2 : windmillThickness;
         // 2. Mids boost rotation speed (angle offset accumulates via gradientAngle state externally; here we add a per-frame visual offset)
         const audioAngleOffset = spiralAudioActive ? audioMidsLevel * 120 : 0;
         // 4. Treble cycles color palette position
@@ -390,13 +390,13 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         const zoomDampening = 0.3;
         const dampenedZoom = 1 + (zoom - 1) * zoomDampening;
         const spiralScale = 1 / dampenedZoom;
-        const spiralSegments = 60 * spiralTightness / 5;
-        const effectiveSpiralRotations = spiralRotations * spiralScale;
+        const spiralSegments = 60 * windmillTightness / 5;
+        const effectiveSpiralRotations = windmillRotations * spiralScale;
 
-        // spiralZoom scales the whole pattern — higher = zoomed in (fewer bands visible)
+        // windmillZoom scales the whole pattern — higher = zoomed in (fewer bands visible)
         ctx.save();
         ctx.translate(centerX, centerY);
-        ctx.scale(spiralZoom, spiralZoom);
+        ctx.scale(windmillZoom, windmillZoom);
         ctx.translate(-centerX, -centerY);
 
         for (let i = 0; i < spiralSegments; i++) {
@@ -424,7 +424,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           ctx.fillRect(-maxRadius, -audioThickness / 2, maxRadius * 2, audioThickness);
           ctx.restore();
         }
-        ctx.restore(); // undo spiralZoom scale
+        ctx.restore(); // undo windmillZoom scale
         break;
       }
 
@@ -937,7 +937,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
             const dy = sy - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const spiralAngle = Math.atan2(dy, dx);
-            const rawAngle = spiralAngle + (dist * (conicalSpiralTightness + audioConicalTightness) * 0.01) * (conicalSpiralTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD;
+            const rawAngle = spiralAngle + (dist * (helixTightness + audioConicalTightness) * 0.01) * (helixTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD;
             const finalAngle = ((rawAngle % TWO_PI) + TWO_PI) % TWO_PI;
             const normalizedAngle = finalAngle / TWO_PI;
 
@@ -2421,7 +2421,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           break;
         }
 
-        case 'grid': {
+        case 'grid-effect': {
           if (canvas.width === 0 || canvas.height === 0) break;
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = displayWidth;

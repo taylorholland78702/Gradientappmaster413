@@ -77,9 +77,9 @@ export interface GradientsTabProps {
   shapesCount: number; setShapesCount: (v: number) => void;
 
   // Windmill (spiral)
-  spiralTightness: number; setSpiralTightness: (v: number) => void;
-  spiralRotations: number; setSpiralRotations: (v: number) => void;
-  spiralThickness: number; setSpiralThickness: (v: number) => void;
+  windmillTightness: number; setWindmillTightness: (v: number) => void;
+  windmillRotations: number; setWindmillRotations: (v: number) => void;
+  windmillThickness: number; setWindmillThickness: (v: number) => void;
 
   // Waves
   waveAmplitude: number; setWaveAmplitude: (v: number) => void;
@@ -127,8 +127,8 @@ export interface GradientsTabProps {
   flowerSpread: number; setFlowerSpread: (v: number) => void;
 
   // Helix (conical spiral)
-  conicalSpiralTurns: number; setConicalSpiralTurns: (v: number) => void;
-  conicalSpiralTightness: number; setConicalSpiralTightness: (v: number) => void;
+  helixTurns: number; setHelixTurns: (v: number) => void;
+  helixTightness: number; setHelixTightness: (v: number) => void;
 }
 
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
@@ -148,7 +148,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
-    spiralTightness, setSpiralTightness, spiralRotations, setSpiralRotations, spiralThickness, setSpiralThickness,
+    windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency,
     waveNumber, setWaveNumber, waveNumberRef, waveRotation, setWaveRotation, waveRotationRef, drawParamsDirtyRef,
     meshGridSize, setMeshGridSize, meshJitter, setMeshJitter,
@@ -159,7 +159,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     fadeDirection, setFadeDirection,
     radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth,
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
-    conicalSpiralTurns, setConicalSpiralTurns, conicalSpiralTightness, setConicalSpiralTightness,
+    helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
   return (
@@ -753,16 +753,16 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   type="range"
                   min="1"
                   max="20"
-                  value={spiralTightness}
-                  onChange={(e) => setSpiralTightness(Number(e.target.value))}
+                  value={windmillTightness}
+                  onChange={(e) => setWindmillTightness(Number(e.target.value))}
                   className="flex-1"
                 />
                 <input
                   type="number"
                   min="1"
                   max="20"
-                  value={spiralTightness}
-                  onChange={(e) => setSpiralTightness(Number(e.target.value))}
+                  value={windmillTightness}
+                  onChange={(e) => setWindmillTightness(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
@@ -774,16 +774,16 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   type="range"
                   min="1"
                   max="10"
-                  value={spiralRotations}
-                  onChange={(e) => setSpiralRotations(Number(e.target.value))}
+                  value={windmillRotations}
+                  onChange={(e) => setWindmillRotations(Number(e.target.value))}
                   className="flex-1"
                 />
                 <input
                   type="number"
                   min="1"
                   max="10"
-                  value={spiralRotations}
-                  onChange={(e) => setSpiralRotations(Number(e.target.value))}
+                  value={windmillRotations}
+                  onChange={(e) => setWindmillRotations(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
@@ -795,16 +795,16 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   type="range"
                   min="5"
                   max="100"
-                  value={spiralThickness}
-                  onChange={(e) => setSpiralThickness(Number(e.target.value))}
+                  value={windmillThickness}
+                  onChange={(e) => setWindmillThickness(Number(e.target.value))}
                   className="flex-1"
                 />
                 <input
                   type="number"
                   min="1"
                   max="100"
-                  value={spiralThickness}
-                  onChange={(e) => setSpiralThickness(Number(e.target.value))}
+                  value={windmillThickness}
+                  onChange={(e) => setWindmillThickness(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
@@ -1328,16 +1328,16 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   type="range"
                   min="1"
                   max="20"
-                  value={conicalSpiralTurns}
-                  onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
+                  value={helixTurns}
+                  onChange={(e) => setHelixTurns(Number(e.target.value))}
                   className="flex-1"
                 />
                 <input
                   type="number"
                   min="1"
                   max="20"
-                  value={conicalSpiralTurns}
-                  onChange={(e) => setConicalSpiralTurns(Number(e.target.value))}
+                  value={helixTurns}
+                  onChange={(e) => setHelixTurns(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
@@ -1350,8 +1350,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   min="0.1"
                   max="2"
                   step="0.1"
-                  value={conicalSpiralTightness}
-                  onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
+                  value={helixTightness}
+                  onChange={(e) => setHelixTightness(Number(e.target.value))}
                   className="flex-1"
                 />
                       <input
@@ -1359,8 +1359,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                         min="0.1"
                         max="2"
                         step="0.1"
-                        value={conicalSpiralTightness}
-                        onChange={(e) => setConicalSpiralTightness(Number(e.target.value))}
+                        value={helixTightness}
+                        onChange={(e) => setHelixTightness(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
               </div>

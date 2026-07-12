@@ -25,7 +25,7 @@ export function useRandomization(params: RandomizationParams) {
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
-    setConicalSpiralTightness, setConicalSpiralTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
+    setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
@@ -41,12 +41,12 @@ export function useRandomization(params: RandomizationParams) {
     setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
-    setShapesSides, setShowRatingUI, setSolarizeThreshold, setSpiralRotations, setSpiralThickness, setSpiralTightness,
-    setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
+    setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
-    setWaveRotation, setZoom, setZoomBeatEnabled, spiralTightness, twistAmount, vignetteStrength,
+    setWaveRotation, setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
   } = params;
 
@@ -280,7 +280,7 @@ export function useRandomization(params: RandomizationParams) {
       if (baseResult.data.twistAmount) setTwistAmount(blendValue(baseResult.data.twistAmount, 0, 5));
       if (baseResult.data.pixelSize) setPixelSize(Math.round(blendValue(baseResult.data.pixelSize, 5, 54)));
       if (baseResult.data.vignetteStrength) setVignetteStrength(blendValue(baseResult.data.vignetteStrength, 0, 1));
-      if (baseResult.data.spiralTightness) setSpiralTightness(Math.round(blendValue(baseResult.data.spiralTightness, 1, 20)));
+      if (baseResult.data.windmillTightness) setWindmillTightness(Math.round(blendValue(baseResult.data.windmillTightness, 1, 20)));
       if (baseResult.data.plasmaSpeed) setPlasmaSpeed(blendValue(baseResult.data.plasmaSpeed, 0.25, 5));
       
       // Randomize remaining parameters normally
@@ -409,10 +409,10 @@ export function useRandomization(params: RandomizationParams) {
     setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
 
     // Randomize gradient-specific controls
-    setSpiralTightness(Math.floor(Math.random() * 19) + 1); // 1-20
-    setSpiralRotations(Math.floor(Math.random() * 9) + 1); // 1-10
-    setSpiralThickness(Math.floor(Math.random() * 95) + 5); // 5-100
-    setSpiralZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
+    setWindmillTightness(Math.floor(Math.random() * 19) + 1); // 1-20
+    setWindmillRotations(Math.floor(Math.random() * 9) + 1); // 1-10
+    setWindmillThickness(Math.floor(Math.random() * 95) + 5); // 5-100
+    setWindmillZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
     setShapesSides(Math.floor(Math.random() * 8) + 3);                // 3–10
     setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
     setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
@@ -431,8 +431,8 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
     setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
     setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
-    setConicalSpiralTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
-    setConicalSpiralTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
+    setHelixTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
+    setHelixTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
     setGridRotation(Math.floor(Math.random() * 360));
     setAngleStartOffset(Math.floor(Math.random() * 360));
     setAngleCenterX(50);
@@ -548,7 +548,7 @@ export function useRandomization(params: RandomizationParams) {
     // same 7 params regardless of the current gradient type; now gated to
     // only nudge the params the active type actually uses, and extended to
     // cover the 10 types that previously had none here at all.
-    if (gradientType === 'windmill') setSpiralTightness(Math.round(rng(1, 20)));
+    if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
     else if (gradientType === 'waves') { setWaveAmplitude(Math.round(rng(10, 80))); setWaveFrequency(Math.round(rng(1, 8))); }
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));

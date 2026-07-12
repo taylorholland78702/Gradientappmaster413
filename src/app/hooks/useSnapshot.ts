@@ -18,7 +18,7 @@ export function useSnapshot(params: SnapshotParams) {
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
     blurType, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
-    conicalSpiralTightness, conicalSpiralTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
+    helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -43,7 +43,7 @@ export function useSnapshot(params: SnapshotParams) {
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
-    setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setConicalSpiralTightness, setConicalSpiralTurns,
+    setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -64,14 +64,14 @@ export function useSnapshot(params: SnapshotParams) {
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
-    setSpiralRotations, setSpiralThickness, setSpiralTightness, setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier,
+    setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency,
     setWaveNumber, setWaveRotation, setWaveScale, setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, spiralRotations,
-    spiralThickness, spiralTightness, spiralZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
+    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, windmillRotations,
+    windmillThickness, windmillTightness, windmillZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, truchetSize, truchetThickness,
     truchetVariation, twistAmount, vhsGlitchIntensity, vignetteSoftness, vignetteStrength, voronoiCellCount,
@@ -137,10 +137,10 @@ export function useSnapshot(params: SnapshotParams) {
       polygonSides,
       polygon2Sides,
       waveDistortionStrength,
-      spiralTightness,
-      spiralRotations,
-      spiralThickness,
-      spiralZoom,
+      windmillTightness,
+      windmillRotations,
+      windmillThickness,
+      windmillZoom,
       shapesSides,
       shapesCount,
       concentricRingWidth,
@@ -158,8 +158,8 @@ export function useSnapshot(params: SnapshotParams) {
       radialBurstCount,
       radialBurstSpread,
       radialBurstSize,
-      conicalSpiralTurns,
-      conicalSpiralTightness,
+      helixTurns,
+      helixTightness,
             gridRotation,
       angleStartOffset,
       angleCenterX,
@@ -227,10 +227,10 @@ export function useSnapshot(params: SnapshotParams) {
       scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
       duotoneColor3, duotoneThreeColor, vhsGlitchIntensity,
       polygonSides, polygon2Sides, waveDistortionStrength,
-      spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
+      windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
       waveAmplitude, waveFrequency, waveNumber, waveRotation, meshGridSize, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
       plasmaComplexity, radialBurstCount, radialBurstSpread,
-      conicalSpiralTurns, conicalSpiralTightness, gridRotation,
+      helixTurns, helixTightness, gridRotation,
       angleStartOffset, angleCenterX, angleCenterY,
       iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt,
@@ -344,10 +344,10 @@ export function useSnapshot(params: SnapshotParams) {
     setPolygonSides(snapshot.polygonSides);
     setPolygon2Sides(snapshot.polygon2Sides);
     setWaveDistortionStrength(snapshot.waveDistortionStrength);
-    setSpiralTightness(snapshot.spiralTightness);
-    setSpiralRotations(snapshot.spiralRotations);
-    setSpiralThickness(snapshot.spiralThickness);
-    setSpiralZoom(snapshot.spiralZoom);
+    setWindmillTightness(snapshot.windmillTightness);
+    setWindmillRotations(snapshot.windmillRotations);
+    setWindmillThickness(snapshot.windmillThickness);
+    setWindmillZoom(snapshot.windmillZoom);
     setShapesSides(snapshot.shapesSides);
     setShapesCount(snapshot.shapesCount);
     setConcentricRingWidth(snapshot.concentricRingWidth);
@@ -364,8 +364,8 @@ export function useSnapshot(params: SnapshotParams) {
     setPlasmaComplexity(snapshot.plasmaComplexity);
     setRadialBurstCount(snapshot.radialBurstCount);
     setRadialBurstSpread(snapshot.radialBurstSpread);
-    setConicalSpiralTurns(snapshot.conicalSpiralTurns);
-    setConicalSpiralTightness(snapshot.conicalSpiralTightness);
+    setHelixTurns(snapshot.helixTurns);
+    setHelixTightness(snapshot.helixTightness);
     setGridRotation(snapshot.gridRotation);
     setAngleStartOffset(snapshot.angleStartOffset);
     setAngleCenterX(snapshot.angleCenterX);

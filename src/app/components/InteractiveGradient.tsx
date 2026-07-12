@@ -377,10 +377,10 @@ export function InteractiveGradient() {
   const [angleStartOffset, setAngleStartOffset] = useState(0);
   const [angleCenterX, setAngleCenterX] = useState(50);
   const [angleCenterY, setAngleCenterY] = useState(50);
-  const [spiralTightness, setSpiralTightness] = useState(11);
-  const [spiralRotations, setSpiralRotations] = useState(3);
-  const [spiralThickness, setSpiralThickness] = useState(49);
-  const [spiralZoom, setSpiralZoom] = useState(3.5);
+  const [windmillTightness, setWindmillTightness] = useState(11);
+  const [windmillRotations, setWindmillRotations] = useState(3);
+  const [windmillThickness, setWindmillThickness] = useState(49);
+  const [windmillZoom, setWindmillZoom] = useState(3.5);
   const [waveScale, setWaveScale] = useState(1.0);
   const [radialSizeScale, setRadialSizeScale] = useState(1.0);
   const [shapesSides, setShapesSides] = useState(4);
@@ -441,8 +441,8 @@ export function InteractiveGradient() {
   const [voronoiDistortion, setVoronoiDistortion] = useState(100);
   const [voronoiMorphSpeed, setVoronoiMorphSpeed] = useState(1);
   const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
-  const [conicalSpiralTurns, setConicalSpiralTurns] = useState(3);
-  const [conicalSpiralTightness, setConicalSpiralTightness] = useState(2);
+  const [helixTurns, setHelixTurns] = useState(3);
+  const [helixTightness, setHelixTightness] = useState(2);
   const [iridescentAngle, setIridescentAngle] = useState(45);
   const [iridescentIntensity, setIridescentIntensity] = useState(0.8);
   const [iridescentScale, setIridescentScale] = useState(2);
@@ -966,7 +966,7 @@ export function InteractiveGradient() {
       }
 
       // Grid rotation animation
-      if (activeEffectsRef.current.includes('grid') && gridRotationDirectionRef.current !== 'none') {
+      if (activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
         setGridRotation(prev => {
           const increment = gridRotationDirectionRef.current === 'clockwise' ? 2 : -2;
           return (prev + increment) % 360;
@@ -1135,7 +1135,7 @@ export function InteractiveGradient() {
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
     blurType, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
-    conicalSpiralTightness, conicalSpiralTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
+    helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -1160,7 +1160,7 @@ export function InteractiveGradient() {
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
-    setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setConicalSpiralTightness, setConicalSpiralTurns,
+    setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -1181,14 +1181,14 @@ export function InteractiveGradient() {
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
-    setSpiralRotations, setSpiralThickness, setSpiralTightness, setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier,
+    setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency,
     setWaveNumber, setWaveRotation, setWaveScale, setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, spiralRotations,
-    spiralThickness, spiralTightness, spiralZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
+    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, windmillRotations,
+    windmillThickness, windmillTightness, windmillZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, truchetSize, truchetThickness,
     truchetVariation, twistAmount, vhsGlitchIntensity, vignetteSoftness, vignetteStrength, voronoiCellCount,
@@ -1297,7 +1297,7 @@ export function InteractiveGradient() {
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
-    setConicalSpiralTightness, setConicalSpiralTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
+    setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
@@ -1313,12 +1313,12 @@ export function InteractiveGradient() {
     setPolygon2Sides, setPolygonSides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
-    setShapesSides, setShowRatingUI, setSolarizeThreshold, setSpiralRotations, setSpiralThickness, setSpiralTightness,
-    setSpiralZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
+    setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
-    setWaveRotation, setZoom, setZoomBeatEnabled, spiralTightness, twistAmount, vignetteStrength,
+    setWaveRotation, setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
   });
 
@@ -1535,12 +1535,6 @@ export function InteractiveGradient() {
     setAIPrompt('');
   }, []);
 
-  // Memoize gradient and effect type arrays (constant values)
-  const GRADIENT_TYPES: GradientType[] = useMemo(() => 
-    ['linear', 'radial', 'angle', 'windmill', 'starburst', 'polygon', 'waves', 'circles', 'fade', 'mesh', 'helix', 'radial-burst', 'voronoi', 'noise', 'plasma', 'grid', 'checkerboard', 'tunnel'], 
-    []
-  );
-  
   // ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS now live in
   // constants/gradientEffects.ts.
 
@@ -1601,10 +1595,10 @@ export function InteractiveGradient() {
       polygonSides,
       polygon2Sides,
       waveDistortionStrength,
-      spiralTightness,
-      spiralRotations,
-      spiralThickness,
-      spiralZoom,
+      windmillTightness,
+      windmillRotations,
+      windmillThickness,
+      windmillZoom,
       shapesSides,
       shapesCount,
       concentricRingWidth,
@@ -1624,8 +1618,8 @@ export function InteractiveGradient() {
       radialBurstSize,
       voronoiCellCount,
       voronoiDistortion,
-      conicalSpiralTurns,
-      conicalSpiralTightness,
+      helixTurns,
+      helixTightness,
             gridRotation,
       angleStartOffset,
       angleCenterX,
@@ -1644,10 +1638,10 @@ export function InteractiveGradient() {
     scanLineSize, sepiaIntensity, solarizeThreshold,
     gridSides, duotoneColor3, duotoneThreeColor,
     vhsGlitchIntensity, gridRows, gridColumns, polygonSides, polygon2Sides, waveDistortionStrength,
-    spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount,
+    windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
     noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
-    voronoiCellCount, voronoiDistortion, conicalSpiralTurns, conicalSpiralTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
+    voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
     isAudioEnabled, isAudioReactive,
   ]);
@@ -2284,11 +2278,11 @@ export function InteractiveGradient() {
     waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold,
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor,
     digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize,
-    gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations,
-    spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
+    gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations,
+    windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
     waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
     plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
-    voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness,
+    voronoiAnimTime, helixTurns, helixTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
     flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime,
     auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight,
@@ -2299,7 +2293,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, spiralTightness, spiralRotations, spiralThickness, spiralZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, conicalSpiralTurns, conicalSpiralTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, photoVersion, photoBlendMode, photoOpacity]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2332,7 +2326,7 @@ export function InteractiveGradient() {
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
-    concentricRingWidth, conicalSpiralTightness, conicalSpiralTurns, ditherLevels, ditherType, drawParams,
+    concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
@@ -2352,7 +2346,7 @@ export function InteractiveGradient() {
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
-    slitScanIntensity, spiralRotations, spiralThickness, spiralTightness, spiralZoom, triangleSize,
+    slitScanIntensity, windmillRotations, windmillThickness, windmillTightness, windmillZoom, triangleSize,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
     voronoiAnimTime, voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
     waveFrequency, waveNumberRef, waveRotationRef, waveScale, zoom, zoomRef,
@@ -3153,8 +3147,8 @@ export function InteractiveGradient() {
             onPointerUp={wavGesture.onPointerUp}
             onPointerLeave={wavGesture.onPointerLeave}
             className="relative overflow-hidden w-[44px] h-[44px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
-            title="Tap: evolve (W) · Hold/Double-tap: new mood"
-            aria-label="Shuffle: tap to nudge, hold or double-tap to remix"
+            title="Tap: Nudge (W) · Hold/Double-tap: Remix"
+            aria-label="Tap to nudge the current look, hold or double-tap to remix"
           >
             <span
               aria-hidden="true"
@@ -3241,8 +3235,8 @@ export function InteractiveGradient() {
           onPointerUp={wavGesture.onPointerUp}
           onPointerLeave={wavGesture.onPointerLeave}
           className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
-          title="Tap: evolve · Hold or double-tap: new mood"
-          aria-label="Shuffle: tap to nudge the current look, hold or double-tap for a full remix"
+          title="Tap: Nudge · Hold or double-tap: Remix"
+          aria-label="Tap to nudge the current look, hold or double-tap to remix"
         >
           <span className="relative w-full block wav-glow-wrap">
             <span
@@ -3378,7 +3372,7 @@ export function InteractiveGradient() {
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="FX (F)" aria-label="Effects tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" className={`flex-1 min-h-[44px] flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
@@ -3507,12 +3501,12 @@ export function InteractiveGradient() {
             setShapesSides={setShapesSides}
             shapesCount={shapesCount}
             setShapesCount={setShapesCount}
-            spiralTightness={spiralTightness}
-            setSpiralTightness={setSpiralTightness}
-            spiralRotations={spiralRotations}
-            setSpiralRotations={setSpiralRotations}
-            spiralThickness={spiralThickness}
-            setSpiralThickness={setSpiralThickness}
+            windmillTightness={windmillTightness}
+            setWindmillTightness={setWindmillTightness}
+            windmillRotations={windmillRotations}
+            setWindmillRotations={setWindmillRotations}
+            windmillThickness={windmillThickness}
+            setWindmillThickness={setWindmillThickness}
             waveAmplitude={waveAmplitude}
             setWaveAmplitude={setWaveAmplitude}
             waveFrequency={waveFrequency}
@@ -3564,10 +3558,10 @@ export function InteractiveGradient() {
             setFlowerScale={setFlowerScale}
             flowerSpread={flowerSpread}
             setFlowerSpread={setFlowerSpread}
-            conicalSpiralTurns={conicalSpiralTurns}
-            setConicalSpiralTurns={setConicalSpiralTurns}
-            conicalSpiralTightness={conicalSpiralTightness}
-            setConicalSpiralTightness={setConicalSpiralTightness}
+            helixTurns={helixTurns}
+            setHelixTurns={setHelixTurns}
+            helixTightness={helixTightness}
+            setHelixTightness={setHelixTightness}
           />
         )}
 
@@ -3828,9 +3822,9 @@ export function InteractiveGradient() {
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">The wāv header</p>
-                <p className="flex items-center justify-between gap-2">Tap the wordmark to alter the artwork. Hold for a full beat or double-click, to completely remix the artwork.</p>
-                <p className="flex items-center justify-between gap-2"><span>Alter (tap-equivalent)</span><Kbd label="W" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Full remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
+                <p className="flex items-center justify-between gap-2">Tap the wordmark to nudge the artwork. Hold for a full beat or double-click to fully remix it.</p>
+                <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
               </div>
 
@@ -3854,7 +3848,7 @@ export function InteractiveGradient() {
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Tabs</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> FX — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>

@@ -185,7 +185,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'feedback',       label: 'Feedback' },
               { value: 'fisheye',        label: 'Fisheye' },
               { value: 'grain',     label: 'Grain' },
-              { value: 'grid',           label: 'Grid' },
+              { value: 'grid-effect',    label: 'Grid' },
               { value: 'halftone',       label: 'Halftone' },
               { value: 'invert',         label: 'Invert' },
               { value: 'kaleidoscope',   label: 'Kaleido' },
@@ -967,8 +967,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   )}
                 </EffectSection>
               )}
-              {activeEffects.includes('grid') && (
-                <EffectSection id="grid" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid')} onToggle={toggleEffectExpanded}>
+              {activeEffects.includes('grid-effect') && (
+                <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid-effect')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Sides:</label>
                     <div className="flex items-center gap-1 flex-1">
