@@ -24,7 +24,8 @@ export type CanvasDrawParams = Record<string, any>;
 export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
-    asciiColor, asciiSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime,
+    asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
@@ -47,7 +48,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
-    radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
+    radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
+    resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
     slitScanIntensity, windmillRotations, windmillThickness, windmillTightness, windmillZoom, triangleSize,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
@@ -1446,6 +1448,142 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         ctx.drawImage(flowBufferRef.current, 0, 0);
+        break;
+      }
+
+      case 'attractor': {
+        // De Jong strange attractor: a handful of independent walkers each
+        // iterate the same 2D map many times per frame, scattering points
+        // into a persistent fading-trail buffer (same buffer/fade mechanic
+        // as Flow Field above). The map's a/b/c/d parameters drift slowly
+        // via attractorAnimTime so the lace pattern keeps morphing rather
+        // than settling into one static shape.
+        if (canvas.width === 0 || canvas.height === 0) break;
+        if (!attractorBufferRef.current || attractorBufferRef.current.width !== displayWidth || attractorBufferRef.current.height !== displayHeight) {
+          attractorBufferRef.current = document.createElement('canvas');
+          attractorBufferRef.current.width = displayWidth;
+          attractorBufferRef.current.height = displayHeight;
+          attractorPointsRef.current = [];
+        }
+        const abCtx = attractorBufferRef.current.getContext('2d')!;
+        const targetPoints = Math.max(1, Math.min(20, Math.round(attractorPointCount)));
+        const points = attractorPointsRef.current;
+        while (points.length < targetPoints) {
+          points.push({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 });
+        }
+        if (points.length > targetPoints) points.length = targetPoints;
+
+        const at = attractorAnimTime;
+        const pa = 1.4 + Math.sin(at * 0.13) * 0.9;
+        const pb = -2.3 + Math.cos(at * 0.09) * 0.9;
+        const pc = 2.4 + Math.sin(at * 0.07) * 0.9;
+        const pd = -2.1 + Math.cos(at * 0.11) * 0.9;
+
+        abCtx.fillStyle = 'rgba(0,0,0,0.04)';
+        abCtx.fillRect(0, 0, displayWidth, displayHeight);
+
+        const attractorCenterX = displayWidth / 2;
+        const attractorCenterY = displayHeight / 2;
+        const scaleFactor = (Math.min(displayWidth, displayHeight) / 4.2) * attractorScale;
+        const stepsPerFrame = 150;
+        for (let i = 0; i < points.length; i++) {
+          const p = points[i];
+          const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
+          abCtx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
+          let px = p.x, py = p.y;
+          for (let s = 0; s < stepsPerFrame; s++) {
+            const nx = Math.sin(pa * py) - Math.cos(pb * px);
+            const ny = Math.sin(pc * px) - Math.cos(pd * py);
+            px = nx; py = ny;
+            abCtx.fillRect(attractorCenterX + px * scaleFactor, attractorCenterY + py * scaleFactor, 1, 1);
+          }
+          p.x = px; p.y = py;
+        }
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        ctx.drawImage(attractorBufferRef.current, 0, 0);
+        break;
+      }
+
+      case 'reaction-diffusion': {
+        // Gray-Scott reaction-diffusion simulation on a fixed coarse grid,
+        // independent of canvas resolution — running the simulation at full
+        // display resolution would be far too slow for 60fps. Feed/Kill are
+        // the two classic Gray-Scott parameters that determine the pattern
+        // family (spots vs stripes vs coral/maze), matching how Marble
+        // exposes physically-meaningful sliders rather than abstract ones.
+        if (canvas.width === 0 || canvas.height === 0) break;
+        const RD_W = 220, RD_H = 140;
+        if (!reactionDiffusionGridRef.current) {
+          const u = new Float32Array(RD_W * RD_H).fill(1);
+          const v = new Float32Array(RD_W * RD_H).fill(0);
+          for (let b = 0; b < 6; b++) {
+            const bcx = Math.floor(Math.random() * RD_W);
+            const bcy = Math.floor(Math.random() * RD_H);
+            for (let dy = -3; dy <= 3; dy++) {
+              for (let dx = -3; dx <= 3; dx++) {
+                if (dx * dx + dy * dy > 9) continue;
+                const x = (bcx + dx + RD_W) % RD_W;
+                const y = (bcy + dy + RD_H) % RD_H;
+                v[y * RD_W + x] = 1;
+              }
+            }
+          }
+          const gridCanvas = document.createElement('canvas');
+          gridCanvas.width = RD_W;
+          gridCanvas.height = RD_H;
+          reactionDiffusionGridRef.current = { u, v, u2: new Float32Array(RD_W * RD_H), v2: new Float32Array(RD_W * RD_H), canvas: gridCanvas };
+        }
+        const rd = reactionDiffusionGridRef.current;
+        let { u, v, u2, v2 } = rd;
+        const Du = 1.0, Dv = 0.5;
+        const feed = reactionDiffusionFeed, kill = reactionDiffusionKill;
+        const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 6));
+        const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
+
+        for (let s = 0; s < steps; s++) {
+          for (let y = 0; y < RD_H; y++) {
+            for (let x = 0; x < RD_W; x++) {
+              const i = y * RD_W + x;
+              const lapU = u[idx(x - 1, y)] + u[idx(x + 1, y)] + u[idx(x, y - 1)] + u[idx(x, y + 1)] - 4 * u[i];
+              const lapV = v[idx(x - 1, y)] + v[idx(x + 1, y)] + v[idx(x, y - 1)] + v[idx(x, y + 1)] - 4 * v[i];
+              const uu = u[i], vv = v[i];
+              const reaction = uu * vv * vv;
+              u2[i] = Math.min(1, Math.max(0, uu + (Du * lapU - reaction + feed * (1 - uu))));
+              v2[i] = Math.min(1, Math.max(0, vv + (Dv * lapV + reaction - (kill + feed) * vv)));
+            }
+          }
+          [u, u2] = [u2, u];
+          [v, v2] = [v2, v];
+        }
+        rd.u = u; rd.v = v; rd.u2 = u2; rd.v2 = v2;
+
+        const rdImageData = new ImageData(RD_W, RD_H);
+        const rdData = rdImageData.data;
+        for (let i = 0; i < RD_W * RD_H; i++) {
+          const t = Math.min(1, Math.max(0, v[i] * 3));
+          const colorPos = t * (gradientColors.length - 1);
+          const colorIdx = Math.floor(colorPos);
+          const colorFrac = colorPos - colorIdx;
+          const c1 = gradientColors[colorIdx] || gradientColors[0];
+          const c2 = gradientColors[Math.min(colorIdx + 1, gradientColors.length - 1)] || c1;
+          const di = i * 4;
+          rdData[di] = Math.round(c1.r + (c2.r - c1.r) * colorFrac);
+          rdData[di + 1] = Math.round(c1.g + (c2.g - c1.g) * colorFrac);
+          rdData[di + 2] = Math.round(c1.b + (c2.b - c1.b) * colorFrac);
+          rdData[di + 3] = 255;
+        }
+        const rdCtx = rd.canvas.getContext('2d')!;
+        rdCtx.putImageData(rdImageData, 0, 0);
+        // Explicit smoothing + a light blur on the upscale draw — the sim
+        // grid is coarse relative to display resolution, so bilinear
+        // interpolation alone still shows a faint grid; the blur hides the
+        // remainder for a soft, painterly result instead of a visible mesh.
+        ctx.imageSmoothingEnabled = true;
+        ctx.filter = 'blur(1.5px)';
+        ctx.drawImage(rd.canvas, 0, 0, RD_W, RD_H, 0, 0, displayWidth, displayHeight);
+        ctx.filter = 'none';
         break;
       }
 

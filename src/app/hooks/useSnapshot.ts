@@ -22,7 +22,8 @@ export function useSnapshot(params: SnapshotParams) {
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
-    flowParticleCount, flowScale, flowSpeed, flowThickness, flowerCircles, flowerRotation,
+    flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed,
+    reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, flowerCircles, flowerRotation,
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity,
     grainType, gridColumns, gridRotation, gridRows, gridShapeSize, gridSides,
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
@@ -48,7 +49,9 @@ export function useSnapshot(params: SnapshotParams) {
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
     setFeedbackZoom, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale,
-    setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread,
+    setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed,
+    setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
+    setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread,
     setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK,
     setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle,
@@ -185,6 +188,8 @@ export function useSnapshot(params: SnapshotParams) {
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
+      attractorPointCount, attractorScale, attractorSpeed,
+      reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -245,6 +250,8 @@ export function useSnapshot(params: SnapshotParams) {
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
+      attractorPointCount, attractorScale, attractorSpeed,
+      reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       flowerCircles, flowerRotation, flowerScale, flowerSpread,
       grainType,
       gridShapeSize, gridVariation,
@@ -412,6 +419,12 @@ export function useSnapshot(params: SnapshotParams) {
     setFlowScale(snapshot.flowScale ?? 3);
     setFlowSpeed(snapshot.flowSpeed ?? 1);
     setFlowThickness(snapshot.flowThickness ?? 1.5);
+    setAttractorPointCount(snapshot.attractorPointCount ?? 6);
+    setAttractorScale(snapshot.attractorScale ?? 1);
+    setAttractorSpeed(snapshot.attractorSpeed ?? 1);
+    setReactionDiffusionFeed(snapshot.reactionDiffusionFeed ?? 0.037);
+    setReactionDiffusionKill(snapshot.reactionDiffusionKill ?? 0.06);
+    setReactionDiffusionSpeed(snapshot.reactionDiffusionSpeed ?? 1);
     setFlowerCircles(snapshot.flowerCircles ?? 3);
     setFlowerRotation(snapshot.flowerRotation ?? 0);
     setFlowerScale(snapshot.flowerScale ?? 0.8);

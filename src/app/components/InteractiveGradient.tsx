@@ -196,7 +196,7 @@ export function InteractiveGradient() {
   const animValuesRef = useRef({
     voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, causticsAnimTime: 0,
     lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
-    flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0,
+    flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -496,6 +496,18 @@ export function InteractiveGradient() {
   const [flowSpeed, setFlowSpeed] = useState(1);
   const [flowScale, setFlowScale] = useState(3);
   const [flowThickness, setFlowThickness] = useState(1.5);
+  // Attractor — de Jong strange attractor, parameters slowly drift over
+  // time via attractorAnimTime for a living, evolving lace pattern.
+  const [attractorAnimTime, setAttractorAnimTime] = useState(0);
+  const [attractorPointCount, setAttractorPointCount] = useState(6);
+  const [attractorSpeed, setAttractorSpeed] = useState(1);
+  const [attractorScale, setAttractorScale] = useState(1);
+  // Reaction-Diffusion — Gray-Scott simulation on a fixed coarse grid
+  // (see reactionDiffusionGridRef), Feed/Kill control the pattern family
+  // (spots vs stripes vs coral), Speed controls sim steps per frame.
+  const [reactionDiffusionFeed, setReactionDiffusionFeed] = useState(0.037);
+  const [reactionDiffusionKill, setReactionDiffusionKill] = useState(0.06);
+  const [reactionDiffusionSpeed, setReactionDiffusionSpeed] = useState(1);
   // ASCII mosaic
   const [asciiSize, setAsciiSize] = useState(14);
   const [asciiColor, setAsciiColor] = useState(false);
@@ -605,6 +617,15 @@ export function InteractiveGradient() {
   // Flow field's persistent trail canvas + particle positions
   const flowBufferRef = useRef<HTMLCanvasElement | null>(null);
   const flowParticlesRef = useRef<{ x: number; y: number }[]>([]);
+  // Attractor's persistent trail canvas + walker positions (same pattern as flow field)
+  const attractorBufferRef = useRef<HTMLCanvasElement | null>(null);
+  const attractorPointsRef = useRef<{ x: number; y: number }[]>([]);
+  // Reaction-Diffusion's persistent simulation grid (fixed coarse resolution,
+  // independent of canvas size — see RD_W/RD_H in useCanvasDraw). Double-buffered
+  // (u/v + u2/v2) to avoid allocating new Float32Arrays every simulation step.
+  const reactionDiffusionGridRef = useRef<{
+    u: Float32Array; v: Float32Array; u2: Float32Array; v2: Float32Array; canvas: HTMLCanvasElement;
+  } | null>(null);
   // Chromatic Trails' own trail buffer (separate from Feedback's)
   const chromaticTrailsBufferRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -1128,6 +1149,13 @@ export function InteractiveGradient() {
 
   useEffect(() => {
     if (IS_DISPLAY_MODE) return;
+    if (gradientType !== 'attractor' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setAttractorAnimTime(t => t + 0.01 * vcrPlaybackSpeed * attractorSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, attractorSpeed]);
+
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
@@ -1149,10 +1177,10 @@ export function InteractiveGradient() {
     animValuesRef.current = {
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime,
       lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime,
-      flowAnimTime, liquidAnimTime, emojiAnimTime,
+      flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
     };
-  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
+  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
 
   // buildSnapshot/applySnapshot extracted to useSnapshot.ts (splitting-plan
   // step 3). The single source of truth for undo/redo AND presets, so it
@@ -1168,7 +1196,11 @@ export function InteractiveGradient() {
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
-    flowParticleCount, flowScale, flowSpeed, flowThickness, flowerCircles, flowerRotation,
+    flowParticleCount, flowScale, flowSpeed, flowThickness,
+    attractorPointCount, attractorScale, attractorSpeed, setAttractorPointCount, setAttractorScale, setAttractorSpeed,
+    reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
+    setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
+    flowerCircles, flowerRotation,
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity,
     grainType, gridColumns, gridRotation, gridRows, gridShapeSize, gridSides,
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
@@ -1427,6 +1459,7 @@ export function InteractiveGradient() {
       setFlowAnimTime(v.flowAnimTime);
       setLiquidAnimTime(v.liquidAnimTime);
       setEmojiAnimTime(v.emojiAnimTime);
+      setAttractorAnimTime(v.attractorAnimTime);
       setAudioSubBassLevel(v.audioSubBassLevel ?? 0);
       setAudioMidsLevel(v.audioMidsLevel ?? 0);
       setAudioTrebleLevel(v.audioTrebleLevel ?? 0);
@@ -2320,7 +2353,7 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, photoVersion, photoBlendMode, photoOpacity]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2341,6 +2374,16 @@ export function InteractiveGradient() {
     drawParamsDirtyRef.current = true;
   }, [flowScale]);
 
+  // Same "clear the trail buffer on Scale change" fix as Flow Field above —
+  // otherwise a new Scale value only shows up in newly-drawn segments while
+  // old, differently-scaled trails linger until they fade out on their own.
+  useEffect(() => {
+    if (!attractorBufferRef.current) return;
+    const abCtx = attractorBufferRef.current.getContext('2d');
+    abCtx?.clearRect(0, 0, attractorBufferRef.current.width, attractorBufferRef.current.height);
+    drawParamsDirtyRef.current = true;
+  }, [attractorScale]);
+
   // Canvas draw pipeline extracted to useCanvasDraw.ts (splitting-plan
   // step 4 — the final and highest-risk extraction, ~3,000 lines covering
   // every gradient type and effect's rendering code). The drawParams
@@ -2348,7 +2391,8 @@ export function InteractiveGradient() {
   // hook's internal useEffect depends on it exactly as before extraction.
   useCanvasDraw({
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
-    asciiColor, asciiSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime,
+    asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
@@ -2371,7 +2415,8 @@ export function InteractiveGradient() {
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
-    radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
+    radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
+    resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
     slitScanIntensity, windmillRotations, windmillThickness, windmillTightness, windmillZoom, triangleSize,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
@@ -3512,6 +3557,18 @@ export function InteractiveGradient() {
             setFlowScale={setFlowScale}
             flowThickness={flowThickness}
             setFlowThickness={setFlowThickness}
+            attractorPointCount={attractorPointCount}
+            setAttractorPointCount={setAttractorPointCount}
+            attractorSpeed={attractorSpeed}
+            setAttractorSpeed={setAttractorSpeed}
+            attractorScale={attractorScale}
+            setAttractorScale={setAttractorScale}
+            reactionDiffusionFeed={reactionDiffusionFeed}
+            setReactionDiffusionFeed={setReactionDiffusionFeed}
+            reactionDiffusionKill={reactionDiffusionKill}
+            setReactionDiffusionKill={setReactionDiffusionKill}
+            reactionDiffusionSpeed={reactionDiffusionSpeed}
+            setReactionDiffusionSpeed={setReactionDiffusionSpeed}
             angleStartOffset={angleStartOffset}
             setAngleStartOffset={setAngleStartOffset}
             angleCenterX={angleCenterX}
