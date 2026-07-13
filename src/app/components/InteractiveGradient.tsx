@@ -40,6 +40,87 @@ import {
   WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
+import { useAngleState } from '../hooks/state/useAngleState';
+import { useAsciiState } from '../hooks/state/useAsciiState';
+import { useAttractorState } from '../hooks/state/useAttractorState';
+import { useAuroraState } from '../hooks/state/useAuroraState';
+import { useBloomState } from '../hooks/state/useBloomState';
+import { useBlurState } from '../hooks/state/useBlurState';
+import { useBlurGaussianState } from '../hooks/state/useBlurGaussianState';
+import { useBlurMotionState } from '../hooks/state/useBlurMotionState';
+import { useBlurRadialState } from '../hooks/state/useBlurRadialState';
+import { useCanvasState } from '../hooks/state/useCanvasState';
+import { useCausticsState } from '../hooks/state/useCausticsState';
+import { useCharcoalState } from '../hooks/state/useCharcoalState';
+import { useChromaticState } from '../hooks/state/useChromaticState';
+import { useChromaticTrailsState } from '../hooks/state/useChromaticTrailsState';
+import { useColorState } from '../hooks/state/useColorState';
+import { useColorPinState } from '../hooks/state/useColorPinState';
+import { useDiffusionState } from '../hooks/state/useDiffusionState';
+import { useDiffusionGridState } from '../hooks/state/useDiffusionGridState';
+import { useDigitalNoiseState } from '../hooks/state/useDigitalNoiseState';
+import { useDitherState } from '../hooks/state/useDitherState';
+import { useDuotoneState } from '../hooks/state/useDuotoneState';
+import { useDustState } from '../hooks/state/useDustState';
+import { useEmojiState } from '../hooks/state/useEmojiState';
+import { useFadeState } from '../hooks/state/useFadeState';
+import { useFeedbackState } from '../hooks/state/useFeedbackState';
+import { useFisheyeState } from '../hooks/state/useFisheyeState';
+import { useFlowState } from '../hooks/state/useFlowState';
+import { useFlowBufferState } from '../hooks/state/useFlowBufferState';
+import { useFlowParticlesState } from '../hooks/state/useFlowParticlesState';
+import { useGlitchState } from '../hooks/state/useGlitchState';
+import { useGrainState } from '../hooks/state/useGrainState';
+import { useGridState } from '../hooks/state/useGridState';
+import { useGridRotationDirectionState } from '../hooks/state/useGridRotationDirectionState';
+import { useHalftoneState } from '../hooks/state/useHalftoneState';
+import { useHelixState } from '../hooks/state/useHelixState';
+import { useHexGridState } from '../hooks/state/useHexGridState';
+import { useIridescentState } from '../hooks/state/useIridescentState';
+import { useJuliaState } from '../hooks/state/useJuliaState';
+import { useKaleidoscopeState } from '../hooks/state/useKaleidoscopeState';
+import { useLavaState } from '../hooks/state/useLavaState';
+import { useLightLeakState } from '../hooks/state/useLightLeakState';
+import { useLinesState } from '../hooks/state/useLinesState';
+import { useLiquidState } from '../hooks/state/useLiquidState';
+import { useLiquifyState } from '../hooks/state/useLiquifyState';
+import { useMarbleState } from '../hooks/state/useMarbleState';
+import { useMeshState } from '../hooks/state/useMeshState';
+import { useMetaballState } from '../hooks/state/useMetaballState';
+import { useMirrorState } from '../hooks/state/useMirrorState';
+import { useMiscState } from '../hooks/state/useMiscState';
+import { useMoireState } from '../hooks/state/useMoireState';
+import { useNoiseState } from '../hooks/state/useNoiseState';
+import { usePanelDragState } from '../hooks/state/usePanelDragState';
+import { usePanelPosState } from '../hooks/state/usePanelPosState';
+import { usePhotoState } from '../hooks/state/usePhotoState';
+import { usePinchState } from '../hooks/state/usePinchState';
+import { usePixelState } from '../hooks/state/usePixelState';
+import { usePlasmaState } from '../hooks/state/usePlasmaState';
+import { usePolygon2State } from '../hooks/state/usePolygon2State';
+import { usePosterizeState } from '../hooks/state/usePosterizeState';
+import { useRadarState } from '../hooks/state/useRadarState';
+import { useRadialState } from '../hooks/state/useRadialState';
+import { useRadialBurstState } from '../hooks/state/useRadialBurstState';
+import { useReactionDiffusionState } from '../hooks/state/useReactionDiffusionState';
+import { useReactionDiffusionGridState } from '../hooks/state/useReactionDiffusionGridState';
+import { useRedoState } from '../hooks/state/useRedoState';
+import { useRippleState } from '../hooks/state/useRippleState';
+import { useScanLineState } from '../hooks/state/useScanLineState';
+import { useSepiaState } from '../hooks/state/useSepiaState';
+import { useShapesState } from '../hooks/state/useShapesState';
+import { useSlitScanState } from '../hooks/state/useSlitScanState';
+import { useSolarizeState } from '../hooks/state/useSolarizeState';
+import { useTopographicState } from '../hooks/state/useTopographicState';
+import { useTriangleState } from '../hooks/state/useTriangleState';
+import { useTruchetState } from '../hooks/state/useTruchetState';
+import { useTwistState } from '../hooks/state/useTwistState';
+import { useUndoState } from '../hooks/state/useUndoState';
+import { useVhsState } from '../hooks/state/useVhsState';
+import { useVignetteState } from '../hooks/state/useVignetteState';
+import { useVoronoiState } from '../hooks/state/useVoronoiState';
+import { useWaveState } from '../hooks/state/useWaveState';
+import { useWindmillState } from '../hooks/state/useWindmillState';
 
 export interface ColorPin {
   id: string;
@@ -189,84 +270,106 @@ const DISPLAY_SYNC_KEY = 'wav-display-sync';
 const DISPLAY_ANIM_SYNC_KEY = 'wav-display-sync-anim';
 
 export function InteractiveGradient() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const lastBroadcastSnapshotRef = useRef<string>('');
-  const syncChannelRef = useRef<BroadcastChannel | null>(null);
-  const animSyncChannelRef = useRef<BroadcastChannel | null>(null);
-  const animValuesRef = useRef({
-    voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, causticsAnimTime: 0,
-    lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
-    flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0,
-    audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
-  });
-  const [isDragging, setIsDragging] = useState(false);
-  const lastChangeTime = useRef<number>(0);
-  const previousPosition = useRef<{ x: number; y: number } | null>(null);
-  const [gradientType, setGradientType] = useState<GradientType | null>('angle');
-  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => window.devicePixelRatio || 1);
+  const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY } = useAngleState();
+  const { asciiSize, setAsciiSize, asciiColor, setAsciiColor, asciiChars, setAsciiChars } = useAsciiState();
+  const { attractorAnimTime, setAttractorAnimTime, attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorBufferRef, attractorPointsRef } = useAttractorState();
+  const { auroraAnimTime, setAuroraAnimTime, auroraBandCount, setAuroraBandCount, auroraWaveSpeed, setAuroraWaveSpeed, auroraBandHeight, setAuroraBandHeight } = useAuroraState();
+  const { bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius } = useBloomState();
+  const { blurType, setBlurType } = useBlurState();
+  const { blurGaussianAmount, setBlurGaussianAmount } = useBlurGaussianState();
+  const { blurMotionAmount, setBlurMotionAmount, blurMotionDirection, setBlurMotionDirection } = useBlurMotionState();
+  const { blurRadialAmount, setBlurRadialAmount } = useBlurRadialState();
+  const { canvasRef } = useCanvasState();
+  const { causticsAnimTime, setCausticsAnimTime, causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale } = useCausticsState();
+  const { charcoalIntensity, setCharcoalIntensity } = useCharcoalState();
+  const { chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle } = useChromaticState();
+  const { chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset, chromaticTrailsBufferRef } = useChromaticTrailsState();
+  const { colorShiftHue, setColorShiftHue } = useColorState();
+  const { colorPins, setColorPins } = useColorPinState();
+  const { diffusionSpeed, setDiffusionSpeed, diffusionFeed, setDiffusionFeed, diffusionKill, setDiffusionKill, diffusionAnimTrigger, setDiffusionAnimTrigger } = useDiffusionState();
+  const { diffusionGridRef } = useDiffusionGridState();
+  const { digitalNoiseIntensity, setDigitalNoiseIntensity } = useDigitalNoiseState();
+  const { ditherType, setDitherType, ditherLevels, setDitherLevels } = useDitherState();
+  const { duotoneIntensity, setDuotoneIntensity, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor } = useDuotoneState();
+  const { dustCrackleIntensity, setDustCrackleIntensity, dustSize, setDustSize } = useDustState();
+  const { emojiSize, setEmojiSize, emojiChars, setEmojiChars, emojiRotateSpeed, setEmojiRotateSpeed, emojiAnimTime, setEmojiAnimTime, emojiOffsetX, setEmojiOffsetX, emojiSizeVariation, setEmojiSizeVariation, emojiPickerSearch, setEmojiPickerSearch } = useEmojiState();
+  const { fadeDirection, setFadeDirection } = useFadeState();
+  const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
+  const { fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY } = useFisheyeState();
+  const { flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread, flowerRotation, setFlowerRotation, flowerAnimTime, setFlowerAnimTime, flowAnimTime, setFlowAnimTime, flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness } = useFlowState();
+  const { flowBufferRef } = useFlowBufferState();
+  const { flowParticlesRef } = useFlowParticlesState();
+  const { glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit } = useGlitchState();
+  const { grainIntensity, setGrainIntensity, grainType, setGrainType } = useGrainState();
+  const { gridSides, setGridSides, gridRows, setGridRows, gridColumns, setGridColumns, gridRotation, setGridRotation, gridVariation, setGridVariation, gridShapeSize, setGridShapeSize } = useGridState();
+  const { gridRotationDirection, setGridRotationDirection, gridRotationDirectionRef } = useGridRotationDirectionState();
+  const { halftoneSize, setHalftoneSize, halftoneVariation, setHalftoneVariation, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, halftoneCMYK, setHalftoneCMYK, halftoneTimeRef, halftoneMoveRef, halftoneAnimTrigger, setHalftoneAnimTrigger } = useHalftoneState();
+  const { helixTurns, setHelixTurns, helixTightness, setHelixTightness } = useHelixState();
+  const { hexGridSize, setHexGridSize } = useHexGridState();
+  const { iridescentAngle, setIridescentAngle, iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale } = useIridescentState();
+  const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations, juliaCanvasRef } = useJuliaState();
+  const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeReflections, setKaleidoscopeReflections, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
+  const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
+  const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
+  const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
+  const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
+  const { liquifyStrength, setLiquifyStrength } = useLiquifyState();
+  const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
+  const { meshGridSize, setMeshGridSize, meshJitter, setMeshJitter } = useMeshState();
+  const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
+  const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, selectedPinId, setSelectedPinId, isDraggingPin, setIsDraggingPin, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
+  const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
+  const { panelDragRef } = usePanelDragState();
+  const { panelPos, setPanelPos } = usePanelPosState();
+  const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
+  const { pinchStrength, setPinchStrength } = usePinchState();
+  const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
+  const { plasmaSpeed, setPlasmaSpeed, plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale } = usePlasmaState();
+  const { polygon2Sides, setPolygon2Sides } = usePolygon2State();
+  const { posterizeLevels, setPosterizeLevels, posterizeSolarize, setPosterizeSolarize } = usePosterizeState();
+  const { radarSweepAngle, setRadarSweepAngle, radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth } = useRadarState();
+  const { radialSizeScale, setRadialSizeScale } = useRadialState();
+  const { radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize } = useRadialBurstState();
+  const { reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed } = useReactionDiffusionState();
+  const { reactionDiffusionGridRef } = useReactionDiffusionGridState();
+  const { redoStackRef, redoDepth, setRedoDepth } = useRedoState();
+  const { rippleAmplitude, setRippleAmplitude, rippleFrequency, setRippleFrequency, rippleRingsRef, rippleAutoFrameRef } = useRippleState();
+  const { scanlineIntensity, setScanlineIntensity, scanlineSpacing, setScanlineSpacing, scanlineSpeed, setScanlineSpeed, scanLineSize, setScanLineSize } = useScanLineState();
+  const { sepiaIntensity, setSepiaIntensity } = useSepiaState();
+  const { shapesSides, setShapesSides, shapesCount, setShapesCount } = useShapesState();
+  const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanAnimTrigger, setSlitScanAnimTrigger, slitScanBufferRef } = useSlitScanState();
+  const { solarizeThreshold, setSolarizeThreshold } = useSolarizeState();
+  const { topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth } = useTopographicState();
+  const { triangleSize, setTriangleSize } = useTriangleState();
+  const { truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness } = useTruchetState();
+  const { twistAmount, setTwistAmount } = useTwistState();
+  const { undoStackRef, undoIndexRef, undoDepth, setUndoDepth } = useUndoState();
+  const { vhsGlitchIntensity, setVhsGlitchIntensity } = useVhsState();
+  const { vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness } = useVignetteState();
+  const { voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion, voronoiMorphSpeed, setVoronoiMorphSpeed, voronoiAnimTime, setVoronoiAnimTime } = useVoronoiState();
+  const { waveNumberRef, waveRotationRef, waveScale, setWaveScale, waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency, waveNumber, setWaveNumber, waveRotation, setWaveRotation, waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation } = useWaveState();
+  const { windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness, windmillZoom, setWindmillZoom } = useWindmillState();
 
   // Per-effect beat toggles
-  const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
-  const [shakeBeatEnabled, setShakeBeatEnabled] = useState(false);
-  const [contrastBeatEnabled, setContrastBeatEnabled] = useState(true);
-  const [paletteBeatEnabled, setPaletteBeatEnabled] = useState(false);
   
   
   // Video recording state (shared between root and useVCRPlayback hook)
-  const [isRecording, setIsRecording] = useState(false);
   // Play engages automatically on load/refresh at the default 1x speed.
-  const [isAutoMode, setIsAutoMode] = useState(true);
-  const [isAutoColor, setIsAutoColor] = useState(true);
 
-  const [gradientColors, setGradientColors] = useState<ColorRGB[]>(DEFAULT_COLORS);
-  const [targetColors, setTargetColors] = useState<ColorRGB[]>(gradientColors);
-  const [gradientAngle, setGradientAngle] = useState(45);
-  const [targetAngle, setTargetAngle] = useState(45);
-  const [zoom, setZoom] = useState(1);
-  const [targetZoom, setTargetZoom] = useState(1);
 
   // Refs that shadow the animated state values — updated every RAF frame without React re-renders.
   // The master animation loop lerps these and calls drawRef imperatively.
   // State is synced back every 3 frames (~20fps) for undo/VCR continuity.
-  const gradientColorsRef = useRef<ColorRGB[]>(DEFAULT_COLORS);
-  const gradientAngleRef = useRef<number>(45);
-  const zoomRef = useRef<number>(1);
-  const targetColorsRef = useRef<ColorRGB[]>(DEFAULT_COLORS);
-  const targetAngleRef = useRef<number>(45);
-  const targetZoomRef = useRef<number>(1);
-  const vcrPlaybackSpeedRef = useRef<number>(1);
-  const isAutoModeRef = useRef<boolean>(false);
-  const rotationDirectionRef = useRef<'clockwise' | 'counter'>('clockwise');
-  const isVCRPlayingRef = useRef<boolean>(false);
-  const isAudioActiveRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
-  const drawParamsDirtyRef = useRef(true); // true until first draw
-  const waveNumberRef = useRef<number>(20);
-  const waveRotationRef = useRef<number>(45);
-  const lerpSyncFrameRef = useRef(0);
   
   // Freeform gradient pins
-  const [colorPins, setColorPins] = useState<ColorPin[]>([
-    { id: '1', x: 0.3, y: 0.3, color: { r: 255, g: 100, b: 100 }, radius: 300 },
-    { id: '2', x: 0.7, y: 0.7, color: { r: 100, g: 100, b: 255 }, radius: 300 },
-    { id: '3', x: 0.5, y: 0.5, color: { r: 100, g: 255, b: 100 }, radius: 300 },
-  ]);
-  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
-  const [isDraggingPin, setIsDraggingPin] = useState(false);
-  const [isControlsVisible, setIsControlsVisible] = useState(!IS_DISPLAY_MODE);
   // Second hide tier for live/projector output — drops even the collapsed
   // mini icon strip, leaving pure canvas. Cycled via the same H hotkey:
   // visible -> mini strip -> fully hidden -> mini strip -> ...
   // A ?display=1 tab starts (and stays) in this tier permanently — see the
   // 'h' key handler below, which is a no-op in display mode.
-  const [isFullyHidden, setIsFullyHidden] = useState(IS_DISPLAY_MODE);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isDisplayLinkCopied, setIsDisplayLinkCopied] = useState(false);
-  const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMultiFxMode, setIsMultiFxMode] = useState(false);
-  const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
-  const [wavRandomGradient, setWavRandomGradient] = useState('linear-gradient(to top, #7c3aed, #ec4899, #eab308)');
   const randomizeWavGradient = () => {
     const hue = () => Math.floor(Math.random() * 360);
     const h1 = hue(), h2 = (h1 + 60 + Math.random() * 120) % 360, h3 = (h2 + 60 + Math.random() * 120) % 360;
@@ -278,314 +381,61 @@ export function InteractiveGradient() {
   // controls was the main driver of the control panel's excessive height.
   const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => prev.has(id) ? new Set() : new Set([id]));
   
-  const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
-  const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
-  const [aiPrompt, setAIPrompt] = useState('');
-  const [submittedAIPrompt, setSubmittedAIPrompt] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<{x: number, y: number} | null>(() => {
-    try {
-      const s = localStorage.getItem('panelPos');
-      if (s) return JSON.parse(s);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to parse stored panelPos:', err);
-    }
-    // First load, no saved position: center the panel horizontally on
-    // narrow (mobile) viewports instead of defaulting to the top-left
-    // corner. Desktop keeps the old null -> {top:16, left:16} fallback.
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      const panelWidth = 215 * 1.15; // matches the panel's w-[215px] scale-[1.15]
-      return { x: Math.max(8, (window.innerWidth - panelWidth) / 2), y: 16 };
-    }
-    return null;
-  });
-  const panelDragRef = useRef<{startX: number, startY: number, origX: number, origY: number} | null>(null);
   // First-run hint explaining the tap/hold/double-tap gesture vocabulary —
   // tooltips (title attrs) never surface on touch devices, which is this
   // app's primary target, so without this the gestures are undiscoverable.
-  const [showWavHint, setShowWavHint] = useState(() => {
-    try { return !localStorage.getItem('wavGestureHintSeen'); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to read wavGestureHintSeen:', err);
-      return true;
-    }
-  });
   const dismissWavHint = () => {
     setShowWavHint(false);
     try { localStorage.setItem('wavGestureHintSeen', '1'); } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
     }
   };
-  const [isGradientsOpen, setIsGradientsOpen] = useState(false);
-  const [isEffectsOpen, setIsEffectsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
-  const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
-  const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
   
   // Effect parameters
-  const [kaleidoscopeSegments, setKaleidoscopeSegments] = useState(10);
-  const [twistAmount, setTwistAmount] = useState(2);
-  const [pixelSize, setPixelSize] = useState(20);
-  const [triangleSize, setTriangleSize] = useState(40);
-  const [chromaticOffset, setChromaticOffset] = useState(100);
-  const [fisheyeStrength, setFisheyeStrength] = useState(0.5);
-  const [grainIntensity, setGrainIntensity] = useState(0.1);
-  const [blurMotionAmount, setBlurMotionAmount] = useState(40);
-  const [blurMotionDirection, setBlurMotionDirection] = useState(250);
-  const [blurGaussianAmount, setBlurGaussianAmount] = useState(7);
-  const [blurRadialAmount, setBlurRadialAmount] = useState(5);
-  const [blurType, setBlurType] = useState<'gaussian' | 'motion' | 'radial'>('gaussian');
-  const [posterizeLevels, setPosterizeLevels] = useState(10);
-  const [halftoneSize, setHalftoneSize] = useState(10);
-  const [halftoneVariation, setHalftoneVariation] = useState(0);
-  const [halftoneMove, setHalftoneMove] = useState(false);
-  const [halftoneMoveSpeed, setHalftoneMoveSpeed] = useState(1);
-  const [vignetteStrength, setVignetteStrength] = useState(0.5);
-  const [scanlineIntensity, setScanlineIntensity] = useState(0.4);
-  const [scanlineSpacing, setScanlineSpacing] = useState(4);
-  const [scanlineSpeed, setScanlineSpeed] = useState(1);
-  const [colorShiftHue, setColorShiftHue] = useState(5);
-  const [charcoalIntensity, setCharcoalIntensity] = useState(0.5);
-  const [digitalNoiseIntensity, setDigitalNoiseIntensity] = useState(0.3);
-  const [duotoneIntensity, setDuotoneIntensity] = useState(1);
   // Dust-scratches was merged into film-grain — only its crackle-lines slider
   // survives as an add-on (the noise portion was identical to grain's own).
-  const [dustCrackleIntensity, setDustCrackleIntensity] = useState(0.3);
-  const [hexGridSize, setHexGridSize] = useState(20);
-  const [lightLeakIntensity, setLightLeakIntensity] = useState(0.5);
-  const [linesCount, setLinesCount] = useState(50);
-  const [linesAngle, setLinesAngle] = useState(0); // 0-360 degrees
-  const [linesThickness, setLinesThickness] = useState(1);
-  const [liquifyStrength, setLiquifyStrength] = useState(30);
-  const [pinchStrength, setPinchStrength] = useState(0.5);
-  const [scanLineSize, setScanLineSize] = useState(4);
-  const [sepiaIntensity, setSepiaIntensity] = useState(1);
-  const [solarizeThreshold, setSolarizeThreshold] = useState(128);
-  const [gridSides, setGridSides] = useState(4);
-  const [duotoneColor1, setDuotoneColor1] = useState('#000033'); // Dark blue
-  const [duotoneColor2, setDuotoneColor2] = useState('#FF6B35'); // Orange
   // Tritone was merged into Duotone — this just adds a 3rd color stop.
-  const [duotoneColor3, setDuotoneColor3] = useState('#F7F7FF'); // Near white
-  const [duotoneThreeColor, setDuotoneThreeColor] = useState(false);
-  const [vhsGlitchIntensity, setVhsGlitchIntensity] = useState(0.2);
-  const [gridRows, setGridRows] = useState(6);
-  const [gridColumns, setGridColumns] = useState(3);
-  const [gridRotation, setGridRotation] = useState(0);
-  const [gridRotationDirection, setGridRotationDirection] = useState<'none' | 'clockwise' | 'counterclockwise'>('none');
-  const [polygon2Sides, setPolygon2Sides] = useState(5); // For polar-grid gradient
-  const [angleStartOffset, setAngleStartOffset] = useState(0);
-  const [angleCenterX, setAngleCenterX] = useState(50);
-  const [angleCenterY, setAngleCenterY] = useState(50);
-  const [windmillTightness, setWindmillTightness] = useState(11);
-  const [windmillRotations, setWindmillRotations] = useState(3);
-  const [windmillThickness, setWindmillThickness] = useState(49);
-  const [windmillZoom, setWindmillZoom] = useState(3.5);
-  const [waveScale, setWaveScale] = useState(1.0);
-  const [radialSizeScale, setRadialSizeScale] = useState(1.0);
-  const [shapesSides, setShapesSides] = useState(4);
-  const [shapesCount, setShapesCount] = useState(8);
-  const [concentricRingWidth, setConcentricRingWidth] = useState(100);
-  const [concentricRingCount, setConcentricRingCount] = useState(10);
-  const [waveAmplitude, setWaveAmplitude] = useState(44);
-  const [waveFrequency, setWaveFrequency] = useState(5);
-  const [waveNumber, setWaveNumber] = useState(20);
-  const [waveRotation, setWaveRotation] = useState(45);
-  const [meshGridSize, setMeshGridSize] = useState(4);
   
   // New effect parameters
-  const [dustSize, setDustSize] = useState(5);
-  const [grainType, setGrainType] = useState<'fine' | 'medium' | 'coarse' | 'film'>('medium');
-  const [gridVariation, setGridVariation] = useState(0);
-  const [gridShapeSize, setGridShapeSize] = useState(25);
-  const [kaleidoscopeReflections, setKaleidoscopeReflections] = useState(1);
-  const [kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed] = useState(0.5);
-  const [halftoneCMYK, setHalftoneCMYK] = useState(false);
   // Bloom
-  const [bloomIntensity, setBloomIntensity] = useState(0.7);
-  const [bloomRadius, setBloomRadius] = useState(12);
   // Feedback / Trails
-  const [feedbackDecay, setFeedbackDecay] = useState(0.85);
-  const [feedbackZoom, setFeedbackZoom] = useState(1.0);
-  const [feedbackRotation, setFeedbackRotation] = useState(0);
   // Ripple on beat
-  const [rippleAmplitude, setRippleAmplitude] = useState(20);
-  const [rippleFrequency, setRippleFrequency] = useState(0.015);
-  const [pixelateScaleDirection, setPixelateScaleDirection] = useState<'out' | 'in'>('out');
-  const [scanType, setScanType] = useState<'horizontal' | 'vertical' | 'interlaced' | 'crt'>('horizontal');
-  const [posterizeSolarize, setPosterizeSolarize] = useState(0);
   // audioReactiveColors is now in useAudioReactivity hook
-  const [noiseScale, setNoiseScale] = useState(25);
-  const [noiseOctaves, setNoiseOctaves] = useState(2);
-  const [noiseDirection, setNoiseDirection] = useState(0);
-  const [noiseWarp, setNoiseWarp] = useState(0);
-  const [noiseType, setNoiseType] = useState<'smooth' | 'ridged' | 'turbulence'>('smooth');
-  const [plasmaSpeed, setPlasmaSpeed] = useState(1);
-  const [plasmaComplexity, setPlasmaComplexity] = useState(5);
-  const [plasmaZoomScale, setPlasmaZoomScale] = useState(1);
-  const [radialBurstCount, setRadialBurstCount] = useState(12);
-  const [radialBurstSpread, setRadialBurstSpread] = useState(70);
-  const [radialBurstSize, setRadialBurstSize] = useState(70);
   
   // New dither, slit-scan, and diffusion effect parameters
-  const [ditherType, setDitherType] = useState<'bayer' | 'floyd-steinberg'>('bayer');
-  const [ditherLevels, setDitherLevels] = useState(2); // Color depth levels
-  const [slitScanIntensity, setSlitScanIntensity] = useState(0.5);
-  const [slitScanDirection, setSlitScanDirection] = useState<'horizontal' | 'vertical' | 'radial' | 'circular'>('horizontal');
-  const [slitScanAnimTrigger, setSlitScanAnimTrigger] = useState(0); // Animation trigger for continuous updates
   // Glitch — block-shuffle/datamosh: torn row shifts + displaced blocks + occasional RGB ghosting
-  const [glitchIntensity, setGlitchIntensity] = useState(0.4);
-  const [glitchBlockSize, setGlitchBlockSize] = useState(24);
-  const [glitchChromaSplit, setGlitchChromaSplit] = useState(4);
-  const [diffusionSpeed, setDiffusionSpeed] = useState(1);
-  const [diffusionFeed, setDiffusionFeed] = useState(0.055);
-  const [diffusionKill, setDiffusionKill] = useState(0.062);
-  const [diffusionAnimTrigger, setDiffusionAnimTrigger] = useState(0); // Animation trigger for continuous updates
-  const [voronoiCellCount, setVoronoiCellCount] = useState(19);
-  const [voronoiDistortion, setVoronoiDistortion] = useState(100);
-  const [voronoiMorphSpeed, setVoronoiMorphSpeed] = useState(1);
-  const [voronoiAnimTime, setVoronoiAnimTime] = useState(0);
-  const [helixTurns, setHelixTurns] = useState(3);
-  const [helixTightness, setHelixTightness] = useState(2);
-  const [iridescentAngle, setIridescentAngle] = useState(45);
-  const [iridescentIntensity, setIridescentIntensity] = useState(0.8);
-  const [iridescentScale, setIridescentScale] = useState(2);
-  const [waveDistortionStrength, setWaveDistortionStrength] = useState(100);
-  const [waveDistortionRotation, setWaveDistortionRotation] = useState(200);
-  const [radarSweepAngle, setRadarSweepAngle] = useState(0);
-  const [radarFadeLength, setRadarFadeLength] = useState(90);
-  const [fadeDirection, setFadeDirection] = useState(0);
-  const [radarBeamWidth, setRadarBeamWidth] = useState(30);
-  const [flowerCircles, setFlowerCircles] = useState(3);
-  const [flowerScale, setFlowerScale] = useState(0.8);
-  const [flowerSpread, setFlowerSpread] = useState(0.6);
-  const [flowerRotation, setFlowerRotation] = useState(0);
-  const [flowerAnimTime, setFlowerAnimTime] = useState(0);
-  const [auroraAnimTime, setAuroraAnimTime] = useState(0);
-  const [auroraBandCount, setAuroraBandCount] = useState(6);
-  const [auroraWaveSpeed, setAuroraWaveSpeed] = useState(0.2);
-  const [auroraBandHeight, setAuroraBandHeight] = useState(1);
-  const [causticsAnimTime, setCausticsAnimTime] = useState(0);
   // Complexity and Scale were redundant — both just scale the same sine-wave
   // frequency terms, so Complexity was removed and its value folded into Scale.
-  const [causticsBrightness, setCausticsBrightness] = useState(1.5);
-  const [causticsScale, setCausticsScale] = useState(5);
-  const [lavaAnimTime, setLavaAnimTime] = useState(0);
-  const [lavaBlobCount, setLavaBlobCount] = useState(10);
-  const [lavaBlobSize, setLavaBlobSize] = useState(0.08);
-  const [lavaSpeed, setLavaSpeed] = useState(1);
-  const [marbleAnimTime, setMarbleAnimTime] = useState(0);
-  const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
-  const [marbleTurbulence, setMarbleTurbulence] = useState(1.5);
-  const [marbleOctaves, setMarbleOctaves] = useState(5);
-  const [meshJitter, setMeshJitter] = useState(0);
-  const [chromaticAngle, setChromaticAngle] = useState(0);
   // Metaballs
-  const [metaballAnimTime, setMetaballAnimTime] = useState(0);
-  const [metaballCount, setMetaballCount] = useState(6);
-  const [metaballSize, setMetaballSize] = useState(0.16);
-  const [metaballSpeed, setMetaballSpeed] = useState(1);
   // Truchet tiles
-  const [truchetSize, setTruchetSize] = useState(40);
-  const [truchetVariation, setTruchetVariation] = useState(0.5);
-  const [truchetThickness, setTruchetThickness] = useState(4);
   // Moire
-  const [moireAnimTime, setMoireAnimTime] = useState(0);
-  const [moireScale, setMoireScale] = useState(10);
-  const [moireOffset, setMoireOffset] = useState(30);
-  const [moireSpeed, setMoireSpeed] = useState(1);
   // Flow field
-  const [flowAnimTime, setFlowAnimTime] = useState(0);
-  const [flowParticleCount, setFlowParticleCount] = useState(250);
-  const [flowSpeed, setFlowSpeed] = useState(1);
-  const [flowScale, setFlowScale] = useState(3);
-  const [flowThickness, setFlowThickness] = useState(1.5);
   // Attractor — de Jong strange attractor, parameters slowly drift over
   // time via attractorAnimTime for a living, evolving lace pattern.
-  const [attractorAnimTime, setAttractorAnimTime] = useState(0);
-  const [attractorPointCount, setAttractorPointCount] = useState(6);
-  const [attractorSpeed, setAttractorSpeed] = useState(1);
-  const [attractorScale, setAttractorScale] = useState(1);
   // Reaction-Diffusion — Gray-Scott simulation on a fixed coarse grid
   // (see reactionDiffusionGridRef), Feed/Kill control the pattern family
   // (spots vs stripes vs coral), Speed controls sim steps per frame.
-  const [reactionDiffusionFeed, setReactionDiffusionFeed] = useState(0.037);
-  const [reactionDiffusionKill, setReactionDiffusionKill] = useState(0.06);
-  const [reactionDiffusionSpeed, setReactionDiffusionSpeed] = useState(1);
   // Topographic — posterized noise field with dark contour lines at each band edge
-  const [topographicScale, setTopographicScale] = useState(40);
-  const [topographicBands, setTopographicBands] = useState(10);
-  const [topographicLineWidth, setTopographicLineWidth] = useState(0.04);
   // Julia Set — escape-time fractal on the complex plane, rendered at a
   // fixed small internal resolution (see juliaCanvasRef) and upscaled, since
   // per-pixel iteration at full canvas resolution would be far too slow.
-  const [juliaReal, setJuliaReal] = useState(-0.7);
-  const [juliaImaginary, setJuliaImaginary] = useState(0.27);
-  const [juliaZoom, setJuliaZoom] = useState(1);
-  const [juliaIterations, setJuliaIterations] = useState(60);
   // ASCII mosaic
-  const [asciiSize, setAsciiSize] = useState(14);
-  const [asciiColor, setAsciiColor] = useState(false);
-  const [asciiChars, setAsciiChars] = useState(' .:-=+*x#%@');
   // Emoji mosaic — ASCII's sibling, brightness maps to an emoji ramp instead of a character ramp
-  const [emojiSize, setEmojiSize] = useState(28);
-  const [emojiChars, setEmojiChars] = useState('😴🙂😃🤩🔥');
-  const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(41);
-  const [emojiAnimTime, setEmojiAnimTime] = useState(0);
-  const [emojiOffsetX, setEmojiOffsetX] = useState(0);
-  const [emojiSizeVariation, setEmojiSizeVariation] = useState(0);
-  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-  const [emojiPickerSearch, setEmojiPickerSearch] = useState('');
   // Photo overlay — user-uploaded image blended over the gradient. The image
   // itself lives in a ref (not React state, not saved in presets — a data
   // URL big enough to be worth uploading would bloat every preset save), only
   // blend mode + opacity are persisted so a reloaded preset at least restores
   // the *look*, prompting the user to re-upload rather than silently losing it.
-  const [photoBlendMode, setPhotoBlendMode] = useState<'source-over' | 'multiply' | 'screen' | 'overlay'>('overlay');
-  const [photoOpacity, setPhotoOpacity] = useState(80);
-  const [photoFileName, setPhotoFileName] = useState('');
-  const [photoVersion, setPhotoVersion] = useState(0);
-  const photoImageRef = useRef<HTMLImageElement | null>(null);
   // Liquid displacement
-  const [liquidAnimTime, setLiquidAnimTime] = useState(0);
-  const [liquidStrength, setLiquidStrength] = useState(30);
-  const [liquidScale, setLiquidScale] = useState(3);
   // Chromatic trails
-  const [chromaticTrailsDecay, setChromaticTrailsDecay] = useState(0.85);
-  const [chromaticTrailsOffset, setChromaticTrailsOffset] = useState(8);
-  const [vignetteSoftness, setVignetteSoftness] = useState(50);
-  const [fisheyeCenterX, setFisheyeCenterX] = useState(50);
-  const [fisheyeCenterY, setFisheyeCenterY] = useState(50);
-  const [mirrorMode, setMirrorMode] = useState<'horizontal' | 'vertical' | 'grid'>('horizontal');
-  const [mirrorTileCount, setMirrorTileCount] = useState(2);
 
   // Store base AI colors to keep them anchored
-  const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
   
   // Preset management state is in usePresets hook (initialized below)
   
   // Rating system for Randomize
-  const [showRatingUI, setShowRatingUI] = useState(false);
-  const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem('gradientRatings') || '[]');
-      // Migrate any pre-rename ids in cached rating data (see ID_MIGRATIONS).
-      return parsed.map((r: { rating: number; data: any }) => ({
-        ...r,
-        data: {
-          ...r.data,
-          gradientType: r.data?.gradientType ? migrateId(r.data.gradientType) : r.data?.gradientType,
-          activeEffects: migrateIds(r.data?.activeEffects),
-        },
-      }));
-    } catch { return []; }
-  });
-  const [pendingRatingState, setPendingRatingState] = useState<any>(null);
   
   // File input refs for uploads
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
   const handleAudioFileClick = useCallback(() => fileInputRef.current?.click(), []);
   const handlePhotoFileClick = useCallback(() => photoInputRef.current?.click(), []);
   const handlePhotoFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -603,48 +453,24 @@ export function InteractiveGradient() {
   }, []);
   
   // Fullscreen state
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Undo state - store previous settings for one-level undo
-  const undoStackRef = useRef<any[]>([]);
-  const undoIndexRef = useRef(-1);
-  const [undoDepth, setUndoDepth] = useState(-1);
   // Redo state - captures the state undo/redo moves away from, so it can be restored
-  const redoStackRef = useRef<any[]>([]);
-  const [redoDepth, setRedoDepth] = useState(0);
 
   // Track manual zoom interaction
-  const lastManualZoomTime = useRef<number>(0);
   
   // Halftone animation time tracker
-  const halftoneTimeRef = useRef<number>(0);
 
   // Diffusion simulation buffers (for reaction-diffusion)
-  const diffusionGridRef = useRef<{a: number[][], b: number[][], width: number, height: number} | null>(null);
   
   // Slit-scan temporal buffer
-  const slitScanBufferRef = useRef<ImageData[]>([]);
-  const kaleidoAngleRef = useRef(0);
-  const feedbackBufferRef = useRef<HTMLCanvasElement | null>(null);
-  const rippleRingsRef = useRef<{ phase: number; strength: number }[]>([]);
-  const prevBassForRippleRef = useRef(0);
-  const rippleAutoFrameRef = useRef(0);
   // Flow field's persistent trail canvas + particle positions
-  const flowBufferRef = useRef<HTMLCanvasElement | null>(null);
-  const flowParticlesRef = useRef<{ x: number; y: number }[]>([]);
   // Attractor's persistent trail canvas + walker positions (same pattern as flow field)
-  const attractorBufferRef = useRef<HTMLCanvasElement | null>(null);
-  const attractorPointsRef = useRef<{ x: number; y: number }[]>([]);
   // Reaction-Diffusion's persistent simulation grid (fixed coarse resolution,
   // independent of canvas size — see RD_W/RD_H in useCanvasDraw). Double-buffered
   // (u/v + u2/v2) to avoid allocating new Float32Arrays every simulation step.
-  const reactionDiffusionGridRef = useRef<{
-    u: Float32Array; v: Float32Array; u2: Float32Array; v2: Float32Array; canvas: HTMLCanvasElement;
-  } | null>(null);
   // Julia Set's small fixed-resolution offscreen canvas (see comment above the state)
-  const juliaCanvasRef = useRef<HTMLCanvasElement | null>(null);
   // Chromatic Trails' own trail buffer (separate from Feedback's)
-  const chromaticTrailsBufferRef = useRef<HTMLCanvasElement | null>(null);
 
   // Audio reactivity state is in useAudioReactivity hook (initialized below)
 
@@ -914,7 +740,6 @@ export function InteractiveGradient() {
   useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
   useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
   useEffect(() => { rotationDirectionRef.current = rotationDirection; }, [rotationDirection]);
-  const isAutoColorRef = useRef(true);
   useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
   useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
 
@@ -938,19 +763,11 @@ export function InteractiveGradient() {
   audioMidsLevelRef.current = audioMidsLevel;
 
   // Refs for contrast/saturation pulse and canvas shake
-  const contrastPulseRef = useRef(0);
-  const saturationPulseRef = useRef(0);
-  const shakeRef = useRef({ x: 0, y: 0 });
-  const shakeWrapperRef = useRef<HTMLDivElement>(null);
 
   // Refs so the consolidated master RAF loop can read latest gating state without restarting
-  const activeEffectsRef = useRef(activeEffects);
   activeEffectsRef.current = activeEffects;
-  const halftoneMoveRef = useRef(halftoneMove);
   halftoneMoveRef.current = halftoneMove;
-  const gridRotationDirectionRef = useRef(gridRotationDirection);
   gridRotationDirectionRef.current = gridRotationDirection;
-  const gradientTypeRef = useRef(gradientType);
   gradientTypeRef.current = gradientType;
   const isMicActiveRef = useRef(isMicActive);
   isMicActiveRef.current = isMicActive;
@@ -1109,7 +926,6 @@ export function InteractiveGradient() {
     b: Math.floor(Math.random() * 256),
   }), []);
 
-  const [halftoneAnimTrigger, setHalftoneAnimTrigger] = useState(0);
 
   // Each of these local clocks is skipped entirely in Display mode — that
   // tab's copies are pushed from the controller instead (see the animation
