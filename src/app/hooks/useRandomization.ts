@@ -167,10 +167,10 @@ export function useRandomization(params: RandomizationParams) {
   }, [gradientType, FULL_GRADIENT_TYPES, saveCurrentState, randomizeUncoveredParams]);
   const randomizeEffects = useCallback(() => {
     saveCurrentState();
-    // Randomly select 1-6 effects from the full effect list (previously a
+    // Randomly select 1-8 effects from the full effect list (previously a
     // stale hardcoded subset that excluded every effect added after it was
     // written — ALL_EFFECTS is the single source of truth for what exists).
-    const numEffects = Math.floor(Math.random() * 6) + 1;
+    const numEffects = Math.floor(Math.random() * 8) + 1;
     const shuffled = [...ALL_EFFECTS].sort(() => Math.random() - 0.5);
     const selectedEffects = shuffled.slice(0, numEffects);
 
@@ -343,13 +343,13 @@ export function useRandomization(params: RandomizationParams) {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      // Pick 0-7 effects. At most one shape-changer is included (they mask the
+      // Pick 0-8 effects. At most one shape-changer is included (they mask the
       // gradient entirely when stacked), the rest are light/audio effects.
-      const numEffects = Math.floor(Math.random() * 8);
+      const numEffects = Math.floor(Math.random() * 9);
       const selectedEffects: EffectType[] = [];
       if (numEffects > 0) {
         const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.5) {
           selectedEffects.push(SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)]);
         }
         for (const fx of shuffledLight) {
@@ -523,13 +523,18 @@ export function useRandomization(params: RandomizationParams) {
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
     }
 
-    // Effect params — always nudged, range scales with factor. Was a fixed
-    // 9-effect list (kaleidoscope/chromatic/vignette/blur/grain/wave/
+    // Effect params — nudged on each tap, range scales with factor. Was a
+    // fixed 9-effect list (kaleidoscope/chromatic/vignette/blur/grain/wave/
     // pixelate/shift/twist) — any other active effect sat frozen through
     // every hold/evolve. Extended to match the same coverage
     // randomizeUncoveredParams brings to the Shuffle/WAV-click paths.
+    // A single tap only nudges <2 (i.e. at most one) active effect at a
+    // time, picked at random, rather than every active effect at once.
     const rng = (min: number, max: number) => min + Math.random() * (max - min) * (0.3 + factor * 0.7);
-    for (const eff of activeEffects) {
+    const effectsToNudge = activeEffects.length > 0
+      ? [activeEffects[Math.floor(Math.random() * activeEffects.length)]]
+      : [];
+    for (const eff of effectsToNudge) {
       if (eff === 'kaleidoscope') setKaleidoscopeSegments(Math.round(rng(...RANGES.kaleidoscopeSegments)));
       else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(...RANGES.chromaticOffset)));
       else if (eff === 'vignette') setVignetteStrength(rng(...RANGES.vignetteStrength));
