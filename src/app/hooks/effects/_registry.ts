@@ -30,6 +30,7 @@ import { applyEmoji } from './applyEmoji';
 import { applyPhoto } from './applyPhoto';
 import { applyLiquid } from './applyLiquid';
 import { applyChromaticTrails } from './applyChromaticTrails';
+import { applyStir } from './applyStir';
 
 export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'kaleidoscope': applyKaleidoscope,
@@ -64,4 +65,5 @@ export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'photo': applyPhoto,
   'liquid': applyLiquid,
   'chromatic-trails': applyChromaticTrails,
+  'stir': applyStir,
 };

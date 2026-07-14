@@ -72,13 +72,14 @@ export function useSnapshot(params: SnapshotParams) {
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
+    setStirBrushSize, setStirDecay, setStirIntensity,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency,
     setWaveNumber, setWaveRotation, setWaveScale, setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, windmillRotations,
+    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, stirBrushSize, stirDecay, stirIntensity, windmillRotations,
     windmillThickness, windmillTightness, windmillZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, truchetSize, truchetThickness,
@@ -224,6 +225,7 @@ export function useSnapshot(params: SnapshotParams) {
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
       slitScanDirection, slitScanIntensity,
+      stirBrushSize, stirDecay, stirIntensity,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
@@ -289,6 +291,7 @@ export function useSnapshot(params: SnapshotParams) {
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
       slitScanDirection, slitScanIntensity,
+      stirBrushSize, stirDecay, stirIntensity,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
@@ -515,6 +518,9 @@ export function useSnapshot(params: SnapshotParams) {
     setRippleFrequency(snapshot.rippleFrequency ?? 0.015);
     setSlitScanDirection(snapshot.slitScanDirection ?? 'horizontal');
     setSlitScanIntensity(snapshot.slitScanIntensity ?? 0.5);
+    setStirBrushSize(snapshot.stirBrushSize ?? 60);
+    setStirDecay(snapshot.stirDecay ?? 0.08);
+    setStirIntensity(snapshot.stirIntensity ?? 0.7);
     setTruchetSize(snapshot.truchetSize ?? 40);
     setTruchetThickness(snapshot.truchetThickness ?? 4);
     setTruchetVariation(snapshot.truchetVariation ?? 0.5);
