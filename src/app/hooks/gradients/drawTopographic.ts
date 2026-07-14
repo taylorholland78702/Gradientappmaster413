@@ -5,6 +5,7 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
     fieldContrast,
     paletteMode,
     paletteBands,
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -237,10 +238,12 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
           // A slow drift tied to gradientAngle so the field isn't perfectly
           // static — matches how other gradients keep moving under auto-play.
           const topoPhase = gradientAngle * 0.01;
+          const topoSeedX = structuralSeed * 130;
+          const topoSeedY = structuralSeed * 90;
 
           for (let ty = 0; ty < displayHeight; ty++) {
             for (let tx = 0; tx < displayWidth; tx++) {
-              const dx = tx - topoCX, dy = ty - topoCY;
+              const dx = tx - topoCX + topoSeedX, dy = ty - topoCY + topoSeedY;
               const n1 = Math.sin(dx * topoScaleFactor + topoPhase) * Math.cos(dy * topoScaleFactor * 1.15 - topoPhase);
               const n2 = Math.sin((dx + dy) * topoScaleFactor * 0.5) * 0.5;
               const n3 = Math.cos((dx - dy) * topoScaleFactor * 0.37) * 0.35;

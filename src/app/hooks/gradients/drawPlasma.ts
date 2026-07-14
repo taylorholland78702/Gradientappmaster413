@@ -5,6 +5,7 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
     fieldContrast,
     paletteMode,
     paletteBands,
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -234,14 +235,17 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
 
           const plasmaCX = displayWidth / 2;
           const plasmaCY = displayHeight / 2;
+          const plasmaSeedX = structuralSeed * 210;
+          const plasmaSeedY = structuralSeed * 140;
           for (let py = 0; py < displayHeight; py++) {
             for (let px = 0; px < displayWidth; px++) {
               const dx = px - plasmaCX;
               const dy = py - plasmaCY;
+              const spx = px + plasmaSeedX, spy = py + plasmaSeedY;
               const value = (
-                Math.sin(px * plasmaScale + gradientAngle * 0.05) +
-                Math.sin(py * plasmaScale + gradientAngle * 0.05) +
-                Math.sin((px + py) * plasmaScale * 0.75) +
+                Math.sin(spx * plasmaScale + gradientAngle * 0.05) +
+                Math.sin(spy * plasmaScale + gradientAngle * 0.05) +
+                Math.sin((spx + spy) * plasmaScale * 0.75) +
                 Math.sin(Math.sqrt(dx * dx + dy * dy) * plasmaScale + gradientAngle * 0.05)
               ) / 4 + 0.5;
 

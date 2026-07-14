@@ -6,6 +6,8 @@ export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
   getGradientDisplayName: (t: GradientType) => string;
+  seedableGradientTypes: string[];
+  onReroll: () => void;
 
   // Freeform pins
   colorPins: ColorPin[];
@@ -160,7 +162,7 @@ export interface GradientsTabProps {
 
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
-    gradientType, setGradientType, getGradientDisplayName,
+    gradientType, setGradientType, getGradientDisplayName, seedableGradientTypes, onReroll,
     colorPins, setColorPins, selectedPinId, setSelectedPinId,
     gridRows, setGridRows, gridColumns, setGridColumns,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
@@ -221,6 +223,19 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             })}
           </div>
         </div>
+
+        {/* Reroll — only for gradients with a structural seed to vary (see
+            SEEDABLE_GRADIENT_TYPES in InteractiveGradient.tsx for why this
+            list is what it is). Distinct from the whole-panel WAV/Shuffle
+            randomizer: this only rerolls the current gradient's structure. */}
+        {seedableGradientTypes.includes(gradientType) && (
+          <button
+            onClick={onReroll}
+            className="w-full py-1.5 text-[10px] font-semibold text-white bg-black/25 hover:bg-white/15 rounded-lg transition-all"
+          >
+            🎲 Reroll
+          </button>
+        )}
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}

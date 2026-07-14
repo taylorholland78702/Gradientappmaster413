@@ -20,7 +20,7 @@ export function useSnapshot(params: SnapshotParams) {
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
+    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -50,7 +50,7 @@ export function useSnapshot(params: SnapshotParams) {
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
-    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setOilPaintStrength,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setOilPaintStrength, setStructuralSeed,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -194,7 +194,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
+      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -261,7 +261,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
+      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -436,6 +436,7 @@ export function useSnapshot(params: SnapshotParams) {
     setPaletteBands(snapshot.paletteBands ?? 5);
     setInvertAmount(snapshot.invertAmount ?? 1);
     setOilPaintStrength(snapshot.oilPaintStrength ?? 5);
+    setStructuralSeed(snapshot.structuralSeed ?? 0);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);

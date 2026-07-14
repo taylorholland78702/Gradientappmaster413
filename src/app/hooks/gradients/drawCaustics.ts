@@ -5,6 +5,7 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
     fieldContrast,
     paletteMode,
     paletteBands,
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -237,10 +238,12 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
           const scaleX = cScaleXY * 4 / zoom;
           const scaleY = (causticsScale / displayHeight) * 4 / zoom;
           const cFreq = causticsFreqBoost;
+          const cSeedX = structuralSeed * 2.1;
+          const cSeedY = structuralSeed * 1.4;
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
-              const nx = (x - centerX) * scaleX;
-              const ny = (y - centerY) * scaleY;
+              const nx = (x - centerX) * scaleX + cSeedX;
+              const ny = (y - centerY) * scaleY + cSeedY;
               const w1 = Math.sin(nx * 2.1 * cFreq + Math.sin(ny * 1.3 * cFreq + ct + causticsPhaseWarp) + ct * 0.7);
               const w2 = Math.sin(ny * 2.3 * cFreq + Math.sin(nx * 1.7 * cFreq - ct * 0.8 + causticsPhaseWarp) - ct * 0.5);
               const w3 = Math.sin((nx + ny) * 1.5 * cFreq + ct * 1.1);

@@ -1,5 +1,6 @@
 export function drawVoronoi(P: any): CanvasGradient | undefined {
   const {
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -221,9 +222,11 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
           const voronoiImageData = ctx.createImageData(displayWidth, displayHeight);
           const voronoiData = voronoiImageData.data;
 
-          // Seeded random number generator for animated pattern
+          // Seeded random number generator for animated pattern — structuralSeed
+          // is mixed into the hash so a reroll fully relocates every cell
+          // instead of only nudging them.
           const voronoiSeed = (x: number) => {
-            const s = Math.sin(x * 12.9898 + voronoiCellCount * 78.233) * 43758.5453;
+            const s = Math.sin(x * 12.9898 + voronoiCellCount * 78.233 + structuralSeed * 37.719) * 43758.5453;
             return s - Math.floor(s);
           };
 

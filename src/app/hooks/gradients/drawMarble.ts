@@ -5,6 +5,7 @@ export function drawMarble(P: any): CanvasGradient | undefined {
     fieldContrast,
     paletteMode,
     paletteBands,
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -235,10 +236,12 @@ export function drawMarble(P: any): CanvasGradient | undefined {
           const d3 = imageData3.data;
           const mScale = (1 / zoom) * 3;
           const mOctaves = Math.round(marbleOctaves);
+          const mSeedX = structuralSeed * 1.7;
+          const mSeedY = structuralSeed * 2.3;
           for (let y = 0; y < displayHeight; y++) {
             for (let x = 0; x < displayWidth; x++) {
-              const nx2 = (x - centerX) / displayWidth * mScale;
-              const ny2 = (y - centerY) / displayHeight * mScale;
+              const nx2 = (x - centerX) / displayWidth * mScale + mSeedX;
+              const ny2 = (y - centerY) / displayHeight * mScale + mSeedY;
               let turb = 0;
               let freq = 1 * marbleAudioFreq;
               let amp = 1;

@@ -1,5 +1,6 @@
 export function drawMetaballs(P: any): CanvasGradient | undefined {
   const {
+    structuralSeed,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -231,8 +232,9 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
           const numBalls = Math.max(2, Math.min(metaballCount, 14));
           const balls: Array<{x: number, y: number, r: number}> = [];
           for (let i = 0; i < numBalls; i++) {
-            const angle = (i / numBalls) * Math.PI * 2 + mbTime * (0.25 + i * 0.05);
-            const orbitR = 0.2 + 0.18 * Math.sin(mbTime * 0.3 + i * 1.3);
+            const seedPhase = structuralSeed * (i + 1) * 0.9;
+            const angle = (i / numBalls) * Math.PI * 2 + mbTime * (0.25 + i * 0.05) + seedPhase;
+            const orbitR = 0.2 + 0.18 * Math.sin(mbTime * 0.3 + i * 1.3 + seedPhase);
             balls.push({
               x: centerX + displayWidth * orbitR * Math.cos(angle),
               y: centerY + displayHeight * orbitR * Math.sin(angle * 0.8 + mbTime * 0.15),
