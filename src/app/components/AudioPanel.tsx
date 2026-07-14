@@ -143,7 +143,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {isAudioControlsOpen && (
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
 
             {/* Intensity + Auto Gain */}
             <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <div className="flex gap-2 items-start overflow-hidden">
 
               {/* Sub-bass */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -192,7 +192,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
 
               {/* Bass */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -206,7 +206,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
 
               {/* Mids */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
@@ -220,7 +220,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
 
               {/* Treble */}
-              <div className="flex flex-col items-center gap-1.5 w-0 flex-1 min-w-0 rounded-lg p-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
                   <div className="flex-1 relative rounded overflow-hidden bg-white/8">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
