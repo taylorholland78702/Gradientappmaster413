@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, GoogleLogo, SignOut } from '@phosphor-icons/react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, SignOut } from '@phosphor-icons/react';
 import { encodePresetData } from '../utils/presetShare';
 
 interface Preset {
@@ -42,7 +42,6 @@ interface PresetsPanelProps {
   authBusy: boolean;
   authError: string;
   clearAuthError: () => void;
-  signInWithGoogle: () => void;
   signInWithEmail: (email: string, password: string) => void;
   signUpWithEmail: (email: string, password: string) => void;
   signOutUser: () => void;
@@ -69,12 +68,10 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   authBusy,
   authError,
   clearAuthError,
-  signInWithGoogle,
   signInWithEmail,
   signUpWithEmail,
   signOutUser,
 }) => {
-  const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
   const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -233,38 +230,21 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
             <p className="text-[10px] text-white/50 leading-snug">
               Login to save presets across devices.
             </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={signInWithGoogle}
-                disabled={authBusy}
-                className="flex items-center justify-center gap-1.5 flex-1 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors disabled:opacity-50"
-              >
-                <GoogleLogo weight="bold" className="w-3.5 h-3.5" /> Google
-              </button>
-              <button
-                onClick={() => { setIsEmailFormOpen(o => !o); clearAuthError(); }}
-                disabled={authBusy}
-                className="flex-1 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors disabled:opacity-50"
-              >
-                Email
-              </button>
-            </div>
-            {isEmailFormOpen && (
-              <div className="flex flex-col gap-1.5">
-                <div className="flex gap-1 text-[10px]">
-                  <button
-                    onClick={() => setEmailMode('signin')}
-                    className={`px-2 py-0.5 rounded ${emailMode === 'signin' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Sign in
-                  </button>
-                  <button
-                    onClick={() => setEmailMode('signup')}
-                    className={`px-2 py-0.5 rounded ${emailMode === 'signup' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Sign up
-                  </button>
-                </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex gap-1 text-[10px]">
+                <button
+                  onClick={() => { setEmailMode('signin'); clearAuthError(); }}
+                  className={`px-2 py-0.5 rounded ${emailMode === 'signin' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                >
+                  Sign in
+                </button>
+                <button
+                  onClick={() => { setEmailMode('signup'); clearAuthError(); }}
+                  className={`px-2 py-0.5 rounded ${emailMode === 'signup' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                >
+                  Sign up
+                </button>
+              </div>
                 <input
                   type="email"
                   value={email}
@@ -287,8 +267,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                 >
                   {emailMode === 'signup' ? 'Create account' : 'Sign in'}
                 </button>
-              </div>
-            )}
+            </div>
             {authError && (
               <p className="text-[10px] text-red-300 leading-snug">{authError}</p>
             )}

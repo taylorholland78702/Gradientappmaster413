@@ -3725,7 +3725,6 @@ export function InteractiveGradient() {
           authBusy={authState.authBusy}
           authError={authState.authError}
           clearAuthError={authState.clearAuthError}
-          signInWithGoogle={authState.signInWithGoogle}
           signInWithEmail={authState.signInWithEmail}
           signUpWithEmail={authState.signUpWithEmail}
           signOutUser={authState.signOutUser}
