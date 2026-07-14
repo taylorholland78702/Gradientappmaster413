@@ -69,6 +69,7 @@ export interface GradientsTabProps {
   attractorSpeed: number; setAttractorSpeed: (v: number) => void;
   attractorScale: number; setAttractorScale: (v: number) => void;
   attractorDotSize: number; setAttractorDotSize: (v: number) => void;
+  attractorTrailFade: number; setAttractorTrailFade: (v: number) => void;
 
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
@@ -173,6 +174,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed,
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
+    attractorTrailFade, setAttractorTrailFade,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
@@ -623,6 +625,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Speed', value: attractorSpeed, set: setAttractorSpeed, min: 0.1, max: 5, step: 0.1 },
               { label: 'Scale', value: attractorScale, set: setAttractorScale, min: 0.3, max: 3, step: 0.1 },
               { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
+              { label: 'Fade', value: attractorTrailFade, set: setAttractorTrailFade, min: 0.01, max: 0.3, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -1449,16 +1452,20 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Shared field-mapping controls — appear for any scalar-field gradient
             (one continuous 0-1 value mapped to the palette per pixel), reusing
             a single fieldContrast/paletteMode/paletteBands state rather than a
-            near-duplicate set per gradient, since only one is ever active. */}
-        {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma'] as GradientType[]).includes(gradientType) && (
+            near-duplicate set per gradient, since only one is ever active.
+            Fade only wires up Contrast (it blends exactly 2 explicit colors
+            rather than indexing the full palette, so Banded/Cyclic don't
+            apply the same way). */}
+        {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
           <div className="w-full p-2 bg-black/25 rounded-lg mt-2">
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-2'}`}>
               <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
+            {gradientType !== 'fade' && (
             <div className="flex items-center gap-1 mb-2">
               <label className="text-[10px] text-white whitespace-nowrap">Palette:</label>
               <div className="flex gap-1 flex-1">
@@ -1475,7 +1482,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 ))}
               </div>
             </div>
-            {paletteMode !== 'linear' && (
+            )}
+            {gradientType !== 'fade' && paletteMode !== 'linear' && (
               <div className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">

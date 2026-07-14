@@ -1,5 +1,8 @@
+import { applyFieldContrast } from '../../utils/fieldCurve';
+
 export function drawFade(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -223,7 +226,7 @@ export function drawFade(P: any): CanvasGradient | undefined {
           const currentColorIndex = Math.floor(exactPosition) % totalColors;
           const nextColorIndex = (currentColorIndex + 1) % totalColors;
           // Bass pulses the blend amount toward the next color
-          const baseBlend = exactPosition - Math.floor(exactPosition);
+          const baseBlend = applyFieldContrast(exactPosition - Math.floor(exactPosition), fieldContrast);
           const blendAmount = fadeAudioActive ? Math.min(1, baseBlend + audioSubBassLevel * 0.4) : baseBlend;
 
           const currentColor = gradientColors[currentColorIndex];

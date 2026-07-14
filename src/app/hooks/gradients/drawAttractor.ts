@@ -1,5 +1,6 @@
 export function drawAttractor(P: any): CanvasGradient | undefined {
   const {
+    attractorTrailFade,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -242,7 +243,7 @@ export function drawAttractor(P: any): CanvasGradient | undefined {
           const pc = 2.4 + Math.sin(at * 0.07) * 0.9;
           const pd = -2.1 + Math.cos(at * 0.11) * 0.9;
 
-          abCtx.fillStyle = 'rgba(0,0,0,0.04)';
+          abCtx.fillStyle = `rgba(0,0,0,${attractorTrailFade})`;
           abCtx.fillRect(0, 0, displayWidth, displayHeight);
 
           const attractorCenterX = displayWidth / 2;

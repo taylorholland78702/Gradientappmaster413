@@ -1,5 +1,6 @@
 export function applyInvert(P: any): void {
   const {
+    invertAmount,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -218,13 +219,15 @@ export function applyInvert(P: any): void {
     audioModulation,
     imageData
   } = P;
-            // Invert colors
+            // Invert colors — invertAmount blends between the original pixel
+            // (0) and a full invert (1) instead of only ever supporting 100%.
             if (!imageData) return;
             const data = imageData.data;
+            const amt = invertAmount ?? 1;
             for (let i = 0; i < data.length; i += 4) {
-              data[i] = 255 - data[i];         // Red
-              data[i + 1] = 255 - data[i + 1]; // Green
-              data[i + 2] = 255 - data[i + 2]; // Blue
+              data[i] = data[i] + (255 - 2 * data[i]) * amt;         // Red
+              data[i + 1] = data[i + 1] + (255 - 2 * data[i + 1]) * amt; // Green
+              data[i + 2] = data[i + 2] + (255 - 2 * data[i + 2]) * amt; // Blue
             }
             putScaledImageData(imageData);
 }

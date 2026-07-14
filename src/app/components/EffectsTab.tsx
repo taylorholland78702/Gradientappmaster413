@@ -92,6 +92,10 @@ export interface EffectsTabProps {
   halftoneVariation: number; setHalftoneVariation: (v: number) => void;
   // Saturate (charcoal id)
   charcoalIntensity: number; setCharcoalIntensity: (v: number) => void;
+  // Invert
+  invertAmount: number; setInvertAmount: (v: number) => void;
+  // Oil Paint
+  oilPaintStrength: number; setOilPaintStrength: (v: number) => void;
   // Duotone
   duotoneColor1: string; setDuotoneColor1: (v: string) => void;
   duotoneColor2: string; setDuotoneColor2: (v: string) => void;
@@ -151,6 +155,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     posterizeLevels, setPosterizeLevels,
     halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
     charcoalIntensity, setCharcoalIntensity,
+    invertAmount, setInvertAmount,
+    oilPaintStrength, setOilPaintStrength,
     duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
@@ -187,6 +193,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
+              { value: 'charcoal',       label: 'Saturate' },
               { value: 'chromatic',      label: 'Chromatic' },
               { value: 'chromatic-trails', label: 'Chroma Trails' },
               { value: 'dither',         label: 'Dither' },
@@ -202,6 +209,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'kaleidoscope',   label: 'Kaleido' },
               { value: 'liquid',         label: 'Liquid' },
               { value: 'mirror',         label: 'Mirror' },
+              { value: 'oil-paint',      label: 'Oil Paint' },
               { value: 'photo',          label: 'Photo' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
@@ -259,7 +267,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           })()}
         </div>
 
-        {activeEffects.length > 0 && activeEffects.some(effect => effect !== 'invert') && (() => {
+        {activeEffects.length > 0 && (() => {
           const isMulti = activeEffects.length > 1;
 
           return (
@@ -950,8 +958,26 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
+              {activeEffects.includes('invert') && (
+                <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={expandedEffects.has('invert')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                  <input type="range" min="0" max="1" step="0.05" value={invertAmount} onChange={(e) => setInvertAmount(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={invertAmount} onChange={(e) => setInvertAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('oil-paint') && (
+                <EffectSection id="oil-paint" label="Oil Paint" isMulti={isMulti} expanded={expandedEffects.has('oil-paint')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                  <input type="range" min="1" max="15" step="0.5" value={oilPaintStrength} onChange={(e) => setOilPaintStrength(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="1" max="15" step="0.5" value={oilPaintStrength} onChange={(e) => setOilPaintStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
 
-              
+
               {activeEffects.includes('duotone') && (
                 <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">

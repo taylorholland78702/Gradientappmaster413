@@ -78,6 +78,7 @@ import { useGridRotationDirectionState } from '../hooks/state/useGridRotationDir
 import { useHalftoneState } from '../hooks/state/useHalftoneState';
 import { useHelixState } from '../hooks/state/useHelixState';
 import { useHexGridState } from '../hooks/state/useHexGridState';
+import { useInvertState } from '../hooks/state/useInvertState';
 import { useIridescentState } from '../hooks/state/useIridescentState';
 import { useJuliaState } from '../hooks/state/useJuliaState';
 import { useKaleidoscopeState } from '../hooks/state/useKaleidoscopeState';
@@ -93,6 +94,7 @@ import { useMirrorState } from '../hooks/state/useMirrorState';
 import { useMiscState } from '../hooks/state/useMiscState';
 import { useMoireState } from '../hooks/state/useMoireState';
 import { useNoiseState } from '../hooks/state/useNoiseState';
+import { useOilPaintState } from '../hooks/state/useOilPaintState';
 import { usePanelDragState } from '../hooks/state/usePanelDragState';
 import { usePanelPosState } from '../hooks/state/usePanelPosState';
 import { usePhotoState } from '../hooks/state/usePhotoState';
@@ -275,7 +277,7 @@ const DISPLAY_ANIM_SYNC_KEY = 'wav-display-sync-anim';
 export function InteractiveGradient() {
   const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY } = useAngleState();
   const { asciiSize, setAsciiSize, asciiColor, setAsciiColor, asciiChars, setAsciiChars } = useAsciiState();
-  const { attractorAnimTime, setAttractorAnimTime, attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize, attractorBufferRef, attractorPointsRef } = useAttractorState();
+  const { attractorAnimTime, setAttractorAnimTime, attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize, attractorTrailFade, setAttractorTrailFade, attractorBufferRef, attractorPointsRef } = useAttractorState();
   const { auroraAnimTime, setAuroraAnimTime, auroraBandCount, setAuroraBandCount, auroraWaveSpeed, setAuroraWaveSpeed, auroraBandHeight, setAuroraBandHeight } = useAuroraState();
   const { bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius } = useBloomState();
   const { blurType, setBlurType } = useBlurState();
@@ -310,6 +312,7 @@ export function InteractiveGradient() {
   const { halftoneSize, setHalftoneSize, halftoneVariation, setHalftoneVariation, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, halftoneCMYK, setHalftoneCMYK, halftoneTimeRef, halftoneMoveRef, halftoneAnimTrigger, setHalftoneAnimTrigger } = useHalftoneState();
   const { helixTurns, setHelixTurns, helixTightness, setHelixTightness } = useHelixState();
   const { hexGridSize, setHexGridSize } = useHexGridState();
+  const { invertAmount, setInvertAmount } = useInvertState();
   const { iridescentAngle, setIridescentAngle, iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale } = useIridescentState();
   const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations, juliaCanvasRef } = useJuliaState();
   const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeReflections, setKaleidoscopeReflections, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
@@ -325,6 +328,7 @@ export function InteractiveGradient() {
   const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, selectedPinId, setSelectedPinId, isDraggingPin, setIsDraggingPin, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
+  const { oilPaintStrength, setOilPaintStrength } = useOilPaintState();
   const { panelDragRef } = usePanelDragState();
   const { panelPos, setPanelPos } = usePanelPosState();
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
@@ -1075,6 +1079,7 @@ export function InteractiveGradient() {
     glitchIntensity, glitchBlockSize, glitchChromaSplit, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     fieldContrast, paletteMode, paletteBands, setFieldContrast, setPaletteMode, setPaletteBands,
+    invertAmount, setInvertAmount, oilPaintStrength, setOilPaintStrength,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
     blurType, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
@@ -1085,6 +1090,7 @@ export function InteractiveGradient() {
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
     flowParticleCount, flowScale, flowSpeed, flowThickness,
     attractorPointCount, attractorScale, attractorSpeed, attractorDotSize, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize,
+    attractorTrailFade, setAttractorTrailFade,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     topographicScale, topographicBands, topographicLineWidth,
@@ -2243,8 +2249,8 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-    fieldContrast, paletteMode, paletteBands,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, stirBrushSize, stirDecay, stirIntensity, fieldContrast, paletteMode, paletteBands, photoVersion, photoBlendMode, photoOpacity]);
+    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, attractorTrailFade,
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, stirBrushSize, stirDecay, stirIntensity, fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, attractorTrailFade, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2290,7 +2296,7 @@ export function InteractiveGradient() {
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    fieldContrast, paletteMode, paletteBands,
+    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, attractorTrailFade,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
@@ -3462,6 +3468,8 @@ export function InteractiveGradient() {
             setAttractorScale={setAttractorScale}
             attractorDotSize={attractorDotSize}
             setAttractorDotSize={setAttractorDotSize}
+            attractorTrailFade={attractorTrailFade}
+            setAttractorTrailFade={setAttractorTrailFade}
             reactionDiffusionFeed={reactionDiffusionFeed}
             setReactionDiffusionFeed={setReactionDiffusionFeed}
             reactionDiffusionKill={reactionDiffusionKill}
@@ -3690,6 +3698,10 @@ export function InteractiveGradient() {
             setHalftoneVariation={setHalftoneVariation}
             charcoalIntensity={charcoalIntensity}
             setCharcoalIntensity={setCharcoalIntensity}
+            invertAmount={invertAmount}
+            setInvertAmount={setInvertAmount}
+            oilPaintStrength={oilPaintStrength}
+            setOilPaintStrength={setOilPaintStrength}
             duotoneColor1={duotoneColor1}
             setDuotoneColor1={setDuotoneColor1}
             duotoneColor2={duotoneColor2}

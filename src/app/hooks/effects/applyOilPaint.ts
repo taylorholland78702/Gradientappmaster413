@@ -1,5 +1,6 @@
 export function applyOilPaint(P: any): void {
   const {
+    oilPaintStrength,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -218,7 +219,7 @@ export function applyOilPaint(P: any): void {
     audioModulation,
     imageData
   } = P;
-            ctx.filter = `blur(5px)`;
+            ctx.filter = `blur(${oilPaintStrength}px)`;
             ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             ctx.filter = 'none';
 }

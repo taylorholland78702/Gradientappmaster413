@@ -20,11 +20,11 @@ export function useSnapshot(params: SnapshotParams) {
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    fieldContrast, paletteMode, paletteBands,
+    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
-    flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
+    flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed, attractorDotSize, attractorTrailFade,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
     topographicScale, topographicBands, topographicLineWidth,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, flowerCircles, flowerRotation,
@@ -50,12 +50,12 @@ export function useSnapshot(params: SnapshotParams) {
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
-    setFieldContrast, setPaletteMode, setPaletteBands,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setOilPaintStrength,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
     setFeedbackZoom, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale,
-    setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize,
+    setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
@@ -194,12 +194,12 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands,
+      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
-      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
+      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize, attractorTrailFade,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
       juliaReal, juliaImaginary, juliaZoom, juliaIterations,
@@ -261,12 +261,12 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands,
+      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
-      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
+      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize, attractorTrailFade,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
       juliaReal, juliaImaginary, juliaZoom, juliaIterations,
@@ -434,6 +434,8 @@ export function useSnapshot(params: SnapshotParams) {
     setFieldContrast(snapshot.fieldContrast ?? 1);
     setPaletteMode(snapshot.paletteMode ?? 'linear');
     setPaletteBands(snapshot.paletteBands ?? 5);
+    setInvertAmount(snapshot.invertAmount ?? 1);
+    setOilPaintStrength(snapshot.oilPaintStrength ?? 5);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);
@@ -448,6 +450,7 @@ export function useSnapshot(params: SnapshotParams) {
     setAttractorScale(snapshot.attractorScale ?? 1);
     setAttractorSpeed(snapshot.attractorSpeed ?? 1);
     setAttractorDotSize(snapshot.attractorDotSize ?? 1);
+    setAttractorTrailFade(snapshot.attractorTrailFade ?? 0.04);
     setReactionDiffusionFeed(snapshot.reactionDiffusionFeed ?? 0.037);
     setReactionDiffusionKill(snapshot.reactionDiffusionKill ?? 0.06);
     setReactionDiffusionSpeed(snapshot.reactionDiffusionSpeed ?? 1);
