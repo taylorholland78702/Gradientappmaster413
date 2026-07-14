@@ -13,6 +13,7 @@ export function drawAttractor(P: any): CanvasGradient | undefined {
     attractorPointCount,
     attractorPointsRef,
     attractorScale,
+    attractorDotSize,
     audioMidsLevel,
     audioSubBassLevel,
     audioTrebleLevel,
@@ -248,6 +249,8 @@ export function drawAttractor(P: any): CanvasGradient | undefined {
           const attractorCenterY = displayHeight / 2;
           const scaleFactor = (Math.min(displayWidth, displayHeight) / 4.2) * attractorScale;
           const stepsPerFrame = 150;
+          const dotSize = Math.max(0.5, attractorDotSize);
+          const dotOffset = dotSize / 2;
           for (let i = 0; i < points.length; i++) {
             const p = points[i];
             const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
@@ -257,7 +260,7 @@ export function drawAttractor(P: any): CanvasGradient | undefined {
               const nx = Math.sin(pa * py) - Math.cos(pb * px);
               const ny = Math.sin(pc * px) - Math.cos(pd * py);
               px = nx; py = ny;
-              abCtx.fillRect(attractorCenterX + px * scaleFactor, attractorCenterY + py * scaleFactor, 1, 1);
+              abCtx.fillRect(attractorCenterX + px * scaleFactor - dotOffset, attractorCenterY + py * scaleFactor - dotOffset, dotSize, dotSize);
             }
             p.x = px; p.y = py;
           }

@@ -5,6 +5,7 @@ export function useAttractorState() {
   const [attractorPointCount, setAttractorPointCount] = useState(6);
   const [attractorSpeed, setAttractorSpeed] = useState(1);
   const [attractorScale, setAttractorScale] = useState(1);
+  const [attractorDotSize, setAttractorDotSize] = useState(1);
   const attractorBufferRef = useRef<HTMLCanvasElement | null>(null);
   const attractorPointsRef = useRef<{ x: number; y: number }[]>([]);
 
@@ -17,6 +18,8 @@ export function useAttractorState() {
     setAttractorSpeed,
     attractorScale,
     setAttractorScale,
+    attractorDotSize,
+    setAttractorDotSize,
     attractorBufferRef,
     attractorPointsRef,
   };

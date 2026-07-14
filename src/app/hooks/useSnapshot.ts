@@ -23,7 +23,7 @@ export function useSnapshot(params: SnapshotParams) {
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
-    flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed,
+    flowParticleCount, flowScale, flowSpeed, flowThickness, attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
     topographicScale, topographicBands, topographicLineWidth,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, flowerCircles, flowerRotation,
@@ -52,7 +52,7 @@ export function useSnapshot(params: SnapshotParams) {
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
     setFeedbackZoom, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale,
-    setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed,
+    setFlowSpeed, setFlowThickness, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
@@ -194,7 +194,7 @@ export function useSnapshot(params: SnapshotParams) {
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
-      attractorPointCount, attractorScale, attractorSpeed,
+      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
       juliaReal, juliaImaginary, juliaZoom, juliaIterations,
@@ -259,7 +259,7 @@ export function useSnapshot(params: SnapshotParams) {
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
       flowParticleCount, flowScale, flowSpeed, flowThickness,
-      attractorPointCount, attractorScale, attractorSpeed,
+      attractorPointCount, attractorScale, attractorSpeed, attractorDotSize,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
       juliaReal, juliaImaginary, juliaZoom, juliaIterations,
@@ -436,6 +436,7 @@ export function useSnapshot(params: SnapshotParams) {
     setAttractorPointCount(snapshot.attractorPointCount ?? 6);
     setAttractorScale(snapshot.attractorScale ?? 1);
     setAttractorSpeed(snapshot.attractorSpeed ?? 1);
+    setAttractorDotSize(snapshot.attractorDotSize ?? 1);
     setReactionDiffusionFeed(snapshot.reactionDiffusionFeed ?? 0.037);
     setReactionDiffusionKill(snapshot.reactionDiffusionKill ?? 0.06);
     setReactionDiffusionSpeed(snapshot.reactionDiffusionSpeed ?? 1);

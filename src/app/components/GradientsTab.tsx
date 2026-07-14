@@ -68,6 +68,7 @@ export interface GradientsTabProps {
   attractorPointCount: number; setAttractorPointCount: (v: number) => void;
   attractorSpeed: number; setAttractorSpeed: (v: number) => void;
   attractorScale: number; setAttractorScale: (v: number) => void;
+  attractorDotSize: number; setAttractorDotSize: (v: number) => void;
 
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
@@ -166,7 +167,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
     moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed,
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
-    attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale,
+    attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
@@ -615,6 +616,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Points', value: attractorPointCount, set: setAttractorPointCount, min: 1, max: 20, step: 1 },
               { label: 'Speed', value: attractorSpeed, set: setAttractorSpeed, min: 0.1, max: 5, step: 0.1 },
               { label: 'Scale', value: attractorScale, set: setAttractorScale, min: 0.3, max: 3, step: 0.1 },
+              { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-2' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
