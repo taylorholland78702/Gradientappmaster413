@@ -203,14 +203,17 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       if (b === UNCATEGORIZED) return -1;
       return a.localeCompare(b);
     });
-    return folders.map(folder => ({ folder, items: groups.get(folder)! }));
+    return folders.map(folder => ({
+      folder,
+      items: [...groups.get(folder)!].sort((a, b) => a.name.localeCompare(b.name)),
+    }));
   }, [savedPresets, folderNames]);
 
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
       {/* Sign-in — anonymous sessions already save presets, but only in
-          this browser; signing in with Google or email lets the same
-          presets follow you across devices. */}
+          this browser; signing in with email lets the same presets follow
+          you across devices. */}
       <div className="border-b border-white/10 px-4 py-2.5">
         {authUser && !isAnonymous ? (
           <div className="flex items-center justify-between gap-2">
