@@ -231,7 +231,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         ) : (
           <div className="flex flex-col gap-2">
             <p className="text-[10px] text-white/50 leading-snug">
-              Presets are saved to this browser only. Sign in to sync them across devices.
+              Login to save presets across devices.
             </p>
             <div className="flex items-center gap-2">
               <button
