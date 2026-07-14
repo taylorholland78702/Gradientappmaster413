@@ -240,25 +240,37 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
             const gridCanvas = document.createElement('canvas');
             gridCanvas.width = RD_W;
             gridCanvas.height = RD_H;
-            reactionDiffusionGridRef.current = { u, v, u2: new Float32Array(RD_W * RD_H), v2: new Float32Array(RD_W * RD_H), canvas: gridCanvas };
+            reactionDiffusionGridRef.current = { u, v, u2: new Float32Array(RD_W * RD_H), v2: new Float32Array(RD_W * RD_H), canvas: gridCanvas, time: 0 };
           }
           const rd = reactionDiffusionGridRef.current;
           let { u, v, u2, v2 } = rd;
           const Du = 1.0, Dv = 0.5;
-          const feed = reactionDiffusionFeed, kill = reactionDiffusionKill;
           const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 6));
           const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
 
-          // Gray-Scott is a fully deterministic PDE on a wrapped (toroidal)
-          // grid with no boundary noise — once it settles into a local
-          // equilibrium there is nothing left to perturb it, so it goes
-          // completely and permanently static within a few seconds (this is
-          // correct PDE behavior, not a bug, but reads as "broken" for a
-          // live visual). Periodically injecting a fresh seed blob — same
-          // shape as the initial seeding — keeps the system perpetually
-          // disturbed so it never fully locks up, similar to how real
-          // Gray-Scott art demos stay alive via continuous small perturbations.
-          if (Math.random() < 0.004 * reactionDiffusionSpeed) {
+          // Gray-Scott is a fully deterministic PDE — once it settles into a
+          // local equilibrium there is nothing left to perturb it, so with
+          // fixed Feed/Kill it goes completely and permanently static within
+          // a few seconds (correct PDE behavior, but reads as "broken" for a
+          // live visual). Two things keep it perpetually alive instead of
+          // relying only on occasional reseed pokes: Feed/Kill are slowly,
+          // continuously drifted around the slider values (a slow orbit, not
+          // a random walk, so it keeps returning near the chosen pattern
+          // family rather than wandering off it) so the system's target
+          // equilibrium keeps moving out from under it, and a steady light
+          // sprinkle of single-cell perturbations every frame (instead of one
+          // big blob every ~4s) keeps the whole field gently simmering.
+          rd.time += 0.0025 * reactionDiffusionSpeed;
+          const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006;
+          const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004;
+
+          const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2));
+          for (let n = 0; n < sprinkleCount; n++) {
+            if (Math.random() < 0.15) {
+              v[idx(Math.floor(Math.random() * RD_W), Math.floor(Math.random() * RD_H))] = 1;
+            }
+          }
+          if (Math.random() < 0.01 * reactionDiffusionSpeed) {
             const bcx = Math.floor(Math.random() * RD_W);
             const bcy = Math.floor(Math.random() * RD_H);
             for (let dy = -3; dy <= 3; dy++) {
