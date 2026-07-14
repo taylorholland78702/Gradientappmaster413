@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check } from '@phosphor-icons/react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, GoogleLogo, SignOut } from '@phosphor-icons/react';
 import { encodePresetData } from '../utils/presetShare';
 
 interface Preset {
@@ -7,6 +7,14 @@ interface Preset {
   name: string;
   data: unknown;
   folder?: string;
+}
+
+// Kept minimal/local rather than importing firebase's User type here — this
+// panel only ever reads these three fields.
+interface AuthUser {
+  email: string | null;
+  displayName: string | null;
+  isAnonymous: boolean;
 }
 
 const UNCATEGORIZED = 'Uncategorized';
@@ -29,6 +37,15 @@ interface PresetsPanelProps {
   addFolder: (name: string) => void;
   renameFolder: (oldName: string, newName: string) => void;
   deleteFolder: (name: string) => void;
+  authUser: AuthUser | null;
+  isAnonymous: boolean;
+  authBusy: boolean;
+  authError: string;
+  clearAuthError: () => void;
+  signInWithGoogle: () => void;
+  signInWithEmail: (email: string, password: string) => void;
+  signUpWithEmail: (email: string, password: string) => void;
+  signOutUser: () => void;
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
@@ -47,7 +64,27 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   addFolder,
   renameFolder,
   deleteFolder,
+  authUser,
+  isAnonymous,
+  authBusy,
+  authError,
+  clearAuthError,
+  signInWithGoogle,
+  signInWithEmail,
+  signUpWithEmail,
+  signOutUser,
 }) => {
+  const [isEmailFormOpen, setIsEmailFormOpen] = useState(false);
+  const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const submitEmailForm = () => {
+    if (!email.trim() || !password) return;
+    if (emailMode === 'signup') signUpWithEmail(email.trim(), password);
+    else signInWithEmail(email.trim(), password);
+  };
+
   const [newPresetName, setNewPresetName] = useState('');
   const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [isAddingFolder, setIsAddingFolder] = useState(false);
@@ -174,6 +211,91 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
+      {/* Sign-in — anonymous sessions already save presets, but only in
+          this browser; signing in with Google or email lets the same
+          presets follow you across devices. */}
+      <div className="border-b border-white/10 px-4 py-2.5">
+        {authUser && !isAnonymous ? (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-white/80 truncate">
+              Signed in as <span className="text-white font-semibold">{authUser.displayName || authUser.email}</span>
+            </span>
+            <button
+              onClick={signOutUser}
+              className="flex items-center gap-1 text-[10px] text-white/50 hover:text-white transition-colors flex-shrink-0"
+              title="Sign out"
+            >
+              <SignOut weight="regular" className="w-3.5 h-3.5" /> Sign out
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] text-white/50 leading-snug">
+              Presets are saved to this browser only. Sign in to sync them across devices.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={signInWithGoogle}
+                disabled={authBusy}
+                className="flex items-center justify-center gap-1.5 flex-1 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors disabled:opacity-50"
+              >
+                <GoogleLogo weight="bold" className="w-3.5 h-3.5" /> Google
+              </button>
+              <button
+                onClick={() => { setIsEmailFormOpen(o => !o); clearAuthError(); }}
+                disabled={authBusy}
+                className="flex-1 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors disabled:opacity-50"
+              >
+                Email
+              </button>
+            </div>
+            {isEmailFormOpen && (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex gap-1 text-[10px]">
+                  <button
+                    onClick={() => setEmailMode('signin')}
+                    className={`px-2 py-0.5 rounded ${emailMode === 'signin' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    onClick={() => setEmailMode('signup')}
+                    className={`px-2 py-0.5 rounded ${emailMode === 'signup' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                  >
+                    Sign up
+                  </button>
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  className="px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') submitEmailForm(); }}
+                  placeholder="Password"
+                  className="px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                />
+                <button
+                  onClick={submitEmailForm}
+                  disabled={authBusy || !email.trim() || !password}
+                  className="px-3 py-1.5 text-xs bg-white text-black rounded font-semibold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {emailMode === 'signup' ? 'Create account' : 'Sign in'}
+                </button>
+              </div>
+            )}
+            {authError && (
+              <p className="text-[10px] text-red-300 leading-snug">{authError}</p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Add row — a single "+" trigger with a small menu, or whichever
           input it opened. Merged from two always-visible rows into one so
           the list isn't permanently pushed down by two "new..." prompts. */}

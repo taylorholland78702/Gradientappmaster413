@@ -20,6 +20,7 @@ import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, A
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { usePresets } from '../hooks/usePresets';
+import { useAuth } from '../hooks/useAuth';
 import { VCRControls } from './VCRControls';
 import { AudioPanel } from './AudioPanel';
 import { PresetsPanel } from './PresetsPanel';
@@ -621,6 +622,12 @@ export function InteractiveGradient() {
     isEncoding, encodingProgress,
   } = vcr;
 
+  // useAuth — owns the Firebase Auth session (anonymous by default; can be
+  // upgraded to a real Google/email account without losing the uid, so
+  // presets keep working across the link with no migration in the common
+  // case). usePresets reads `uid` from here rather than signing in itself.
+  const authState = useAuth();
+
   // usePresets — preset save/load/delete/rename
   const presets = usePresets({
     // Presets used to save/restore only ~20 fields — a leftover from before
@@ -639,6 +646,7 @@ export function InteractiveGradient() {
         activeEffects: migrateIds(data.activeEffects),
       });
     },
+    uid: authState.uid,
   });
 
   // Load a shared preset from ?preset=<encoded> if present (see
@@ -3710,6 +3718,15 @@ export function InteractiveGradient() {
           addFolder={addFolder}
           renameFolder={renameFolder}
           deleteFolder={deleteFolder}
+          authUser={authState.user}
+          isAnonymous={authState.isAnonymous}
+          authBusy={authState.authBusy}
+          authError={authState.authError}
+          clearAuthError={authState.clearAuthError}
+          signInWithGoogle={authState.signInWithGoogle}
+          signInWithEmail={authState.signInWithEmail}
+          signUpWithEmail={authState.signUpWithEmail}
+          signOutUser={authState.signOutUser}
         />
         )}
 

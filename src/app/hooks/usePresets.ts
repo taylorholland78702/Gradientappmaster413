@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
 
 export interface ColorRGB {
   r: number;
@@ -33,6 +32,11 @@ export interface SavedPreset {
 export interface UsePresetsParams {
   getCurrentState: () => PresetData;
   applyPresetData: (data: PresetData) => void;
+  // The signed-in Firebase Auth uid (anonymous or permanent) to load/save
+  // presets under — owned by useAuth, not this hook. Changes when the user
+  // signs in/links a permanent account or signs out, at which point this
+  // hook re-fetches presets for the new uid.
+  uid: string | null;
 }
 
 const genId = () =>
@@ -62,7 +66,7 @@ function safeSetLocalStorage(key: string, value: string): boolean {
 }
 
 export function usePresets(params: UsePresetsParams) {
-  const { getCurrentState, applyPresetData } = params;
+  const { getCurrentState, applyPresetData, uid } = params;
 
   // State
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
@@ -90,6 +94,10 @@ export function usePresets(params: UsePresetsParams) {
   // of the old "wipe the whole collection and rewrite it by array index"
   // approach, which raced with itself once there were enough presets that
   // the rewrite took long enough for another action to land mid-flight.
+  //
+  // Re-runs whenever `uid` changes — not just on mount — since sign-in/
+  // sign-out/account-linking (see useAuth) switches which Firestore
+  // collection presets live under without remounting this hook.
   useEffect(() => {
     const migrate = (list: SavedPreset[]): SavedPreset[] =>
       list.map(p => (p.id ? p : { ...p, id: genId() }));
@@ -111,8 +119,10 @@ export function usePresets(params: UsePresetsParams) {
       }
     }
 
-    signInAnonymously(auth).then(async (cred) => {
-      const snap = await getDocs(collection(db, 'users', cred.user.uid, 'presets'));
+    if (!uid) return;
+
+    (async () => {
+      const snap = await getDocs(collection(db, 'users', uid, 'presets'));
       if (!snap.empty) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fromFirestore = migrate(snap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
@@ -131,7 +141,7 @@ export function usePresets(params: UsePresetsParams) {
         });
       }
 
-      const folderDoc = await getDoc(doc(db, 'users', cred.user.uid, 'meta', 'presetFolders'));
+      const folderDoc = await getDoc(doc(db, 'users', uid, 'meta', 'presetFolders'));
       const fromFirestoreFolders: string[] = folderDoc.exists() ? (folderDoc.data().names ?? []) : [];
       setFolderNames(prev => {
         // Union with whatever's already showing (localStorage) rather than
@@ -140,8 +150,8 @@ export function usePresets(params: UsePresetsParams) {
         safeSetLocalStorage('gradientPresetFolders', JSON.stringify(merged));
         return merged;
       });
-    });
-  }, []);
+    })();
+  }, [uid]);
 
   // Any folder tag present on a preset but missing from the explicit
   // folderNames list (e.g. data saved before folder management existed)
