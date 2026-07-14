@@ -62,6 +62,10 @@ function friendlyAuthError(err: unknown): string {
       return "This sign-in method isn't enabled yet.";
     case 'auth/user-not-found':
       return 'No account found for that email.';
+    case 'auth/unauthorized-domain':
+      return "This site isn't authorized for sign-in yet — add it in Firebase Console under Authentication > Settings > Authorized domains.";
+    case 'auth/popup-blocked':
+      return 'Your browser blocked the sign-in popup — allow popups for this site and try again.';
     default:
       return 'Something went wrong — please try again.';
   }
