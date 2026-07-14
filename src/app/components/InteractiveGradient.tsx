@@ -855,8 +855,16 @@ export function InteractiveGradient() {
       const zoomDiff = Math.abs(targetZoomRef.current - zoomRef.current);
       zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
 
-      // Skip draw when idle: nothing is actively animating and all values have settled
-      const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current;
+      // Skip draw when idle: nothing is actively animating and all values have settled.
+      // Reaction-Diffusion is a standing exception — it's a live simulation that keeps
+      // evolving on its own (feed/kill drift, perpetual sprinkling; see
+      // drawReactionDiffusion.ts) rather than easing toward a fixed target, so without
+      // this it would only ever get the handful of draw calls needed for colors/angle/
+      // zoom to converge and then freeze solid, which is exactly the "diffuses and then
+      // becomes static" bug this is fixing — the sim being alive under the hood is
+      // meaningless if this loop stops calling draw() at all.
+      const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current
+        || gradientTypeRef.current === 'reaction-diffusion';
       const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
 
       if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {
