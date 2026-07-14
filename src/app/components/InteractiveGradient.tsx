@@ -66,6 +66,7 @@ import { useDustState } from '../hooks/state/useDustState';
 import { useEmojiState } from '../hooks/state/useEmojiState';
 import { useFadeState } from '../hooks/state/useFadeState';
 import { useFeedbackState } from '../hooks/state/useFeedbackState';
+import { useFieldMappingState } from '../hooks/state/useFieldMappingState';
 import { useFisheyeState } from '../hooks/state/useFisheyeState';
 import { useFlowState } from '../hooks/state/useFlowState';
 import { useFlowBufferState } from '../hooks/state/useFlowBufferState';
@@ -297,6 +298,7 @@ export function InteractiveGradient() {
   const { emojiSize, setEmojiSize, emojiChars, setEmojiChars, emojiRotateSpeed, setEmojiRotateSpeed, emojiAnimTime, setEmojiAnimTime, emojiOffsetX, setEmojiOffsetX, emojiSizeVariation, setEmojiSizeVariation, emojiPickerSearch, setEmojiPickerSearch } = useEmojiState();
   const { fadeDirection, setFadeDirection } = useFadeState();
   const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
+  const { fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands } = useFieldMappingState();
   const { fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY } = useFisheyeState();
   const { flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread, flowerRotation, setFlowerRotation, flowerAnimTime, setFlowerAnimTime, flowAnimTime, setFlowAnimTime, flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness } = useFlowState();
   const { flowBufferRef } = useFlowBufferState();
@@ -1072,6 +1074,7 @@ export function InteractiveGradient() {
     asciiSize, auroraBandCount, auroraBandHeight, auroraWaveSpeed, autoGainEnabled, baseAIColors,
     glitchIntensity, glitchBlockSize, glitchChromaSplit, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
+    fieldContrast, paletteMode, paletteBands, setFieldContrast, setPaletteMode, setPaletteBands,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
     blurType, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
@@ -2240,7 +2243,8 @@ export function InteractiveGradient() {
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, stirBrushSize, stirDecay, stirIntensity, photoVersion, photoBlendMode, photoOpacity]);
+    fieldContrast, paletteMode, paletteBands,
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, charcoalIntensity, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, stirBrushSize, stirDecay, stirIntensity, fieldContrast, paletteMode, paletteBands, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2286,6 +2290,7 @@ export function InteractiveGradient() {
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
+    fieldContrast, paletteMode, paletteBands,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
@@ -3463,6 +3468,12 @@ export function InteractiveGradient() {
             setReactionDiffusionKill={setReactionDiffusionKill}
             reactionDiffusionSpeed={reactionDiffusionSpeed}
             setReactionDiffusionSpeed={setReactionDiffusionSpeed}
+            fieldContrast={fieldContrast}
+            setFieldContrast={setFieldContrast}
+            paletteMode={paletteMode}
+            setPaletteMode={setPaletteMode}
+            paletteBands={paletteBands}
+            setPaletteBands={setPaletteBands}
             topographicScale={topographicScale}
             setTopographicScale={setTopographicScale}
             topographicBands={topographicBands}

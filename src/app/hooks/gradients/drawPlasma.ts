@@ -1,5 +1,10 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawPlasma(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -241,19 +246,14 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
               ) / 4 + 0.5;
 
               const shiftedValue = (value + plasmaColorShift) % 1;
-              const colorPos = shiftedValue * (gradientColors.length - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
-              const color1 = gradientColors[colorIdx % gradientColors.length];
-              const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-              if (!color1 || !color2) continue;
+              const color1 = getMappedColor(shiftedValue, gradientColors, fieldContrast, paletteMode, paletteBands);
 
               const dist = Math.sqrt(dx * dx + dy * dy);
               const radialBoost = 1 + plasmaBassPulse * (1 - dist / plasmaMaxDist) * 0.8;
               const idx = (py * displayWidth + px) * 4;
-              plasmaData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
-              plasmaData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
-              plasmaData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
+              plasmaData[idx]     = Math.min(255, Math.round(color1.r * radialBoost));
+              plasmaData[idx + 1] = Math.min(255, Math.round(color1.g * radialBoost));
+              plasmaData[idx + 2] = Math.min(255, Math.round(color1.b * radialBoost));
               plasmaData[idx + 3] = 255;
             }
           }

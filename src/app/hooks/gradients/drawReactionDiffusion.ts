@@ -1,5 +1,10 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -302,15 +307,11 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
           const rdData = rdImageData.data;
           for (let i = 0; i < RD_W * RD_H; i++) {
             const t = Math.min(1, Math.max(0, v[i] * 3));
-            const colorPos = t * (gradientColors.length - 1);
-            const colorIdx = Math.floor(colorPos);
-            const colorFrac = colorPos - colorIdx;
-            const c1 = gradientColors[colorIdx] || gradientColors[0];
-            const c2 = gradientColors[Math.min(colorIdx + 1, gradientColors.length - 1)] || c1;
+            const c = getMappedColor(t, gradientColors, fieldContrast, paletteMode, paletteBands);
             const di = i * 4;
-            rdData[di] = Math.round(c1.r + (c2.r - c1.r) * colorFrac);
-            rdData[di + 1] = Math.round(c1.g + (c2.g - c1.g) * colorFrac);
-            rdData[di + 2] = Math.round(c1.b + (c2.b - c1.b) * colorFrac);
+            rdData[di] = Math.round(c.r);
+            rdData[di + 1] = Math.round(c.g);
+            rdData[di + 2] = Math.round(c.b);
             rdData[di + 3] = 255;
           }
           const rdCtx = rd.canvas.getContext('2d')!;

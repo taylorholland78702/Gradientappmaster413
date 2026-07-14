@@ -1,5 +1,10 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawCaustics(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -241,15 +246,11 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
               const w3 = Math.sin((nx + ny) * 1.5 * cFreq + ct * 1.1);
               const v = Math.min(1, Math.pow(Math.abs(w1 + w2 + w3) / 3, causticsBrightnessExp) + causticsLightFloor);
               const tVal = (Math.sin(v * Math.PI) * 0.5 + 0.5 + causticsColorShift) % 1;
-              const ci = Math.floor(tVal * (gradientColors.length - 1));
-              const ci2 = (ci + 1) % gradientColors.length;
-              const lt = tVal * (gradientColors.length - 1) - ci;
-              const c1 = gradientColors[ci] || { r: 0, g: 100, b: 200 };
-              const c2 = gradientColors[ci2] || c1;
+              const c1 = getMappedColor(tVal, gradientColors, fieldContrast, paletteMode, paletteBands);
               const idx = (y * displayWidth + x) * 4;
-              d[idx]     = Math.min(255, Math.round((c1.r + (c2.r - c1.r) * lt) * (0.3 + v * 0.7)));
-              d[idx + 1] = Math.min(255, Math.round((c1.g + (c2.g - c1.g) * lt) * (0.3 + v * 0.7)));
-              d[idx + 2] = Math.min(255, Math.round((c1.b + (c2.b - c1.b) * lt) * (0.3 + v * 0.7)));
+              d[idx]     = Math.min(255, Math.round(c1.r * (0.3 + v * 0.7)));
+              d[idx + 1] = Math.min(255, Math.round(c1.g * (0.3 + v * 0.7)));
+              d[idx + 2] = Math.min(255, Math.round(c1.b * (0.3 + v * 0.7)));
               d[idx + 3] = 255;
             }
           }

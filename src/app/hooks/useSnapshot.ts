@@ -20,6 +20,7 @@ export function useSnapshot(params: SnapshotParams) {
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
+    fieldContrast, paletteMode, paletteBands,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -48,7 +49,9 @@ export function useSnapshot(params: SnapshotParams) {
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
-    setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit, setDuotoneColor1, setDuotoneColor2,
+    setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
+    setFieldContrast, setPaletteMode, setPaletteBands,
+    setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
     setFeedbackZoom, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale,
@@ -191,6 +194,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
+      fieldContrast, paletteMode, paletteBands,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -257,6 +261,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
+      fieldContrast, paletteMode, paletteBands,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -426,6 +431,9 @@ export function useSnapshot(params: SnapshotParams) {
     setGlitchIntensity(snapshot.glitchIntensity ?? 0.4);
     setGlitchBlockSize(snapshot.glitchBlockSize ?? 24);
     setGlitchChromaSplit(snapshot.glitchChromaSplit ?? 4);
+    setFieldContrast(snapshot.fieldContrast ?? 1);
+    setPaletteMode(snapshot.paletteMode ?? 'linear');
+    setPaletteBands(snapshot.paletteBands ?? 5);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);

@@ -1,5 +1,10 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawMarble(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -245,15 +250,11 @@ export function drawMarble(P: any): CanvasGradient | undefined {
               }
               const vein = Math.sin(nx2 * marbleVeinFreq * marbleVeinBoost + turb * marbleTurbulence * marbleTurbBoost + mt * 0.1) * 0.5 + 0.5;
               const tVal2 = (vein + marbleColorShift) % 1;
-              const ci4 = Math.floor(tVal2 * (gradientColors.length - 1));
-              const ci5 = (ci4 + 1) % gradientColors.length;
-              const lt2 = tVal2 * (gradientColors.length - 1) - ci4;
-              const c4 = gradientColors[ci4] || { r: 200, g: 200, b: 200 };
-              const c5 = gradientColors[ci5] || c4;
+              const c4 = getMappedColor(tVal2, gradientColors, fieldContrast, paletteMode, paletteBands);
               const idx3 = (y * displayWidth + x) * 4;
-              d3[idx3]     = Math.round(c4.r + (c5.r - c4.r) * lt2);
-              d3[idx3 + 1] = Math.round(c4.g + (c5.g - c4.g) * lt2);
-              d3[idx3 + 2] = Math.round(c4.b + (c5.b - c4.b) * lt2);
+              d3[idx3]     = Math.round(c4.r);
+              d3[idx3 + 1] = Math.round(c4.g);
+              d3[idx3 + 2] = Math.round(c4.b);
               d3[idx3 + 3] = 255;
             }
           }

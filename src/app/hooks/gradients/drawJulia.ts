@@ -1,6 +1,10 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
+import { getMappedColor } from '../../utils/fieldCurve';
 export function drawJulia(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -271,15 +275,11 @@ export function drawJulia(P: any): CanvasGradient | undefined {
                 const smoothIter = iter + 1 - nu;
                 t = Math.abs((smoothIter / jMaxIter) % 1);
               }
-              const colorPos = t * (gradientColors.length - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
-              const c1 = gradientColors[colorIdx] || gradientColors[0];
-              const c2 = gradientColors[Math.min(colorIdx + 1, gradientColors.length - 1)] || c1;
+              const c1 = getMappedColor(t, gradientColors, fieldContrast, paletteMode, paletteBands);
               const idx = (jy * JULIA_W + jx) * 4;
-              jData[idx] = Math.round(c1.r + (c2.r - c1.r) * colorFrac);
-              jData[idx + 1] = Math.round(c1.g + (c2.g - c1.g) * colorFrac);
-              jData[idx + 2] = Math.round(c1.b + (c2.b - c1.b) * colorFrac);
+              jData[idx] = Math.round(c1.r);
+              jData[idx + 1] = Math.round(c1.g);
+              jData[idx + 2] = Math.round(c1.b);
               jData[idx + 3] = 255;
             }
           }

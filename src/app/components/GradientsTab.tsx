@@ -75,6 +75,11 @@ export interface GradientsTabProps {
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
   reactionDiffusionSpeed: number; setReactionDiffusionSpeed: (v: number) => void;
 
+  // Shared field mapping (Reaction-Diffusion, Marble, Caustics, Topographic, Julia, Plasma)
+  fieldContrast: number; setFieldContrast: (v: number) => void;
+  paletteMode: 'linear' | 'banded' | 'cyclic'; setPaletteMode: (v: 'linear' | 'banded' | 'cyclic') => void;
+  paletteBands: number; setPaletteBands: (v: number) => void;
+
   // Topographic
   topographicScale: number; setTopographicScale: (v: number) => void;
   topographicBands: number; setTopographicBands: (v: number) => void;
@@ -169,6 +174,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
+    fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
@@ -1437,6 +1443,47 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Shared field-mapping controls — appear for any scalar-field gradient
+            (one continuous 0-1 value mapped to the palette per pixel), reusing
+            a single fieldContrast/paletteMode/paletteBands state rather than a
+            near-duplicate set per gradient, since only one is ever active. */}
+        {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma'] as GradientType[]).includes(gradientType) && (
+          <div className="w-full p-2 bg-black/25 rounded-lg mt-2">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
+            </div>
+            <div className="flex items-center gap-1 mb-2">
+              <label className="text-[10px] text-white whitespace-nowrap">Palette:</label>
+              <div className="flex gap-1 flex-1">
+                {(['linear', 'banded', 'cyclic'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setPaletteMode(mode)}
+                    className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${
+                      paletteMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {paletteMode !== 'linear' && (
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

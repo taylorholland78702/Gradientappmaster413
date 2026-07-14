@@ -1,5 +1,10 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawTopographic(P: any): CanvasGradient | undefined {
   const {
+    fieldContrast,
+    paletteMode,
+    paletteBands,
     activeEffects,
     addGradientStops,
     angleCenterX,
@@ -248,14 +253,10 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
               const distToLine = Math.min(bandFrac, 1 - bandFrac);
 
               const t = ((bandIdx / topoBands) + topoColorShift) % 1;
-              const colorPos = t * (gradientColors.length - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
-              const c1 = gradientColors[colorIdx] || gradientColors[0];
-              const c2 = gradientColors[Math.min(colorIdx + 1, gradientColors.length - 1)] || c1;
-              let r = c1.r + (c2.r - c1.r) * colorFrac;
-              let g = c1.g + (c2.g - c1.g) * colorFrac;
-              let b = c1.b + (c2.b - c1.b) * colorFrac;
+              const mapped = getMappedColor(t, gradientColors, fieldContrast, paletteMode, paletteBands);
+              let r = mapped.r;
+              let g = mapped.g;
+              let b = mapped.b;
 
               if (distToLine < topoLineWidth) {
                 const lineMix = 1 - (distToLine / topoLineWidth);
