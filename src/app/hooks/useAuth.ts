@@ -45,11 +45,19 @@ async function migratePresets(oldUid: string, newUid: string) {
 }
 
 function friendlyAuthError(err: unknown): string {
+  // Log unconditionally, including for the codes we show a soft/empty
+  // message for below — "popup closed" can mean the user actually
+  // dismissed it, but it can also be Firebase's SDK closing the popup
+  // itself after a failed handoff (bad OAuth client config, blocked
+  // storage, etc.), which looks identical from here. The console is the
+  // only place that distinction survives.
+  console.error('wāv auth error:', err);
   const code = (err as AuthError)?.code || '';
   switch (code) {
-    case 'auth/popup-closed-by-user':
     case 'auth/cancelled-popup-request':
       return '';
+    case 'auth/popup-closed-by-user':
+      return "Sign-in closed before finishing — if you didn't close it yourself, check the browser console for the real error and let the developer know.";
     case 'auth/email-already-in-use':
       return 'That email already has an account — try signing in instead.';
     case 'auth/invalid-credential':
