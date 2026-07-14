@@ -2,12 +2,22 @@ import { useCallback, useEffect, useState } from 'react';
 import { auth, db, googleProvider } from '../../firebase';
 import {
   onAuthStateChanged, signInAnonymously, signOut,
-  signInWithPopup, signInWithCredential, linkWithPopup,
+  signInWithRedirect, linkWithRedirect, getRedirectResult, signInWithCredential,
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   EmailAuthProvider, GoogleAuthProvider, linkWithCredential,
   type User, type AuthError,
 } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+
+// Google sign-in uses a full-page redirect rather than a popup: Google's own
+// OAuth pages set their own strict Cross-Origin-Opener-Policy, which severs
+// the opener/popup relationship regardless of what this app's COOP header
+// says, breaking Firebase's popup-based flow (surfaces as a spurious
+// auth/popup-closed-by-user right after picking an account). Redirect
+// sidesteps the popup/COOP interaction entirely. The anonymous uid has to be
+// stashed across the full-page navigation so migratePresets can still run
+// once the user lands back here signed in.
+const PENDING_ANON_UID_KEY = 'wav_pending_anon_uid_for_migration';
 
 // Copies presets + folder metadata from an anonymous session's UID over to
 // a newly-linked/signed-in permanent account's UID. Only needed on the
@@ -105,32 +115,56 @@ export function useAuth() {
     return unsubscribe;
   }, []);
 
+  // Completes the Google redirect flow after the full-page round trip. Runs
+  // once on mount; a no-op (resolves to null) on every load that wasn't
+  // preceded by signInWithGoogle's redirect.
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then(async (result) => {
+        const pendingAnonUid = localStorage.getItem(PENDING_ANON_UID_KEY);
+        localStorage.removeItem(PENDING_ANON_UID_KEY);
+        if (result && pendingAnonUid && pendingAnonUid !== result.user.uid) {
+          await migratePresets(pendingAnonUid, result.user.uid);
+        }
+      })
+      .catch(async (err) => {
+        const pendingAnonUid = localStorage.getItem(PENDING_ANON_UID_KEY);
+        localStorage.removeItem(PENDING_ANON_UID_KEY);
+        const code = (err as AuthError).code;
+        if (code === 'auth/credential-already-in-use') {
+          const cred = GoogleAuthProvider.credentialFromError(err as AuthError);
+          if (cred) {
+            try {
+              const result = await signInWithCredential(auth, cred);
+              if (pendingAnonUid && pendingAnonUid !== result.user.uid) {
+                await migratePresets(pendingAnonUid, result.user.uid);
+              }
+              return;
+            } catch (err2) {
+              setAuthError(friendlyAuthError(err2));
+              return;
+            }
+          }
+        }
+        setAuthError(friendlyAuthError(err));
+      });
+  }, []);
+
   const signInWithGoogle = useCallback(async () => {
     setAuthError('');
     setAuthBusy(true);
     try {
       if (auth.currentUser?.isAnonymous) {
-        const anonUid = auth.currentUser.uid;
-        try {
-          await linkWithPopup(auth.currentUser, googleProvider);
-          return; // same uid retained — no migration needed
-        } catch (err) {
-          const code = (err as AuthError).code;
-          if (code === 'auth/credential-already-in-use') {
-            const cred = GoogleAuthProvider.credentialFromError(err as AuthError);
-            if (cred) {
-              await signInWithCredential(auth, cred);
-              await migratePresets(anonUid, auth.currentUser!.uid);
-              return;
-            }
-          }
-          throw err;
-        }
+        localStorage.setItem(PENDING_ANON_UID_KEY, auth.currentUser.uid);
+        await linkWithRedirect(auth.currentUser, googleProvider);
+      } else {
+        await signInWithRedirect(auth, googleProvider);
       }
-      await signInWithPopup(auth, googleProvider);
+      // Execution doesn't continue past here in practice — the line above
+      // navigates the whole page away to Google. getRedirectResult (above)
+      // picks up the result on the next load.
     } catch (err) {
       setAuthError(friendlyAuthError(err));
-    } finally {
       setAuthBusy(false);
     }
   }, []);

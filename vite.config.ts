@@ -53,27 +53,27 @@ export default defineConfig({
     },
   },
 
-  // Cross-origin isolation would enable the multi-threaded ffmpeg.wasm core
+  // Cross-origin isolation enables the multi-threaded ffmpeg.wasm core
   // (SharedArrayBuffer) used by video export — see useVCRPlayback's loadFFmpeg.
-  // COOP is deliberately 'same-origin-allow-popups' rather than the stricter
-  // 'same-origin': the strict value blocks Firebase's signInWithPopup/
-  // linkWithPopup (the opener can no longer see the popup complete, so
-  // Google/email sign-in just silently fails). That means crossOriginIsolated
-  // is false here and video export always uses ffmpeg's slower single-thread
-  // core (useVCRPlayback already falls back to it automatically when
-  // crossOriginIsolated is false — no error, just slower encoding). CORP is
+  // COOP was briefly relaxed to 'same-origin-allow-popups' to try to fix
+  // Firebase's popup-based Google sign-in, but that didn't actually work —
+  // Google's own OAuth pages set their own strict COOP, which severs the
+  // opener/popup relationship regardless of what this app declares. Google
+  // sign-in now uses signInWithRedirect instead (see useAuth.ts), which
+  // doesn't involve a popup at all, so COOP is back to the strict
+  // 'same-origin' that crossOriginIsolated actually requires. CORP is
   // required alongside COEP so same-origin worker chunks (e.g. ffmpeg's own
   // worker.js) aren't blocked by the embedder policy.
   server: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Resource-Policy': 'cross-origin',
     },
   },
   preview: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Resource-Policy': 'cross-origin',
     },
