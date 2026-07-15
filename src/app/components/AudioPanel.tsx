@@ -1,5 +1,11 @@
-import React from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash, Shuffle } from '@phosphor-icons/react';
+import React, { useState } from 'react';
+import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash, Shuffle, X } from '@phosphor-icons/react';
+import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
+import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
+
+const BAND_LABELS: Record<AudioBinding['band'], string> = {
+  sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
+};
 
 export interface AudioPanelState {
   isMicActive: boolean;
@@ -27,6 +33,7 @@ export interface AudioPanelState {
   shakeBeatEnabled: boolean;
   contrastBeatEnabled: boolean;
   paletteBeatEnabled: boolean;
+  audioBindings: AudioBinding[];
 }
 
 export interface AudioPanelActions {
@@ -50,6 +57,7 @@ export interface AudioPanelActions {
   setContrastBeatEnabled: (v: boolean) => void;
   setPaletteBeatEnabled: (v: boolean) => void;
   onShuffleAudio: () => void;
+  setAudioBindings: (updater: AudioBinding[] | ((prev: AudioBinding[]) => AudioBinding[])) => void;
 }
 
 interface AudioPanelProps {
@@ -69,12 +77,17 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+    audioBindings,
   } = state;
+
+  const [modParam, setModParam] = useState(MODULATABLE_PARAMS[0].key);
+  const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
+  const [modAmount, setModAmount] = useState(1);
 
   const {
     setSelectedAudioDeviceId, setIsAudioControlsOpen,
     setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
-    setSubBassMultiplier, setSubBassBeatSync,
+    setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
@@ -242,6 +255,70 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} className={BEAT_BTN(shakeBeatEnabled)}>SHAKE</button>
                 <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} className={BEAT_BTN(contrastBeatEnabled)}>CONTRAST</button>
                 <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} className={BEAT_BTN(paletteBeatEnabled)}>PALETTE</button>
+              </div>
+            </div>
+
+            {/* Modulation — bind any slider in the app to an audio band.
+                Applied generically by param key in useCanvasDraw.ts, so
+                every entry in MODULATABLE_PARAMS works without a bind-icon
+                on each individual slider row. */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Modulation</span>
+              {audioBindings.length > 0 && (
+                <div className="flex flex-col gap-1 mb-1">
+                  {audioBindings.map((b) => {
+                    const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
+                    return (
+                      <div key={b.id} className="flex items-center gap-1.5 bg-black/25 rounded px-1.5 py-1">
+                        <span className="text-[9px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
+                        <span className="text-[9px] text-white/50 uppercase">{BAND_LABELS[b.band]}</span>
+                        <span className="text-[9px] text-white/50 w-8 text-right">{b.amount.toFixed(1)}x</span>
+                        <button
+                          onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
+                          className="text-white/50 hover:text-white transition-all"
+                          title="Remove binding"
+                        >
+                          <X weight="bold" className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <select
+                  value={modParam}
+                  onChange={(e) => setModParam(e.target.value)}
+                  className="flex-1 min-w-0 text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                >
+                  {MODULATABLE_PARAMS.map(p => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={modBand}
+                  onChange={(e) => setModBand(e.target.value as AudioBinding['band'])}
+                  className="text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                >
+                  {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
+                    <option key={band} value={band}>{BAND_LABELS[band]}</option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="-10" max="10" step="0.1"
+                  value={modAmount}
+                  onChange={(e) => setModAmount(Number(e.target.value))}
+                  className="w-10 text-[9px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                  title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
+                />
+                <button
+                  onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
+                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                  title="Add modulation binding"
+                >
+                  <Plus weight="bold" className="w-3 h-3" />
+                </button>
               </div>
             </div>
 

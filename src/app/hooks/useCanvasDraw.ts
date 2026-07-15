@@ -7,6 +7,20 @@ import { pickRandomEmojiSet, splitGraphemes, EMOJI_PICKER_CATEGORIES } from '../
 import { GRADIENT_DRAW_FNS } from './gradients/_registry';
 import { EFFECT_DRAW_FNS } from './effects/_registry';
 
+// Applies every {param, band, amount} audio binding directly onto a draw
+// context object by key name, so any entry in MODULATABLE_PARAMS works
+// without wiring a bind-icon onto each individual slider row — the context
+// already holds every slider value under that same key via the `...params`
+// spread the caller built it with.
+function applyAudioBindings(target: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+  for (const binding of bindings) {
+    const base = target[binding.param];
+    if (typeof base !== 'number') continue;
+    const level = levels[binding.band as keyof typeof levels] ?? 0;
+    target[binding.param] = base + level * binding.amount;
+  }
+}
+
 // Loosely typed for the same reason as useRandomization.ts/useSnapshot.ts's
 // params: this hook wires together ~180 values/refs/setters spanning
 // nearly every piece of gradient/effect state plus live audio levels and
@@ -27,7 +41,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, charcoalIntensity, chromaticAngle, chromaticOffset,
@@ -175,11 +189,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     let gradient: CanvasGradient | undefined;
 
-    const drawCtx = {
+    const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors, gradientAngle, zoom,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
     };
+
+    if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
+      applyAudioBindings(drawCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
+    }
+
     const gradientDrawFn = gradientType ? GRADIENT_DRAW_FNS[gradientType] : undefined;
     if (gradientDrawFn) {
       gradient = gradientDrawFn(drawCtx);
@@ -247,12 +266,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         }
       }
       
-      const effectCtx = {
+      const effectCtx: Record<string, any> = {
         ...params, ctx, canvas, gradientColors, gradientAngle, zoom,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,
       };
+      if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
+        applyAudioBindings(effectCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
+      }
       try {
         const effectDrawFn = EFFECT_DRAW_FNS[effectType];
         if (effectDrawFn) {
