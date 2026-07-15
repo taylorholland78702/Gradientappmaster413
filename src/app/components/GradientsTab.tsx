@@ -1,4 +1,5 @@
 import React from 'react';
+import { Shuffle } from '@phosphor-icons/react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 import type { ColorPin } from './InteractiveGradient';
 
@@ -231,9 +232,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {seedableGradientTypes.includes(gradientType) && (
           <button
             onClick={onReroll}
-            className="w-full py-1.5 text-[10px] font-semibold text-white bg-black/25 hover:bg-white/15 rounded-lg transition-all"
+            className="w-full py-1.5 text-[10px] font-semibold text-white bg-black/25 hover:bg-white/15 rounded-lg transition-all flex items-center justify-center gap-1.5"
+            title="Reroll this gradient's structure"
           >
-            🎲 Reroll
+            <Shuffle weight="regular" className="w-3.5 h-3.5" />
+            Reroll
           </button>
         )}
 
