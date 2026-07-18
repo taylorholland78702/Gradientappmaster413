@@ -3004,7 +3004,7 @@ export function InteractiveGradient() {
   ]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden cursor-crosshair bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
+    <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
       <div ref={shakeWrapperRef} className="w-full h-full">
         <canvas
           ref={canvasRef}
