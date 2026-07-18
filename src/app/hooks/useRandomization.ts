@@ -54,6 +54,13 @@ export function useRandomization(params: RandomizationParams) {
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
+    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
+    setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
+    setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
+    setTopographicScale, setTopographicBands, setTopographicLineWidth,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
+    setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
+    setSlitScanIntensity, setSlitScanDirection,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
@@ -176,6 +183,48 @@ export function useRandomization(params: RandomizationParams) {
     setEmojiSize(Math.floor(Math.random() * 50) + 10);                 // 10–59
     setEmojiRotateSpeed(Math.floor(Math.random() * 180));              // 0–179
     setEmojiSizeVariation(Math.floor(Math.random() * 100));            // 0–99
+
+    // Julia Set — never touched by any randomize/shuffle/nudge path before.
+    setJuliaReal(Math.random() * 2 - 1);                                // -1–1
+    setJuliaImaginary(Math.random() * 2 - 1);                           // -1–1
+    setJuliaZoom(Math.random() * 2.7 + 0.3);                            // 0.3–3
+    setJuliaIterations(Math.floor(Math.random() * 100) + 20);          // 20–119
+
+    // Reaction-Diffusion
+    setReactionDiffusionFeed(Math.random() * 0.06 + 0.02);              // 0.02–0.08
+    setReactionDiffusionKill(Math.random() * 0.03 + 0.04);              // 0.04–0.07
+    setReactionDiffusionSpeed(Math.random() * 2.8 + 0.2);               // 0.2–3
+
+    // Attractor — structural seed already gets a reroll button; these are
+    // the sliders that reroll never touched.
+    setAttractorPointCount(Math.floor(Math.random() * 19) + 1);         // 1–19
+    setAttractorSpeed(Math.random() * 4.9 + 0.1);                       // 0.1–5
+    setAttractorScale(Math.random() * 2.7 + 0.3);                       // 0.3–3
+    setAttractorDotSize(Math.random() * 5.5 + 0.5);                     // 0.5–6
+    setAttractorTrailFade(Math.random() * 0.29 + 0.01);                 // 0.01–0.3
+
+    // Topographic
+    setTopographicScale(Math.floor(Math.random() * 90) + 10);           // 10–99
+    setTopographicBands(Math.floor(Math.random() * 27) + 3);            // 3–29
+    setTopographicLineWidth(Math.random() * 0.14 + 0.01);               // 0.01–0.15
+
+    // Shared field-mapping controls (Reaction-Diffusion/Marble/Caustics/
+    // Topographic/Julia/Plasma/Fade's Contrast/Palette Mode/Bands).
+    setFieldContrast(Math.random() * 2.7 + 0.3);                        // 0.3–3
+    setPaletteMode((['linear', 'banded', 'cyclic'] as const)[Math.floor(Math.random() * 3)]);
+    setPaletteBands(Math.floor(Math.random() * 15) + 2);                // 2–16
+
+    // Invert effect
+    setInvertAmount(Math.random());                                     // 0–1
+
+    // Glitch effect
+    setGlitchIntensity(Math.random() * 0.95 + 0.05);                    // 0.05–1
+    setGlitchBlockSize(Math.floor(Math.random() * 39) * 2 + 4);         // 4–80 (even)
+    setGlitchChromaSplit(Math.floor(Math.random() * 21));               // 0–20
+
+    // Slit-Scan effect
+    setSlitScanIntensity(Math.random());                                 // 0–1
+    setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
   }, []);
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();
