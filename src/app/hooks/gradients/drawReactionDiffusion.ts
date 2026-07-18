@@ -1,5 +1,13 @@
 import { getMappedColor } from '../../utils/fieldCurve';
 
+// Duplicated rather than imported from InteractiveGradient.tsx (same reason
+// useMiscState.ts duplicates it) — Display mode must never run its own
+// Gray-Scott simulation, only render whatever `v` array the controller last
+// pushed over the anim-sync channel (see the receiver in
+// InteractiveGradient.tsx), or the two windows show entirely different
+// patterns instead of just drifting out of phase.
+const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
+
 export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
   const {
     fieldContrast,
@@ -257,59 +265,69 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
           // worms instead of solid Turing spots/coral. dt keeps each step stable;
           // steps is scaled up to compensate so the simulation still covers the
           // same amount of "diffusion time" per frame as before.
-          const Du = 1.0, Dv = 0.5, dt = 0.2;
-          const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 30));
-          const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
+          // The whole simulation step is skipped in Display mode — that tab
+          // renders whatever `v` array the controller last pushed over the
+          // anim-sync channel (see InteractiveGradient.tsx) instead of
+          // running its own independently-seeded Gray-Scott simulation,
+          // which is what previously made the two windows show entirely
+          // different patterns rather than just drifting out of phase.
+          if (!IS_DISPLAY_MODE) {
+            const Du = 1.0, Dv = 0.5, dt = 0.2;
+            const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 30));
+            const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
 
-          // Gray-Scott is a fully deterministic PDE — once it settles into a
-          // local equilibrium there is nothing left to perturb it, so with
-          // fixed Feed/Kill it goes completely and permanently static within
-          // a few seconds (correct PDE behavior, but reads as "broken" for a
-          // live visual). Two things keep it perpetually alive instead of
-          // relying only on occasional reseed pokes: Feed/Kill are slowly,
-          // continuously drifted around the slider values (a slow orbit, not
-          // a random walk, so it keeps returning near the chosen pattern
-          // family rather than wandering off it) so the system's target
-          // equilibrium keeps moving out from under it, and a steady light
-          // sprinkle of single-cell perturbations every frame (instead of one
-          // big blob every ~4s) keeps the whole field gently simmering.
-          rd.time += 0.0025 * reactionDiffusionSpeed;
-          const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006;
-          const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004;
+            // Gray-Scott is a fully deterministic PDE — once it settles into a
+            // local equilibrium there is nothing left to perturb it, so with
+            // fixed Feed/Kill it goes completely and permanently static within
+            // a few seconds (correct PDE behavior, but reads as "broken" for a
+            // live visual). Two things keep it perpetually alive instead of
+            // relying only on occasional reseed pokes: Feed/Kill are slowly,
+            // continuously drifted around the slider values (a slow orbit, not
+            // a random walk, so it keeps returning near the chosen pattern
+            // family rather than wandering off it) so the system's target
+            // equilibrium keeps moving out from under it, and a steady light
+            // sprinkle of single-cell perturbations every frame (instead of one
+            // big blob every ~4s) keeps the whole field gently simmering.
+            rd.time += 0.0025 * reactionDiffusionSpeed;
+            const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006;
+            const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004;
 
-          const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2));
-          for (let n = 0; n < sprinkleCount; n++) {
-            if (Math.random() < 0.15) {
-              v[idx(Math.floor(Math.random() * RD_W), Math.floor(Math.random() * RD_H))] = 1;
-            }
-          }
-          if (Math.random() < 0.01 * reactionDiffusionSpeed) {
-            const bcx = Math.floor(Math.random() * RD_W);
-            const bcy = Math.floor(Math.random() * RD_H);
-            for (let dy = -3; dy <= 3; dy++) {
-              for (let dx = -3; dx <= 3; dx++) {
-                if (dx * dx + dy * dy > 9) continue;
-                v[idx(bcx + dx, bcy + dy)] = 1;
+            const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2));
+            for (let n = 0; n < sprinkleCount; n++) {
+              if (Math.random() < 0.15) {
+                v[idx(Math.floor(Math.random() * RD_W), Math.floor(Math.random() * RD_H))] = 1;
               }
             }
-          }
-
-          for (let s = 0; s < steps; s++) {
-            for (let y = 0; y < RD_H; y++) {
-              for (let x = 0; x < RD_W; x++) {
-                const i = y * RD_W + x;
-                const lapU = u[idx(x - 1, y)] + u[idx(x + 1, y)] + u[idx(x, y - 1)] + u[idx(x, y + 1)] - 4 * u[i];
-                const lapV = v[idx(x - 1, y)] + v[idx(x + 1, y)] + v[idx(x, y - 1)] + v[idx(x, y + 1)] - 4 * v[i];
-                const uu = u[i], vv = v[i];
-                const reaction = uu * vv * vv;
-                u2[i] = Math.min(1, Math.max(0, uu + dt * (Du * lapU - reaction + feed * (1 - uu))));
-                v2[i] = Math.min(1, Math.max(0, vv + dt * (Dv * lapV + reaction - (kill + feed) * vv)));
+            if (Math.random() < 0.01 * reactionDiffusionSpeed) {
+              const bcx = Math.floor(Math.random() * RD_W);
+              const bcy = Math.floor(Math.random() * RD_H);
+              for (let dy = -3; dy <= 3; dy++) {
+                for (let dx = -3; dx <= 3; dx++) {
+                  if (dx * dx + dy * dy > 9) continue;
+                  v[idx(bcx + dx, bcy + dy)] = 1;
+                }
               }
             }
-            [u, u2] = [u2, u];
-            [v, v2] = [v2, v];
+
+            for (let s = 0; s < steps; s++) {
+              for (let y = 0; y < RD_H; y++) {
+                for (let x = 0; x < RD_W; x++) {
+                  const i = y * RD_W + x;
+                  const lapU = u[idx(x - 1, y)] + u[idx(x + 1, y)] + u[idx(x, y - 1)] + u[idx(x, y + 1)] - 4 * u[i];
+                  const lapV = v[idx(x - 1, y)] + v[idx(x + 1, y)] + v[idx(x, y - 1)] + v[idx(x, y + 1)] - 4 * v[i];
+                  const uu = u[i], vv = v[i];
+                  const reaction = uu * vv * vv;
+                  u2[i] = Math.min(1, Math.max(0, uu + dt * (Du * lapU - reaction + feed * (1 - uu))));
+                  v2[i] = Math.min(1, Math.max(0, vv + dt * (Dv * lapV + reaction - (kill + feed) * vv)));
+                }
+              }
+              [u, u2] = [u2, u];
+              [v, v2] = [v2, v];
+            }
+            rd.u = u; rd.v = v; rd.u2 = u2; rd.v2 = v2;
+          } else {
+            v = rd.v;
           }
-          rd.u = u; rd.v = v; rd.u2 = u2; rd.v2 = v2;
 
           const rdImageData = new ImageData(RD_W, RD_H);
           const rdData = rdImageData.data;

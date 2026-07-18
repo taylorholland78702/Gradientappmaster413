@@ -869,9 +869,13 @@ export function InteractiveGradient() {
         setZoom(zoomRef.current);
       }
 
-      // Halftone Move animation
+      // Halftone Move animation. The trigger still fires on both windows (it's
+      // just a redraw nudge), but the actual halftoneTimeRef VALUE is only
+      // ever advanced on the controller — Display's copy is overwritten by
+      // the anim-sync receiver below instead, so both windows show the same
+      // dot phase instead of two independently-advancing clocks.
       if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
-        halftoneTimeRef.current += 0.5 * spd;
+        if (!IS_DISPLAY_MODE) halftoneTimeRef.current += 0.5 * spd;
         setHalftoneAnimTrigger(prev => prev + 1);
       }
 
@@ -1355,6 +1359,32 @@ export function InteractiveGradient() {
       // setGradientColors/applySnapshot, which only update React state and
       // would leave this tab re-easing from its own stale ref position.
       if (v.gradientColors) gradientColorsRef.current = v.gradientColors;
+      if (typeof v.halftoneTime === 'number') halftoneTimeRef.current = v.halftoneTime;
+      // Same idea as gradientColorsRef above, but for Reaction-Diffusion's
+      // whole simulation grid — overwrite the ref's `v` array directly
+      // rather than restarting the sim locally, so Display renders the
+      // controller's actual field instead of an independently-seeded one.
+      // The step loop itself is skipped in Display mode (see the
+      // IS_DISPLAY_MODE guard in drawReactionDiffusion.ts), so nothing
+      // fights this update the way it would if Display kept stepping too.
+      if (v.reactionDiffusionV) {
+        if (!reactionDiffusionGridRef.current) {
+          const RD_W = 220, RD_H = 140;
+          const gridCanvas = document.createElement('canvas');
+          gridCanvas.width = RD_W;
+          gridCanvas.height = RD_H;
+          reactionDiffusionGridRef.current = {
+            u: new Float32Array(RD_W * RD_H).fill(1),
+            v: v.reactionDiffusionV,
+            u2: new Float32Array(RD_W * RD_H),
+            v2: new Float32Array(RD_W * RD_H),
+            canvas: gridCanvas,
+            time: 0,
+          };
+        } else {
+          reactionDiffusionGridRef.current.v = v.reactionDiffusionV;
+        }
+      }
     };
     return () => channel.close();
   }, []);
@@ -1373,7 +1403,19 @@ export function InteractiveGradient() {
     animSyncChannelRef.current = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
     let rafId: number;
     const tick = () => {
-      animSyncChannelRef.current?.postMessage({ ...animValuesRef.current, gradientColors: gradientColorsRef.current });
+      animSyncChannelRef.current?.postMessage({
+        ...animValuesRef.current,
+        gradientColors: gradientColorsRef.current,
+        halftoneTime: halftoneTimeRef.current,
+        // Reaction-Diffusion's whole Gray-Scott field (not just a scalar
+        // clock) — without this, Display seeds its own grid with
+        // Math.random() on mount and runs an entirely independent
+        // simulation from frame one, not just a phase-drifted one like the
+        // other clocks here. Sending only `v` (what's actually rendered,
+        // see getMappedColor(t = v[i] * 3, ...) in drawReactionDiffusion.ts)
+        // keeps this to one Float32Array (~123KB) per frame instead of two.
+        reactionDiffusionV: reactionDiffusionGridRef.current?.v,
+      });
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
