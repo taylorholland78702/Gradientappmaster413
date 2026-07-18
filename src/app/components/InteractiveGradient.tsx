@@ -1240,6 +1240,7 @@ export function InteractiveGradient() {
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
@@ -3090,22 +3091,22 @@ export function InteractiveGradient() {
       {/* Collapsed cluster — only rendered while the panel is hidden but not fully hidden */}
       {!isControlsVisible && !isFullyHidden && (
         <div
-          className="absolute pointer-events-auto flex gap-1.5 scale-[1.15] origin-top-left"
-          style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
+          className="absolute pointer-events-auto flex gap-1.5 origin-top-left"
+          style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 32, left: 16 }}
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className="w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Show Controls (H)"
             aria-label="Show Controls"
           >
-            <EyeSlash weight="regular" className="w-4 h-4" />
+            <EyeSlash weight="regular" className="w-3.5 h-3.5" />
           </button>
           <button
             onPointerDown={wavGesture.onPointerDown}
             onPointerUp={wavGesture.onPointerUp}
             onPointerLeave={wavGesture.onPointerLeave}
-            className="relative overflow-hidden w-[44px] h-[44px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
+            className="relative overflow-hidden w-[34px] h-[34px] p-1 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
             title="Tap: Nudge (W) · Hold/Double-tap: Remix"
             aria-label="Tap to nudge the current look, hold or double-tap to remix"
           >
@@ -3114,33 +3115,33 @@ export function InteractiveGradient() {
               className={`wav-btn-fill-reveal ${isWavHolding ? 'wav-revealing' : ''}`}
               style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
             />
-            <Shuffle weight="regular" className="relative w-4 h-4 text-black" />
+            <Shuffle weight="regular" className="relative w-3.5 h-3.5 text-black" />
           </button>
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Undo (Cmd+Z)"
             aria-label="Undo"
           >
-            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
+            <ArrowUUpLeft weight="regular" className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Redo (Cmd+Shift+Z)"
             aria-label="Redo"
           >
-            <ArrowUUpRight weight="regular" className="w-4 h-4" />
+            <ArrowUUpRight weight="regular" className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
-            className="w-[44px] h-[44px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className="w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Presets (P)"
             aria-label="Presets"
           >
-            <Plus weight="regular" className="w-4 h-4" />
+            <Plus weight="regular" className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -3876,7 +3877,7 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — tap <strong>wāv</strong> for a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, and beat-sync toggles. Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings. Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — hold or double-tap <strong>wāv</strong> to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
               </div>
 

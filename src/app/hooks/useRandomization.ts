@@ -6,6 +6,8 @@ import {
 import { pickRandomEmojiSet, type ColorPin } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
+import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
+import type { AudioBinding } from './state/useAudioBindingsState';
 
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
 // nearly every piece of app state (randomization touches everything by
@@ -43,6 +45,7 @@ export function useRandomization(params: RandomizationParams) {
     setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
+    setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
@@ -599,6 +602,16 @@ export function useRandomization(params: RandomizationParams) {
     setShakeBeatEnabled(Math.random() < 0.5);
     setContrastBeatEnabled(Math.random() < 0.5);
     setPaletteBeatEnabled(Math.random() < 0.5);
+
+    const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
+    const bindingCount = 1 + Math.floor(Math.random() * 3); // 1-3
+    const shuffledParams = [...MODULATABLE_PARAMS].sort(() => Math.random() - 0.5).slice(0, bindingCount);
+    setAudioBindings(shuffledParams.map((p): AudioBinding => ({
+      id: `${Date.now()}-${Math.random()}`,
+      param: p.key,
+      band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
+      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.2 + Math.random() * 2.8)).toFixed(1)),
+    })));
   }, []);
 
   return {
