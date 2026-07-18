@@ -3828,15 +3828,15 @@ export function InteractiveGradient() {
             </button>
             <div className="text-2xl font-black tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>wāv</div>
             <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed">
-              <p>wāv is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
-              <p>wāv artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
-              <p>wāv uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
-              <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, wāv can transform your audio experience into a spectacle.</p>
+              <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
+              <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
+              <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
+              <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, <strong>wāv</strong> can transform your audio experience into a spectacle.</p>
             </div>
 
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">The wāv header</p>
+                <p className="font-semibold text-white">The <strong>wāv</strong> header</p>
                 <p className="flex items-center justify-between gap-2">Tap the wordmark to nudge the artwork. Hold for a full beat or double-click to fully remix it.</p>
                 <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
@@ -3872,15 +3872,14 @@ export function InteractiveGradient() {
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Randomizing</p>
                 <p>Four ways to randomize, from smallest to biggest change:</p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — tap wāv for a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — tap <strong>wāv</strong> for a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — hold or double-tap wāv to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — hold or double-tap <strong>wāv</strong> to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">More shortcuts</p>
-                <p className="flex items-center justify-between gap-2"><span>Copy Display link — open it in a new tab/window for a UI-less, live-mirrored output on a projector or second screen</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
