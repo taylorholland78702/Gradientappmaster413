@@ -172,10 +172,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               >{autoGainEnabled ? 'ON' : 'OFF'}</button>
               <button
                 onClick={onShuffleAudio}
-                className="ml-auto p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center"
+                className="ml-auto flex-1 py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
                 title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, and FX on Beat"
               >
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
+                SHUFFLE
               </button>
             </div>
 
