@@ -871,8 +871,9 @@ export function InteractiveGradient() {
         setHalftoneAnimTrigger(prev => prev + 1);
       }
 
-      // Grid rotation animation
-      if (activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
+      // Grid rotation animation. Skipped in Display mode; see the Voronoi
+      // comment above — that value is pushed from the controller instead.
+      if (!IS_DISPLAY_MODE && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
         setGridRotation(prev => {
           const increment = gridRotationDirectionRef.current === 'clockwise' ? 2 : -2;
           return (prev + increment) % 360;
@@ -897,7 +898,11 @@ export function InteractiveGradient() {
       // sweep below) instead of jumping once per 800ms: a big jump followed by the lerp
       // catching up in ~100ms meant the gradient sat still for most of every 800ms window,
       // which reads as stepped/incremental motion no matter how fast the draw call is.
-      if (isAutoModeRef.current) {
+      // Skipped in Display mode; see the Voronoi comment above — targetAngle is pushed
+      // from the controller instead, so both windows converge on the same rotation
+      // instead of each advancing their own independently and drifting apart (this was
+      // the actual cause of the Display tab's angle/pattern slowly falling out of sync).
+      if (!IS_DISPLAY_MODE && isAutoModeRef.current) {
         let rotationAmountPerFrame;
         if (gradientTypeRef.current === 'fade') {
           rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.0167 : -0.0167;
@@ -920,8 +925,9 @@ export function InteractiveGradient() {
         setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost));
       }
 
-      // Radar sweep — PLAY or mic active
-      if (gradientTypeRef.current === 'radar' && isPlayActive) {
+      // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
+      // Voronoi comment above — that value is pushed from the controller instead.
+      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'radar' && isPlayActive) {
         setRadarSweepAngle(prev => {
           const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
           const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
