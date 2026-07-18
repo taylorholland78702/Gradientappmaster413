@@ -71,8 +71,14 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'grainIntensity', label: 'Grain Intensity', category: 'Grain', min: 0.0, max: 1.0 },
   { key: 'gridColumns', label: 'Grid Columns', category: 'Grid', min: 2.0, max: 50.0 },
   { key: 'gridRows', label: 'Grid Rows', category: 'Grid', min: 2.0, max: 50.0 },
-  { key: 'gridSides', label: 'Grid Sides', category: 'Grid', min: 1.0, max: 10.0 },
-  { key: 'gridVariation', label: 'Grid Variation', category: 'Grid', min: 0.0, max: 1.0 },
+  // Sides/Variation/Shape Size only affect the Grid *effect*, not the Grid
+  // *gradient* (drawGrid.ts only reads gridRows/gridColumns) — a separate
+  // category so Modulation shuffle doesn't bind to a slider that does
+  // nothing when the Grid gradient (not the effect) is what's active.
+  { key: 'gridSides', label: 'Grid Sides', category: 'Grid Effect', min: 1.0, max: 10.0 },
+  { key: 'gridVariation', label: 'Grid Variation', category: 'Grid Effect', min: 0.0, max: 1.0 },
+  { key: 'gridShapeSize', label: 'Grid Shape Size', category: 'Grid Effect', min: 1.0, max: 100.0 },
+  { key: 'polygon2Sides', label: 'Radials', category: 'Polar Grid', min: 1.0, max: 24.0 },
   { key: 'halftoneSize', label: 'Halftone Size', category: 'Halftone', min: 2.0, max: 200.0 },
   { key: 'halftoneVariation', label: 'Halftone Variation', category: 'Halftone', min: 0.0, max: 1.0 },
   { key: 'helixTightness', label: 'Helix Tightness', category: 'Helix', min: 0.1, max: 2.0 },
@@ -89,8 +95,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'marbleOctaves', label: 'Marble Octaves', category: 'Marble', min: 1.0, max: 8.0 },
   { key: 'marbleTurbulence', label: 'Marble Turbulence', category: 'Marble', min: 0.0, max: 5.0 },
   { key: 'marbleVeinFreq', label: 'Marble Vein Freq', category: 'Marble', min: 0.5, max: 10.0 },
-  { key: 'meshGridSize', label: 'Mesh Grid Size', category: 'Mesh', min: 1.0, max: 10.0 },
-  { key: 'meshJitter', label: 'Mesh Jitter', category: 'Mesh', min: 0.0, max: 100.0 },
   { key: 'metaballCount', label: 'Metaball Count', category: 'Metaballs', min: 2.0, max: 14.0 },
   { key: 'metaballSize', label: 'Metaball Size', category: 'Metaballs', min: 0.05, max: 0.4 },
   { key: 'metaballSpeed', label: 'Metaball Speed', category: 'Metaballs', min: 0.1, max: 5.0 },
@@ -144,7 +148,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'waveFrequency', label: 'Wave Frequency', category: 'Waves', min: 1.0, max: 10.0 },
   { key: 'waveNumber', label: 'Wave Number', category: 'Waves', min: 1.0, max: 20.0 },
   { key: 'waveRotation', label: 'Wave Rotation', category: 'Waves', min: 0.0, max: 360.0 },
-  { key: 'polygon2Sides', label: 'Polygon2 Sides', category: 'Windmill', min: 1.0, max: 24.0 },
   { key: 'windmillRotations', label: 'Windmill Rotations', category: 'Windmill', min: 1.0, max: 10.0 },
   { key: 'windmillThickness', label: 'Windmill Thickness', category: 'Windmill', min: 5.0, max: 100.0 },
   { key: 'windmillTightness', label: 'Windmill Tightness', category: 'Windmill', min: 1.0, max: 20.0 },

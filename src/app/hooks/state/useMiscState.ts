@@ -45,8 +45,6 @@ export function useMiscState() {
   const isAudioActiveRef = useRef<boolean>(false);
   const drawParamsDirtyRef = useRef(true); // true until first draw
   const lerpSyncFrameRef = useRef(0);
-  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
-  const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(!IS_DISPLAY_MODE);
   const [isFullyHidden, setIsFullyHidden] = useState(IS_DISPLAY_MODE);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -161,10 +159,6 @@ export function useMiscState() {
     isAudioActiveRef,
     drawParamsDirtyRef,
     lerpSyncFrameRef,
-    selectedPinId,
-    setSelectedPinId,
-    isDraggingPin,
-    setIsDraggingPin,
     isControlsVisible,
     setIsControlsVisible,
     isFullyHidden,

@@ -3,33 +3,36 @@ import {
   type ColorRGB, type GradientType, type EffectType,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FEELING_LUCKY_GRADIENT_TYPES, FULL_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
-import { pickRandomEmojiSet, type ColorPin } from '../components/InteractiveGradient';
+import { pickRandomEmojiSet } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
-// Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string that
-// holds its sliders, so shuffleAudiovisuals can restrict random Modulation
-// bindings to whatever is actually on screen instead of any of the ~130
-// params across every gradient/effect. Not every id has an entry — some
-// (freeform, linear, polar-grid, grid-effect, zoom-blur) have no modulatable
-// sliders in the registry, and are simply skipped by the filter below.
-const GRADIENT_MOD_CATEGORY: Record<string, string> = {
-  angle: 'Angle', attractor: 'Attractor', aurora: 'Aurora', caustics: 'Caustics', fade: 'Fade',
-  'flow-field': 'Flow Field', flower: 'Flower', grid: 'Grid', helix: 'Helix', iridescent: 'General',
-  julia: 'Julia Set', 'lava-lamp': 'Lava Lamp', marble: 'Marble', metaballs: 'Metaballs', moire: 'Moire',
-  noise: 'Noise', plasma: 'Plasma', radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
-  'reaction-diffusion': 'Reaction-Diffusion', shapes: 'Shapes', topographic: 'Topographic', truchet: 'Truchet',
-  voronoi: 'Voronoi', waves: 'Waves', windmill: 'Windmill',
+// Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string(s)
+// that hold its sliders, so shuffleAudiovisuals can restrict random
+// Modulation bindings to whatever is actually on screen instead of any of
+// the ~130 params across every gradient/effect. An array because a few ids
+// share sliders with another category (Polar Grid reuses Shapes' Ring
+// Count/Width; the Grid effect reuses the Grid gradient's Rows/Columns).
+// Not every id has an entry — freeform/linear/mesh no longer exist, and
+// photo has a modulatable category but is excluded elsewhere from random
+// pools since it's a no-op with no uploaded image.
+const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
+  angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
+  'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
+  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
+  noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radar: ['Radar'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
+  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
+  voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
 };
-const EFFECT_MOD_CATEGORY: Record<string, string> = {
-  ascii: 'ASCII', bloom: 'Bloom', blur: 'Blur', chromatic: 'Chromatic', 'chromatic-trails': 'Chroma Trails',
-  dither: 'Dither', duotone: 'Duotone', emoji: 'Emoji', feedback: 'Feedback', fisheye: 'Fisheye',
-  glitch: 'Glitch', grain: 'Grain', halftone: 'Halftone', invert: 'Invert', kaleidoscope: 'Kaleidoscope',
-  liquid: 'Liquid', mirror: 'Mirror', photo: 'Photo', pixelate: 'Pixelate', posterize: 'Posterize',
-  ripple: 'Ripple', scanlines: 'Scanlines', shift: 'Shift', 'slit-scan': 'Slit-Scan', triangulate: 'Triangulate',
-  vhs: 'VHS', vignette: 'Vignette', wave: 'Wave',
+const EFFECT_MOD_CATEGORY: Record<string, string[]> = {
+  ascii: ['ASCII'], bloom: ['Bloom'], blur: ['Blur'], chromatic: ['Chromatic'], 'chromatic-trails': ['Chroma Trails'],
+  dither: ['Dither'], duotone: ['Duotone'], emoji: ['Emoji'], feedback: ['Feedback'], fisheye: ['Fisheye'],
+  glitch: ['Glitch'], grain: ['Grain'], 'grid-effect': ['Grid', 'Grid Effect'], halftone: ['Halftone'], invert: ['Invert'], kaleidoscope: ['Kaleidoscope'],
+  liquid: ['Liquid'], mirror: ['Mirror'], photo: ['Photo'], pixelate: ['Pixelate'], posterize: ['Posterize'],
+  ripple: ['Ripple'], scanlines: ['Scanlines'], shift: ['Shift'], 'slit-scan': ['Slit-Scan'], triangulate: ['Triangulate'],
+  vhs: ['VHS'], vignette: ['Vignette'], wave: ['Wave'], 'zoom-blur': ['Blur'],
 };
 
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
@@ -49,7 +52,7 @@ export function useRandomization(params: RandomizationParams) {
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setChromaticOffset,
-    setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
+    setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
@@ -67,12 +70,12 @@ export function useRandomization(params: RandomizationParams) {
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
-    setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
+    setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
-    setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
+    setScanlineSpacing, setScanlineSpeed, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -275,11 +278,9 @@ export function useRandomization(params: RandomizationParams) {
     setPaletteBeatEnabled(Math.random() < 0.5);
 
     const activeModCategories = new Set<string>();
-    const gradientCategory = GRADIENT_MOD_CATEGORY[gradientType];
-    if (gradientCategory) activeModCategories.add(gradientCategory);
+    (GRADIENT_MOD_CATEGORY[gradientType] ?? []).forEach((c) => activeModCategories.add(c));
     (activeEffects as string[]).forEach((effect) => {
-      const effectCategory = EFFECT_MOD_CATEGORY[effect];
-      if (effectCategory) activeModCategories.add(effectCategory);
+      (EFFECT_MOD_CATEGORY[effect] ?? []).forEach((c) => activeModCategories.add(c));
     });
     const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
     // Fall back to the full pool only if the current gradient/effects have no
@@ -538,7 +539,6 @@ export function useRandomization(params: RandomizationParams) {
     setWaveFrequency(Math.floor(Math.random() * 8) + 1);              // 1–8
     setWaveNumber(Math.floor(Math.random() * 18) + 5);                // 5–22
     setWaveRotation(Math.floor(Math.random() * 360));
-    setMeshGridSize(Math.floor(Math.random() * 7) + 2);               // 2–8
     setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
     setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
     setNoiseDirection(Math.floor(Math.random() * 360));
@@ -568,25 +568,6 @@ export function useRandomization(params: RandomizationParams) {
     setDuotoneColor1(randomHexColor());
     setDuotoneColor2(randomHexColor());
     setDuotoneColor3(randomHexColor());
-
-    // Randomize freeform gradient pins (3-8 random pins)
-    const numPins = Math.floor(Math.random() * 6) + 3; // 3-8 pins
-    const newPins: ColorPin[] = [];
-    for (let i = 0; i < numPins; i++) {
-      newPins.push({
-        id: `${Date.now()}-${i}`,
-        x: 0.2 + Math.random() * 0.6, // Keep pins within 0.2-0.8 range
-        y: 0.2 + Math.random() * 0.6,
-        color: {
-          r: Math.floor(Math.random() * 255),
-          g: Math.floor(Math.random() * 255),
-          b: Math.floor(Math.random() * 255),
-        },
-        radius: 150 + Math.floor(Math.random() * 350), // 150-500
-      });
-    }
-    setColorPins(newPins);
-    setSelectedPinId(null);
 
     randomizeUncoveredParams();
     // Remix randomizes every gradient/effect slider already — extend that to

@@ -1,17 +1,10 @@
 import React from 'react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
-import type { ColorPin } from './InteractiveGradient';
 
 export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
   getGradientDisplayName: (t: GradientType) => string;
-
-  // Freeform pins
-  colorPins: ColorPin[];
-  setColorPins: (updater: ColorPin[] | ((prev: ColorPin[]) => ColorPin[])) => void;
-  selectedPinId: string | null;
-  setSelectedPinId: (id: string | null) => void;
 
   // Grid
   gridRows: number; setGridRows: (v: number) => void;
@@ -117,9 +110,6 @@ export interface GradientsTabProps {
   waveRotationRef: React.MutableRefObject<number>;
   drawParamsDirtyRef: React.MutableRefObject<boolean>;
 
-  // Mesh
-  meshGridSize: number; setMeshGridSize: (v: number) => void;
-  meshJitter: number; setMeshJitter: (v: number) => void;
 
   // Noise
   noiseScale: number; setNoiseScale: (v: number) => void;
@@ -161,7 +151,6 @@ export interface GradientsTabProps {
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName,
-    colorPins, setColorPins, selectedPinId, setSelectedPinId,
     gridRows, setGridRows, gridColumns, setGridColumns,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale,
@@ -184,7 +173,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency,
     waveNumber, setWaveNumber, waveNumberRef, waveRotation, setWaveRotation, waveRotationRef, drawParamsDirtyRef,
-    meshGridSize, setMeshGridSize, meshJitter, setMeshJitter,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
     plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
@@ -267,106 +255,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Freeform Controls */}
-        {gradientType === 'freeform' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={(e) => {
-                  // Add a new pin at center with random color
-                  const newPin: ColorPin = {
-                    id: Date.now().toString(),
-                    x: 0.5 + (Math.random() - 0.5) * 0.3,
-                    y: 0.5 + (Math.random() - 0.5) * 0.3,
-                    color: {
-                      r: Math.floor(Math.random() * 255),
-                      g: Math.floor(Math.random() * 255),
-                      b: Math.floor(Math.random() * 255),
-                    },
-                    radius: 300,
-                  };
-                  setColorPins(prev => [...prev, newPin]);
-                  setSelectedPinId(newPin.id);
-                }}
-                className="px-2 py-1 rounded text-xs bg-white/20 text-white hover:bg-white/30 transition-all"
-              >
-                + Add Pin
-              </button>
-              
-              {selectedPinId && (
-                <>
-                  <button
-                    onClick={() => {
-                      setColorPins(prev => prev.filter(p => p.id !== selectedPinId));
-                      setSelectedPinId(null);
-                    }}
-                    className="px-2 py-1 rounded text-xs bg-red-500/50 text-white hover:bg-red-500/70 transition-all"
-                  >
-                    Delete Selected
-                  </button>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] text-white">Radius:</label>
-                    <div className="flex items-center gap-1 flex-1 ml-2">
-                      <input
-                        type="range"
-                        min="100"
-                        max="800"
-                        value={colorPins.find(p => p.id === selectedPinId)?.radius || 300}
-                        onChange={(e) => {
-                          const newRadius = Number(e.target.value);
-                          setColorPins(prev => prev.map(p =>
-                            p.id === selectedPinId ? { ...p, radius: newRadius } : p
-                          ));
-                        }}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="100"
-                        max="800"
-                        value={colorPins.find(p => p.id === selectedPinId)?.radius || 300}
-                        onChange={(e) => {
-                          const newRadius = Number(e.target.value);
-                          setColorPins(prev => prev.map(p =>
-                            p.id === selectedPinId ? { ...p, radius: newRadius } : p
-                          ));
-                        }}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] text-white">Color:</label>
-                    <input
-                      type="color"
-                      value={(() => {
-                        const pin = colorPins.find(p => p.id === selectedPinId);
-                        if (!pin) return '#000000';
-                        const r = pin.color.r.toString(16).padStart(2, '0');
-                        const g = pin.color.g.toString(16).padStart(2, '0');
-                        const b = pin.color.b.toString(16).padStart(2, '0');
-                        return `#${r}${g}${b}`;
-                      })()}
-                      onChange={(e) => {
-                        const hex = e.target.value;
-                        const r = parseInt(hex.slice(1, 3), 16);
-                        const g = parseInt(hex.slice(3, 5), 16);
-                        const b = parseInt(hex.slice(5, 7), 16);
-                        setColorPins(prev => prev.map(p => 
-                          p.id === selectedPinId ? { ...p, color: { r, g, b } } : p
-                        ));
-                      }}
-                      className="ml-2 w-12 h-8 rounded cursor-pointer"
-                    />
-                  </div>
-                </>
-              )}
             </div>
           </div>
         )}
@@ -978,40 +866,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
                   className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mesh Controls */}
-        {gradientType === 'mesh' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Grid Size:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={meshGridSize}
-                  onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={meshGridSize}
-                        onChange={(e) => setMeshGridSize(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Jitter:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="100" value={meshJitter} onChange={(e) => setMeshJitter(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>

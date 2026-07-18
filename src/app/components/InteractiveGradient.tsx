@@ -31,7 +31,6 @@ import { Divider } from './Divider';
 import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
-import { FreeformPinsOverlay } from './FreeformPinsOverlay';
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
 import {
@@ -56,7 +55,6 @@ import { useCausticsState } from '../hooks/state/useCausticsState';
 import { useChromaticState } from '../hooks/state/useChromaticState';
 import { useChromaticTrailsState } from '../hooks/state/useChromaticTrailsState';
 import { useColorState } from '../hooks/state/useColorState';
-import { useColorPinState } from '../hooks/state/useColorPinState';
 import { useDiffusionState } from '../hooks/state/useDiffusionState';
 import { useDiffusionGridState } from '../hooks/state/useDiffusionGridState';
 import { useDigitalNoiseState } from '../hooks/state/useDigitalNoiseState';
@@ -88,7 +86,6 @@ import { useLinesState } from '../hooks/state/useLinesState';
 import { useLiquidState } from '../hooks/state/useLiquidState';
 import { useLiquifyState } from '../hooks/state/useLiquifyState';
 import { useMarbleState } from '../hooks/state/useMarbleState';
-import { useMeshState } from '../hooks/state/useMeshState';
 import { useMetaballState } from '../hooks/state/useMetaballState';
 import { useMirrorState } from '../hooks/state/useMirrorState';
 import { useMiscState } from '../hooks/state/useMiscState';
@@ -125,14 +122,6 @@ import { useVignetteState } from '../hooks/state/useVignetteState';
 import { useVoronoiState } from '../hooks/state/useVoronoiState';
 import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
-
-export interface ColorPin {
-  id: string;
-  x: number; // 0-1 normalized position
-  y: number; // 0-1 normalized position
-  color: ColorRGB;
-  radius: number; // influence radius in pixels
-}
 
 type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
 
@@ -289,7 +278,6 @@ export function InteractiveGradient() {
   const { chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle } = useChromaticState();
   const { chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset, chromaticTrailsBufferRef } = useChromaticTrailsState();
   const { colorShiftHue, setColorShiftHue } = useColorState();
-  const { colorPins, setColorPins } = useColorPinState();
   const { diffusionSpeed, setDiffusionSpeed, diffusionFeed, setDiffusionFeed, diffusionKill, setDiffusionKill, diffusionAnimTrigger, setDiffusionAnimTrigger } = useDiffusionState();
   const { diffusionGridRef } = useDiffusionGridState();
   const { digitalNoiseIntensity, setDigitalNoiseIntensity } = useDigitalNoiseState();
@@ -321,10 +309,9 @@ export function InteractiveGradient() {
   const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
   const { liquifyStrength, setLiquifyStrength } = useLiquifyState();
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
-  const { meshGridSize, setMeshGridSize, meshJitter, setMeshJitter } = useMeshState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, selectedPinId, setSelectedPinId, isDraggingPin, setIsDraggingPin, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   const { panelDragRef } = usePanelDragState();
@@ -1079,7 +1066,7 @@ export function InteractiveGradient() {
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
     blurType, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
-    chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
+    chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue, concentricRingCount, concentricRingWidth,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
@@ -1098,7 +1085,7 @@ export function InteractiveGradient() {
     hexGridSize, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
     linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength,
-    marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity, meshGridSize, meshJitter,
+    marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount, moireOffset,
     moireScale, moireSpeed, noiseDirection, noiseOctaves, noiseScale, noiseType,
@@ -1112,7 +1099,7 @@ export function InteractiveGradient() {
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
     setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
-    setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
+    setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -1124,7 +1111,7 @@ export function InteractiveGradient() {
     setIridescentIntensity, setIridescentScale, setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
     setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
-    setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMeshJitter, setMetaballCount, setMetaballSize,
+    setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
     setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed,
     setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBeatEnabled,
@@ -1248,7 +1235,7 @@ export function InteractiveGradient() {
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setChromaticOffset,
-    setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
+    setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
@@ -1266,12 +1253,12 @@ export function InteractiveGradient() {
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
-    setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
+    setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
-    setScanlineSpacing, setScanlineSpeed, setSelectedPinId, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
+    setScanlineSpacing, setScanlineSpeed, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -1566,7 +1553,6 @@ export function InteractiveGradient() {
       waveFrequency,
       waveNumber,
       waveRotation,
-      meshGridSize,
       noiseScale,
       noiseOctaves,
       noiseDirection,
@@ -1598,7 +1584,7 @@ export function InteractiveGradient() {
     gridSides, duotoneColor3, duotoneThreeColor,
     vhsGlitchIntensity, gridRows, gridColumns, polygon2Sides, waveDistortionStrength,
     windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount,
-    concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency, meshGridSize,
+    concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency,
     noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
     voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
@@ -2237,7 +2223,7 @@ export function InteractiveGradient() {
     digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize,
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations,
     windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
-    waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
+    waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
     plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, helixTurns, helixTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
@@ -2251,7 +2237,7 @@ export function InteractiveGradient() {
     slitScanAnimTrigger, glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, meshGridSize, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, meshJitter, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2294,7 +2280,7 @@ export function InteractiveGradient() {
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
-    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
+    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
@@ -2310,8 +2296,8 @@ export function InteractiveGradient() {
     halftoneTimeRef, halftoneVariation, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled,
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, liquidAnimTime, liquidScale,
-    liquidStrength, marbleAnimTime, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
-    meshJitter, metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
+    liquidStrength, marbleAnimTime, marbleOctaves, marbleTurbulence, marbleVeinFreq,
+    metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     moireAnimTime, moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
@@ -2397,152 +2383,35 @@ export function InteractiveGradient() {
     // Self-animating gradients — drag interaction conflicts with their own animation
     if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
 
-    // In freeform mode, if not dragging a pin, clicking adds a new pin or changes interaction
-    if (gradientType === 'freeform' && !isDraggingPin) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-      
-      // Check if clicking on existing pin
-      let clickedPin = false;
-      for (const pin of colorPins) {
-        const dx = Math.abs(pin.x - x) * rect.width;
-        const dy = Math.abs(pin.y - y) * rect.height;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 15) {
-          setSelectedPinId(pin.id);
-          setIsDraggingPin(true);
-          clickedPin = true;
-          break;
-        }
-      }
-      
-      if (!clickedPin) {
-        // Add new pin at click position
-        const newPin: ColorPin = {
-          id: Date.now().toString(),
-          x,
-          y,
-          color: {
-            r: Math.floor(Math.random() * 255),
-            g: Math.floor(Math.random() * 255),
-            b: Math.floor(Math.random() * 255),
-          },
-          radius: 300,
-        };
-        setColorPins(prev => [...prev, newPin]);
-        setSelectedPinId(newPin.id);
-      }
-      return;
-    }
-    
     setIsDragging(true);
     previousPosition.current = null;
   };
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-    setIsDraggingPin(false);
     previousPosition.current = null;
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Handle pin dragging in freeform mode
-    if (gradientType === 'freeform' && isDraggingPin && selectedPinId) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-      
-      setColorPins(prev => prev.map(p => 
-        p.id === selectedPinId ? { ...p, x, y } : p
-      ));
-      return;
-    }
-    
     handleInteraction(e.clientX, e.clientY);
-  }, [gradientType, isDraggingPin, selectedPinId, handleInteraction]);
-
-  const handlePinRadiusChange = useCallback((id: string, radius: number) => {
-    setColorPins(prev => prev.map(p => p.id === id ? { ...p, radius } : p));
-  }, []);
+  }, [handleInteraction]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (gradientType === 'freeform' && !isDraggingPin && e.touches.length === 1) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      const x = (touch.clientX - rect.left) / rect.width;
-      const y = (touch.clientY - rect.top) / rect.height;
-      
-      // Check if touching existing pin
-      let touchedPin = false;
-      for (const pin of colorPins) {
-        const dx = Math.abs(pin.x - x) * rect.width;
-        const dy = Math.abs(pin.y - y) * rect.height;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 20) {
-          setSelectedPinId(pin.id);
-          setIsDraggingPin(true);
-          touchedPin = true;
-          break;
-        }
-      }
-      
-      if (!touchedPin) {
-        // Add new pin at touch position
-        const newPin: ColorPin = {
-          id: Date.now().toString(),
-          x,
-          y,
-          color: {
-            r: Math.floor(Math.random() * 255),
-            g: Math.floor(Math.random() * 255),
-            b: Math.floor(Math.random() * 255),
-          },
-          radius: 300,
-        };
-        setColorPins(prev => [...prev, newPin]);
-        setSelectedPinId(newPin.id);
-      }
-      return;
-    }
-    
     setIsDragging(true);
     previousPosition.current = null;
-  }, [gradientType, isDraggingPin, colorPins]);
+  }, []);
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
-    setIsDraggingPin(false);
     previousPosition.current = null;
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (e.touches.length > 0) {
       const touch = e.touches[0];
-      
-      // Handle pin dragging in freeform mode
-      if (gradientType === 'freeform' && isDraggingPin && selectedPinId) {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
-        const y = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
-        
-        setColorPins(prev => prev.map(p => 
-          p.id === selectedPinId ? { ...p, x, y } : p
-        ));
-        return;
-      }
-      
       handleInteraction(touch.clientX, touch.clientY);
     }
-  }, [gradientType, isDraggingPin, selectedPinId, handleInteraction, isAutoMode]);
+  }, [handleInteraction, isAutoMode]);
 
   const handleWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
     // ctrlKey signals a trackpad pinch gesture — ignore it
@@ -3022,17 +2891,6 @@ export function InteractiveGradient() {
         />
       </div>
       
-      {/* Freeform Pins Overlay */}
-      {gradientType === 'freeform' && (
-        <FreeformPinsOverlay
-          colorPins={colorPins}
-          selectedPinId={selectedPinId}
-          setSelectedPinId={setSelectedPinId}
-          setIsDraggingPin={setIsDraggingPin}
-          onRadiusChange={handlePinRadiusChange}
-        />
-      )}
-      
       {/* Upper Right Controls */}
       <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <input
@@ -3400,10 +3258,6 @@ export function InteractiveGradient() {
             gradientType={gradientType}
             setGradientType={setGradientType}
             getGradientDisplayName={getGradientDisplayName}
-            colorPins={colorPins}
-            setColorPins={setColorPins}
-            selectedPinId={selectedPinId}
-            setSelectedPinId={setSelectedPinId}
             gridRows={gridRows}
             setGridRows={setGridRows}
             gridColumns={gridColumns}
@@ -3529,10 +3383,6 @@ export function InteractiveGradient() {
             setWaveRotation={setWaveRotation}
             waveRotationRef={waveRotationRef}
             drawParamsDirtyRef={drawParamsDirtyRef}
-            meshGridSize={meshGridSize}
-            setMeshGridSize={setMeshGridSize}
-            meshJitter={meshJitter}
-            setMeshJitter={setMeshJitter}
             noiseScale={noiseScale}
             setNoiseScale={setNoiseScale}
             noiseOctaves={noiseOctaves}
