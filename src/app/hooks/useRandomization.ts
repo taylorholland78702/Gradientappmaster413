@@ -23,7 +23,7 @@ export function useRandomization(params: RandomizationParams) {
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
-    setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setCharcoalIntensity, setChromaticOffset,
+    setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
@@ -394,7 +394,6 @@ export function useRandomization(params: RandomizationParams) {
     setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
     setVignetteStrength(randInRange(RANGES.vignetteStrength));
     setColorShiftHue(randIntInRange(RANGES.colorShiftHue));
-    setCharcoalIntensity(Math.random() * 0.6 + 0.2);                  // 0.2–0.8
     setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
     setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
     setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3

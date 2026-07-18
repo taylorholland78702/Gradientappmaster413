@@ -16,7 +16,7 @@ export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'wav
 // for an unrelated gradient pattern, and sharing the same id string between
 // the two was a real footgun for any `=== 'grid'` check plus ambiguous in
 // preset/export data. See EFFECT_ONLY_MIGRATIONS below for old presets.
-export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'charcoal' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid-effect' | 'dither' | 'slit-scan' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo' | 'glitch';
+export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid-effect' | 'dither' | 'slit-scan' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo' | 'glitch';
 
 export const DEFAULT_COLORS: ColorRGB[] = [
   { r: 255, g: 100, b: 200 }, // Pink

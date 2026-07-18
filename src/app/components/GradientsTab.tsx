@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Shuffle } from '@phosphor-icons/react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 import type { ColorPin } from './InteractiveGradient';
@@ -198,6 +198,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
+  const [rerolled, setRerolled] = useState(false);
+  const rerolledTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleRerollClick = useCallback(() => {
+    onReroll();
+    setRerolled(true);
+    if (rerolledTimeoutRef.current) clearTimeout(rerolledTimeoutRef.current);
+    rerolledTimeoutRef.current = setTimeout(() => setRerolled(false), 500);
+  }, [onReroll]);
+
   return (
     <>
 
@@ -231,12 +240,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             randomizer: this only rerolls the current gradient's structure. */}
         {seedableGradientTypes.includes(gradientType) && (
           <button
-            onClick={onReroll}
+            onClick={handleRerollClick}
             className="w-full py-1.5 text-[10px] font-semibold text-white bg-black/25 hover:bg-white/15 rounded-lg transition-all flex items-center justify-center gap-1.5"
             title="Reroll this gradient's structure"
           >
             <Shuffle weight="regular" className="w-3.5 h-3.5" />
-            Reroll
+            {rerolled ? 'Rerolled!' : 'Reroll'}
           </button>
         )}
 
@@ -1475,7 +1484,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             rather than indexing the full palette, so Banded/Cyclic don't
             apply the same way). */}
         {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
-          <div className="w-full p-2 bg-black/25 rounded-lg mt-2">
+          <div className="w-full mt-3">
+            <div className="flex items-center gap-2 mb-2 pt-2 border-t border-white/10">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-white/50">Field Mapping</span>
+            </div>
+            <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-2'}`}>
               <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1510,6 +1523,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         )}
 

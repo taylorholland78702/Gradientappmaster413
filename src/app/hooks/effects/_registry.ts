@@ -6,7 +6,6 @@ import { applyTriangulate } from './applyTriangulate';
 import { applyChromatic } from './applyChromatic';
 import { applyFisheye } from './applyFisheye';
 import { applyGrain } from './applyGrain';
-import { applyCharcoal } from './applyCharcoal';
 import { applyPosterize } from './applyPosterize';
 import { applyHalftone } from './applyHalftone';
 import { applyVhs } from './applyVhs';
@@ -39,7 +38,6 @@ export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'chromatic': applyChromatic,
   'fisheye': applyFisheye,
   'grain': applyGrain,
-  'charcoal': applyCharcoal,
   'posterize': applyPosterize,
   'halftone': applyHalftone,
   'vhs': applyVhs,
