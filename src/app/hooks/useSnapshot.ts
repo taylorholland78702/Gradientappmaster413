@@ -21,6 +21,8 @@ export function useSnapshot(params: SnapshotParams) {
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
+    voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
+    metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -51,6 +53,8 @@ export function useSnapshot(params: SnapshotParams) {
     setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setStructuralSeed, setAudioBindings,
+    setVoronoiAnimTime, setFlowerAnimTime, setAuroraAnimTime, setCausticsAnimTime, setLavaAnimTime, setMarbleAnimTime,
+    setMetaballAnimTime, setMoireAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -210,6 +214,8 @@ export function useSnapshot(params: SnapshotParams) {
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
+      voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
+      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -276,6 +282,8 @@ export function useSnapshot(params: SnapshotParams) {
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
+      voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
+      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -449,6 +457,24 @@ export function useSnapshot(params: SnapshotParams) {
     setInvertAmount(snapshot.invertAmount ?? 1);
     setStructuralSeed(snapshot.structuralSeed ?? 0);
     setAudioBindings(snapshot.audioBindings ?? []);
+    // Per-gradient animation clocks — previously not part of the snapshot at
+    // all, so reloading a preset for any of these types rendered whatever
+    // phase that clock's already-running counter happened to be at (it never
+    // stops advancing while Auto Mode/VCR/mic is on) instead of the phase
+    // that was actually on screen when the preset was saved. That's the
+    // "doesn't look the same every time" bug for these gradient types.
+    setVoronoiAnimTime(snapshot.voronoiAnimTime ?? 0);
+    setFlowerAnimTime(snapshot.flowerAnimTime ?? 0);
+    setAuroraAnimTime(snapshot.auroraAnimTime ?? 0);
+    setCausticsAnimTime(snapshot.causticsAnimTime ?? 0);
+    setLavaAnimTime(snapshot.lavaAnimTime ?? 0);
+    setMarbleAnimTime(snapshot.marbleAnimTime ?? 0);
+    setMetaballAnimTime(snapshot.metaballAnimTime ?? 0);
+    setMoireAnimTime(snapshot.moireAnimTime ?? 0);
+    setFlowAnimTime(snapshot.flowAnimTime ?? 0);
+    setLiquidAnimTime(snapshot.liquidAnimTime ?? 0);
+    setEmojiAnimTime(snapshot.emojiAnimTime ?? 0);
+    setAttractorAnimTime(snapshot.attractorAnimTime ?? 0);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);

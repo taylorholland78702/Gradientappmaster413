@@ -651,6 +651,17 @@ export function InteractiveGradient() {
         gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
         activeEffects: migrateIds(data.activeEffects),
       });
+      // Snap the refs the draw loop actually reads straight to the saved
+      // values instead of letting them ease in from whatever was on screen
+      // before the click (the same ~1-2s ease used for organic in-app
+      // changes, e.g. picking a new palette). Without this, the same preset
+      // could render differently each time depending on what was showing
+      // right before it was loaded, and any screenshot/comparison taken in
+      // that window would catch it mid-transition.
+      const restoredColors = data.gradientColors || DEFAULT_COLORS;
+      gradientColorsRef.current = restoredColors.map((c: ColorRGB) => ({ ...c }));
+      gradientAngleRef.current = data.gradientAngle ?? 45;
+      zoomRef.current = data.zoom ?? 1;
     },
     uid: authState.uid,
   });
@@ -675,6 +686,11 @@ export function InteractiveGradient() {
         gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
         activeEffects: migrateIds(data.activeEffects),
       });
+      // Same instant-snap as applyPresetData above — see that comment.
+      const restoredColors = data.gradientColors || DEFAULT_COLORS;
+      gradientColorsRef.current = restoredColors.map((c: ColorRGB) => ({ ...c }));
+      gradientAngleRef.current = data.gradientAngle ?? 45;
+      zoomRef.current = data.zoom ?? 1;
     } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to load shared preset from URL:', err);
     }
@@ -1053,6 +1069,10 @@ export function InteractiveGradient() {
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     fieldContrast, paletteMode, paletteBands, setFieldContrast, setPaletteMode, setPaletteBands,
     invertAmount, setInvertAmount,
+    voronoiAnimTime, setVoronoiAnimTime, flowerAnimTime, setFlowerAnimTime, auroraAnimTime, setAuroraAnimTime,
+    causticsAnimTime, setCausticsAnimTime, lavaAnimTime, setLavaAnimTime, marbleAnimTime, setMarbleAnimTime,
+    metaballAnimTime, setMetaballAnimTime, moireAnimTime, setMoireAnimTime, flowAnimTime, setFlowAnimTime,
+    liquidAnimTime, setLiquidAnimTime, emojiAnimTime, setEmojiAnimTime, attractorAnimTime, setAttractorAnimTime,
     structuralSeed, setStructuralSeed,
     audioBindings, setAudioBindings,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
