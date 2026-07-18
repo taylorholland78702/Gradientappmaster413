@@ -290,7 +290,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <select
                   value={modParam}
                   onChange={(e) => setModParam(e.target.value)}
-                  className="flex-[3] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                  className="flex-[4] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
                 >
                   {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
                     <optgroup key={group.category} label={group.category}>
