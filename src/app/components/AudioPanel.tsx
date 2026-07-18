@@ -289,7 +289,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <select
                   value={modParam}
                   onChange={(e) => setModParam(e.target.value)}
-                  className="flex-1 min-w-0 text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                  className="flex-[3] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                 >
                   {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
                     <optgroup key={group.category} label={group.category}>
@@ -313,7 +313,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   min="-10" max="10" step="0.1"
                   value={modAmount}
                   onChange={(e) => setModAmount(Number(e.target.value))}
-                  className="w-10 text-[9px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                  className="w-7 text-[9px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
                   title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
                 />
                 <button
