@@ -2895,7 +2895,8 @@ export function InteractiveGradient() {
           break;
         case 'a': case 'A':
           e.preventDefault();
-          setActiveTab(prev => prev === 'audio' ? null : 'audio');
+          if (e.shiftKey) shuffleAudiovisuals();
+          else setActiveTab(prev => prev === 'audio' ? null : 'audio');
           break;
         case 'c': case 'C':
           e.preventDefault();
@@ -3871,10 +3872,11 @@ export function InteractiveGradient() {
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Randomizing</p>
-                <p>Four ways to randomize, from smallest to biggest change:</p>
+                <p>Five ways to randomize, from smallest to biggest change:</p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — tap <strong>wāv</strong> for a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, and beat-sync toggles. Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — hold or double-tap <strong>wāv</strong> to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
               </div>
 
