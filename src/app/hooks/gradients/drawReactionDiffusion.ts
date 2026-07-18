@@ -249,8 +249,16 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
           }
           const rd = reactionDiffusionGridRef.current;
           let { u, v, u2, v2 } = rd;
-          const Du = 1.0, Dv = 0.5;
-          const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 6));
+          // Du/Dv are the classic Gray-Scott ratio (2:1), but the explicit-Euler
+          // step below has no time-step scaling, so applying them at full
+          // strength (dt=1) blows past the ~0.25 stability limit for a 4-neighbor
+          // Laplacian — the field oscillates cell-to-cell instead of diffusing
+          // smoothly, which is what was rendering as speckled noise along thin
+          // worms instead of solid Turing spots/coral. dt keeps each step stable;
+          // steps is scaled up to compensate so the simulation still covers the
+          // same amount of "diffusion time" per frame as before.
+          const Du = 1.0, Dv = 0.5, dt = 0.2;
+          const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 30));
           const idx = (x: number, y: number) => ((y + RD_H) % RD_H) * RD_W + ((x + RD_W) % RD_W);
 
           // Gray-Scott is a fully deterministic PDE — once it settles into a
@@ -294,8 +302,8 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
                 const lapV = v[idx(x - 1, y)] + v[idx(x + 1, y)] + v[idx(x, y - 1)] + v[idx(x, y + 1)] - 4 * v[i];
                 const uu = u[i], vv = v[i];
                 const reaction = uu * vv * vv;
-                u2[i] = Math.min(1, Math.max(0, uu + (Du * lapU - reaction + feed * (1 - uu))));
-                v2[i] = Math.min(1, Math.max(0, vv + (Dv * lapV + reaction - (kill + feed) * vv)));
+                u2[i] = Math.min(1, Math.max(0, uu + dt * (Du * lapU - reaction + feed * (1 - uu))));
+                v2[i] = Math.min(1, Math.max(0, vv + dt * (Dv * lapV + reaction - (kill + feed) * vv)));
               }
             }
             [u, u2] = [u2, u];
