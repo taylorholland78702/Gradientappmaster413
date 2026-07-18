@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CaretDown, Plus, SlidersHorizontal, Microphone, MicrophoneSlash, Shuffle, X } from '@phosphor-icons/react';
-import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
+import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
@@ -291,8 +291,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   onChange={(e) => setModParam(e.target.value)}
                   className="flex-1 min-w-0 text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                 >
-                  {MODULATABLE_PARAMS.map(p => (
-                    <option key={p.key} value={p.key}>{p.label}</option>
+                  {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
+                    <optgroup key={group.category} label={group.category}>
+                      {group.params.map(p => (
+                        <option key={p.key} value={p.key}>{p.label}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
                 <select
