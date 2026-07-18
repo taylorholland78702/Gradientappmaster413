@@ -707,6 +707,7 @@ export function InteractiveGradient() {
     renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
+    openNewPresetSignal, setOpenNewPresetSignal,
     folderNames,
     savePreset,
     savePresetWithName,
@@ -3152,7 +3153,7 @@ export function InteractiveGradient() {
             <ArrowUUpRight weight="regular" className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); }}
+            onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
             className="w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
             title="Presets (P)"
             aria-label="Presets"
@@ -3774,6 +3775,7 @@ export function InteractiveGradient() {
         <Suspense fallback={null}>
         <PresetsPanel
           isPresetsDropdownOpen={isPresetsDropdownOpen}
+          openNewPresetSignal={openNewPresetSignal}
           savedPresets={savedPresets}
           renamingPresetId={renamingPresetId}
           renamingPresetValue={renamingPresetValue}

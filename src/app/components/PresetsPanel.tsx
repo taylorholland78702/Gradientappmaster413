@@ -21,6 +21,7 @@ const UNCATEGORIZED = 'Uncategorized';
 
 interface PresetsPanelProps {
   isPresetsDropdownOpen: boolean;
+  openNewPresetSignal: number;
   savedPresets: Preset[];
   renamingPresetId: string | null;
   renamingPresetValue: string;
@@ -48,6 +49,7 @@ interface PresetsPanelProps {
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
+  openNewPresetSignal,
   savedPresets,
   renamingPresetId,
   renamingPresetValue,
@@ -84,6 +86,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
   const [newPresetName, setNewPresetName] = useState('');
   const [isAddingPreset, setIsAddingPreset] = useState(false);
+  // Jump straight to the "new preset name" field when triggered externally
+  // (the collapsed header's "+" button), instead of just landing on the tab
+  // and leaving the user to find + click "Preset" themselves. Guarded to 0
+  // so a normal tab-open (signal still at its initial value) doesn't also
+  // auto-open the field.
+  React.useEffect(() => {
+    if (openNewPresetSignal > 0) setIsAddingPreset(true);
+  }, [openNewPresetSignal]);
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
@@ -92,6 +102,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   const [draggingPresetId, setDraggingPresetId] = useState<string | null>(null);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [savedPresetId, setSavedPresetId] = useState<string | null>(null);
 
   // Encode the preset's full state snapshot directly into the URL (no
   // backend round-trip — this app doesn't control its own Firestore
@@ -104,6 +115,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     navigator.clipboard?.writeText(url).catch(() => {});
     setCopiedLinkId(preset.id);
     setTimeout(() => setCopiedLinkId(prev => (prev === preset.id ? null : prev)), 2000);
+  };
+
+  const handleUpdatePreset = (id: string) => {
+    updatePreset(id);
+    setSavedPresetId(id);
+    setTimeout(() => setSavedPresetId(prev => (prev === id ? null : prev)), 1200);
   };
 
   const confirmAdd = () => {
@@ -456,11 +473,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       : <LinkSimple weight="regular" className="w-4 h-4" />}
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); updatePreset(preset.id); }}
-                    className="px-2 py-2 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
-                    title="Save current settings to this preset"
+                    onClick={(e) => { e.stopPropagation(); handleUpdatePreset(preset.id); }}
+                    className={`px-2 py-2 hover:bg-white/15 transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
+                    title={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
                   >
-                    <FloppyDisk weight="regular" className="w-4 h-4" />
+                    {savedPresetId === preset.id
+                      ? <Check weight="bold" className="w-4 h-4" />
+                      : <FloppyDisk weight="regular" className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}

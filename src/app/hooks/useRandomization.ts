@@ -259,6 +259,43 @@ export function useRandomization(params: RandomizationParams) {
     // identical apart from which effects were on.
     randomizeUncoveredParams();
   }, [saveCurrentState, randomizeUncoveredParams]);
+  const shuffleAudiovisuals = useCallback(() => {
+    setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
+    setSubBassMultiplier(Math.random() * 5);
+    setBassMultiplier(Math.random() * 5);
+    setMidsMultiplier(Math.random() * 5);
+    setTrebleMultiplier(Math.random() * 5);
+    setSubBassBeatSync(Math.random() < 0.5);
+    setBassBeatSync(Math.random() < 0.5);
+    setMidsBeatSync(Math.random() < 0.5);
+    setTrebleBeatSync(Math.random() < 0.5);
+    setZoomBeatEnabled(Math.random() < 0.5);
+    setShakeBeatEnabled(Math.random() < 0.5);
+    setContrastBeatEnabled(Math.random() < 0.5);
+    setPaletteBeatEnabled(Math.random() < 0.5);
+
+    const activeModCategories = new Set<string>();
+    const gradientCategory = GRADIENT_MOD_CATEGORY[gradientType];
+    if (gradientCategory) activeModCategories.add(gradientCategory);
+    (activeEffects as string[]).forEach((effect) => {
+      const effectCategory = EFFECT_MOD_CATEGORY[effect];
+      if (effectCategory) activeModCategories.add(effectCategory);
+    });
+    const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
+    // Fall back to the full pool only if the current gradient/effects have no
+    // modulatable sliders at all, so Shuffle still does something useful.
+    const paramPool = relevantParams.length > 0 ? relevantParams : MODULATABLE_PARAMS;
+
+    const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
+    const bindingCount = Math.min(1 + Math.floor(Math.random() * 3), paramPool.length); // 1-3
+    const shuffledParams = [...paramPool].sort(() => Math.random() - 0.5).slice(0, bindingCount);
+    setAudioBindings(shuffledParams.map((p): AudioBinding => ({
+      id: `${Date.now()}-${Math.random()}`,
+      param: p.key,
+      band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
+      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.2 + Math.random() * 2.8)).toFixed(1)),
+    })));
+  }, [gradientType, activeEffects]);
   const feelingLucky = useCallback(() => {
     setShowRatingUI(false);
     setTimeout(() => {
@@ -552,9 +589,14 @@ export function useRandomization(params: RandomizationParams) {
     setSelectedPinId(null);
 
     randomizeUncoveredParams();
+    // Remix randomizes every gradient/effect slider already — extend that to
+    // the Audio panel too, but only when audio is actually engaged, so a
+    // Remix on a silent canvas doesn't reshuffle sensitivity/beat-sync
+    // settings that have no visible effect yet.
+    if (audioActive) shuffleAudiovisuals();
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }
@@ -659,43 +701,6 @@ export function useRandomization(params: RandomizationParams) {
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
   }, [gradientColors, gradientAngle, zoom, activeEffects, saveCurrentState, feelingLucky, FEELING_LUCKY_GRADIENT_TYPES]);
-  const shuffleAudiovisuals = useCallback(() => {
-    setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
-    setSubBassMultiplier(Math.random() * 5);
-    setBassMultiplier(Math.random() * 5);
-    setMidsMultiplier(Math.random() * 5);
-    setTrebleMultiplier(Math.random() * 5);
-    setSubBassBeatSync(Math.random() < 0.5);
-    setBassBeatSync(Math.random() < 0.5);
-    setMidsBeatSync(Math.random() < 0.5);
-    setTrebleBeatSync(Math.random() < 0.5);
-    setZoomBeatEnabled(Math.random() < 0.5);
-    setShakeBeatEnabled(Math.random() < 0.5);
-    setContrastBeatEnabled(Math.random() < 0.5);
-    setPaletteBeatEnabled(Math.random() < 0.5);
-
-    const activeModCategories = new Set<string>();
-    const gradientCategory = GRADIENT_MOD_CATEGORY[gradientType];
-    if (gradientCategory) activeModCategories.add(gradientCategory);
-    (activeEffects as string[]).forEach((effect) => {
-      const effectCategory = EFFECT_MOD_CATEGORY[effect];
-      if (effectCategory) activeModCategories.add(effectCategory);
-    });
-    const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
-    // Fall back to the full pool only if the current gradient/effects have no
-    // modulatable sliders at all, so Shuffle still does something useful.
-    const paramPool = relevantParams.length > 0 ? relevantParams : MODULATABLE_PARAMS;
-
-    const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
-    const bindingCount = Math.min(1 + Math.floor(Math.random() * 3), paramPool.length); // 1-3
-    const shuffledParams = [...paramPool].sort(() => Math.random() - 0.5).slice(0, bindingCount);
-    setAudioBindings(shuffledParams.map((p): AudioBinding => ({
-      id: `${Date.now()}-${Math.random()}`,
-      param: p.key,
-      band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
-      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.2 + Math.random() * 2.8)).toFixed(1)),
-    })));
-  }, [gradientType, activeEffects]);
 
   return {
     randomizeUncoveredParams,

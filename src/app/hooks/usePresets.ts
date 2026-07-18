@@ -82,6 +82,12 @@ export function usePresets(params: UsePresetsParams) {
   const [renamingPresetId, setRenamingPresetId] = useState<string | null>(null);
   const [renamingPresetValue, setRenamingPresetValue] = useState('');
   const [isPresetsDropdownOpen, setIsPresetsDropdownOpen] = useState(false);
+  // Incremented (never just toggled — a click while the panel is already
+  // open and the field already showing still needs to re-trigger it) each
+  // time something wants to jump straight to the "new preset name" input
+  // instead of just opening the Presets tab, e.g. the collapsed header's "+"
+  // button. PresetsPanel watches this via an effect.
+  const [openNewPresetSignal, setOpenNewPresetSignal] = useState(0);
   // Explicit list of folder names — kept separate from the folder tags on
   // individual presets so an empty folder (just created, or emptied out by
   // moving its last preset elsewhere) still shows up and can be renamed or
@@ -331,6 +337,7 @@ export function usePresets(params: UsePresetsParams) {
     renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
+    openNewPresetSignal, setOpenNewPresetSignal,
     folderNames: allFolderNames,
     // Functions
     savePreset,
