@@ -40,10 +40,6 @@ export interface EffectsTabProps {
   // Chromatic Trails
   chromaticTrailsDecay: number; setChromaticTrailsDecay: (v: number) => void;
   chromaticTrailsOffset: number; setChromaticTrailsOffset: (v: number) => void;
-  // Stir
-  stirBrushSize: number; setStirBrushSize: (v: number) => void;
-  stirDecay: number; setStirDecay: (v: number) => void;
-  stirIntensity: number; setStirIntensity: (v: number) => void;
   // Pixelate
   pixelSize: number; setPixelSize: (v: number) => void;
   // Triangulate
@@ -90,12 +86,8 @@ export interface EffectsTabProps {
   halftoneCMYK: boolean; setHalftoneCMYK: (v: boolean) => void;
   halftoneMove: boolean; setHalftoneMove: (v: boolean) => void;
   halftoneVariation: number; setHalftoneVariation: (v: number) => void;
-  // Saturate (charcoal id)
-  charcoalIntensity: number; setCharcoalIntensity: (v: number) => void;
   // Invert
   invertAmount: number; setInvertAmount: (v: number) => void;
-  // Oil Paint
-  oilPaintStrength: number; setOilPaintStrength: (v: number) => void;
   // Duotone
   duotoneColor1: string; setDuotoneColor1: (v: string) => void;
   duotoneColor2: string; setDuotoneColor2: (v: string) => void;
@@ -139,7 +131,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
-    stirBrushSize, setStirBrushSize, stirDecay, setStirDecay, stirIntensity, setStirIntensity,
     pixelSize, setPixelSize, triangleSize, setTriangleSize,
     chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle,
     fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY,
@@ -154,9 +145,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
     halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
-    charcoalIntensity, setCharcoalIntensity,
     invertAmount, setInvertAmount,
-    oilPaintStrength, setOilPaintStrength,
     duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
@@ -193,7 +182,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'ascii',          label: 'ASCII' },
               { value: 'bloom',          label: 'Bloom' },
               { value: 'blur',           label: 'Blur' },
-              { value: 'charcoal',       label: 'Saturate' },
               { value: 'chromatic',      label: 'Chromatic' },
               { value: 'chromatic-trails', label: 'Chroma Trails' },
               { value: 'dither',         label: 'Dither' },
@@ -209,7 +197,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'kaleidoscope',   label: 'Kaleido' },
               { value: 'liquid',         label: 'Liquid' },
               { value: 'mirror',         label: 'Mirror' },
-              { value: 'oil-paint',      label: 'Oil Paint' },
               { value: 'photo',          label: 'Photo' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
@@ -217,7 +204,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'scanlines',      label: 'Scanlines' },
               { value: 'shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
-              { value: 'stir',           label: 'Stir' },
               { value: 'triangulate',    label: 'Triangulate' },
               { value: 'vhs',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
@@ -524,28 +510,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <input type="number" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('stir') && (
-                <EffectSection id="stir" label="Stir" isMulti={isMulti} expanded={expandedEffects.has('stir')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Brush:</label>
-                    <input type="range" min="15" max="150" step="1" value={stirBrushSize} onChange={(e) => setStirBrushSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="15" max="150" step="1" value={stirBrushSize} onChange={(e) => setStirBrushSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Fade:</label>
-                    <input type="range" min="0.02" max="0.3" step="0.01" value={stirDecay} onChange={(e) => setStirDecay(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.02" max="0.3" step="0.01" value={stirDecay} onChange={(e) => setStirDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={stirIntensity} onChange={(e) => setStirIntensity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={stirIntensity} onChange={(e) => setStirIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-white/40 mt-1">Move your cursor (or finger) over the canvas to stir up a trail.</p>
                 </EffectSection>
               )}
               {activeEffects.includes('pixelate') && (
@@ -949,15 +913,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('charcoal') && (
-                <EffectSection id="charcoal" label="Saturate" isMulti={isMulti} expanded={expandedEffects.has('charcoal')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                  <input type="range" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={charcoalIntensity} onChange={(e) => setCharcoalIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('invert') && (
                 <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={expandedEffects.has('invert')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
@@ -967,17 +922,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('oil-paint') && (
-                <EffectSection id="oil-paint" label="Oil Paint" isMulti={isMulti} expanded={expandedEffects.has('oil-paint')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                  <input type="range" min="1" max="15" step="0.5" value={oilPaintStrength} onChange={(e) => setOilPaintStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="1" max="15" step="0.5" value={oilPaintStrength} onChange={(e) => setOilPaintStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </EffectSection>
-              )}
-
-
               {activeEffects.includes('duotone') && (
                 <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">

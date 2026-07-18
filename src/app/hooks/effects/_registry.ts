@@ -6,7 +6,6 @@ import { applyTriangulate } from './applyTriangulate';
 import { applyChromatic } from './applyChromatic';
 import { applyFisheye } from './applyFisheye';
 import { applyGrain } from './applyGrain';
-import { applyOilPaint } from './applyOilPaint';
 import { applyCharcoal } from './applyCharcoal';
 import { applyPosterize } from './applyPosterize';
 import { applyHalftone } from './applyHalftone';
@@ -30,7 +29,6 @@ import { applyEmoji } from './applyEmoji';
 import { applyPhoto } from './applyPhoto';
 import { applyLiquid } from './applyLiquid';
 import { applyChromaticTrails } from './applyChromaticTrails';
-import { applyStir } from './applyStir';
 
 export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'kaleidoscope': applyKaleidoscope,
@@ -41,7 +39,6 @@ export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'chromatic': applyChromatic,
   'fisheye': applyFisheye,
   'grain': applyGrain,
-  'oil-paint': applyOilPaint,
   'charcoal': applyCharcoal,
   'posterize': applyPosterize,
   'halftone': applyHalftone,
@@ -65,5 +62,4 @@ export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = {
   'photo': applyPhoto,
   'liquid': applyLiquid,
   'chromatic-trails': applyChromaticTrails,
-  'stir': applyStir,
 };

@@ -20,7 +20,7 @@ export function useSnapshot(params: SnapshotParams) {
     chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount, concentricRingWidth,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed, audioBindings,
+    fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -50,7 +50,7 @@ export function useSnapshot(params: SnapshotParams) {
     setCausticsScale, setCharcoalIntensity, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorPins, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
-    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setOilPaintStrength, setStructuralSeed, setAudioBindings,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setStructuralSeed, setAudioBindings,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -75,14 +75,13 @@ export function useSnapshot(params: SnapshotParams) {
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
-    setStirBrushSize, setStirDecay, setStirIntensity,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency,
     setWaveNumber, setWaveRotation, setWaveScale, setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, stirBrushSize, stirDecay, stirIntensity, windmillRotations,
+    shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, windmillRotations,
     windmillThickness, windmillTightness, windmillZoom, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, truchetSize, truchetThickness,
@@ -194,7 +193,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed, audioBindings,
+      fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -229,7 +228,6 @@ export function useSnapshot(params: SnapshotParams) {
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
       slitScanDirection, slitScanIntensity,
-      stirBrushSize, stirDecay, stirIntensity,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
@@ -261,7 +259,7 @@ export function useSnapshot(params: SnapshotParams) {
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType,
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
-      fieldContrast, paletteMode, paletteBands, invertAmount, oilPaintStrength, structuralSeed, audioBindings,
+      fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -296,7 +294,6 @@ export function useSnapshot(params: SnapshotParams) {
       radialSizeScale,
       rippleAmplitude, rippleFrequency,
       slitScanDirection, slitScanIntensity,
-      stirBrushSize, stirDecay, stirIntensity,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
@@ -435,7 +432,6 @@ export function useSnapshot(params: SnapshotParams) {
     setPaletteMode(snapshot.paletteMode ?? 'linear');
     setPaletteBands(snapshot.paletteBands ?? 5);
     setInvertAmount(snapshot.invertAmount ?? 1);
-    setOilPaintStrength(snapshot.oilPaintStrength ?? 5);
     setStructuralSeed(snapshot.structuralSeed ?? 0);
     setAudioBindings(snapshot.audioBindings ?? []);
     setFadeDirection(snapshot.fadeDirection ?? 0);
@@ -531,9 +527,6 @@ export function useSnapshot(params: SnapshotParams) {
     setRippleFrequency(snapshot.rippleFrequency ?? 0.015);
     setSlitScanDirection(snapshot.slitScanDirection ?? 'horizontal');
     setSlitScanIntensity(snapshot.slitScanIntensity ?? 0.5);
-    setStirBrushSize(snapshot.stirBrushSize ?? 60);
-    setStirDecay(snapshot.stirDecay ?? 0.08);
-    setStirIntensity(snapshot.stirIntensity ?? 0.7);
     setTruchetSize(snapshot.truchetSize ?? 40);
     setTruchetThickness(snapshot.truchetThickness ?? 4);
     setTruchetVariation(snapshot.truchetVariation ?? 0.5);
