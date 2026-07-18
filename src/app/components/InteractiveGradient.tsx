@@ -3092,7 +3092,7 @@ export function InteractiveGradient() {
       {!isControlsVisible && !isFullyHidden && (
         <div
           className="absolute pointer-events-auto flex gap-1.5 origin-top-left"
-          style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 32, left: 16 }}
+          style={panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 }}
         >
           <button
             onClick={() => setIsControlsVisible(true)}
