@@ -173,7 +173,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <button
                 onClick={onShuffleAudio}
                 className="ml-auto flex-1 py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
-                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings"
+                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
               >
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
                 SHUFFLE

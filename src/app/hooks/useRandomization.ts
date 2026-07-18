@@ -9,6 +9,29 @@ import { RANGES, randInRange, randIntInRange } from '../constants/randomizationR
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
+// Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string that
+// holds its sliders, so shuffleAudiovisuals can restrict random Modulation
+// bindings to whatever is actually on screen instead of any of the ~130
+// params across every gradient/effect. Not every id has an entry — some
+// (freeform, linear, polar-grid, grid-effect, zoom-blur) have no modulatable
+// sliders in the registry, and are simply skipped by the filter below.
+const GRADIENT_MOD_CATEGORY: Record<string, string> = {
+  angle: 'Angle', attractor: 'Attractor', aurora: 'Aurora', caustics: 'Caustics', fade: 'Fade',
+  'flow-field': 'Flow Field', flower: 'Flower', grid: 'Grid', helix: 'Helix', iridescent: 'General',
+  julia: 'Julia Set', 'lava-lamp': 'Lava Lamp', marble: 'Marble', metaballs: 'Metaballs', moire: 'Moire',
+  noise: 'Noise', plasma: 'Plasma', radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
+  'reaction-diffusion': 'Reaction-Diffusion', shapes: 'Shapes', topographic: 'Topographic', truchet: 'Truchet',
+  voronoi: 'Voronoi', waves: 'Waves', windmill: 'Windmill',
+};
+const EFFECT_MOD_CATEGORY: Record<string, string> = {
+  ascii: 'ASCII', bloom: 'Bloom', blur: 'Blur', chromatic: 'Chromatic', 'chromatic-trails': 'Chroma Trails',
+  dither: 'Dither', duotone: 'Duotone', emoji: 'Emoji', feedback: 'Feedback', fisheye: 'Fisheye',
+  glitch: 'Glitch', grain: 'Grain', halftone: 'Halftone', invert: 'Invert', kaleidoscope: 'Kaleidoscope',
+  liquid: 'Liquid', mirror: 'Mirror', photo: 'Photo', pixelate: 'Pixelate', posterize: 'Posterize',
+  ripple: 'Ripple', scanlines: 'Scanlines', shift: 'Shift', 'slit-scan': 'Slit-Scan', triangulate: 'Triangulate',
+  vhs: 'VHS', vignette: 'Vignette', wave: 'Wave',
+};
+
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
 // nearly every piece of app state (randomization touches everything by
 // design). The build doesn't type-check (esbuild transpile only), and
@@ -603,16 +626,28 @@ export function useRandomization(params: RandomizationParams) {
     setContrastBeatEnabled(Math.random() < 0.5);
     setPaletteBeatEnabled(Math.random() < 0.5);
 
+    const activeModCategories = new Set<string>();
+    const gradientCategory = GRADIENT_MOD_CATEGORY[gradientType];
+    if (gradientCategory) activeModCategories.add(gradientCategory);
+    (activeEffects as string[]).forEach((effect) => {
+      const effectCategory = EFFECT_MOD_CATEGORY[effect];
+      if (effectCategory) activeModCategories.add(effectCategory);
+    });
+    const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
+    // Fall back to the full pool only if the current gradient/effects have no
+    // modulatable sliders at all, so Shuffle still does something useful.
+    const paramPool = relevantParams.length > 0 ? relevantParams : MODULATABLE_PARAMS;
+
     const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
-    const bindingCount = 1 + Math.floor(Math.random() * 3); // 1-3
-    const shuffledParams = [...MODULATABLE_PARAMS].sort(() => Math.random() - 0.5).slice(0, bindingCount);
+    const bindingCount = Math.min(1 + Math.floor(Math.random() * 3), paramPool.length); // 1-3
+    const shuffledParams = [...paramPool].sort(() => Math.random() - 0.5).slice(0, bindingCount);
     setAudioBindings(shuffledParams.map((p): AudioBinding => ({
       id: `${Date.now()}-${Math.random()}`,
       param: p.key,
       band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
       amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.2 + Math.random() * 2.8)).toFixed(1)),
     })));
-  }, []);
+  }, [gradientType, activeEffects]);
 
   return {
     randomizeUncoveredParams,
