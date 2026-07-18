@@ -1281,23 +1281,6 @@ export function InteractiveGradient() {
     zoom,
   });
 
-  // Gradient types with a structural reseed available: Marble/Caustics/
-  // Topographic/Voronoi/Plasma/Metaballs are fully deterministic functions
-  // of their sliders and time with no seed to reroll, so structuralSeed
-  // gives them one. Attractor/Flow Field/Reaction-Diffusion already
-  // randomize their own initial state via Math.random() on mount, so
-  // rerolling them instead clears the ref that holds that state, forcing
-  // the next draw call to reseed — distinct from the whole-panel WAV/
-  // Shuffle randomizer, which touches every slider instead of just this.
-  const SEEDABLE_GRADIENT_TYPES = ['marble', 'caustics', 'topographic', 'voronoi', 'plasma', 'metaballs', 'attractor', 'flow-field', 'reaction-diffusion'];
-  const handleReroll = useCallback(() => {
-    setStructuralSeed(Math.random() * 1000);
-    if (gradientType === 'attractor') attractorPointsRef.current = [];
-    if (gradientType === 'flow-field') flowParticlesRef.current = [];
-    if (gradientType === 'reaction-diffusion') reactionDiffusionGridRef.current = null;
-    drawParamsDirtyRef.current = true;
-  }, [gradientType, setStructuralSeed, attractorPointsRef, flowParticlesRef, reactionDiffusionGridRef, drawParamsDirtyRef]);
-
   // Shared tap/hold/double-tap gesture handling for the WĀV button — one
   // instance, spread onto both the collapsed-cluster button and the
   // main-panel wordmark below (they're mutually exclusive: only one is ever
@@ -3416,8 +3399,6 @@ export function InteractiveGradient() {
             gradientType={gradientType}
             setGradientType={setGradientType}
             getGradientDisplayName={getGradientDisplayName}
-            seedableGradientTypes={SEEDABLE_GRADIENT_TYPES}
-            onReroll={handleReroll}
             colorPins={colorPins}
             setColorPins={setColorPins}
             selectedPinId={selectedPinId}

@@ -195,8 +195,7 @@ export function useRandomization(params: RandomizationParams) {
     setReactionDiffusionKill(Math.random() * 0.03 + 0.04);              // 0.04–0.07
     setReactionDiffusionSpeed(Math.random() * 2.8 + 0.2);               // 0.2–3
 
-    // Attractor — structural seed already gets a reroll button; these are
-    // the sliders that reroll never touched.
+    // Attractor
     setAttractorPointCount(Math.floor(Math.random() * 19) + 1);         // 1–19
     setAttractorSpeed(Math.random() * 4.9 + 0.1);                       // 0.1–5
     setAttractorScale(Math.random() * 2.7 + 0.3);                       // 0.3–3

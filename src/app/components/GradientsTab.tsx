@@ -1,5 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { Shuffle } from '@phosphor-icons/react';
+import React from 'react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 import type { ColorPin } from './InteractiveGradient';
 
@@ -7,8 +6,6 @@ export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
   getGradientDisplayName: (t: GradientType) => string;
-  seedableGradientTypes: string[];
-  onReroll: () => void;
 
   // Freeform pins
   colorPins: ColorPin[];
@@ -163,7 +160,7 @@ export interface GradientsTabProps {
 
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
-    gradientType, setGradientType, getGradientDisplayName, seedableGradientTypes, onReroll,
+    gradientType, setGradientType, getGradientDisplayName,
     colorPins, setColorPins, selectedPinId, setSelectedPinId,
     gridRows, setGridRows, gridColumns, setGridColumns,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
@@ -198,15 +195,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
-  const [rerolled, setRerolled] = useState(false);
-  const rerolledTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleRerollClick = useCallback(() => {
-    onReroll();
-    setRerolled(true);
-    if (rerolledTimeoutRef.current) clearTimeout(rerolledTimeoutRef.current);
-    rerolledTimeoutRef.current = setTimeout(() => setRerolled(false), 500);
-  }, [onReroll]);
-
   return (
     <>
 
@@ -233,21 +221,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             })}
           </div>
         </div>
-
-        {/* Reroll — only for gradients with a structural seed to vary (see
-            SEEDABLE_GRADIENT_TYPES in InteractiveGradient.tsx for why this
-            list is what it is). Distinct from the whole-panel WAV/Shuffle
-            randomizer: this only rerolls the current gradient's structure. */}
-        {seedableGradientTypes.includes(gradientType) && (
-          <button
-            onClick={handleRerollClick}
-            className="w-full py-1.5 text-[10px] font-semibold text-white bg-black/25 hover:bg-white/15 rounded-lg transition-all flex items-center justify-center gap-1.5"
-            title="Reroll this gradient's structure"
-          >
-            <Shuffle weight="regular" className="w-3.5 h-3.5" />
-            {rerolled ? 'Rerolled!' : 'Reroll'}
-          </button>
-        )}
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
