@@ -335,6 +335,34 @@ export function InteractiveGradient() {
   useEffect(() => {
     panelRef.current?.scrollTo({ top: 0 });
   }, [activeTab]);
+  // TEMPORARY diagnostic — a real device reports the tab bar row (Gradient/
+  // Effects/Audio/Color/Presets) as zero-height and unclickable, which
+  // hasn't reproduced in the dev server or the Browser-pane simulator.
+  // Surfaces the tab bar's actual measured size/visibility/button count
+  // on-screen (mobile only) so this can be diagnosed from a phone
+  // screenshot without console/inspector access. Remove once resolved.
+  const tabBarDebugRef = useRef<HTMLDivElement>(null);
+  const [tabBarDebugInfo, setTabBarDebugInfo] = useState('');
+  useEffect(() => {
+    if (!isMobile) return;
+    const measure = () => {
+      const el = tabBarDebugRef.current;
+      if (!el) { setTabBarDebugInfo('ref=null'); return; }
+      const rect = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const buttons = el.querySelectorAll('button');
+      const btnRects = Array.from(buttons).map(b => {
+        const r = b.getBoundingClientRect();
+        return `${Math.round(r.width)}x${Math.round(r.height)}`;
+      }).join(',');
+      setTabBarDebugInfo(
+        `rect=${Math.round(rect.width)}x${Math.round(rect.height)} disp=${cs.display} vis=${cs.visibility} op=${cs.opacity} btns=${buttons.length}[${btnRects}]`
+      );
+    };
+    measure();
+    const t = setTimeout(measure, 1000);
+    return () => clearTimeout(t);
+  }, [isMobile]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -3265,7 +3293,7 @@ export function InteractiveGradient() {
               inline-style-basis row right above it (VCRControls) renders
               correctly on that same device, so this mirrors the one
               working pattern instead of the one broken pattern. */}
-          <div className="flex items-stretch w-full">
+          <div ref={tabBarDebugRef} className="flex items-stretch w-full">
             <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
@@ -3731,6 +3759,13 @@ export function InteractiveGradient() {
       {isDisplayLinkCopied && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-black/70 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
           Display link copied — open it in a new tab/window for live output
+        </div>
+      )}
+
+      {/* TEMPORARY diagnostic banner — see tabBarDebugRef effect above. Remove once resolved. */}
+      {isMobile && tabBarDebugInfo && (
+        <div className="fixed top-4 left-4 right-20 pointer-events-none bg-red-600/90 text-white text-[10px] font-mono px-2 py-1.5 rounded z-[60] break-all">
+          {tabBarDebugInfo}
         </div>
       )}
 
