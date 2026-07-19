@@ -3191,16 +3191,26 @@ export function InteractiveGradient() {
         )}
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
-            NOT sticky: `position: sticky` combined with an ancestor that
-            has a CSS `transform` (the panel's `scale-[1.15]`) is a known
-            WebKit combination that produces broken stacking/paint behavior
-            in Safari — confirmed on a real device via an on-screen
-            diagnostic showing this row measuring completely normal
-            dimensions (correct width/height, display:flex, visible,
-            opacity:1) while still being invisible and unclickable, which
-            only makes sense if something is painted on top of it, and
-            sticky+transform was the only change that could cause that. */}
-        <div className="flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm">
+            NOT sticky: ruled out via on-device diagnostic (identical
+            measurements before/after removing it).
+            NOT overflow-hidden: `document.elementFromPoint()` on a real
+            device (iOS 17+ Safari) at the tab bar row's own reported
+            center coordinates hit a BUTTON from GradientsTab's type-picker
+            grid (the next sibling below this card), not this row's own
+            button — while this row's own getBoundingClientRect measured
+            completely normal (correct size/position/visible/opacity).
+            getBoundingClientRect doesn't account for ancestor clipping, so
+            a child can measure "normal" while still being invisible if an
+            ancestor's `overflow: hidden` clips it — and under this card's
+            `scale-[1.15]` ancestor, WebKit can round the card's own
+            computed height short by about one row, silently clipping the
+            last row (this tab bar) while the next sibling (GradientsTab)
+            starts early enough to visually occupy the same space. Removing
+            overflow-hidden here trades a purely defensive rounded-corner
+            clip (no child here has its own background that could actually
+            overflow the rounded box in the working case) for not silently
+            eating a row when that rounding happens. */}
+        <div className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
