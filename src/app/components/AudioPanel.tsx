@@ -7,6 +7,67 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
 };
 
+// One-click starting points for common audio/music styles — set the base
+// response shape (sensitivity, per-band multipliers, beat-sync, FX on
+// beat); deliberately leaves Modulation bindings untouched since those are
+// a more advanced, user-curated layer on top of this base shape.
+interface AudioStylePreset {
+  name: string;
+  title: string;
+  masterSensitivity: number;
+  autoGainEnabled: boolean;
+  subBassMultiplier: number;
+  bassMultiplier: number;
+  midsMultiplier: number;
+  trebleMultiplier: number;
+  subBassBeatSync: boolean;
+  bassBeatSync: boolean;
+  midsBeatSync: boolean;
+  trebleBeatSync: boolean;
+  zoomBeatEnabled: boolean;
+  shakeBeatEnabled: boolean;
+  contrastBeatEnabled: boolean;
+  paletteBeatEnabled: boolean;
+}
+
+const AUDIO_STYLE_PRESETS: AudioStylePreset[] = [
+  {
+    name: 'Bass/EDM', title: 'Bass-Heavy / EDM / Trap — punchy sub and bass, beat-synced zoom and shake',
+    masterSensitivity: 1.8, autoGainEnabled: false,
+    subBassMultiplier: 4, bassMultiplier: 3.5, midsMultiplier: 1, trebleMultiplier: 0.8,
+    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Vocal', title: 'Vocal / Acoustic — mids-forward, gentle sensitivity, no beat-sync so it doesn’t jitter on transients',
+    masterSensitivity: 0.8, autoGainEnabled: true,
+    subBassMultiplier: 0.5, bassMultiplier: 1, midsMultiplier: 2.5, trebleMultiplier: 1.2,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Ambient', title: 'Ambient / Long-form — low sensitivity across all bands, slow palette cycling',
+    masterSensitivity: 0.5, autoGainEnabled: true,
+    subBassMultiplier: 0.8, bassMultiplier: 0.8, midsMultiplier: 0.8, trebleMultiplier: 0.8,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
+  },
+  {
+    name: 'Podcast', title: 'Podcast / Speech — mids-only reactivity, everything else damped so plosives don’t spike the visuals',
+    masterSensitivity: 0.6, autoGainEnabled: true,
+    subBassMultiplier: 0.1, bassMultiplier: 0.2, midsMultiplier: 2, trebleMultiplier: 0.5,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Rock', title: 'High-Energy / Rock — broad-band sensitivity, punchy bass and treble',
+    masterSensitivity: 2, autoGainEnabled: false,
+    subBassMultiplier: 2, bassMultiplier: 3, midsMultiplier: 2, trebleMultiplier: 3,
+    subBassBeatSync: false, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: true,
+    zoomBeatEnabled: false, shakeBeatEnabled: true, contrastBeatEnabled: true, paletteBeatEnabled: false,
+  },
+];
+
 export interface AudioPanelState {
   isMicActive: boolean;
   audioInputDevices: MediaDeviceInfo[];
@@ -94,6 +155,23 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     onShuffleAudio,
   } = actions;
 
+  const applyStylePreset = (preset: AudioStylePreset) => {
+    setMasterSensitivity(preset.masterSensitivity);
+    setAutoGainEnabled(preset.autoGainEnabled);
+    setSubBassMultiplier(preset.subBassMultiplier);
+    setBassMultiplier(preset.bassMultiplier);
+    setMidsMultiplier(preset.midsMultiplier);
+    setTrebleMultiplier(preset.trebleMultiplier);
+    setSubBassBeatSync(preset.subBassBeatSync);
+    setBassBeatSync(preset.bassBeatSync);
+    setMidsBeatSync(preset.midsBeatSync);
+    setTrebleBeatSync(preset.trebleBeatSync);
+    setZoomBeatEnabled(preset.zoomBeatEnabled);
+    setShakeBeatEnabled(preset.shakeBeatEnabled);
+    setContrastBeatEnabled(preset.contrastBeatEnabled);
+    setPaletteBeatEnabled(preset.paletteBeatEnabled);
+  };
+
   return (
     <>
       {/* Audiovisuals Section — single pill */}
@@ -178,6 +256,25 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
                 SHUFFLE
               </button>
+            </div>
+
+            {/* Style presets — one-click starting points for common audio/
+                music styles; sets sensitivity/band multipliers/beat-sync/FX
+                on beat, leaves Modulation bindings alone. */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Style Presets</span>
+              <div className="flex flex-wrap gap-1">
+                {AUDIO_STYLE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyStylePreset(preset)}
+                    title={preset.title}
+                    className="flex-1 min-w-[60px] py-1 px-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all text-[9px] font-bold"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
