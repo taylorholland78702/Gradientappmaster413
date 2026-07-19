@@ -251,7 +251,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     });
   }, []);
 
-  const startRecordingWebCodecs = useCallback(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const startRecordingWebCodecs = useCallback((config: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -272,14 +273,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
       error: (err) => console.error('VideoEncoder error:', err),
     });
-    encoder.configure({
-      codec: 'avc1.640034',
-      width: canvas.width,
-      height: canvas.height,
-      bitrate: 20_000_000,
-      framerate: CAPTURE_FPS,
-      hardwareAcceleration: 'prefer-hardware',
-    });
+    encoder.configure(config);
     videoEncoderRef.current = encoder;
 
     audioChunksRef.current = [];
@@ -526,16 +520,57 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
 
   // WebCodecs (hardware-accelerated, encodes live during capture) is used when
   // available; ffmpeg.wasm (software, encodes after stop) is the fallback for
-  // browsers without VideoEncoder/AudioEncoder support (e.g. older Safari).
-  const startRecording = useCallback(() => {
-    const supportsWebCodecs = typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined';
-    usingWebCodecsRef.current = supportsWebCodecs;
-    if (supportsWebCodecs) {
-      startRecordingWebCodecs();
+  // browsers without VideoEncoder/AudioEncoder support (e.g. older Safari) --
+  // or, just as importantly, where the class exists but can't actually
+  // deliver the config we ask for. High Profile @ Level 5.2 at 20Mbps with a
+  // hardware-preferred encoder (this file's original hardcoded config) is
+  // more than most mobile hardware encoders (iOS Safari, Android Chrome)
+  // support in real time; calling VideoEncoder.configure() with an
+  // unsupported combination throws synchronously, before setIsRecording(true)
+  // ever runs, which is why the Record button previously did nothing at all
+  // on phones/tablets — no error surfaced, no fallback, just silence.
+  // isConfigSupported() lets us probe candidates before committing to one,
+  // same feature-detect-then-fall-back shape as the WebGL Reaction-Diffusion
+  // path (drawReactionDiffusionGL.ts) uses.
+  const startRecording = useCallback(async () => {
+    const canvas = canvasRef.current;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let selectedConfig: any = null;
+
+    if (typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined' && canvas) {
+      const candidates = [
+        // Desktop-tuned: High profile, level 5.2, hardware-preferred, high
+        // bitrate — the original config, kept first so desktop (where it's
+        // already known to work) picks the same quality as before.
+        { codec: 'avc1.640034', width: canvas.width, height: canvas.height, bitrate: 20_000_000, framerate: CAPTURE_FPS, hardwareAcceleration: 'prefer-hardware' as const },
+        // Broadly-compatible fallback: Main profile, level 4.0, no hardware
+        // preference (let the browser use software encoding if that's all
+        // it has), lower bitrate — what mobile encoders can actually do.
+        { codec: 'avc1.4d0028', width: canvas.width, height: canvas.height, bitrate: 8_000_000, framerate: CAPTURE_FPS, hardwareAcceleration: 'no-preference' as const },
+      ];
+      for (const config of candidates) {
+        try {
+          const support = await VideoEncoder.isConfigSupported(config);
+          if (support.supported) { selectedConfig = config; break; }
+        } catch {
+          // Try the next candidate.
+        }
+      }
+    }
+
+    usingWebCodecsRef.current = !!selectedConfig;
+    if (selectedConfig) {
+      try {
+        startRecordingWebCodecs(selectedConfig);
+      } catch (err) {
+        console.error('WebCodecs recording failed to start, falling back to ffmpeg:', err);
+        usingWebCodecsRef.current = false;
+        startRecordingFFmpeg();
+      }
     } else {
       startRecordingFFmpeg();
     }
-  }, [startRecordingWebCodecs, startRecordingFFmpeg]);
+  }, [startRecordingWebCodecs, startRecordingFFmpeg, canvasRef]);
 
   const stopRecording = useCallback(() => {
     if (usingWebCodecsRef.current) {
