@@ -380,7 +380,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Caustics Controls */}
         {gradientType === 'caustics' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             {[
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
@@ -416,7 +416,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Marble Controls */}
         {gradientType === 'marble' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
@@ -527,7 +527,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'reaction-diffusion' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             {[
               { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
@@ -545,7 +545,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'topographic' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             {[
               { label: 'Scale', value: topographicScale, set: setTopographicScale, min: 10, max: 100, step: 1 },
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
@@ -563,7 +563,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'julia' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             {[
               { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
               { label: 'Imag (c)', value: juliaImaginary, set: setJuliaImaginary, min: -1, max: 1, step: 0.01 },
@@ -943,7 +943,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1135,7 +1135,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Fade Controls */}
         {gradientType === 'fade' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full p-2 bg-black/25 rounded-t-lg">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1311,8 +1311,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             rather than indexing the full palette, so Banded/Cyclic don't
             apply the same way). */}
         {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
-          <div className="w-full mt-3">
-            <div className="w-full p-2 bg-black/25 rounded-lg">
+          <div className="w-full">
+            <div className="w-full p-2 bg-black/25 rounded-b-lg">
             <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-2'}`}>
               <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">

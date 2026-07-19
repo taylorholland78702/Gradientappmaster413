@@ -301,6 +301,12 @@
   filter: none !important;
 }
 
+/* Recording indicators need to stay red, not flattened to black by the
+   blanket .control-panel * rule above. */
+.control-panel .text-red-500 {
+  color: #dc2626 !important;
+}
+
 /* The wāv wordmark keeps its own white/gray/gradient styling — exempt
    from the panel's flat black-text rule above. */
 .control-panel .wav-base-text,
