@@ -94,6 +94,7 @@ import { useMoireState } from '../hooks/state/useMoireState';
 import { useNoiseState } from '../hooks/state/useNoiseState';
 import { usePanelDragState } from '../hooks/state/usePanelDragState';
 import { usePanelPosState } from '../hooks/state/usePanelPosState';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { usePhotoState } from '../hooks/state/usePhotoState';
 import { usePinchState } from '../hooks/state/usePinchState';
 import { usePixelState } from '../hooks/state/usePixelState';
@@ -317,6 +318,7 @@ export function InteractiveGradient() {
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   const { panelDragRef } = usePanelDragState();
   const { panelPos, setPanelPos } = usePanelPosState();
+  const isMobile = useIsMobile();
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -2973,8 +2975,8 @@ export function InteractiveGradient() {
       {/* Collapsed cluster — only rendered while the panel is hidden but not fully hidden */}
       {!isControlsVisible && !isFullyHidden && (
         <div
-          className="absolute pointer-events-auto flex gap-1.5 origin-top-left"
-          style={panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 }}
+          className={`pointer-events-auto flex gap-1.5 origin-top-left ${isMobile ? 'fixed bottom-4 left-4' : 'absolute'}`}
+          style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
         >
           <button
             onClick={() => setIsControlsVisible(true)}
@@ -3031,12 +3033,14 @@ export function InteractiveGradient() {
       {/* Main controls */}
       <div
         data-role="panel"
-        style={panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 }}
-        className={`control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+        className={isMobile
+          ? `control-panel fixed inset-x-0 bottom-0 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-t-2xl max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${isControlsVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none'}`
+          : `control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
         <button
-          onMouseDown={(e) => {
+          onMouseDown={isMobile ? undefined : (e) => {
             const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
             const rect = panel.getBoundingClientRect();
             panelDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
