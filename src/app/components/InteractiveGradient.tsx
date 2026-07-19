@@ -318,7 +318,23 @@ export function InteractiveGradient() {
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   const { panelDragRef } = usePanelDragState();
   const { panelPos, setPanelPos } = usePanelPosState();
-  const isMobile = useIsMobile();
+  // 1024 rather than the hook's 768 default -- covers tablets too, not
+  // just phones, per explicit request ("only on mobile/tablet"). One
+  // breakpoint drives the bottom-sheet panel, the collapsed cluster, and
+  // the About button's position together so none of them can disagree
+  // about which layout mode is active at a given width.
+  const isMobile = useIsMobile(1024);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Closing (or switching) a tab shrinks the panel's content height, but
+  // the browser doesn't reset scroll position on its own -- on the mobile
+  // sheet (capped at 70dvh with its own overflow-y-auto) this could leave
+  // the sheet scrolled to where the now-collapsed tab content used to be,
+  // showing empty space with the tab bar scrolled out of reach and no
+  // obvious way back. Reset to the top on every activeTab change so
+  // toggling a tab open or closed always lands on a sensible view.
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top: 0 });
+  }, [activeTab]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -2975,7 +2991,7 @@ export function InteractiveGradient() {
       {/* Collapsed cluster — only rendered while the panel is hidden but not fully hidden */}
       {!isControlsVisible && !isFullyHidden && (
         <div
-          className={`pointer-events-auto flex gap-1.5 origin-top-left ${isMobile ? 'fixed bottom-4 left-4' : 'absolute'}`}
+          className={`pointer-events-auto flex gap-1.5 origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute'}`}
           style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
         >
           <button
@@ -3032,6 +3048,7 @@ export function InteractiveGradient() {
 
       {/* Main controls */}
       <div
+        ref={panelRef}
         data-role="panel"
         style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
@@ -3700,12 +3717,14 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About button — bottom-right corner. Hidden entirely in Display
-          mode (?display=1) so the projected output has zero UI, ever. */}
+      {/* About button — bottom-right corner on desktop; moved to top-right
+          on mobile/tablet so it doesn't sit on top of the bottom sheet.
+          Hidden entirely in Display mode (?display=1) so the projected
+          output has zero UI, ever. */}
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className="absolute bottom-4 right-4 pointer-events-auto w-[44px] h-[44px] rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+          className={`pointer-events-auto w-[44px] h-[44px] rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
           title="About wāv (?)"
           aria-label="About wāv"
         >
