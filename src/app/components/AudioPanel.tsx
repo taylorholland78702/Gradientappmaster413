@@ -324,8 +324,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
               >
                 <option value="" disabled>Choose a style...</option>
-                {AUDIO_STYLE_PRESETS.map((preset) => (
-                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.title}</option>
+                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
                 ))}
               </select>
             </div>
