@@ -3052,7 +3052,7 @@ export function InteractiveGradient() {
         data-role="panel"
         style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
-          ? `control-panel fixed inset-x-0 bottom-0 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-t-2xl max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${isControlsVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none'}`
+          ? `control-panel fixed inset-x-0 mx-auto bottom-0 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-t-2xl w-[215px] scale-[1.15] origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${isControlsVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none'}`
           : `control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
