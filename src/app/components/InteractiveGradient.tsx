@@ -16,9 +16,10 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, FloppyDisk, Info, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, Info, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
+import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
 import { VCRControls } from './VCRControls';
@@ -2497,38 +2498,7 @@ export function InteractiveGradient() {
   }, []);
 
   // Export animated GIF
-  const exportAsGIF = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // If loop is enabled, capture a full 360-degree rotation for seamless looping
-    // Calculate duration based on one complete rotation (assumes ~2 degrees per frame at 60fps)
-    const duration = vcrLoop ? 6000 : 3000; // 6 seconds for seamless loop, 3 seconds otherwise
-    const loopText = vcrLoop ? ' (seamless loop)' : '';
-    
-    alert(`Capturing ${duration/1000} seconds of animation for GIF${loopText}...`);
-    
-    // Capture frames at 10fps
-    const frames: string[] = [];
-    const fps = 10;
-    const frameCount = (duration / 1000) * fps;
-    const frameDelay = 1000 / fps;
-
-    for (let i = 0; i < frameCount; i++) {
-      await new Promise(resolve => setTimeout(resolve, frameDelay));
-      frames.push(canvas.toDataURL('image/png'));
-    }
-
-    // For now, download first frame as PNG (GIF encoding would require a library)
-    // In production, you'd use a GIF encoder library
-    const link = document.createElement('a');
-    link.href = frames[0];
-    link.download = `gradient-animated-${Date.now()}.png`;
-    link.click();
-    
-    const loopInfo = vcrLoop ? ' Seamless loop enabled.' : '';
-    alert(`GIF export complete!${loopInfo} (Currently exports first frame as PNG. Full GIF encoding requires additional library.)`);
-  };
+  const { isCapturingGif, gifProgress, exportAsGIF } = useGifExport({ canvasRef, vcrLoop });
 
   // Export as video (MP4/WebM) with audio
   const exportAsVideo = () => {
@@ -3181,6 +3151,31 @@ export function InteractiveGradient() {
             aria-label="Save PNG"
           >
             <Camera weight="regular" className="w-4 h-4" />
+          </button>
+          <Divider />
+          <button
+            onClick={exportAsGIF}
+            disabled={isCapturingGif}
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative"
+            title={isCapturingGif ? `Capturing GIF… ${gifProgress}%` : 'Export GIF'}
+            aria-label={isCapturingGif ? `Capturing GIF, ${gifProgress} percent` : 'Export GIF'}
+          >
+            {isCapturingGif ? (
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+                <circle
+                  cx="8" cy="8" r="6"
+                  fill="none"
+                  stroke="#facc15"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(gifProgress / 100) * 37.7} 37.7`}
+                  transform="rotate(-90 8 8)"
+                />
+              </svg>
+            ) : (
+              <Gif weight="regular" className="w-4 h-4" />
+            )}
           </button>
           <Divider />
           <button
