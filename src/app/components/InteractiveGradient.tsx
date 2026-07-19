@@ -1513,17 +1513,12 @@ export function InteractiveGradient() {
 
   // Reset everything to defaults — shared by the Reset button and the "R" hotkey
   const resetToDefaults = useCallback(() => {
-    setGradientType('angle');
-    setGradientColors(DEFAULT_COLORS);
-    setTargetColors(DEFAULT_COLORS);
-    setActiveEffects([]);
+    applySnapshot({});
     setIsMultiFxMode(false);
     setIsAutoColor(true);
     setActiveTab(null);
-    setBaseAIColors(null);
-    setSubmittedAIPrompt('');
     setAIPrompt('');
-  }, []);
+  }, [applySnapshot]);
 
   // ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS now live in
   // constants/gradientEffects.ts.
