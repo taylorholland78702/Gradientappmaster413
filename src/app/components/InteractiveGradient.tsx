@@ -3155,8 +3155,13 @@ export function InteractiveGradient() {
           </div>
         )}
 
-        {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows */}
-        <div className="flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm">
+        {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
+            Sticky on mobile so the tab-switcher (and the "Hide Controls" eye
+            icon) stays reachable once a tab's content grows the panel past
+            the visible viewport and it starts scrolling — without this, a
+            long tab (e.g. Gradients' full type list) pushes this bar out of
+            view with no way back to it except scrolling manually. */}
+        <div className={`flex flex-col w-full bg-black/25 rounded-lg overflow-hidden shadow-sm ${isMobile ? 'sticky top-0 z-10' : ''}`}>
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
