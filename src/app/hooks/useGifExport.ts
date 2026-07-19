@@ -8,38 +8,40 @@ import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 // matches what most GIF-export tools default to; aspect ratio is preserved.
 const MAX_GIF_WIDTH = 480;
 const GIF_FPS = 10;
+const FRAME_DELAY = 1000 / GIF_FPS;
 
 export interface UseGifExportParams {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  // Reuses the same seamless-loop duration convention as the VCR/video
-  // export path (6s for a full rotation vs 3s otherwise) rather than
-  // inventing a separate GIF-specific duration control.
-  vcrLoop: boolean;
 }
 
-export function useGifExport({ canvasRef, vcrLoop }: UseGifExportParams) {
-  const [isCapturingGif, setIsCapturingGif] = useState(false);
-  const [gifProgress, setGifProgress] = useState(0);
-  // Guards against a second click re-entering the capture loop while one
-  // is already in flight — isCapturingGif itself is fine for the UI, but
-  // state updates inside the async loop below are not synchronous with a
-  // rapid double-click, so a plain ref check up front closes that gap.
-  const isCapturingRef = useRef(false);
+// Toggle-style recording, matching Record Video's press-to-start /
+// press-to-stop model rather than a fixed short duration — a fixed 3-6s
+// auto-capture finished (and reverted the button to its idle state) fast
+// enough that pressing it looked like it silently did nothing. Frames are
+// quantized and written to the GIF incrementally as they're captured, so
+// stopping just closes out the encoder rather than kicking off a separate
+// heavy encoding pass.
+export function useGifExport({ canvasRef }: UseGifExportParams) {
+  const [isRecordingGif, setIsRecordingGif] = useState(false);
+  const [isFinalizingGif, setIsFinalizingGif] = useState(false);
+  // Read inside the capture loop instead of isRecordingGif directly — state
+  // updates aren't synchronous with the click that requests a stop, so the
+  // loop would otherwise capture at least one extra frame (or more, if
+  // several frames land in the same render tick) after the user stopped it.
+  const isRecordingRef = useRef(false);
 
-  const exportAsGIF = useCallback(async () => {
-    if (isCapturingRef.current) return;
+  const toggleGifRecording = useCallback(async () => {
+    if (isRecordingRef.current) {
+      isRecordingRef.current = false;
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    isCapturingRef.current = true;
-    setIsCapturingGif(true);
-    setGifProgress(0);
+    isRecordingRef.current = true;
+    setIsRecordingGif(true);
 
     try {
-      const duration = vcrLoop ? 6000 : 3000;
-      const frameCount = Math.round((duration / 1000) * GIF_FPS);
-      const frameDelay = 1000 / GIF_FPS;
-
       const scale = Math.min(1, MAX_GIF_WIDTH / canvas.width);
       const width = Math.max(1, Math.round(canvas.width * scale));
       const height = Math.max(1, Math.round(canvas.height * scale));
@@ -50,33 +52,40 @@ export function useGifExport({ canvasRef, vcrLoop }: UseGifExportParams) {
       const scratchCtx = scratch.getContext('2d', { willReadFrequently: true })!;
 
       const gif = GIFEncoder();
+      let frameCount = 0;
 
-      for (let i = 0; i < frameCount; i++) {
-        await new Promise((resolve) => setTimeout(resolve, frameDelay));
+      while (isRecordingRef.current) {
+        await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY));
+        if (!isRecordingRef.current) break;
         scratchCtx.drawImage(canvas, 0, 0, width, height);
         const { data } = scratchCtx.getImageData(0, 0, width, height);
         const palette = quantize(data, 256);
         const index = applyPalette(data, palette);
-        gif.writeFrame(index, width, height, { palette, delay: frameDelay });
-        setGifProgress(Math.round(((i + 1) / frameCount) * 100));
+        gif.writeFrame(index, width, height, { palette, delay: FRAME_DELAY });
+        frameCount++;
       }
 
-      gif.finish();
-      const blob = new Blob([gif.bytes() as BlobPart], { type: 'image/gif' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `wav-${Date.now()}.gif`;
-      link.click();
-      URL.revokeObjectURL(url);
+      setIsRecordingGif(false);
+      setIsFinalizingGif(true);
+
+      if (frameCount > 0) {
+        gif.finish();
+        const blob = new Blob([gif.bytes() as BlobPart], { type: 'image/gif' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `wav-${Date.now()}.gif`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error('GIF export failed:', err);
     } finally {
-      isCapturingRef.current = false;
-      setIsCapturingGif(false);
-      setGifProgress(0);
+      isRecordingRef.current = false;
+      setIsRecordingGif(false);
+      setIsFinalizingGif(false);
     }
-  }, [canvasRef, vcrLoop]);
+  }, [canvasRef]);
 
-  return { isCapturingGif, gifProgress, exportAsGIF };
+  return { isRecordingGif, isFinalizingGif, toggleGifRecording };
 }

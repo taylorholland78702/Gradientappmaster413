@@ -2498,7 +2498,7 @@ export function InteractiveGradient() {
   }, []);
 
   // Export animated GIF
-  const { isCapturingGif, gifProgress, exportAsGIF } = useGifExport({ canvasRef, vcrLoop });
+  const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
 
   // Export as video (MP4/WebM) with audio
   const exportAsVideo = () => {
@@ -3154,25 +3154,19 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
-            onClick={exportAsGIF}
-            disabled={isCapturingGif}
+            onClick={toggleGifRecording}
+            disabled={isFinalizingGif}
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative"
-            title={isCapturingGif ? `Capturing GIF… ${gifProgress}%` : 'Export GIF'}
-            aria-label={isCapturingGif ? `Capturing GIF, ${gifProgress} percent` : 'Export GIF'}
+            title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF'}
+            aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
           >
-            {isCapturingGif ? (
-              <svg width="16" height="16" viewBox="0 0 16 16">
+            {isFinalizingGif ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" className="animate-spin">
                 <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-                <circle
-                  cx="8" cy="8" r="6"
-                  fill="none"
-                  stroke="#facc15"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(gifProgress / 100) * 37.7} 37.7`}
-                  transform="rotate(-90 8 8)"
-                />
+                <path d="M8 2 A6 6 0 0 1 14 8" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
+            ) : isRecordingGif ? (
+              <Circle weight="fill" className="w-4 h-4 text-red-500 animate-pulse" />
             ) : (
               <Gif weight="regular" className="w-4 h-4" />
             )}
