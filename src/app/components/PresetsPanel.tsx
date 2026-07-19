@@ -270,7 +270,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  className="w-full box-border px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
                 />
                 <input
                   type="password"
@@ -278,7 +278,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') submitEmailForm(); }}
                   placeholder="Password"
-                  className="px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  className="w-full box-border px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
                 />
                 <button
                   onClick={submitEmailForm}
