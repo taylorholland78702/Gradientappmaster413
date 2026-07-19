@@ -1311,7 +1311,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             rather than indexing the full palette, so Banded/Cyclic don't
             apply the same way). */}
         {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
-          <div className="w-full">
+          // -mt cancels out the parent .control-panel flex column's own
+          // gap-[6px] (GradientsTab.tsx's top-level blocks are siblings in
+          // that flex column) — otherwise this box and the gradient's own
+          // controls box directly above it would show a gap between them
+          // despite having no margin of their own, undermining the
+          // rounded-t/rounded-b pairing that's supposed to read as one panel.
+          <div className="w-full -mt-[6px]">
             <div className="w-full p-2 bg-black/25 rounded-b-lg">
             <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-2'}`}>
               <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
