@@ -290,6 +290,24 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
           <div className="flex flex-col gap-1.5">
 
+            {/* Style presets — one-click starting points for common audio/
+                music styles; sets sensitivity/band multipliers/beat-sync/FX
+                on beat, leaves Modulation bindings alone. */}
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Style Preset</label>
+              <select
+                defaultValue=""
+                onChange={handleStylePresetSelect}
+                title="Apply a curated starting point for a kind of audio/music"
+                className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
+              >
+                <option value="" disabled>Choose a style...</option>
+                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Intensity + Auto Gain */}
             <div className="flex items-center gap-2">
               <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Intensity</label>
@@ -310,24 +328,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
                 SHUFFLE
               </button>
-            </div>
-
-            {/* Style presets — one-click starting points for common audio/
-                music styles; sets sensitivity/band multipliers/beat-sync/FX
-                on beat, leaves Modulation bindings alone. */}
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Style Preset</label>
-              <select
-                defaultValue=""
-                onChange={handleStylePresetSelect}
-                title="Apply a curated starting point for a kind of audio/music"
-                className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
-              >
-                <option value="" disabled>Choose a style...</option>
-                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
-                ))}
-              </select>
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
