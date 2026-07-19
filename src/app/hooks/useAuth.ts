@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { auth, db } from '../../firebase';
-import {
-  onAuthStateChanged, signInAnonymously, signOut,
-  signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  EmailAuthProvider, linkWithCredential,
-  type User, type AuthError,
-} from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { getFirebase } from '../../firebase';
+import type { Auth, User, AuthError } from 'firebase/auth';
 
 // Copies presets + folder metadata from an anonymous session's UID over to
 // a newly-linked/signed-in permanent account's UID. Only needed on the
@@ -18,6 +12,8 @@ import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 async function migratePresets(oldUid: string, newUid: string) {
   if (oldUid === newUid) return;
   try {
+    const { db } = await getFirebase();
+    const { collection, doc, getDoc, getDocs, setDoc } = await import('firebase/firestore');
     const [presetsSnap, folderDoc, targetFolderDoc] = await Promise.all([
       getDocs(collection(db, 'users', oldUid, 'presets')),
       getDoc(doc(db, 'users', oldUid, 'meta', 'presetFolders')),
@@ -69,6 +65,7 @@ export function useAuth() {
   const [authReady, setAuthReady] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [auth, setAuth] = useState<Auth | null>(null);
 
   // Single owner of Firebase Auth's sign-in lifecycle: establishes an
   // anonymous session on first load if nothing else is signed in yet, and
@@ -76,27 +73,59 @@ export function useAuth() {
   // is currently active. usePresets reads `user`'s uid from this hook
   // rather than calling signInAnonymously itself, so there's only ever one
   // place initiating sign-in.
+  //
+  // The Firebase SDK (~470KB) is dynamically imported here rather than at
+  // module load — presets already work fully offline via localStorage (see
+  // usePresets.ts), so nothing needs this bundle synchronously on first
+  // paint. Deferred via requestIdleCallback (falling back to a short
+  // setTimeout where unsupported, e.g. Safari) so it starts shortly after
+  // the initial gradient render rather than competing with it, while still
+  // landing well before a user could plausibly reach the Presets tab.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (!u) {
-        signInAnonymously(auth).catch((err) => {
-          console.error('Anonymous sign-in failed:', err);
-        });
-        return; // onAuthStateChanged fires again once the anonymous user lands
-      }
-      setUser(u);
-      setAuthReady(true);
-    });
-    return unsubscribe;
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    const init = async () => {
+      const [{ auth: authInstance }, { onAuthStateChanged, signInAnonymously }] = await Promise.all([
+        getFirebase(),
+        import('firebase/auth'),
+      ]);
+      if (cancelled) return;
+      setAuth(authInstance);
+      unsubscribe = onAuthStateChanged(authInstance, (u) => {
+        if (!u) {
+          signInAnonymously(authInstance).catch((err) => {
+            console.error('Anonymous sign-in failed:', err);
+          });
+          return; // onAuthStateChanged fires again once the anonymous user lands
+        }
+        setUser(u);
+        setAuthReady(true);
+      });
+    };
+
+    const idle = (cb: () => void) =>
+      typeof requestIdleCallback === 'function' ? requestIdleCallback(cb) : setTimeout(cb, 200);
+    const cancelIdle = (id: number) =>
+      typeof cancelIdleCallback === 'function' ? cancelIdleCallback(id) : clearTimeout(id);
+
+    const handle = idle(() => { init(); });
+    return () => {
+      cancelled = true;
+      cancelIdle(handle as number);
+      unsubscribe?.();
+    };
   }, []);
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     setAuthError('');
     setAuthBusy(true);
     try {
-      const anonUid = auth.currentUser?.isAnonymous ? auth.currentUser.uid : null;
-      await signInWithEmailAndPassword(auth, email, password);
-      if (anonUid) await migratePresets(anonUid, auth.currentUser!.uid);
+      const { auth: authInstance } = await getFirebase();
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      const anonUid = authInstance.currentUser?.isAnonymous ? authInstance.currentUser.uid : null;
+      await signInWithEmailAndPassword(authInstance, email, password);
+      if (anonUid) await migratePresets(anonUid, authInstance.currentUser!.uid);
     } catch (err) {
       setAuthError(friendlyAuthError(err));
     } finally {
@@ -108,23 +137,27 @@ export function useAuth() {
     setAuthError('');
     setAuthBusy(true);
     try {
-      if (auth.currentUser?.isAnonymous) {
-        const anonUid = auth.currentUser.uid;
+      const { auth: authInstance } = await getFirebase();
+      const {
+        EmailAuthProvider, linkWithCredential, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      } = await import('firebase/auth');
+      if (authInstance.currentUser?.isAnonymous) {
+        const anonUid = authInstance.currentUser.uid;
         const cred = EmailAuthProvider.credential(email, password);
         try {
-          await linkWithCredential(auth.currentUser, cred);
+          await linkWithCredential(authInstance.currentUser, cred);
           return; // same uid retained — no migration needed
         } catch (err) {
           const code = (err as AuthError).code;
           if (code === 'auth/email-already-in-use') {
-            await signInWithEmailAndPassword(auth, email, password);
-            await migratePresets(anonUid, auth.currentUser!.uid);
+            await signInWithEmailAndPassword(authInstance, email, password);
+            await migratePresets(anonUid, authInstance.currentUser!.uid);
             return;
           }
           throw err;
         }
       }
-      await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(authInstance, email, password);
     } catch (err) {
       setAuthError(friendlyAuthError(err));
     } finally {
@@ -133,11 +166,13 @@ export function useAuth() {
   }, []);
 
   const signOutUser = useCallback(async () => {
+    if (!auth) return;
+    const { signOut } = await import('firebase/auth');
     await signOut(auth);
     // onAuthStateChanged detects the null user and re-establishes a fresh
     // anonymous session automatically — presets are still saved locally in
     // this browser via localStorage even while signed out.
-  }, []);
+  }, [auth]);
 
   const clearAuthError = useCallback(() => setAuthError(''), []);
 

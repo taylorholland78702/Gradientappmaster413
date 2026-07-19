@@ -24,8 +24,27 @@ import { drawMoire } from './drawMoire';
 import { drawFlowField } from './drawFlowField';
 import { drawAttractor } from './drawAttractor';
 import { drawReactionDiffusion } from './drawReactionDiffusion';
+import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
 import { drawRadar } from './drawRadar';
 import { drawFlower } from './drawFlower';
+
+// Dispatches to the WebGL renderer when the browser/GPU can support it
+// (checked once, memoized in detectRDGLSupport), otherwise the untouched,
+// already-working CPU implementation — see drawReactionDiffusionGL.ts for
+// what the capability check covers and why. Wrapped in a try/catch as a
+// last-resort safety net: any unexpected WebGL failure mid-session (e.g. a
+// context loss) falls back to the CPU path for that call rather than
+// leaving the canvas blank.
+function drawReactionDiffusionAuto(P: any): CanvasGradient | undefined {
+  if (detectRDGLSupport()) {
+    try {
+      return drawReactionDiffusionGL(P);
+    } catch (err) {
+      console.error('WebGL Reaction-Diffusion failed, falling back to CPU:', err);
+    }
+  }
+  return drawReactionDiffusion(P);
+}
 
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
@@ -53,7 +72,7 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'moire': drawMoire,
   'flow-field': drawFlowField,
   'attractor': drawAttractor,
-  'reaction-diffusion': drawReactionDiffusion,
+  'reaction-diffusion': drawReactionDiffusionAuto,
   'radar': drawRadar,
   'flower': drawFlower,
 };

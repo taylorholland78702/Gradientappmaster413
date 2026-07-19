@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
-import { db, auth } from '../../firebase';
-import { collection, doc, setDoc, getDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { getFirebase } from '../../firebase';
+
+// Firestore (and its `db`/`auth.currentUser` dependency) is loaded lazily —
+// presets already work fully offline via localStorage below, so nothing in
+// this file needs the ~470KB Firebase SDK on first paint. Every call site
+// that touches Firestore awaits this first; after the first call it
+// resolves off getFirebase()'s cached promise plus Vite's module cache, so
+// there's no real cost to calling it repeatedly.
+async function firestore() {
+  const [{ db, auth }, mod] = await Promise.all([getFirebase(), import('firebase/firestore')]);
+  return { db, auth, ...mod };
+}
 
 export interface ColorRGB {
   r: number;
@@ -128,6 +138,7 @@ export function usePresets(params: UsePresetsParams) {
     if (!uid) return;
 
     (async () => {
+      const { db, collection, doc, getDoc, getDocs } = await firestore();
       const snap = await getDocs(collection(db, 'users', uid, 'presets'));
       if (!snap.empty) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,6 +181,7 @@ export function usePresets(params: UsePresetsParams) {
   const persistFolderNames = async (names: string[]) => {
     setFolderNames(names);
     safeSetLocalStorage('gradientPresetFolders', JSON.stringify(names));
+    const { db, auth, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       await setDoc(doc(db, 'users', auth.currentUser.uid, 'meta', 'presetFolders'), { names });
     }
@@ -196,6 +208,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = [...savedPresets, preset];
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       // Writes only the new doc — no read-modify-write of the whole
       // collection, so this can't race with another save/delete/rename
@@ -223,6 +236,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = savedPresets.filter(p => p.id !== id);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, deleteDoc } = await firestore();
     if (auth.currentUser) {
       await deleteDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id));
     }
@@ -237,6 +251,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = savedPresets.map(p => p.id === id ? updated : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), target.id), updated);
     }
@@ -253,6 +268,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = savedPresets.map(p => p.id === id ? updated : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       await setDoc(doc(collection(db, 'users', auth.currentUser.uid, 'presets'), existing.id), updated);
     }
@@ -267,6 +283,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = savedPresets.map(p => p.id === id ? updated : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       // Firestore rejects `undefined` field values — omit the key entirely
       // when clearing a preset's folder rather than writing `folder: undefined`.
@@ -297,6 +314,7 @@ export function usePresets(params: UsePresetsParams) {
     const newPresets = savedPresets.map(p => p.folder === oldName ? { ...p, folder: trimmed } : p);
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       await Promise.all(affected.map(p =>
         setDoc(doc(collection(db, 'users', auth.currentUser!.uid, 'presets'), p.id), { ...p, folder: trimmed })
@@ -320,6 +338,7 @@ export function usePresets(params: UsePresetsParams) {
     });
     setSavedPresets(newPresets);
     safeSetLocalStorage('gradientPresets', JSON.stringify(newPresets));
+    const { db, auth, collection, doc, setDoc } = await firestore();
     if (auth.currentUser) {
       await Promise.all(affected.map(p => {
         const { folder, ...rest } = p;
