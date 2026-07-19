@@ -355,8 +355,15 @@ export function InteractiveGradient() {
         const r = b.getBoundingClientRect();
         return `${Math.round(r.width)}x${Math.round(r.height)}`;
       }).join(',');
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(cx, cy);
+      const hitDesc = hit
+        ? `${hit.tagName}.${(hit.className || '').toString().slice(0, 30)}`
+        : 'none';
+      const isDescendant = hit ? el.contains(hit) : false;
       setTabBarDebugInfo(
-        `rect=${Math.round(rect.width)}x${Math.round(rect.height)} disp=${cs.display} vis=${cs.visibility} op=${cs.opacity} btns=${buttons.length}[${btnRects}]`
+        `pos=${Math.round(rect.top)},${Math.round(rect.left)} rect=${Math.round(rect.width)}x${Math.round(rect.height)} disp=${cs.display} vis=${cs.visibility} op=${cs.opacity} btns=${buttons.length}[${btnRects}] hit=${hitDesc} isDesc=${isDescendant}`
       );
     };
     measure();
