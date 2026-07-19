@@ -335,29 +335,6 @@ export function InteractiveGradient() {
   useEffect(() => {
     panelRef.current?.scrollTo({ top: 0 });
   }, [activeTab]);
-
-  // Prototype: hinge-open animation for the Gradient tab only, to see how
-  // it reads before deciding whether to extend it to the other tabs. Kept
-  // mounted a beat past activeTab leaving 'gradients' so the close swing is
-  // visible too, instead of the content just vanishing instantly.
-  const [gradientPanelMounted, setGradientPanelMounted] = useState(false);
-  const [gradientPanelOpen, setGradientPanelOpen] = useState(false);
-  const HINGE_DURATION_MS = 260;
-  useEffect(() => {
-    if (activeTab === 'gradients') {
-      setGradientPanelMounted(true);
-      // Mount closed first, then flip open on the next tick so the
-      // transition actually has a starting point to animate from. A
-      // macrotask (not requestAnimationFrame) on purpose -- some embedded/
-      // headless preview contexts never fire rAF callbacks at all, which
-      // would leave this permanently stuck closed.
-      const t = setTimeout(() => setGradientPanelOpen(true), 10);
-      return () => clearTimeout(t);
-    }
-    setGradientPanelOpen(false);
-    const t = setTimeout(() => setGradientPanelMounted(false), HINGE_DURATION_MS);
-    return () => clearTimeout(t);
-  }, [activeTab]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -3322,18 +3299,8 @@ export function InteractiveGradient() {
           />
         )}
 
-        {/* ── Gradients Tab (hinge-swing prototype) ── */}
-        {gradientPanelMounted && (
-          <div style={{ perspective: '1200px' }} className="w-full">
-            <div
-              className="w-full origin-top transition-all ease-out"
-              style={{
-                transform: gradientPanelOpen ? 'rotateX(0deg)' : 'rotateX(-90deg)',
-                opacity: gradientPanelOpen ? 1 : 0,
-                backfaceVisibility: 'hidden',
-                transitionDuration: `${HINGE_DURATION_MS}ms`,
-              }}
-            >
+        {/* ── Gradients Tab ── */}
+        {activeTab === 'gradients' && (
           <GradientsTab
             gradientType={gradientType}
             setGradientType={setGradientType}
@@ -3504,8 +3471,6 @@ export function InteractiveGradient() {
             helixTightness={helixTightness}
             setHelixTightness={setHelixTightness}
           />
-            </div>
-          </div>
         )}
 
         {/* ── Effects Tab ── */}
