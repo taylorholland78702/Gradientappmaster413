@@ -26,6 +26,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
 };
+const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 const EFFECT_MOD_CATEGORY: Record<string, string[]> = {
   ascii: ['ASCII'], bloom: ['Bloom'], blur: ['Blur'], chromatic: ['Chromatic'], 'chromatic-trails': ['Chroma Trails'],
   dither: ['Dither'], duotone: ['Duotone'], emoji: ['Emoji'], feedback: ['Feedback'], fisheye: ['Fisheye'],
@@ -51,12 +52,14 @@ export function useRandomization(params: RandomizationParams) {
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
-    setBlurMotionDirection, setBlurRadialAmount, setCausticsBrightness, setCausticsScale, setChromaticOffset,
+    setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
-    setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
-    setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
+    setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
+    setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
+    setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
+    setNoiseType, setNoiseWarp, setPlasmaZoomScale, setRadialSizeScale, setRippleFrequency, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
@@ -227,6 +230,27 @@ export function useRandomization(params: RandomizationParams) {
     // Slit-Scan effect
     setSlitScanIntensity(Math.random());                                 // 0–1
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
+
+    // Previously-uncovered secondary sub-controls (each sits alongside a
+    // primary slider that was already randomized above/elsewhere).
+    setChromaticAngle(Math.floor(Math.random() * 360));
+    setFisheyeCenterX(Math.floor(Math.random() * 101));                  // 0–100
+    setFisheyeCenterY(Math.floor(Math.random() * 101));                  // 0–100
+    setKaleidoscopeRotateSpeed(Math.random() * 5);                       // 0–5
+    setLiquidScale(Math.random() * 9.5 + 0.5);                           // 0.5–10
+    setLiquidStrength(Math.floor(Math.random() * 101));                  // 0–100
+    setBlurType((['gaussian', 'motion', 'radial'] as const)[Math.floor(Math.random() * 3)]);
+    setGrainType((['fine', 'medium', 'coarse', 'film'] as const)[Math.floor(Math.random() * 4)]);
+    setNoiseType((['smooth', 'ridged'] as const)[Math.floor(Math.random() * 2)]);
+    setNoiseWarp(Math.random());                                          // 0–1
+    setFadeDirection(Math.floor(Math.random() * 361));                   // 0–360
+    setGridRotationDirection((['none', 'clockwise', 'counterclockwise'] as const)[Math.floor(Math.random() * 3)]);
+    setPlasmaZoomScale(Math.random() * 4.9 + 0.1);                       // 0.1–5
+    setRadialSizeScale(Math.random() * 3.75 + 0.25);                     // 0.25–4
+    setRippleFrequency((Math.floor(Math.random() * 100) + 1) / 2000);    // matches UI's 1–100 scaled slider
+    setVignetteSoftness(Math.floor(Math.random() * 101));                // 0–100
+    setWaveDistortionRotation(Math.floor(Math.random() * 361));          // 0–360
+    setAsciiChars(ASCII_CHARSET_POOL[Math.floor(Math.random() * ASCII_CHARSET_POOL.length)]);
   }, []);
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();
