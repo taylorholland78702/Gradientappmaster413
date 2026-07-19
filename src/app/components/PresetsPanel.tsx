@@ -231,10 +231,10 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       {/* Sign-in — anonymous sessions already save presets, but only in
           this browser; signing in with email lets the same presets follow
           you across devices. */}
-      <div className="border-b border-white/10 px-4 py-2.5">
+      <div className="border-b border-white/10 px-3 py-1.5">
         {authUser && !isAnonymous ? (
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-white/80 truncate">
+            <span className="text-[10px] text-white/80 truncate">
               Signed in as <span className="text-white font-semibold">{authUser.displayName || authUser.email}</span>
             </span>
             <button
@@ -309,19 +309,19 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               if (e.key === 'Escape') cancelAddFolder();
             }}
             placeholder="New folder name..."
-            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
+            className="flex-1 min-w-0 px-3 py-1.5 text-[10px] bg-transparent text-white placeholder-white/60 focus:outline-none"
           />
           {newFolderName.trim() && (
             <button
               onClick={confirmAddFolder}
-              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+              className="px-2 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
             >
               Save
             </button>
           )}
           <button
             onClick={cancelAddFolder}
-            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+            className="px-2 py-1.5 text-[10px] text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
           >
             ✕
           </button>
@@ -337,19 +337,19 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               if (e.key === 'Escape') cancelAdd();
             }}
             placeholder="New preset name..."
-            className="flex-1 min-w-0 px-4 py-2 text-xs bg-transparent text-white placeholder-white/60 focus:outline-none"
+            className="flex-1 min-w-0 px-3 py-1.5 text-[10px] bg-transparent text-white placeholder-white/60 focus:outline-none"
           />
           {newPresetName.trim() && (
             <button
               onClick={confirmAdd}
-              className="px-3 py-2 text-xs text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
+              className="px-2 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors flex-shrink-0 font-semibold"
             >
               Save
             </button>
           )}
           <button
             onClick={cancelAdd}
-            className="px-3 py-2 text-xs text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
+            className="px-2 py-1.5 text-[10px] text-white/40 hover:bg-white/15 transition-colors flex-shrink-0"
           >
             ✕
           </button>
@@ -358,17 +358,17 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         <div className="flex items-stretch border-b border-white/10">
           <button
             onClick={() => setIsAddingPreset(true)}
-            className="flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
+            className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
           >
-            <Plus weight="regular" className="w-4 h-4" />
+            <Plus weight="regular" className="w-3.5 h-3.5" />
             Preset
           </button>
           <div className="w-px bg-white/10" />
           <button
             onClick={() => setIsAddingFolder(true)}
-            className="flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
+            className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white/70 hover:text-white hover:bg-white/15 transition-colors font-semibold"
           >
-            <FolderPlus weight="regular" className="w-4 h-4" />
+            <FolderPlus weight="regular" className="w-3.5 h-3.5" />
             Folder
           </button>
         </div>
@@ -376,7 +376,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
 
       {/* Saved presets list, grouped by folder */}
       {savedPresets.length === 0 && !isAddingPreset && grouped.length === 0 ? (
-        <div className="px-4 py-2 text-xs text-white/50 italic">No saved presets</div>
+        <div className="px-3 py-1.5 text-[10px] text-white/50 italic">No saved presets</div>
       ) : (
         grouped.map(({ folder, items }) => {
           const isCollapsed = collapsedFolders.has(folder);
@@ -400,12 +400,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       if (e.key === 'Escape') { setRenamingFolder(null); setRenamingFolderValue(''); }
                     }}
                     onBlur={() => commitFolderRename(folder)}
-                    className="flex-1 min-w-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-black/20 text-white focus:outline-none"
+                    className="flex-1 min-w-0 px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/20 text-white focus:outline-none"
                   />
                 ) : (
                   <button
                     onClick={() => toggleFolder(folder)}
-                    className="flex items-center gap-1.5 flex-1 min-w-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
+                    className="flex items-center gap-1.5 flex-1 min-w-0 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
                   >
                     <FolderSimple weight="regular" className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="flex-1 text-left truncate">{folder}</span>
@@ -417,14 +417,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenamingFolder(folder); setRenamingFolderValue(folder); }}
-                      className="px-2 py-1.5 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
+                      className="px-1.5 py-1 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
                       title="Rename folder"
                     >
                       <PencilSimple weight="regular" className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteFolder(folder); }}
-                      className="px-2 py-1.5 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
+                      className="px-1.5 py-1 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                       title="Delete folder (presets move to Uncategorized)"
                     >
                       <Minus weight="regular" className="w-3.5 h-3.5" />
@@ -450,14 +450,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                         if (e.key === 'Escape') setRenamingPresetId(null);
                       }}
                       onBlur={() => { if (renamingPresetValue.trim()) renamePreset(preset.id, renamingPresetValue); setRenamingPresetId(null); }}
-                      className="flex-1 px-4 py-2 text-xs bg-black/20 text-white focus:outline-none"
+                      className="flex-1 px-3 py-1 text-[10px] bg-black/20 text-white focus:outline-none"
                     />
                   ) : (
                     <button
                       onClick={() => handleLoadPreset(preset)}
                       onDoubleClick={(e) => { e.stopPropagation(); setRenamingPresetId(preset.id); setRenamingPresetValue(preset.name); }}
                       title="Click to load, double-click to rename"
-                      className="flex-1 min-w-0 px-4 py-2 text-xs text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
+                      className="flex-1 min-w-0 px-3 py-1 text-[10px] text-white hover:bg-white/15 text-left transition-colors font-semibold truncate"
                     >
                       {preset.name}
                     </button>
@@ -465,28 +465,28 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   <div className={`flex items-center transition-opacity flex-shrink-0 ${copiedLinkId === preset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCopyLink(preset); }}
-                    className={`px-2 py-2 hover:bg-white/15 transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
+                    className={`px-1.5 py-1 hover:bg-white/15 transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
                     title={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
                   >
                     {copiedLinkId === preset.id
-                      ? <Check weight="bold" className="w-4 h-4" />
-                      : <LinkSimple weight="regular" className="w-4 h-4" />}
+                      ? <Check weight="bold" className="w-3.5 h-3.5" />
+                      : <LinkSimple weight="regular" className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleUpdatePreset(preset.id); }}
-                    className={`px-2 py-2 hover:bg-white/15 transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
+                    className={`px-1.5 py-1 hover:bg-white/15 transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
                     title={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
                   >
                     {savedPresetId === preset.id
-                      ? <Check weight="bold" className="w-4 h-4" />
-                      : <FloppyDisk weight="regular" className="w-4 h-4" />}
+                      ? <Check weight="bold" className="w-3.5 h-3.5" />
+                      : <FloppyDisk weight="regular" className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}
-                    className="px-2 py-2 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
+                    className="px-1.5 py-1 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                     title="Delete preset"
                   >
-                    <Minus weight="regular" className="w-4 h-4" />
+                    <Minus weight="regular" className="w-3.5 h-3.5" />
                   </button>
                   </div>
                 </div>
