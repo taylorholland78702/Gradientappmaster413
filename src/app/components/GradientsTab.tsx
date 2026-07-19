@@ -1311,10 +1311,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             rather than indexing the full palette, so Banded/Cyclic don't
             apply the same way). */}
         {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
-          <div className="w-full mt-3">
-            <div className="flex items-center gap-2 mb-2 pt-2 border-t border-white/10">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-white/50">Field Mapping</span>
-            </div>
+          <div className="w-full mt-3 pt-2 border-t border-white/10">
             <div className="w-full p-2 bg-black/25 rounded-lg">
             <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-2'}`}>
               <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
