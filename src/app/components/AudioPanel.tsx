@@ -66,6 +66,55 @@ const AUDIO_STYLE_PRESETS: AudioStylePreset[] = [
     subBassBeatSync: false, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: true,
     zoomBeatEnabled: false, shakeBeatEnabled: true, contrastBeatEnabled: true, paletteBeatEnabled: false,
   },
+  {
+    name: 'Hip-Hop', title: 'Hip-Hop / Trap — heavy sub/bass with sharp beat-synced hits on the low end',
+    masterSensitivity: 1.6, autoGainEnabled: false,
+    subBassMultiplier: 3.5, bassMultiplier: 3, midsMultiplier: 1.5, trebleMultiplier: 1,
+    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: true, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Techno', title: 'Techno / House — steady four-on-the-floor kick sync, mid sensitivity, cycling palette',
+    masterSensitivity: 1.4, autoGainEnabled: false,
+    subBassMultiplier: 3, bassMultiplier: 2.5, midsMultiplier: 1.5, trebleMultiplier: 1.5,
+    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: true, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
+  },
+  {
+    name: 'Dubstep', title: 'Dubstep / DnB — massive bass drops, aggressive beat-synced zoom and shake',
+    masterSensitivity: 2.2, autoGainEnabled: false,
+    subBassMultiplier: 5, bassMultiplier: 4, midsMultiplier: 1.5, trebleMultiplier: 2,
+    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: true,
+    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Metal', title: 'Metal — extreme energy across every band, aggressive beat-sync everywhere',
+    masterSensitivity: 2.5, autoGainEnabled: false,
+    subBassMultiplier: 3, bassMultiplier: 4, midsMultiplier: 3, trebleMultiplier: 4,
+    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: true, trebleBeatSync: true,
+    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: true, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Jazz', title: 'Jazz — mids/treble emphasis for horns and cymbals, moderate sensitivity, no harsh beat-sync',
+    masterSensitivity: 1, autoGainEnabled: true,
+    subBassMultiplier: 0.6, bassMultiplier: 1.2, midsMultiplier: 2, trebleMultiplier: 1.8,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Classical', title: 'Classical / Orchestral — wide dynamic range, low sensitivity, gentle response, no beat-sync so legato passages stay smooth',
+    masterSensitivity: 0.6, autoGainEnabled: true,
+    subBassMultiplier: 0.4, bassMultiplier: 0.8, midsMultiplier: 1.5, trebleMultiplier: 1.3,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
+  },
+  {
+    name: 'Lo-fi', title: 'Lo-fi / Chillhop — soft, low sensitivity, gentle bass, slow palette cycling',
+    masterSensitivity: 0.7, autoGainEnabled: true,
+    subBassMultiplier: 1.2, bassMultiplier: 1, midsMultiplier: 0.9, trebleMultiplier: 0.6,
+    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
+    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
+  },
 ];
 
 export interface AudioPanelState {
@@ -172,6 +221,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setPaletteBeatEnabled(preset.paletteBeatEnabled);
   };
 
+  const handleStylePresetSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const preset = AUDIO_STYLE_PRESETS.find(p => p.name === e.target.value);
+    if (preset) applyStylePreset(preset);
+  };
+
   return (
     <>
       {/* Audiovisuals Section — single pill */}
@@ -261,20 +315,19 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             {/* Style presets — one-click starting points for common audio/
                 music styles; sets sensitivity/band multipliers/beat-sync/FX
                 on beat, leaves Modulation bindings alone. */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Style Presets</span>
-              <div className="flex flex-wrap gap-1">
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Style Preset</label>
+              <select
+                defaultValue=""
+                onChange={handleStylePresetSelect}
+                title="Apply a curated starting point for a kind of audio/music"
+                className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
+              >
+                <option value="" disabled>Choose a style...</option>
                 {AUDIO_STYLE_PRESETS.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyStylePreset(preset)}
-                    title={preset.title}
-                    className="flex-1 min-w-[60px] py-1 px-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all text-[9px] font-bold"
-                  >
-                    {preset.name}
-                  </button>
+                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.title}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
