@@ -223,17 +223,29 @@ export function applySlitScan(P: any): void {
             slitScanBufferRef.current.push(ssImg);
             if (slitScanBufferRef.current.length > 60) slitScanBufferRef.current.shift();
 
-            // Requires a handful of frames of history, not just 2 -- with
-            // only 1-2 frames buffered (e.g. right after switching direction
-            // while paused, before playback has run long enough to fill the
-            // buffer), the radial/circular modes' frame-index boundary shows
-            // up as a single hard ring/arc across the canvas instead of a
-            // smooth gradient of bands. Passing through unmodified until the
-            // buffer has enough history avoids that artifact; horizontal/
-            // vertical hit the same edge case but read as a soft diagonal
-            // split rather than a jarring perfect circle, so it's most
-            // noticeable here.
-            if (slitScanBufferRef.current.length > 8) {
+            // With only 1-2 frames buffered (e.g. right after switching
+            // direction, before playback has run long enough to fill the
+            // buffer -- which never happens at all if paused, since nothing
+            // pushes new frames), the radial/circular modes' frame-index
+            // boundary shows up as a single hard ring/arc across the canvas
+            // instead of a smooth gradient of bands. Rather than wait for
+            // real frames to accumulate (which may never happen while
+            // paused), pad the buffer with copies of the very first frame
+            // captured so it's instantly at a reasonable size on the first
+            // draw call after activation -- duplicate frames are harmless
+            // (sampling any of them returns identical pixels, so there's no
+            // visible seam), and get replaced by real frames as playback
+            // continues. Horizontal/vertical hit the same edge case but read
+            // as a soft diagonal split rather than a jarring perfect circle,
+            // so it's most noticeable here.
+            const MIN_BUFFERED_FRAMES = 12;
+            if (slitScanBufferRef.current.length === 1 && slitScanBufferRef.current.length < MIN_BUFFERED_FRAMES) {
+              while (slitScanBufferRef.current.length < MIN_BUFFERED_FRAMES) {
+                slitScanBufferRef.current.push(ssImg);
+              }
+            }
+
+            if (slitScanBufferRef.current.length >= MIN_BUFFERED_FRAMES) {
               const out = ctx.createImageData(displayWidth, displayHeight);
               const int = slitScanIntensity;
               const buf = slitScanBufferRef.current;
