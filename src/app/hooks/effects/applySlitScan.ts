@@ -223,7 +223,17 @@ export function applySlitScan(P: any): void {
             slitScanBufferRef.current.push(ssImg);
             if (slitScanBufferRef.current.length > 60) slitScanBufferRef.current.shift();
 
-            if (slitScanBufferRef.current.length > 1) {
+            // Requires a handful of frames of history, not just 2 -- with
+            // only 1-2 frames buffered (e.g. right after switching direction
+            // while paused, before playback has run long enough to fill the
+            // buffer), the radial/circular modes' frame-index boundary shows
+            // up as a single hard ring/arc across the canvas instead of a
+            // smooth gradient of bands. Passing through unmodified until the
+            // buffer has enough history avoids that artifact; horizontal/
+            // vertical hit the same edge case but read as a soft diagonal
+            // split rather than a jarring perfect circle, so it's most
+            // noticeable here.
+            if (slitScanBufferRef.current.length > 8) {
               const out = ctx.createImageData(displayWidth, displayHeight);
               const int = slitScanIntensity;
               const buf = slitScanBufferRef.current;

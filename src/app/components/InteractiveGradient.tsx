@@ -3052,9 +3052,11 @@ export function InteractiveGradient() {
       <div
         ref={panelRef}
         data-role="panel"
-        style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+        style={isMobile
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})` }
+          : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
-          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-2xl w-[215px] max-w-full overflow-x-hidden scale-[1.15] origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${isControlsVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none'}`
+          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-2xl w-[215px] max-w-full overflow-x-hidden origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${!isControlsVisible ? 'pointer-events-none' : ''}`
           : `control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
