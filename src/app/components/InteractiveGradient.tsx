@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, Info, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -2998,17 +2998,17 @@ export function InteractiveGradient() {
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Show Controls (H)"
             aria-label="Show Controls"
           >
-            <EyeSlash weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+            <EyeSlash weight="regular" className="w-5 h-5" />
           </button>
           <button
             onPointerDown={wavGesture.onPointerDown}
             onPointerUp={wavGesture.onPointerUp}
             onPointerLeave={wavGesture.onPointerLeave}
-            className={`relative overflow-hidden ${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400`}
+            className={`relative overflow-hidden w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400`}
             title="Tap: Nudge (W) · Hold/Double-tap: Remix"
             aria-label="Tap to nudge the current look, hold or double-tap to remix"
           >
@@ -3017,33 +3017,33 @@ export function InteractiveGradient() {
               className={`wav-btn-fill-reveal ${isWavHolding ? 'wav-revealing' : ''}`}
               style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
             />
-            <Shuffle weight="regular" className={`relative text-black ${isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}`} />
+            <Shuffle weight="regular" className="relative text-black w-5 h-5" />
           </button>
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Undo (Cmd+Z)"
             aria-label="Undo"
           >
-            <ArrowUUpLeft weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+            <ArrowUUpLeft weight="regular" className="w-5 h-5" />
           </button>
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Redo (Cmd+Shift+Z)"
             aria-label="Redo"
           >
-            <ArrowUUpRight weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+            <ArrowUUpRight weight="regular" className="w-5 h-5" />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
-            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Presets (P)"
             aria-label="Presets"
           >
-            <Plus weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+            <Plus weight="regular" className="w-5 h-5" />
           </button>
         </div>
       )}
@@ -3053,7 +3053,7 @@ export function InteractiveGradient() {
         ref={panelRef}
         data-role="panel"
         style={isMobile
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})` }
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, WebkitOverflowScrolling: 'touch' }
           : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
           ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-2xl w-[215px] max-w-full overflow-x-hidden origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${!isControlsVisible ? 'pointer-events-none' : ''}`
@@ -3759,11 +3759,11 @@ export function InteractiveGradient() {
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className={`pointer-events-auto w-[52px] h-[52px] rounded-full flex items-center justify-center text-white ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
+          className={`pointer-events-auto w-[42px] h-[42px] rounded-full border-2 border-white flex items-center justify-center text-white ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
           title="About wāv (?)"
           aria-label="About wāv"
         >
-          <Info weight="regular" className="w-full h-full" />
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '20px', lineHeight: 1 }}>i</span>
         </button>
       )}
 
