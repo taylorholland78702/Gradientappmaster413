@@ -84,6 +84,8 @@ import { useKaleidoscopeState } from '../hooks/state/useKaleidoscopeState';
 import { useLavaState } from '../hooks/state/useLavaState';
 import { useSplotchesState } from '../hooks/state/useSplotchesState';
 import { useWatercolorState } from '../hooks/state/useWatercolorState';
+import { useSuminagashiState } from '../hooks/state/useSuminagashiState';
+import { useCircuitState } from '../hooks/state/useCircuitState';
 import { useLightLeakState } from '../hooks/state/useLightLeakState';
 import { useLinesState } from '../hooks/state/useLinesState';
 import { useLiquidState } from '../hooks/state/useLiquidState';
@@ -310,6 +312,8 @@ export function InteractiveGradient() {
   const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
   const { splotchesAnimTime, setSplotchesAnimTime, splotchCount, setSplotchCount, splotchSize, setSplotchSize, splotchEdgeRoughness, setSplotchEdgeRoughness } = useSplotchesState();
   const { watercolorAnimTime, setWatercolorAnimTime, watercolorBlobCount, setWatercolorBlobCount, watercolorBleedRadius, setWatercolorBleedRadius, watercolorOpacity, setWatercolorOpacity } = useWatercolorState();
+  const { suminagashiAnimTime, setSuminagashiAnimTime, suminagashiRingCount, setSuminagashiRingCount, suminagashiCombPasses, setSuminagashiCombPasses, suminagashiCombStrength, setSuminagashiCombStrength } = useSuminagashiState();
+  const { circuitAnimTime, setCircuitAnimTime, circuitBranchCount, setCircuitBranchCount, circuitMaxDepth, setCircuitMaxDepth, circuitGlowIntensity, setCircuitGlowIntensity } = useCircuitState();
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
   const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
   const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
@@ -1027,6 +1031,20 @@ export function InteractiveGradient() {
 
   useEffect(() => {
     if (IS_DISPLAY_MODE) return;
+    if (gradientType !== 'suminagashi' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setSuminagashiAnimTime(t => t + 0.01 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    if (gradientType !== 'circuit' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    const id = setInterval(() => setCircuitAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    return () => clearInterval(id);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
@@ -1084,10 +1102,10 @@ export function InteractiveGradient() {
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime,
       lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime,
       flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
-      splotchesAnimTime, watercolorAnimTime,
+      splotchesAnimTime, watercolorAnimTime, suminagashiAnimTime, circuitAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
     };
-  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, splotchesAnimTime, watercolorAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
+  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, splotchesAnimTime, watercolorAnimTime, suminagashiAnimTime, circuitAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
 
   // buildSnapshot/applySnapshot extracted to useSnapshot.ts (splitting-plan
   // step 3). The single source of truth for undo/redo AND presets, so it
@@ -1106,6 +1124,9 @@ export function InteractiveGradient() {
     splotchesAnimTime, setSplotchesAnimTime, watercolorAnimTime, setWatercolorAnimTime,
     splotchCount, setSplotchCount, splotchSize, setSplotchSize, splotchEdgeRoughness, setSplotchEdgeRoughness,
     watercolorBlobCount, setWatercolorBlobCount, watercolorBleedRadius, setWatercolorBleedRadius, watercolorOpacity, setWatercolorOpacity,
+    suminagashiAnimTime, setSuminagashiAnimTime, circuitAnimTime, setCircuitAnimTime,
+    suminagashiRingCount, setSuminagashiRingCount, suminagashiCombPasses, setSuminagashiCombPasses, suminagashiCombStrength, setSuminagashiCombStrength,
+    circuitBranchCount, setCircuitBranchCount, circuitMaxDepth, setCircuitMaxDepth, circuitGlowIntensity, setCircuitGlowIntensity,
     structuralSeed, setStructuralSeed,
     audioBindings, setAudioBindings,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
@@ -1300,6 +1321,8 @@ export function InteractiveGradient() {
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
     setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
+    setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
+    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -1397,6 +1420,8 @@ export function InteractiveGradient() {
       setAttractorAnimTime(v.attractorAnimTime);
       setSplotchesAnimTime(v.splotchesAnimTime);
       setWatercolorAnimTime(v.watercolorAnimTime);
+      setSuminagashiAnimTime(v.suminagashiAnimTime);
+      setCircuitAnimTime(v.circuitAnimTime);
       setAudioSubBassLevel(v.audioSubBassLevel ?? 0);
       setAudioMidsLevel(v.audioMidsLevel ?? 0);
       setAudioTrebleLevel(v.audioTrebleLevel ?? 0);
@@ -2317,13 +2342,15 @@ export function InteractiveGradient() {
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     splotchesAnimTime, splotchCount, splotchSize, splotchEdgeRoughness,
     watercolorAnimTime, watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
+    suminagashiAnimTime, suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
+    circuitAnimTime, circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     noiseDirection,
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     slitScanAnimTrigger, glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, splotchesAnimTime, splotchCount, splotchSize, splotchEdgeRoughness, watercolorAnimTime, watercolorBlobCount, watercolorBleedRadius, watercolorOpacity, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleIntensity, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, voronoiAnimTime, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerAnimTime, auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsAnimTime, causticsBrightness, causticsScale, lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, splotchesAnimTime, splotchCount, splotchSize, splotchEdgeRoughness, watercolorAnimTime, watercolorBlobCount, watercolorBleedRadius, watercolorOpacity, suminagashiAnimTime, suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength, circuitAnimTime, circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballAnimTime, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireAnimTime, moireScale, moireOffset, moireSpeed, flowAnimTime, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorAnimTime, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, emojiAnimTime, liquidAnimTime, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2384,6 +2411,8 @@ export function InteractiveGradient() {
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     splotchesAnimTime, splotchCount, splotchSize, splotchEdgeRoughness,
     watercolorAnimTime, watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
+    suminagashiAnimTime, suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
+    circuitAnimTime, circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
     liquidAnimTime, liquidScale,
     liquidStrength, marbleAnimTime, marbleOctaves, marbleTurbulence, marbleVeinFreq,
     metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
@@ -3408,6 +3437,18 @@ export function InteractiveGradient() {
             setWatercolorBleedRadius={setWatercolorBleedRadius}
             watercolorOpacity={watercolorOpacity}
             setWatercolorOpacity={setWatercolorOpacity}
+            suminagashiRingCount={suminagashiRingCount}
+            setSuminagashiRingCount={setSuminagashiRingCount}
+            suminagashiCombPasses={suminagashiCombPasses}
+            setSuminagashiCombPasses={setSuminagashiCombPasses}
+            suminagashiCombStrength={suminagashiCombStrength}
+            setSuminagashiCombStrength={setSuminagashiCombStrength}
+            circuitBranchCount={circuitBranchCount}
+            setCircuitBranchCount={setCircuitBranchCount}
+            circuitMaxDepth={circuitMaxDepth}
+            setCircuitMaxDepth={setCircuitMaxDepth}
+            circuitGlowIntensity={circuitGlowIntensity}
+            setCircuitGlowIntensity={setCircuitGlowIntensity}
             marbleVeinFreq={marbleVeinFreq}
             setMarbleVeinFreq={setMarbleVeinFreq}
             marbleTurbulence={marbleTurbulence}

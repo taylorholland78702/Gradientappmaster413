@@ -23,6 +23,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
   splotches: ['Splotches'], watercolor: ['Watercolor'],
+  suminagashi: ['Suminagashi'], circuit: ['Circuit'],
   noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radar: ['Radar'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
@@ -74,6 +75,8 @@ export function useRandomization(params: RandomizationParams) {
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
     setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
+    setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
+    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -120,6 +123,16 @@ export function useRandomization(params: RandomizationParams) {
     setWatercolorBlobCount(Math.floor(Math.random() * 13) + 3);        // 3–15
     setWatercolorBleedRadius(Math.random() * 0.25 + 0.05);             // 0.05–0.3
     setWatercolorOpacity(Math.random() * 0.35 + 0.15);                 // 0.15–0.5
+
+    // Suminagashi
+    setSuminagashiRingCount(Math.floor(Math.random() * 10) + 3);       // 3–12
+    setSuminagashiCombPasses(Math.floor(Math.random() * 6) + 1);       // 1–6
+    setSuminagashiCombStrength(Math.random() * 1.3 + 0.2);             // 0.2–1.5
+
+    // Circuit
+    setCircuitBranchCount(Math.floor(Math.random() * 8) + 3);          // 3–10
+    setCircuitMaxDepth(Math.floor(Math.random() * 6) + 2);             // 2–7
+    setCircuitGlowIntensity(Math.random() * 1.7 + 0.3);                // 0.3–2
 
     // Marble
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10

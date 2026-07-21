@@ -29,6 +29,8 @@ import { drawRadar } from './drawRadar';
 import { drawFlower } from './drawFlower';
 import { drawSplotches } from './drawSplotches';
 import { drawWatercolor } from './drawWatercolor';
+import { drawSuminagashi } from './drawSuminagashi';
+import { drawCircuit } from './drawCircuit';
 
 // Dispatches to the WebGL renderer when the browser/GPU can support it
 // (checked once, memoized in detectRDGLSupport), otherwise the untouched,
@@ -79,4 +81,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'flower': drawFlower,
   'splotches': drawSplotches,
   'watercolor': drawWatercolor,
+  'suminagashi': drawSuminagashi,
+  'circuit': drawCircuit,
 };

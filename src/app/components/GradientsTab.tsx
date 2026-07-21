@@ -41,6 +41,16 @@ export interface GradientsTabProps {
   watercolorBleedRadius: number; setWatercolorBleedRadius: (v: number) => void;
   watercolorOpacity: number; setWatercolorOpacity: (v: number) => void;
 
+  // Suminagashi
+  suminagashiRingCount: number; setSuminagashiRingCount: (v: number) => void;
+  suminagashiCombPasses: number; setSuminagashiCombPasses: (v: number) => void;
+  suminagashiCombStrength: number; setSuminagashiCombStrength: (v: number) => void;
+
+  // Circuit
+  circuitBranchCount: number; setCircuitBranchCount: (v: number) => void;
+  circuitMaxDepth: number; setCircuitMaxDepth: (v: number) => void;
+  circuitGlowIntensity: number; setCircuitGlowIntensity: (v: number) => void;
+
   // Marble
   marbleVeinFreq: number; setMarbleVeinFreq: (v: number) => void;
   marbleTurbulence: number; setMarbleTurbulence: (v: number) => void;
@@ -169,6 +179,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize,
     splotchCount, setSplotchCount, splotchSize, setSplotchSize, splotchEdgeRoughness, setSplotchEdgeRoughness,
     watercolorBlobCount, setWatercolorBlobCount, watercolorBleedRadius, setWatercolorBleedRadius, watercolorOpacity, setWatercolorOpacity,
+    suminagashiRingCount, setSuminagashiRingCount, suminagashiCombPasses, setSuminagashiCombPasses, suminagashiCombStrength, setSuminagashiCombStrength,
+    circuitBranchCount, setCircuitBranchCount, circuitMaxDepth, setCircuitMaxDepth, circuitGlowIntensity, setCircuitGlowIntensity,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
@@ -452,6 +464,44 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Blobs', value: watercolorBlobCount, set: setWatercolorBlobCount, min: 3, max: 15, step: 1 },
               { label: 'Bleed', value: watercolorBleedRadius, set: setWatercolorBleedRadius, min: 0.05, max: 0.3, step: 0.01 },
               { label: 'Opacity', value: watercolorOpacity, set: setWatercolorOpacity, min: 0.15, max: 0.5, step: 0.01 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Suminagashi Controls */}
+        {gradientType === 'suminagashi' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Rings', value: suminagashiRingCount, set: setSuminagashiRingCount, min: 3, max: 12, step: 1 },
+              { label: 'Comb Passes', value: suminagashiCombPasses, set: setSuminagashiCombPasses, min: 1, max: 6, step: 1 },
+              { label: 'Comb Strength', value: suminagashiCombStrength, set: setSuminagashiCombStrength, min: 0.2, max: 1.5, step: 0.05 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Circuit Controls */}
+        {gradientType === 'circuit' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Branches', value: circuitBranchCount, set: setCircuitBranchCount, min: 3, max: 10, step: 1 },
+              { label: 'Depth', value: circuitMaxDepth, set: setCircuitMaxDepth, min: 2, max: 7, step: 1 },
+              { label: 'Glow', value: circuitGlowIntensity, set: setCircuitGlowIntensity, min: 0.3, max: 2, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
