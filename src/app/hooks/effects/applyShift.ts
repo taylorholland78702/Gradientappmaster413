@@ -220,10 +220,13 @@ export function applyShift(P: any): void {
   } = P;
             if (!imageData) return;
             const d = imageData.data;
+            // Was listed in AUDIO_EFFECTS but never actually read audioModulation —
+            // hue never moved on audio despite the UI claiming it would.
+            const shiftHue = colorShiftHue + (isFirstEffect ? audioModulation * 40 : 0);
             for (let i = 0; i < d.length; i += 4) {
-              d[i] = (d[i] + colorShiftHue) % 256;
-              d[i + 1] = (d[i + 1] + colorShiftHue) % 256;
-              d[i + 2] = (d[i + 2] + colorShiftHue) % 256;
+              d[i] = (d[i] + shiftHue) % 256;
+              d[i + 1] = (d[i + 1] + shiftHue) % 256;
+              d[i + 2] = (d[i + 2] + shiftHue) % 256;
             }
             putScaledImageData(imageData);
 }

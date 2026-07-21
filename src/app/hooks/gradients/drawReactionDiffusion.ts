@@ -288,11 +288,18 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
             // equilibrium keeps moving out from under it, and a steady light
             // sprinkle of single-cell perturbations every frame (instead of one
             // big blob every ~4s) keeps the whole field gently simmering.
-            rd.time += 0.0025 * reactionDiffusionSpeed;
-            const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006;
-            const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004;
+            // Bass speeds up simulation steps (the pattern churns faster on a
+            // kick), treble widens the feed/kill drift so the spot/stripe
+            // balance shifts more on bright content — same living-parameter
+            // idea as Julia/Attractor, applied to the PDE's own knobs.
+            const rdAudio = isAudioEnabled && isAudioReactive;
+            const rdBassMod = rdAudio ? 1 + audioSubBassLevel * 0.8 : 1;
+            const rdTrebleMod = rdAudio ? 1 + audioTrebleLevel * 1.2 : 1;
+            rd.time += 0.0025 * reactionDiffusionSpeed * rdBassMod;
+            const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006 * rdTrebleMod;
+            const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004 * rdTrebleMod;
 
-            const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2));
+            const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2 * (rdAudio ? 1 + audioMidsLevel * 0.6 : 1)));
             for (let n = 0; n < sprinkleCount; n++) {
               if (Math.random() < 0.15) {
                 v[idx(Math.floor(Math.random() * RD_W), Math.floor(Math.random() * RD_H))] = 1;

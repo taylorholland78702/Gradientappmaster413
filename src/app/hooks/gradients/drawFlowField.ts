@@ -232,6 +232,12 @@ export function drawFlowField(P: any): CanvasGradient | undefined {
           }
           if (particles.length > targetCount) particles.length = targetCount;
 
+          // Bass speeds up particle drift (longer step per frame), treble
+          // thickens the trail stroke — energy would work too but bass reads
+          // as more physical for "the flow surges."
+          const flowAudio = isAudioEnabled && isAudioReactive;
+          const flowSpeedMod = flowAudio ? 1 + audioSubBassLevel * 1.2 : 1;
+          const flowThicknessMod = flowAudio ? 1 + audioTrebleLevel * 0.8 : 1;
           fbCtx.fillStyle = 'rgba(0,0,0,0.06)';
           fbCtx.fillRect(0, 0, displayWidth, displayHeight);
           const fScale = flowScale * 0.004;
@@ -240,11 +246,11 @@ export function drawFlowField(P: any): CanvasGradient | undefined {
             const p = particles[i];
             const angle = (Math.sin(p.x * fScale + fTime) * Math.cos(p.y * fScale - fTime * 0.8)
               + Math.sin((p.x + p.y) * fScale * 0.5 + fTime * 0.5)) * Math.PI;
-            const nx = p.x + Math.cos(angle) * 1.5;
-            const ny = p.y + Math.sin(angle) * 1.5;
+            const nx = p.x + Math.cos(angle) * 1.5 * flowSpeedMod;
+            const ny = p.y + Math.sin(angle) * 1.5 * flowSpeedMod;
             const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
             fbCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`;
-            fbCtx.lineWidth = flowThickness;
+            fbCtx.lineWidth = flowThickness * flowThicknessMod;
             fbCtx.beginPath();
             fbCtx.moveTo(p.x, p.y);
             fbCtx.lineTo(nx, ny);

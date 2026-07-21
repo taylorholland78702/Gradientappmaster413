@@ -272,6 +272,7 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
     fieldContrast, paletteMode, paletteBands, gradientColors,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
     reactionDiffusionGridRef, canvas, ctx, displayWidth, displayHeight,
+    isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   let gradient: CanvasGradient | undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -314,12 +315,18 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
     // path (drawReactionDiffusion.ts:291-310), computed once per frame
     // and reused across every sub-step, matching the CPU's per-frame
     // (not per-step) recompute.
-    rd.time += 0.0025 * reactionDiffusionSpeed;
-    const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006;
-    const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004;
+    // Matches the CPU path's audio hook (drawReactionDiffusion.ts) exactly
+    // so switching between the GL/CPU renderer mid-session (WebGL context
+    // loss fallback) doesn't visibly change how the pattern responds to audio.
+    const rdAudio = isAudioEnabled && isAudioReactive;
+    const rdBassMod = rdAudio ? 1 + audioSubBassLevel * 0.8 : 1;
+    const rdTrebleMod = rdAudio ? 1 + audioTrebleLevel * 1.2 : 1;
+    rd.time += 0.0025 * reactionDiffusionSpeed * rdBassMod;
+    const feed = reactionDiffusionFeed + Math.sin(rd.time * 0.6) * 0.006 * rdTrebleMod;
+    const kill = reactionDiffusionKill + Math.cos(rd.time * 0.4) * 0.004 * rdTrebleMod;
     const steps = Math.max(1, Math.round(reactionDiffusionSpeed * 30));
 
-    const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2));
+    const sprinkleCount = Math.max(1, Math.round(reactionDiffusionSpeed * 2 * (rdAudio ? 1 + audioMidsLevel * 0.6 : 1)));
     const sprinklePos: number[] = [];
     for (let n = 0; n < sprinkleCount && sprinklePos.length < MAX_SPRINKLES * 2; n++) {
       if (Math.random() < 0.15) {

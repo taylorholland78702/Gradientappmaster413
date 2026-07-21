@@ -219,7 +219,10 @@ export function applyPosterize(P: any): void {
     imageData
   } = P;
             if (!imageData) return;
-            const d = imageData.data, lv = posterizeLevels, s = 256 / lv;
+            const d = imageData.data;
+            // Fewer levels (more crunchy/blocky) on a hit, more levels (smoother) at rest.
+            const lv = Math.max(2, Math.round(posterizeLevels - (isFirstEffect ? audioModulation * 4 : 0)));
+            const s = 256 / lv;
             for (let i = 0; i < d.length; i += 4) {
               d[i] = Math.floor(d[i] / 256 * lv) * s;
               d[i + 1] = Math.floor(d[i + 1] / 256 * lv) * s;

@@ -237,20 +237,25 @@ export function drawAttractor(P: any): CanvasGradient | undefined {
           }
           if (points.length > targetPoints) points.length = targetPoints;
 
+          // Bass nudges the map's a/b/c/d parameters (widens the lace pattern
+          // on a hit), treble pulses dot size — same "living parameter drift"
+          // pattern as Julia's audio hook, just applied to a different knob.
+          const attrAudio = isAudioEnabled && isAudioReactive;
+          const attrBassMod = attrAudio ? audioSubBassLevel * 0.5 : 0;
           const at = attractorAnimTime;
-          const pa = 1.4 + Math.sin(at * 0.13) * 0.9;
-          const pb = -2.3 + Math.cos(at * 0.09) * 0.9;
-          const pc = 2.4 + Math.sin(at * 0.07) * 0.9;
-          const pd = -2.1 + Math.cos(at * 0.11) * 0.9;
+          const pa = 1.4 + Math.sin(at * 0.13) * (0.9 + attrBassMod);
+          const pb = -2.3 + Math.cos(at * 0.09) * (0.9 + attrBassMod);
+          const pc = 2.4 + Math.sin(at * 0.07) * (0.9 + attrBassMod);
+          const pd = -2.1 + Math.cos(at * 0.11) * (0.9 + attrBassMod);
 
           abCtx.fillStyle = `rgba(0,0,0,${attractorTrailFade})`;
           abCtx.fillRect(0, 0, displayWidth, displayHeight);
 
           const attractorCenterX = displayWidth / 2;
           const attractorCenterY = displayHeight / 2;
-          const scaleFactor = (Math.min(displayWidth, displayHeight) / 4.2) * attractorScale;
+          const scaleFactor = (Math.min(displayWidth, displayHeight) / 4.2) * attractorScale * (1 + (attrAudio ? audioMidsLevel * 0.15 : 0));
           const stepsPerFrame = 150;
-          const dotSize = Math.max(0.5, attractorDotSize);
+          const dotSize = Math.max(0.5, attractorDotSize) * (1 + (attrAudio ? audioTrebleLevel * 0.6 : 0));
           const dotOffset = dotSize / 2;
           for (let i = 0; i < points.length; i++) {
             const p = points[i];

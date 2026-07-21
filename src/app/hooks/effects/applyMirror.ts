@@ -244,7 +244,8 @@ export function applyMirror(P: any): void {
               // Generalized N×N mirrored tiling (quad was the fixed N=2 case) — samples
               // the top-left corner of the source and tiles it across an N×N grid,
               // flipping alternate rows/columns so every seam lines up seamlessly.
-              const n = Math.max(2, Math.min(16, Math.round(mirrorTileCount)));
+              // Extra tiles pop in on a hit, giving the grid a "shattering" pulse.
+              const n = Math.max(2, Math.min(16, Math.round(mirrorTileCount + (isFirstEffect ? audioModulation * 4 : 0))));
               const tileW = mw / n, tileH = mh / n;
               // Round tile boundaries to whole pixels and overdraw by 1px so
               // adjacent tiles overlap slightly instead of leaving hairline gaps

@@ -227,6 +227,7 @@ export function applyDuotone(P: any): void {
               return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 0, g: 0, b: 0 };
             };
             const c0 = h2r(duotoneColor1), c1 = h2r(duotoneColor2);
+            const dtIntensity = Math.max(0, Math.min(1, duotoneIntensity + (isFirstEffect ? audioModulation * 0.3 : 0)));
             if (duotoneThreeColor) {
               const c2 = h2r(duotoneColor3);
               for (let i = 0; i < d.length; i += 4) {
@@ -243,16 +244,16 @@ export function applyDuotone(P: any): void {
                   gr = c1.g * (1 - lt) + c2.g * lt;
                   b = c1.b * (1 - lt) + c2.b * lt;
                 }
-                d[i] = r * duotoneIntensity + d[i] * (1 - duotoneIntensity);
-                d[i + 1] = gr * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
-                d[i + 2] = b * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
+                d[i] = r * dtIntensity + d[i] * (1 - dtIntensity);
+                d[i + 1] = gr * dtIntensity + d[i + 1] * (1 - dtIntensity);
+                d[i + 2] = b * dtIntensity + d[i + 2] * (1 - dtIntensity);
               }
             } else {
               for (let i = 0; i < d.length; i += 4) {
                 const g = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11, t = g / 255;
-                d[i] = (c0.r * (1 - t) + c1.r * t) * duotoneIntensity + d[i] * (1 - duotoneIntensity);
-                d[i + 1] = (c0.g * (1 - t) + c1.g * t) * duotoneIntensity + d[i + 1] * (1 - duotoneIntensity);
-                d[i + 2] = (c0.b * (1 - t) + c1.b * t) * duotoneIntensity + d[i + 2] * (1 - duotoneIntensity);
+                d[i] = (c0.r * (1 - t) + c1.r * t) * dtIntensity + d[i] * (1 - dtIntensity);
+                d[i + 1] = (c0.g * (1 - t) + c1.g * t) * dtIntensity + d[i + 1] * (1 - dtIntensity);
+                d[i + 2] = (c0.b * (1 - t) + c1.b * t) * dtIntensity + d[i + 2] * (1 - dtIntensity);
               }
             }
             putScaledImageData(imageData);

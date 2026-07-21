@@ -223,13 +223,17 @@ export function drawTruchet(P: any): CanvasGradient | undefined {
           const tSize = Math.max(10, truchetSize) / zoom;
           const cols = Math.ceil(displayWidth / tSize) + 2;
           const rows = Math.ceil(displayHeight / tSize) + 2;
-          ctx.lineWidth = Math.max(1, truchetThickness);
+          // Treble thickens strokes on hi-hat/cymbal transients; bass adds
+          // extra phase advance so the tile-flip maze re-shuffles faster on
+          // a kick instead of only drifting with the constant angle rate.
+          const truchetAudio = isAudioEnabled && isAudioReactive;
+          ctx.lineWidth = Math.max(1, truchetThickness) * (1 + (truchetAudio ? audioTrebleLevel * 0.7 : 0));
           ctx.lineCap = 'round';
           // Color drift AND the tile pattern itself both track the shared
           // playhead angle (instead of just color before) — the seed's phase
           // shifts as the playhead advances, so tiles progressively re-flip
           // and the maze visibly evolves rather than only recoloring in place.
-          const trAngleOffset = gradientAngle * 0.3;
+          const trAngleOffset = gradientAngle * 0.3 + (truchetAudio ? audioSubBassLevel * 40 : 0);
           for (let row = -1; row < rows; row++) {
             for (let col = -1; col < cols; col++) {
               const seed = Math.sin(col * 127.1 + row * 311.7 + 43.7 + trAngleOffset * 0.6) * 43758.5453;

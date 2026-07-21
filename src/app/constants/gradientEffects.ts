@@ -103,10 +103,10 @@ export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor
 export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'glitch', 'grain', 'grid-effect', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'ripple', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'zoom-blur'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
+export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'flow-field', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet'];
 
 // Effects that pulse/react visibly with audio
-export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye'];
+export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye', 'bloom', 'feedback', 'glitch', 'kaleidoscope', 'ripple', 'scanlines', 'vhs', 'zoom-blur', 'duotone', 'posterize', 'mirror'];
 
 // Gradient types where click-drag should not move the gradient's center
 export const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'helix', 'flow-field'];

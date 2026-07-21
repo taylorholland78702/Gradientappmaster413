@@ -218,11 +218,16 @@ export function drawMoire(P: any): CanvasGradient | undefined {
           // 'lighten' — classic moiré interference technique.
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
+          // Bass pulses ring spacing (the interference fringes visibly
+          // breathe on a hit), treble widens the second ring set's offset
+          // so the moiré pattern churns faster on bright/hi-hat content.
+          const moireAudio = isAudioEnabled && isAudioReactive;
           const mrTime = moireAnimTime;
-          const spacing = Math.max(2, moireScale) / zoom;
+          const spacing = (Math.max(2, moireScale) / zoom) * (1 + (moireAudio ? audioSubBassLevel * 0.35 : 0));
           const maxR = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight) / 2 + spacing;
-          const offsetX = Math.cos(mrTime) * moireOffset;
-          const offsetY = Math.sin(mrTime * 0.7) * moireOffset;
+          const offsetMod = moireAudio ? 1 + audioTrebleLevel * 0.7 : 1;
+          const offsetX = Math.cos(mrTime) * moireOffset * offsetMod;
+          const offsetY = Math.sin(mrTime * 0.7) * moireOffset * offsetMod;
           const drawRings = (cx: number, cy: number, colorOffset: number) => {
             const ringCount = Math.ceil(maxR / spacing);
             ctx.lineWidth = Math.max(1, spacing * 0.35);
