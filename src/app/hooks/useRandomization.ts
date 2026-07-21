@@ -22,6 +22,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
   'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
+  splotches: ['Splotches'], watercolor: ['Watercolor'],
   noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radar: ['Radar'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
@@ -71,6 +72,8 @@ export function useRandomization(params: RandomizationParams) {
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
+    setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
+    setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -107,6 +110,16 @@ export function useRandomization(params: RandomizationParams) {
     // Lava Lamp
     setLavaBlobCount(Math.floor(Math.random() * 10) + 2);              // 2–11
     setLavaBlobSize(Math.random() * 0.35 + 0.05);                      // 0.05–0.4
+
+    // Splotches
+    setSplotchCount(Math.floor(Math.random() * 13) + 3);               // 3–15
+    setSplotchSize(Math.random() * 0.2 + 0.08);                        // 0.08–0.28
+    setSplotchEdgeRoughness(Math.random() * 0.8 + 0.1);                // 0.1–0.9
+
+    // Watercolor
+    setWatercolorBlobCount(Math.floor(Math.random() * 13) + 3);        // 3–15
+    setWatercolorBleedRadius(Math.random() * 0.25 + 0.05);             // 0.05–0.3
+    setWatercolorOpacity(Math.random() * 0.35 + 0.15);                 // 0.15–0.5
 
     // Marble
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10

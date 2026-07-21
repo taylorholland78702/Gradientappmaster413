@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'iridescent' | 'radar' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia';
+export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'iridescent' | 'radar' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia' | 'splotches' | 'watercolor';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -87,13 +87,14 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   metaballs: 'Metaballs', truchet: 'Truchet', moire: 'Moire', 'flow-field': 'Flow Field',
   attractor: 'Attractor', 'reaction-diffusion': 'Reaction-Diffusion',
   topographic: 'Topographic', julia: 'Julia Set',
+  splotches: 'Splotches', watercolor: 'Watercolor',
 };
 
 // Full gradient type list for UI
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flow-field', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'metaballs', 'moire', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'truchet', 'voronoi', 'waves', 'windmill'];
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flow-field', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'metaballs', 'moire', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'splotches', 'topographic', 'truchet', 'voronoi', 'watercolor', 'waves', 'windmill'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
-export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
+export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'splotches', 'topographic', 'voronoi', 'watercolor', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
 
 // Kept in sync with the actual button list in the Effects tab (InteractiveGradient.tsx) —
 // every effect that has a button belongs here so Shuffle (both the Effects-tab button and
@@ -103,7 +104,7 @@ export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor
 export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'glitch', 'grain', 'grid-effect', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'ripple', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'zoom-blur'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble'];
+export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'splotches', 'watercolor'];
 
 // Effects that pulse/react visibly with audio
 export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye'];

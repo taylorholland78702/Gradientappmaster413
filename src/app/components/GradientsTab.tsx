@@ -31,6 +31,16 @@ export interface GradientsTabProps {
   lavaBlobCount: number; setLavaBlobCount: (v: number) => void;
   lavaBlobSize: number; setLavaBlobSize: (v: number) => void;
 
+  // Splotches
+  splotchCount: number; setSplotchCount: (v: number) => void;
+  splotchSize: number; setSplotchSize: (v: number) => void;
+  splotchEdgeRoughness: number; setSplotchEdgeRoughness: (v: number) => void;
+
+  // Watercolor
+  watercolorBlobCount: number; setWatercolorBlobCount: (v: number) => void;
+  watercolorBleedRadius: number; setWatercolorBleedRadius: (v: number) => void;
+  watercolorOpacity: number; setWatercolorOpacity: (v: number) => void;
+
   // Marble
   marbleVeinFreq: number; setMarbleVeinFreq: (v: number) => void;
   marbleTurbulence: number; setMarbleTurbulence: (v: number) => void;
@@ -157,6 +167,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize,
+    splotchCount, setSplotchCount, splotchSize, setSplotchSize, splotchEdgeRoughness, setSplotchEdgeRoughness,
+    watercolorBlobCount, setWatercolorBlobCount, watercolorBleedRadius, setWatercolorBleedRadius, watercolorOpacity, setWatercolorOpacity,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
@@ -402,6 +414,44 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Splotches Controls */}
+        {gradientType === 'splotches' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Splotches', value: splotchCount, set: setSplotchCount, min: 3, max: 15, step: 1 },
+              { label: 'Size', value: splotchSize, set: setSplotchSize, min: 0.08, max: 0.28, step: 0.01 },
+              { label: 'Roughness', value: splotchEdgeRoughness, set: setSplotchEdgeRoughness, min: 0.1, max: 0.9, step: 0.05 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Watercolor Controls */}
+        {gradientType === 'watercolor' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Blobs', value: watercolorBlobCount, set: setWatercolorBlobCount, min: 3, max: 15, step: 1 },
+              { label: 'Bleed', value: watercolorBleedRadius, set: setWatercolorBleedRadius, min: 0.05, max: 0.3, step: 0.01 },
+              { label: 'Opacity', value: watercolorOpacity, set: setWatercolorOpacity, min: 0.15, max: 0.5, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
