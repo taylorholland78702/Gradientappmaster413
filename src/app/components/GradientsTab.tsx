@@ -50,6 +50,7 @@ export interface GradientsTabProps {
   circuitBranchCount: number; setCircuitBranchCount: (v: number) => void;
   circuitMaxDepth: number; setCircuitMaxDepth: (v: number) => void;
   circuitGlowIntensity: number; setCircuitGlowIntensity: (v: number) => void;
+  circuitLineWidth: number; setCircuitLineWidth: (v: number) => void;
 
   // Marble
   marbleVeinFreq: number; setMarbleVeinFreq: (v: number) => void;
@@ -181,6 +182,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     watercolorBlobCount, setWatercolorBlobCount, watercolorBleedRadius, setWatercolorBleedRadius, watercolorOpacity, setWatercolorOpacity,
     suminagashiRingCount, setSuminagashiRingCount, suminagashiCombPasses, setSuminagashiCombPasses, suminagashiCombStrength, setSuminagashiCombStrength,
     circuitBranchCount, setCircuitBranchCount, circuitMaxDepth, setCircuitMaxDepth, circuitGlowIntensity, setCircuitGlowIntensity,
+    circuitLineWidth, setCircuitLineWidth,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
@@ -463,7 +465,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Blobs', value: watercolorBlobCount, set: setWatercolorBlobCount, min: 3, max: 15, step: 1 },
               { label: 'Bleed', value: watercolorBleedRadius, set: setWatercolorBleedRadius, min: 0.05, max: 0.3, step: 0.01 },
-              { label: 'Opacity', value: watercolorOpacity, set: setWatercolorOpacity, min: 0.15, max: 0.5, step: 0.01 },
+              { label: 'Opacity', value: watercolorOpacity, set: setWatercolorOpacity, min: 0.15, max: 0.85, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -499,9 +501,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'circuit' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
-              { label: 'Branches', value: circuitBranchCount, set: setCircuitBranchCount, min: 3, max: 10, step: 1 },
+              { label: 'Branches', value: circuitBranchCount, set: setCircuitBranchCount, min: 3, max: 50, step: 1 },
               { label: 'Depth', value: circuitMaxDepth, set: setCircuitMaxDepth, min: 2, max: 7, step: 1 },
               { label: 'Glow', value: circuitGlowIntensity, set: setCircuitGlowIntensity, min: 0.3, max: 2, step: 0.1 },
+              { label: 'Width', value: circuitLineWidth, set: setCircuitLineWidth, min: 0.3, max: 4, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>

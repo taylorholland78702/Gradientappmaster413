@@ -23,7 +23,7 @@ interface Segment {
 export function drawCircuit(P: any): CanvasGradient | undefined {
   const {
     ctx, centerX, centerY, displayWidth, displayHeight,
-    gradientColors, circuitAnimTime, circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
+    gradientColors, circuitAnimTime, circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioTrebleLevel,
   } = P;
 
@@ -31,7 +31,7 @@ export function drawCircuit(P: any): CanvasGradient | undefined {
   const glowBoost = audioActive ? 1 + (audioSubBassLevel / 5) * 0.8 : 1;
   const pulseSpeedBoost = audioActive ? 1 + (audioTrebleLevel / 5) * 1.5 : 1;
 
-  const branchCount = Math.max(3, Math.min(Math.round(circuitBranchCount), 10));
+  const branchCount = Math.max(3, Math.min(Math.round(circuitBranchCount), 50));
   const maxDepth = Math.max(2, Math.min(Math.round(circuitMaxDepth), 7));
   const seed = branchCount * 100003 + maxDepth * 733;
   const rng = mulberry32(seed);
@@ -81,7 +81,7 @@ export function drawCircuit(P: any): CanvasGradient | undefined {
 
     const baseAlpha = 0.35;
     const alpha = baseAlpha + pulseT * 0.65;
-    const width = 1.2 + pulseT * 1.8;
+    const width = (1.2 + pulseT * 1.8) * circuitLineWidth;
 
     ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
     ctx.lineWidth = width;

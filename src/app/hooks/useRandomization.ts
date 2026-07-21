@@ -76,7 +76,7 @@ export function useRandomization(params: RandomizationParams) {
     setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
     setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
     setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
-    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity,
+    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity, setCircuitLineWidth,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -122,7 +122,7 @@ export function useRandomization(params: RandomizationParams) {
     // Watercolor
     setWatercolorBlobCount(Math.floor(Math.random() * 13) + 3);        // 3–15
     setWatercolorBleedRadius(Math.random() * 0.25 + 0.05);             // 0.05–0.3
-    setWatercolorOpacity(Math.random() * 0.35 + 0.15);                 // 0.15–0.5
+    setWatercolorOpacity(Math.random() * 0.6 + 0.25);                  // 0.25–0.85
 
     // Suminagashi
     setSuminagashiRingCount(Math.floor(Math.random() * 10) + 3);       // 3–12
@@ -130,9 +130,10 @@ export function useRandomization(params: RandomizationParams) {
     setSuminagashiCombStrength(Math.random() * 1.3 + 0.2);             // 0.2–1.5
 
     // Circuit
-    setCircuitBranchCount(Math.floor(Math.random() * 8) + 3);          // 3–10
+    setCircuitBranchCount(Math.floor(Math.random() * 18) + 3);         // 3–20
     setCircuitMaxDepth(Math.floor(Math.random() * 6) + 2);             // 2–7
     setCircuitGlowIntensity(Math.random() * 1.7 + 0.3);                // 0.3–2
+    setCircuitLineWidth(Math.random() * 3.2 + 0.3);                    // 0.3–3.5
 
     // Marble
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10

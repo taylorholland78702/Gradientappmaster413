@@ -39,7 +39,7 @@ export function useSnapshot(params: SnapshotParams) {
     splotchCount, splotchSize, splotchEdgeRoughness,
     watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
     suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-    circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
+    circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
     linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength,
     marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
@@ -78,7 +78,7 @@ export function useSnapshot(params: SnapshotParams) {
     setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
     setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
     setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
-    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity,
+    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity, setCircuitLineWidth,
     setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMeshJitter, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
@@ -250,7 +250,7 @@ export function useSnapshot(params: SnapshotParams) {
       splotchCount, splotchSize, splotchEdgeRoughness,
       watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
       suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
+      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
       liquidScale, liquidStrength,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
@@ -322,7 +322,7 @@ export function useSnapshot(params: SnapshotParams) {
       splotchCount, splotchSize, splotchEdgeRoughness,
       watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
       suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity,
+      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
       liquidScale, liquidStrength,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
@@ -566,13 +566,14 @@ export function useSnapshot(params: SnapshotParams) {
     setSplotchEdgeRoughness(snapshot.splotchEdgeRoughness ?? 0.4);
     setWatercolorBlobCount(snapshot.watercolorBlobCount ?? 9);
     setWatercolorBleedRadius(snapshot.watercolorBleedRadius ?? 0.18);
-    setWatercolorOpacity(snapshot.watercolorOpacity ?? 0.28);
+    setWatercolorOpacity(snapshot.watercolorOpacity ?? 0.55);
     setSuminagashiRingCount(snapshot.suminagashiRingCount ?? 7);
     setSuminagashiCombPasses(snapshot.suminagashiCombPasses ?? 3);
     setSuminagashiCombStrength(snapshot.suminagashiCombStrength ?? 0.6);
     setCircuitBranchCount(snapshot.circuitBranchCount ?? 6);
     setCircuitMaxDepth(snapshot.circuitMaxDepth ?? 4);
     setCircuitGlowIntensity(snapshot.circuitGlowIntensity ?? 1);
+    setCircuitLineWidth(snapshot.circuitLineWidth ?? 1);
     setLiquidScale(snapshot.liquidScale ?? 3);
     setLiquidStrength(snapshot.liquidStrength ?? 30);
     setMarbleOctaves(snapshot.marbleOctaves ?? 5);

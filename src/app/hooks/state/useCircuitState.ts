@@ -5,6 +5,7 @@ export function useCircuitState() {
   const [circuitBranchCount, setCircuitBranchCount] = useState(6);
   const [circuitMaxDepth, setCircuitMaxDepth] = useState(4);
   const [circuitGlowIntensity, setCircuitGlowIntensity] = useState(1);
+  const [circuitLineWidth, setCircuitLineWidth] = useState(1);
 
   return {
     circuitAnimTime,
@@ -15,5 +16,7 @@ export function useCircuitState() {
     setCircuitMaxDepth,
     circuitGlowIntensity,
     setCircuitGlowIntensity,
+    circuitLineWidth,
+    setCircuitLineWidth,
   };
 }
