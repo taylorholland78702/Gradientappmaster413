@@ -3759,11 +3759,11 @@ export function InteractiveGradient() {
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className={`pointer-events-auto w-[42px] h-[42px] rounded-full border-2 border-white flex items-center justify-center text-white ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
+          className={`pointer-events-auto w-[34px] h-[34px] rounded-full border-2 border-white flex items-center justify-center text-white ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
           title="About wāv (?)"
           aria-label="About wāv"
         >
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '20px', lineHeight: 1 }}>i</span>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '16px', lineHeight: 1 }}>i</span>
         </button>
       )}
 
