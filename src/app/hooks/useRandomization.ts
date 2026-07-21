@@ -22,8 +22,6 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
   'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
-  splotches: ['Splotches'], watercolor: ['Watercolor'],
-  suminagashi: ['Suminagashi'], circuit: ['Circuit'],
   noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radar: ['Radar'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
@@ -73,10 +71,6 @@ export function useRandomization(params: RandomizationParams) {
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
     setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
-    setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
-    setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
-    setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
-    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity, setCircuitLineWidth,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -113,27 +107,6 @@ export function useRandomization(params: RandomizationParams) {
     // Lava Lamp
     setLavaBlobCount(Math.floor(Math.random() * 10) + 2);              // 2–11
     setLavaBlobSize(Math.random() * 0.35 + 0.05);                      // 0.05–0.4
-
-    // Splotches
-    setSplotchCount(Math.floor(Math.random() * 13) + 3);               // 3–15
-    setSplotchSize(Math.random() * 0.2 + 0.08);                        // 0.08–0.28
-    setSplotchEdgeRoughness(Math.random() * 0.8 + 0.1);                // 0.1–0.9
-
-    // Watercolor
-    setWatercolorBlobCount(Math.floor(Math.random() * 13) + 3);        // 3–15
-    setWatercolorBleedRadius(Math.random() * 0.25 + 0.05);             // 0.05–0.3
-    setWatercolorOpacity(Math.random() * 0.6 + 0.25);                  // 0.25–0.85
-
-    // Suminagashi
-    setSuminagashiRingCount(Math.floor(Math.random() * 10) + 3);       // 3–12
-    setSuminagashiCombPasses(Math.floor(Math.random() * 6) + 1);       // 1–6
-    setSuminagashiCombStrength(Math.random() * 1.3 + 0.2);             // 0.2–1.5
-
-    // Circuit
-    setCircuitBranchCount(Math.floor(Math.random() * 18) + 3);         // 3–20
-    setCircuitMaxDepth(Math.floor(Math.random() * 6) + 2);             // 2–7
-    setCircuitGlowIntensity(Math.random() * 1.7 + 0.3);                // 0.3–2
-    setCircuitLineWidth(Math.random() * 3.2 + 0.3);                    // 0.3–3.5
 
     // Marble
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10

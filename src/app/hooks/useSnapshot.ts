@@ -23,7 +23,6 @@ export function useSnapshot(params: SnapshotParams) {
     fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
     voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
     metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
-    splotchesAnimTime, watercolorAnimTime, suminagashiAnimTime, circuitAnimTime,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleIntensity,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -36,10 +35,6 @@ export function useSnapshot(params: SnapshotParams) {
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
     hexGridSize, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
-    splotchCount, splotchSize, splotchEdgeRoughness,
-    watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
-    suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-    circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
     linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength,
     marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
@@ -60,7 +55,6 @@ export function useSnapshot(params: SnapshotParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setStructuralSeed, setAudioBindings,
     setVoronoiAnimTime, setFlowerAnimTime, setAuroraAnimTime, setCausticsAnimTime, setLavaAnimTime, setMarbleAnimTime,
     setMetaballAnimTime, setMoireAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime,
-    setSplotchesAnimTime, setWatercolorAnimTime, setSuminagashiAnimTime, setCircuitAnimTime,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -75,10 +69,6 @@ export function useSnapshot(params: SnapshotParams) {
     setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle,
     setIridescentIntensity, setIridescentScale, setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
-    setSplotchCount, setSplotchSize, setSplotchEdgeRoughness,
-    setWatercolorBlobCount, setWatercolorBleedRadius, setWatercolorOpacity,
-    setSuminagashiRingCount, setSuminagashiCombPasses, setSuminagashiCombStrength,
-    setCircuitBranchCount, setCircuitMaxDepth, setCircuitGlowIntensity, setCircuitLineWidth,
     setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMeshJitter, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
@@ -224,7 +214,6 @@ export function useSnapshot(params: SnapshotParams) {
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
       metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
-      splotchesAnimTime, watercolorAnimTime, suminagashiAnimTime, circuitAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -247,10 +236,6 @@ export function useSnapshot(params: SnapshotParams) {
       zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
-      splotchCount, splotchSize, splotchEdgeRoughness,
-      watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
-      suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
       liquidScale, liquidStrength,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
@@ -296,7 +281,6 @@ export function useSnapshot(params: SnapshotParams) {
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
       metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
-      splotchesAnimTime, watercolorAnimTime, suminagashiAnimTime, circuitAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -319,10 +303,6 @@ export function useSnapshot(params: SnapshotParams) {
       zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
-      splotchCount, splotchSize, splotchEdgeRoughness,
-      watercolorBlobCount, watercolorBleedRadius, watercolorOpacity,
-      suminagashiRingCount, suminagashiCombPasses, suminagashiCombStrength,
-      circuitBranchCount, circuitMaxDepth, circuitGlowIntensity, circuitLineWidth,
       liquidScale, liquidStrength,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
@@ -489,10 +469,6 @@ export function useSnapshot(params: SnapshotParams) {
     setLiquidAnimTime(snapshot.liquidAnimTime ?? 0);
     setEmojiAnimTime(snapshot.emojiAnimTime ?? 0);
     setAttractorAnimTime(snapshot.attractorAnimTime ?? 0);
-    setSplotchesAnimTime(snapshot.splotchesAnimTime ?? 0);
-    setWatercolorAnimTime(snapshot.watercolorAnimTime ?? 0);
-    setSuminagashiAnimTime(snapshot.suminagashiAnimTime ?? 0);
-    setCircuitAnimTime(snapshot.circuitAnimTime ?? 0);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);
@@ -561,19 +537,6 @@ export function useSnapshot(params: SnapshotParams) {
     setLavaBlobCount(snapshot.lavaBlobCount ?? 10);
     setLavaBlobSize(snapshot.lavaBlobSize ?? 0.08);
     setLavaSpeed(snapshot.lavaSpeed ?? 1);
-    setSplotchCount(snapshot.splotchCount ?? 8);
-    setSplotchSize(snapshot.splotchSize ?? 0.16);
-    setSplotchEdgeRoughness(snapshot.splotchEdgeRoughness ?? 0.4);
-    setWatercolorBlobCount(snapshot.watercolorBlobCount ?? 9);
-    setWatercolorBleedRadius(snapshot.watercolorBleedRadius ?? 0.18);
-    setWatercolorOpacity(snapshot.watercolorOpacity ?? 0.55);
-    setSuminagashiRingCount(snapshot.suminagashiRingCount ?? 7);
-    setSuminagashiCombPasses(snapshot.suminagashiCombPasses ?? 3);
-    setSuminagashiCombStrength(snapshot.suminagashiCombStrength ?? 0.6);
-    setCircuitBranchCount(snapshot.circuitBranchCount ?? 6);
-    setCircuitMaxDepth(snapshot.circuitMaxDepth ?? 4);
-    setCircuitGlowIntensity(snapshot.circuitGlowIntensity ?? 1);
-    setCircuitLineWidth(snapshot.circuitLineWidth ?? 1);
     setLiquidScale(snapshot.liquidScale ?? 3);
     setLiquidStrength(snapshot.liquidStrength ?? 30);
     setMarbleOctaves(snapshot.marbleOctaves ?? 5);
