@@ -35,6 +35,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const energySmoothedRef = useRef(0);
   const [subBassOnsetTick, setSubBassOnsetTick] = useState(0);
   const [bassOnsetTick, setBassOnsetTick] = useState(0);
+  const [midsOnsetTick, setMidsOnsetTick] = useState(0);
+  const [trebleOnsetTick, setTrebleOnsetTick] = useState(0);
   const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
   const [bassMultiplier, setBassMultiplier] = useState(3.5);
@@ -447,9 +449,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // hits (see comment above) instead of reacting to actual mids-band
       // transients (vocals, snare body, melodic content).
       const midsOnset = midsAvgRaw > midsPrevRef.current * 1.3 && midsAvgRaw > midsThreshold + 0.05;
-      if (midsBeatSync && midsOnset && now - lastMidsBeatTimeRef.current > 150) {
+      // Tick fires on every detected transient regardless of the Mids BEAT
+      // toggle — same decoupling as bass/sub-bass above — so consumers that
+      // want raw onset info (not just the optional pulse effect) can use it.
+      if (midsOnset && now - lastMidsBeatTimeRef.current > 150) {
         lastMidsBeatTimeRef.current = now;
-        midsBeatPulseRef.current = 1.0;
+        setMidsOnsetTick(t => t + 1);
+        if (midsBeatSync) midsBeatPulseRef.current = 1.0;
       }
       midsPrevRef.current = midsAvgRaw;
 
@@ -482,9 +488,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // on every single one would strobe, but the visual pulse should
       // still track them closely, similar to sub-bass/bass/mids.
       const trebleOnset = trebleAvgRaw > treblePrevRef.current * 1.2 && trebleAvgRaw > 0.05;
-      if (trebleBeatSync && trebleOnset && now - lastTreblePulseTimeRef.current > 150) {
+      if (trebleOnset && now - lastTreblePulseTimeRef.current > 150) {
         lastTreblePulseTimeRef.current = now;
-        trebleBeatPulseRef.current = 1.0;
+        setTrebleOnsetTick(t => t + 1);
+        if (trebleBeatSync) trebleBeatPulseRef.current = 1.0;
       }
 
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
@@ -605,6 +612,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioEnergy, setAudioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
+    midsOnsetTick,
+    trebleOnsetTick,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,

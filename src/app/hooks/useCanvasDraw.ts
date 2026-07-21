@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -19,6 +19,45 @@ function applyAudioBindings(target: Record<string, any>, bindings: { param: stri
     const level = levels[binding.band as keyof typeof levels] ?? 0;
     target[binding.param] = base + level * binding.amount;
   }
+}
+
+// Rotates every color's hue by `degrees` (RGB -> HSL -> rotate -> RGB).
+// Used by the global chromatic-drift effect below — a single insertion
+// point that shifts hue for every gradient/effect at once instead of
+// touching all 28 draw functions individually.
+function rotateHue(colors: { r: number; g: number; b: number }[], degrees: number) {
+  const deg = ((degrees % 360) + 360) % 360;
+  if (deg < 0.05) return colors;
+  return colors.map(({ r, g, b }) => {
+    const rn = r / 255, gn = g / 255, bn = b / 255;
+    const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+    const l = (max + min) / 2;
+    const d = max - min;
+    if (d === 0) return { r, g, b }; // grayscale — no hue to rotate
+    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    let h: number;
+    if (max === rn) h = ((gn - bn) / d + (gn < bn ? 6 : 0));
+    else if (max === gn) h = (bn - rn) / d + 2;
+    else h = (rn - gn) / d + 4;
+    h = (h * 60 + deg) % 360;
+    if (h < 0) h += 360;
+    h /= 360;
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const hue2rgb = (t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    return {
+      r: Math.round(hue2rgb(h + 1 / 3) * 255),
+      g: Math.round(hue2rgb(h) * 255),
+      b: Math.round(hue2rgb(h - 1 / 3) * 255),
+    };
+  });
 }
 
 // Loosely typed for the same reason as useRandomization.ts/useSnapshot.ts's
@@ -76,6 +115,20 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     voronoiAnimTime, voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
     waveFrequency, waveNumberRef, waveRotationRef, waveScale, zoom, zoomRef,
   } = params;
+
+  // Global chromatic drift: continuous hue rotation driven by mids, applied
+  // once here rather than per-gradient. Only accumulates while audio is
+  // active/reactive, so idle/no-audio sessions render the user's exact
+  // chosen palette with zero drift, unchanged from before this existed.
+  const hueDriftRef = useRef(0);
+  // Crossfade on gradient-type switch: snapshot the last fully-rendered
+  // frame right before the type changes, then fade it out over the new
+  // frames so switching types (Auto Mode cycling, Shuffle, manual pick)
+  // doesn't read as an instant hard cut.
+  const prevGradientTypeRef = useRef<string | null>(null);
+  const switchSnapshotRef = useRef<HTMLCanvasElement | null>(null);
+  const switchStartRef = useRef(0);
+  const SWITCH_FADE_MS = 320;
 
   useEffect(() => {
     drawParamsDirtyRef.current = true; // signal RAF to redraw with new params
@@ -146,6 +199,26 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       return (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).getImageData(0, 0, displayWidth, displayHeight);
     };
 
+    // Crossfade snapshot: on the first frame after gradientType changes,
+    // grab whatever's still on the canvas from the last frame (before
+    // anything below clears/overwrites it) so it can be faded out on top
+    // of the new type below.
+    if (prevGradientTypeRef.current === null) {
+      prevGradientTypeRef.current = gradientType;
+    } else if (gradientType !== prevGradientTypeRef.current && canvas.width > 0 && canvas.height > 0) {
+      try {
+        const snap = document.createElement('canvas');
+        snap.width = displayWidth;
+        snap.height = displayHeight;
+        snap.getContext('2d')!.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+        switchSnapshotRef.current = snap;
+        switchStartRef.current = performance.now();
+      } catch (err) {
+        switchSnapshotRef.current = null;
+      }
+      prevGradientTypeRef.current = gradientType;
+    }
+
     // Safety check: require a gradient type to be selected
     if (!gradientType) {
       // Clear canvas and show nothing until Randomize is clicked
@@ -189,8 +262,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     let gradient: CanvasGradient | undefined;
 
+    // Global chromatic drift — continuous hue rotation, mids-weighted, only
+    // while audio is active (see hueDriftRef declaration above for why).
+    const audioActiveForDrift = isAudioEnabled && isAudioReactive;
+    if (audioActiveForDrift) {
+      hueDriftRef.current += 0.08 + audioMidsLevel * 0.5;
+    }
+    const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
+
     const drawCtx: Record<string, any> = {
-      ...params, ctx, canvas, gradientColors, gradientAngle, zoom,
+      ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
     };
@@ -208,7 +289,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower', 'radar'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
-        addGradientStops(gradient, gradientColors);
+        addGradientStops(gradient, renderColors);
 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -267,7 +348,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
       
       const effectCtx: Record<string, any> = {
-        ...params, ctx, canvas, gradientColors, gradientAngle, zoom,
+        ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,
@@ -286,6 +367,22 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
       ctx.restore();
     });
+
+    // Crossfade: composite the pre-switch snapshot on top with decaying
+    // alpha. The new frame above is already fully opaque, so this alone
+    // produces a fade from old -> new without needing to touch the new
+    // frame's own alpha.
+    if (switchSnapshotRef.current) {
+      const elapsed = performance.now() - switchStartRef.current;
+      if (elapsed < SWITCH_FADE_MS) {
+        ctx.save();
+        ctx.globalAlpha = 1 - elapsed / SWITCH_FADE_MS;
+        ctx.drawImage(switchSnapshotRef.current, 0, 0, displayWidth, displayHeight);
+        ctx.restore();
+      } else {
+        switchSnapshotRef.current = null;
+      }
+    }
 
     }; // end drawRef.current assignment
 

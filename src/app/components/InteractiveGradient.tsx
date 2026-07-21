@@ -798,6 +798,7 @@ export function InteractiveGradient() {
   audioSubBassLevelRef.current = audioSubBassLevel;
   const audioMidsLevelRef = useRef(audioMidsLevel);
   audioMidsLevelRef.current = audioMidsLevel;
+  const lastReseedTimeRef = useRef(0);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -1903,6 +1904,20 @@ export function InteractiveGradient() {
     setGradientColors(() => newColors);
     setTargetColors(() => newColors);
   }, [bassOnsetTick, paletteBeatEnabled, isAudioEnabled, isAudioReactive, gradientColors.length]);
+
+  // Structural reseed — a big, energetic hit (not just any beat) rerolls
+  // structuralSeed, which Caustics/Voronoi/Marble/Plasma/Metaballs/
+  // Topographic use to vary their underlying pattern structure, not just
+  // brightness/scale. Rate-limited to ~once per 4s so a track's drop reads
+  // as "the pattern itself just changed" rather than constant reshuffling.
+  useEffect(() => {
+    if (!isAudioEnabled || !isAudioReactive || bassOnsetTick === 0) return;
+    if (audioEnergy < 0.72) return;
+    const now = performance.now();
+    if (now - lastReseedTimeRef.current < 4000) return;
+    lastReseedTimeRef.current = now;
+    setStructuralSeed(s => s + 1);
+  }, [bassOnsetTick, isAudioEnabled, isAudioReactive, audioEnergy]);
 
   // Generate colors from AI prompt
   const generateAIColors = (prompt: string) => {
