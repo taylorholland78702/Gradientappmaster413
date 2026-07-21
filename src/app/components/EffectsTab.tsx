@@ -4,6 +4,7 @@ import { type EffectType } from '../constants/gradientEffects';
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
+  isMobile: boolean;
   activeEffects: EffectType[];
   setActiveEffects: (v: EffectType[]) => void;
   isMultiFxMode: boolean; setIsMultiFxMode: (v: boolean) => void;
@@ -121,6 +122,7 @@ export interface EffectsTabProps {
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
   const {
+    isMobile,
     activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
     kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
     rippleFrequency, setRippleFrequency, rippleAmplitude, setRippleAmplitude,
@@ -257,7 +259,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className={`w-full bg-black/20 px-3 py-1 rounded-lg ${isMulti ? 'max-h-64 overflow-y-auto' : ''}`}>
+          <div className={`w-full bg-black/20 px-3 py-1 rounded-lg ${isMulti && !isMobile ? 'max-h-64 overflow-y-auto' : ''}`}>
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>

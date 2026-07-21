@@ -2998,17 +2998,17 @@ export function InteractiveGradient() {
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className="w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Show Controls (H)"
             aria-label="Show Controls"
           >
-            <EyeSlash weight="regular" className="w-3.5 h-3.5" />
+            <EyeSlash weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
           </button>
           <button
             onPointerDown={wavGesture.onPointerDown}
             onPointerUp={wavGesture.onPointerUp}
             onPointerLeave={wavGesture.onPointerLeave}
-            className="relative overflow-hidden w-[34px] h-[34px] p-1 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400"
+            className={`relative overflow-hidden ${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400`}
             title="Tap: Nudge (W) · Hold/Double-tap: Remix"
             aria-label="Tap to nudge the current look, hold or double-tap to remix"
           >
@@ -3017,33 +3017,33 @@ export function InteractiveGradient() {
               className={`wav-btn-fill-reveal ${isWavHolding ? 'wav-revealing' : ''}`}
               style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
             />
-            <Shuffle weight="regular" className="relative w-3.5 h-3.5 text-black" />
+            <Shuffle weight="regular" className={`relative text-black ${isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}`} />
           </button>
           <button
             onClick={undoLastChange}
             disabled={undoDepth < 0}
-            className={`w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Undo (Cmd+Z)"
             aria-label="Undo"
           >
-            <ArrowUUpLeft weight="regular" className="w-3.5 h-3.5" />
+            <ArrowUUpLeft weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
           </button>
           <button
             onClick={redoLastChange}
             disabled={redoDepth === 0}
-            className={`w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
+            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
             title="Redo (Cmd+Shift+Z)"
             aria-label="Redo"
           >
-            <ArrowUUpRight weight="regular" className="w-3.5 h-3.5" />
+            <ArrowUUpRight weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
-            className="w-[34px] h-[34px] p-1 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center"
+            className={`${isMobile ? 'w-[44px] h-[44px] p-2' : 'w-[34px] h-[34px] p-1'} rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Presets (P)"
             aria-label="Presets"
           >
-            <Plus weight="regular" className="w-3.5 h-3.5" />
+            <Plus weight="regular" className={isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
           </button>
         </div>
       )}
@@ -3510,6 +3510,7 @@ export function InteractiveGradient() {
         {/* ── Effects Tab ── */}
         {activeTab === 'effects' && (
           <EffectsTab
+            isMobile={isMobile}
             activeEffects={activeEffects}
             setActiveEffects={setActiveEffects}
             isMultiFxMode={isMultiFxMode}
@@ -3758,11 +3759,11 @@ export function InteractiveGradient() {
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className={`pointer-events-auto w-[44px] h-[44px] rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
+          className={`pointer-events-auto w-[52px] h-[52px] rounded-full bg-black/25 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
           title="About wāv (?)"
           aria-label="About wāv"
         >
-          <Info weight="regular" className="w-4 h-4" />
+          <Info weight="regular" className="w-5 h-5" />
         </button>
       )}
 
