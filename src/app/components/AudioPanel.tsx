@@ -124,6 +124,8 @@ export interface AudioPanelState {
   isAudioControlsOpen: boolean;
   masterSensitivity: number;
   autoGainEnabled: boolean;
+  depthLayerEnabled: boolean;
+  depthLayerStrength: number;
   bassMultiplier: number;
   midsMultiplier: number;
   trebleMultiplier: number;
@@ -151,6 +153,8 @@ export interface AudioPanelActions {
   setIsAudioControlsOpen: (open: boolean) => void;
   setMasterSensitivity: (v: number) => void;
   setAutoGainEnabled: (v: boolean) => void;
+  setDepthLayerEnabled: (v: boolean) => void;
+  setDepthLayerStrength: (v: number) => void;
   setBassMultiplier: (v: number) => void;
   setMidsMultiplier: (v: number) => void;
   setTrebleMultiplier: (v: number) => void;
@@ -181,7 +185,7 @@ const BEAT_BTN = (active: boolean) =>
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
     isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
-    masterSensitivity, autoGainEnabled, bassMultiplier, midsMultiplier, trebleMultiplier,
+    masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
     bassBeatSync, midsBeatSync, trebleBeatSync,
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
@@ -196,7 +200,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
   const {
     setSelectedAudioDeviceId, setIsAudioControlsOpen,
-    setMasterSensitivity, setAutoGainEnabled, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
@@ -328,6 +332,23 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
                 SHUFFLE
               </button>
+            </div>
+            {/* Depth Layer — a second, softer light source behind the main
+                gradient for atmosphere/parallax. Toggle to disable outright;
+                slider scales its opacity (0 = invisible, 2 = double default). */}
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0" title="A second, softer light source blended behind the main gradient for atmosphere/depth. Only visible while audio reactivity is on.">Depth Layer</label>
+              <button
+                onClick={() => setDepthLayerEnabled(!depthLayerEnabled)}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${depthLayerEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
+              >{depthLayerEnabled ? 'ON' : 'OFF'}</button>
+              <input
+                type="range" min="0" max="2" step="0.05" value={depthLayerStrength}
+                disabled={!depthLayerEnabled}
+                onChange={(e) => setDepthLayerStrength(Number(e.target.value))}
+                className="flex-1 min-w-0 disabled:opacity-40"
+              />
+              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{depthLayerStrength.toFixed(1)}</span>
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}

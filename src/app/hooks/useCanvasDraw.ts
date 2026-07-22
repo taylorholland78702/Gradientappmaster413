@@ -80,7 +80,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, auroraAnimTime,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
@@ -327,14 +327,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // with gradients that keep persistent state in their own buffers, e.g.
     // Attractor/Flow Field/Reaction-Diffusion). Gated behind audio-active
     // so the default no-audio look is completely unchanged.
-    if (audioActiveForDrift && renderColors.length > 0) {
+    if (audioActiveForDrift && depthLayerEnabled !== false && renderColors.length > 0) {
+      const strength = depthLayerStrength ?? 1;
       const depthOffsetX = Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
       const depthOffsetY = Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
       const dx = centerX + depthOffsetX;
       const dy = centerY + depthOffsetY;
       const depthColor = renderColors[renderColors.length - 1] || renderColors[0];
       const depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
-      const depthAlpha = Math.min(0.35, 0.2 * musicIntensity);
+      const depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
       const depthGrad = ctx.createRadialGradient(dx, dy, 0, dx, dy, depthRadius);
       depthGrad.addColorStop(0, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},${depthAlpha})`);
       depthGrad.addColorStop(1, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},0)`);

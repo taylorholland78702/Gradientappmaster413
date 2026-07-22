@@ -96,6 +96,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   // loud passages don't just slam into the multiplier's ceiling. Off falls
   // back to the old raw-amplitude behavior.
   const [autoGainEnabled, setAutoGainEnabled] = useState(true);
+  // Depth layer: a second, softer light source screen-blended behind the
+  // main gradient for an atmosphere/parallax feel (see useCanvasDraw.ts).
+  // On by default; strength scales its opacity (0 = invisible, 2 = double
+  // the default). Both only take effect while audio reactivity is on.
+  const [depthLayerEnabled, setDepthLayerEnabled] = useState(true);
+  const [depthLayerStrength, setDepthLayerStrength] = useState(1);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -673,6 +679,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     trebleMax, setTrebleMax,
     masterSensitivity, setMasterSensitivity,
     autoGainEnabled, setAutoGainEnabled,
+    depthLayerEnabled, setDepthLayerEnabled,
+    depthLayerStrength, setDepthLayerStrength,
     bassBeatSync, setBassBeatSync,
     midsBeatSync, setMidsBeatSync,
     trebleBeatSync, setTrebleBeatSync,
