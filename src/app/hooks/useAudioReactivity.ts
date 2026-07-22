@@ -6,6 +6,18 @@ export interface ColorRGB {
   b: number;
 }
 
+// Shared by the treble-driven palette snap below — evenly-spaced hues
+// around a random base read as an intentional harmonious palette, unlike
+// picking each channel independently at random (which tends toward muddy,
+// low-contrast combinations).
+function hslToRgb(h: number, s: number, l: number): ColorRGB {
+  s /= 100; l /= 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => Math.round((l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))) * 255);
+  return { r: f(0), g: f(8), b: f(4) };
+}
+
 export interface UseAudioReactivityParams {
   onBassFlash: () => void;
   onMidsFlash: () => void;
@@ -121,6 +133,14 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const bassPeakRef = useRef(0.05);
   const midsPeakRef = useRef(0.05);
   const treblePeakRef = useRef(0.05);
+  // Music-structure awareness: a slow (many-second) rolling energy average,
+  // compared against the existing fast-smoothed energy to infer whether the
+  // track is "dropped" (fast >> slow) or in a quiet stretch (fast << slow).
+  // Exposed as a ref (not state) since it's read every draw frame by
+  // useCanvasDraw, same pattern as gradientColorsRef/attractorAnimTime —
+  // avoids a setState call every animation frame.
+  const longEnergyRef = useRef(0.05);
+  const musicIntensityRef = useRef(1);
 
   // Functions
   const initAudioContext = useCallback((source: HTMLAudioElement | MediaStream, connectToOutput: boolean = true) => {
@@ -509,10 +529,20 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
       // Color BEAT — randomize the palette on treble onsets, capped to
       // once per 800ms so it reads as a deliberate palette change rather
-      // than a strobe.
+      // than a strobe. Evenly-spaced hues around a random base instead of
+      // fully independent random RGB per swatch — same approach as the
+      // bass-driven Palette Snap in InteractiveGradient.tsx — so the result
+      // reads as an intentional palette rather than a muddy random mix.
       if (trebleBeatSync && trebleOnset && now - lastTrebleBeatRef.current > 800) {
         lastTrebleBeatRef.current = now;
-        setTargetColors(prev => prev.map(() => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) })));
+        const baseHue = Math.random() * 360;
+        setTargetColors(prev => {
+          const count = prev.length || 4;
+          return prev.map((_, i) => {
+            const hue = ((baseHue + (360 / count) * i + (Math.random() * 16 - 8)) % 360 + 360) % 360;
+            return hslToRgb(hue, 78 + Math.random() * 18, 46 + Math.random() * 16);
+          });
+        });
       }
       treblePrevRef.current = trebleAvgRaw;
 
@@ -520,6 +550,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const rawEnergy = (bassAvgRaw + midsAvgRaw + trebleAvgRaw) / 3;
       energySmoothedRef.current = 0.25 * energySmoothedRef.current + 0.75 * rawEnergy;
       setAudioEnergy(Math.min(1, energySmoothedRef.current * masterSensitivity * 2));
+
+      // Music-structure awareness — compare the fast-smoothed energy just
+      // computed above to a slow multi-second rolling average. A ratio well
+      // above 1 means the track just got a lot louder relative to its own
+      // recent history (a real "drop"), well below 1 means a quiet
+      // stretch — either way this scales down toward 1 for a steady mix.
+      longEnergyRef.current = longEnergyRef.current + (rawEnergy - longEnergyRef.current) * 0.0025;
+      const energyRatio = energySmoothedRef.current / Math.max(longEnergyRef.current, 0.04);
+      const targetIntensity = Math.min(1.8, Math.max(0.5, 0.55 + energyRatio * 0.5));
+      musicIntensityRef.current += (targetIntensity - musicIntensityRef.current) * 0.05;
 
       requestAnimationFrame(analyzeAudio);
     };
@@ -676,6 +716,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     liveTrebleSmoothedRef,
     sourceRef,
     streamRef,
+    musicIntensityRef,
     // Functions
     initAudioContext,
     handleFileUpload,

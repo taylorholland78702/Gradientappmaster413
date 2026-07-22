@@ -80,7 +80,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, auroraAnimTime,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
@@ -265,8 +265,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // Global chromatic drift — continuous hue rotation, mids-weighted, only
     // while audio is active (see hueDriftRef declaration above for why).
     const audioActiveForDrift = isAudioEnabled && isAudioReactive;
+    // musicIntensity: an automatic macro from musicIntensityRef (see
+    // useAudioReactivity.ts) reflecting the track's current dynamics
+    // relative to its own recent history — above 1 during a real "drop",
+    // below 1 during a quiet stretch. Scales drift and the depth layer
+    // below so both settle down in sparse sections instead of running at
+    // a constant rate regardless of what's actually happening musically.
+    const musicIntensity = musicIntensityRef?.current ?? 1;
     if (audioActiveForDrift) {
-      hueDriftRef.current += 0.08 + audioMidsLevel * 0.5;
+      hueDriftRef.current += (0.08 + audioMidsLevel * 0.5) * musicIntensity;
     }
     const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
 
@@ -311,6 +318,30 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         ctx.fillStyle = `hsl(${hue}, 100%, 88%)`;
         ctx.fillRect(sx, sy, size, size);
       }
+      ctx.restore();
+    }
+
+    // Depth layer — a second, softer light source offset from center,
+    // screen-blended for an atmosphere/parallax feel. Cheap (one radial
+    // gradient fill, no second draw-function pass, so no risk of colliding
+    // with gradients that keep persistent state in their own buffers, e.g.
+    // Attractor/Flow Field/Reaction-Diffusion). Gated behind audio-active
+    // so the default no-audio look is completely unchanged.
+    if (audioActiveForDrift && renderColors.length > 0) {
+      const depthOffsetX = Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
+      const depthOffsetY = Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
+      const dx = centerX + depthOffsetX;
+      const dy = centerY + depthOffsetY;
+      const depthColor = renderColors[renderColors.length - 1] || renderColors[0];
+      const depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
+      const depthAlpha = Math.min(0.35, 0.2 * musicIntensity);
+      const depthGrad = ctx.createRadialGradient(dx, dy, 0, dx, dy, depthRadius);
+      depthGrad.addColorStop(0, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},${depthAlpha})`);
+      depthGrad.addColorStop(1, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},0)`);
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = depthGrad;
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
       ctx.restore();
     }
 

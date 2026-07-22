@@ -542,6 +542,7 @@ export function InteractiveGradient() {
     audioEnergy, setAudioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
+    musicIntensityRef,
     audioInputDevices, setAudioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
@@ -799,6 +800,7 @@ export function InteractiveGradient() {
   const audioMidsLevelRef = useRef(audioMidsLevel);
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
+  const wavLogoRef = useRef<HTMLSpanElement>(null);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -1912,12 +1914,43 @@ export function InteractiveGradient() {
   // as "the pattern itself just changed" rather than constant reshuffling.
   useEffect(() => {
     if (!isAudioEnabled || !isAudioReactive || bassOnsetTick === 0) return;
-    if (audioEnergy < 0.72) return;
+    // Scaled by the track's own recent dynamics (musicIntensityRef): a real
+    // "drop" (intensity well above 1) lowers the energy bar and shortens the
+    // cooldown so reseeds actually land on the big moments; a quiet stretch
+    // (intensity below 1) raises both so nothing reseeds during a breakdown.
+    const intensity = musicIntensityRef.current ?? 1;
+    const energyBar = 0.72 / intensity;
+    const cooldown = 4000 / Math.max(0.6, intensity);
+    if (audioEnergy < energyBar) return;
     const now = performance.now();
-    if (now - lastReseedTimeRef.current < 4000) return;
+    if (now - lastReseedTimeRef.current < cooldown) return;
     lastReseedTimeRef.current = now;
     setStructuralSeed(s => s + 1);
   }, [bassOnsetTick, isAudioEnabled, isAudioReactive, audioEnergy]);
+
+  // Logo pulse — bass hits briefly scale-pulse the wāv wordmark, tying the
+  // one static piece of chrome to the same signal driving the canvas.
+  // Imperative style writes (not React state) so this doesn't cost a
+  // re-render per beat — same pattern as the canvas-shake effect above.
+  useEffect(() => {
+    if (!isAudioEnabled || !isAudioReactive || subBassOnsetTick === 0) return;
+    const el = wavLogoRef.current;
+    if (!el) return;
+    let rafId: number;
+    const intensity = musicIntensityRef.current ?? 1;
+    let scale = 1 + 0.1 * Math.min(1.5, intensity);
+    const animate = () => {
+      scale = 1 + (scale - 1) * 0.72;
+      if (scale - 1 < 0.003) {
+        el.style.transform = '';
+        return;
+      }
+      el.style.transform = `scale(${scale.toFixed(3)})`;
+      rafId = requestAnimationFrame(animate);
+    };
+    rafId = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(rafId); el.style.transform = ''; };
+  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive]);
 
   // Generate colors from AI prompt
   const generateAIColors = (prompt: string) => {
@@ -2349,7 +2382,7 @@ export function InteractiveGradient() {
   useCanvasDraw({
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, attractorDotSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, auroraAnimTime,
+    attractorScale, attractorDotSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, auroraAnimTime,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsAnimTime, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
@@ -3121,7 +3154,7 @@ export function InteractiveGradient() {
           title="Tap: Nudge · Hold or double-tap: Remix"
           aria-label="Tap to nudge the current look, hold or double-tap to remix"
         >
-          <span className="relative w-full block wav-glow-wrap">
+          <span ref={wavLogoRef} className="relative w-full block wav-glow-wrap" style={{ display: 'block', willChange: 'transform' }}>
             <span
               aria-hidden="true"
               className="absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-stroke-text"
