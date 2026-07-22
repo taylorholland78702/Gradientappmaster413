@@ -2929,8 +2929,17 @@ export function InteractiveGradient() {
     isControlsVisible, isFullyHidden, toggleDisplayWindow,
   ]);
 
+  // touchAction intentionally NOT set on the root container below (was
+  // 'none') — per the CSS touch-action spec, the effective touch-action for
+  // a touch gesture is the INTERSECTION of the hit element's value and every
+  // ancestor's, not a simple override. With 'none' on this root, no
+  // descendant — no matter what touch-action it declared — could ever get
+  // real touch gestures, which is why the control panel's own pan-y override
+  // never actually restored scrolling. The canvas below already sets its own
+  // touchAction:'none' independently, which is the one that actually needs
+  // to block gestures for drag-to-rotate, so removing it here loses nothing.
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef} style={{ touchAction: 'none' }}>
+    <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef}>
       <div ref={shakeWrapperRef} className="w-full h-full">
         <canvas
           ref={canvasRef}
