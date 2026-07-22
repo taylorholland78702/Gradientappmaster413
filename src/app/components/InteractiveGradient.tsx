@@ -2939,33 +2939,49 @@ export function InteractiveGradient() {
   // iOS Safari native-gesture quirk this couldn't pin down further without
   // device access. This bypasses that entirely: touchmove deltas are read
   // directly and applied to scrollTop by hand, so it can't be silently
-  // eaten by whatever's blocking the native gesture. Skips drags starting
-  // on an input/select (range sliders, the device-list dropdown) so their
-  // own touch handling isn't hijacked, and only calls preventDefault()
-  // once there's actually somewhere to scroll.
+  // eaten by whatever's blocking the native gesture.
+  //
+  // Disambiguates by gesture DIRECTION rather than fully excluding drags
+  // that start on a range input — the first version excluded any touch
+  // starting on input/select, which worked fine on the Gradients tab
+  // (few, sparse sliders, easy to grab a gap) but effectively disabled
+  // scrolling on Effects/Multi-FX, which is dense with range sliders, so
+  // almost any drag started on or right next to one and fell through to
+  // the (broken) native path. Now every touch is allowed to become a
+  // scroll: once movement exceeds a small threshold, a mostly-vertical
+  // drag scrolls the panel (even if it started on a slider — the user is
+  // clearly trying to scroll, not drag it sideways), a mostly-horizontal
+  // drag is left alone so the slider's own native dragging still works.
   useEffect(() => {
     if (!isMobile) return;
     const el = innerPanelScrollRef.current;
     if (!el) return;
-    let dragging = false;
+    const DIRECTION_THRESHOLD = 6; // px of movement before committing to scroll vs. slider-drag
+    let startX = 0;
     let startY = 0;
     let startScrollTop = 0;
+    let mode: 'pending' | 'scroll' | 'ignore' = 'pending';
     const onTouchStart = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('input, select, textarea')) return;
-      dragging = true;
+      mode = 'pending';
+      startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startScrollTop = el.scrollTop;
     };
     const onTouchMove = (e: TouchEvent) => {
-      if (!dragging) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      if (mode === 'pending') {
+        if (Math.abs(dx) < DIRECTION_THRESHOLD && Math.abs(dy) < DIRECTION_THRESHOLD) return;
+        mode = Math.abs(dy) > Math.abs(dx) ? 'scroll' : 'ignore';
+      }
+      if (mode !== 'scroll') return;
       const maxScroll = el.scrollHeight - el.clientHeight;
       if (maxScroll <= 0) return;
-      const deltaY = startY - e.touches[0].clientY;
-      el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop + deltaY));
+      el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop - dy));
       e.preventDefault();
     };
-    const onTouchEnd = () => { dragging = false; };
+    const onTouchEnd = () => { mode = 'pending'; };
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
@@ -3285,7 +3301,13 @@ export function InteractiveGradient() {
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            // rounded-tl-lg matches the container's own rounded-lg corner —
+            // the container lost overflow-hidden (see the comment above this
+            // row) to fix a real-device clipping bug, so nothing clips this
+            // button's own hover background to the container's rounded
+            // corner anymore; without an explicit radius here it hovers as a
+            // visible square poking past the top-left corner.
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-tl-lg"
             title="Hide Controls (H)"
             aria-label="Hide Controls"
           >
@@ -3346,7 +3368,9 @@ export function InteractiveGradient() {
           <Divider />
           <button
             onClick={resetToDefaults}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            // rounded-tr-lg — see the matching comment on the Hide Controls
+            // button above (top-left corner of the same row).
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-tr-lg"
             title="Reset (R)"
             aria-label="Reset to defaults"
           >
