@@ -2960,9 +2960,9 @@ export function InteractiveGradient() {
     let startX = 0;
     let startY = 0;
     let startScrollTop = 0;
-    let mode: 'pending' | 'scroll' | 'ignore' = 'pending';
+    let scrolling = false;
     const onTouchStart = (e: TouchEvent) => {
-      mode = 'pending';
+      scrolling = false;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startScrollTop = el.scrollTop;
@@ -2971,17 +2971,27 @@ export function InteractiveGradient() {
       const touch = e.touches[0];
       const dx = touch.clientX - startX;
       const dy = touch.clientY - startY;
-      if (mode === 'pending') {
-        if (Math.abs(dx) < DIRECTION_THRESHOLD && Math.abs(dy) < DIRECTION_THRESHOLD) return;
-        mode = Math.abs(dy) > Math.abs(dx) ? 'scroll' : 'ignore';
+      if (!scrolling) {
+        const absDx = Math.abs(dx), absDy = Math.abs(dy);
+        if (absDx < DIRECTION_THRESHOLD && absDy < DIRECTION_THRESHOLD) return;
+        // Re-evaluated on every move rather than decided once and locked —
+        // real touch gestures are noisy in the first few pixels (the
+        // finger hasn't "settled" into a direction yet), so a one-shot
+        // decision on an early ambiguous/diagonal wobble could permanently
+        // misread a genuine vertical scroll as a horizontal slider-drag for
+        // the rest of that gesture. Biased toward scroll (0.8 ratio, not
+        // 1:1) since scrolling the panel is the much more common intent
+        // here and a slightly-diagonal scroll swipe shouldn't get read as
+        // "trying to drag the slider".
+        if (absDy < absDx * 0.8) return; // stays undecided — let native/slider handle this move, re-check next one
+        scrolling = true;
       }
-      if (mode !== 'scroll') return;
       const maxScroll = el.scrollHeight - el.clientHeight;
       if (maxScroll <= 0) return;
       el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop - dy));
       e.preventDefault();
     };
-    const onTouchEnd = () => { mode = 'pending'; };
+    const onTouchEnd = () => { scrolling = false; };
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
