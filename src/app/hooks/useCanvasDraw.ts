@@ -303,15 +303,18 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
     }
 
-    // Vocal shimmer — treble energy scatters bright sparkle pixels
-    if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 4) {
+    // Vocal shimmer — treble energy scatters bright sparkle pixels. Toned
+    // down from the original (threshold 4->12, max count 400->160, alpha
+    // scaled down ~40%) — it was firing on almost any treble content and
+    // covering large areas of the canvas in dots.
+    if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 12) {
       const shimmer = Math.min(1, audioTrebleLevel / 90);
-      const count = Math.floor(shimmer * shimmer * 400);
+      const count = Math.floor(shimmer * shimmer * 160);
       ctx.save();
       for (let i = 0; i < count; i++) {
         const sx = Math.random() * displayWidth;
         const sy = Math.random() * displayHeight;
-        const alpha = (0.4 + Math.random() * 0.6) * shimmer;
+        const alpha = (0.25 + Math.random() * 0.35) * shimmer;
         const size = Math.random() < 0.75 ? 1 : 2;
         const hue = (Math.random() * 60 + audioTrebleLevel * 3) % 360;
         ctx.globalAlpha = alpha;

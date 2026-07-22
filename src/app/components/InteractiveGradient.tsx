@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, SpeakerSlash, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -3082,7 +3082,15 @@ export function InteractiveGradient() {
         ref={panelRef}
         data-role="panel"
         style={isMobile
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, WebkitOverflowScrolling: 'touch' }
+          // touchAction: 'pan-y' overrides the root container's touchAction:
+          // 'none' (set below for canvas drag-to-rotate) — without it, this
+          // panel silently inherited that restriction and native touch-
+          // scroll gestures didn't work inside it at all, even though
+          // overflow-y:auto was correctly set. Only showed up once content
+          // was tall enough to actually need scrolling (e.g. Multi-FX with
+          // several effects' settings expanded), which is why Gradients —
+          // rarely tall enough to need it — looked fine by comparison.
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }
           : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
           ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-2xl w-[215px] max-w-full overflow-x-hidden origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${!isControlsVisible ? 'pointer-events-none' : ''}`
@@ -3321,13 +3329,27 @@ export function InteractiveGradient() {
             </button>
             <Divider />
             <button
-              onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')}
-              title="Audio (A)"
-              aria-label="Audio tab"
+              onClick={() => {
+                if (isMicActive) {
+                  stopMicVisualization();
+                } else {
+                  // Doubles as the mic toggle now — turning the mic on also
+                  // jumps straight to the Audio tab with the input/device
+                  // settings already expanded, instead of requiring a
+                  // separate trip into a dropdown to find "Turn Mic On".
+                  startMicVisualization(selectedAudioDeviceId);
+                  setActiveTab('audio');
+                  setIsAudioControlsOpen(true);
+                }
+              }}
+              title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
+              aria-label={isMicActive ? 'Turn microphone off' : 'Turn microphone on'}
               style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }}
               className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
             >
-              <SpeakerHigh weight="regular" className="w-4 h-4" />
+              {isMicActive
+                ? <SpeakerHigh weight="regular" className="w-4 h-4" />
+                : <SpeakerSlash weight="regular" className="w-4 h-4" />}
             </button>
             <Divider />
             <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>

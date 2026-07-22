@@ -453,12 +453,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       setAudioSubBassLevel(subBassGradientValue);
 
       // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
+      // Capped much lower than before (was up to 3.5x/2.2x) — most gradients
+      // shrink their rendered pattern by dividing radius/position math by
+      // zoom, and past roughly 1.6-1.8x the pattern no longer covers the
+      // full canvas, exposing the black clear-fill underneath at the edges.
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * masterSensitivity) : 0;
       setTargetZoom(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
-          const spike = bassRawForZoom * (bassBeatSync ? 2.5 : 1.2);
-          return Math.min(decayed + spike, 1 + (bassBeatSync ? 2.5 : 1.2));
+          const spike = bassRawForZoom * (bassBeatSync ? 0.8 : 0.4);
+          return Math.min(decayed + spike, 1 + (bassBeatSync ? 0.8 : 0.4));
         }
         return decayed;
       });
