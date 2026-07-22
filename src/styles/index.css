@@ -366,6 +366,22 @@ input[type="range"] {
   width: 100%;
   height: 16px;
   padding: 0;
+  /* Without this, touch-action on a range input defaults to 'auto', which
+     lets WebKit's native slider gesture recognizer claim ANY touch that
+     starts on it — including a vertical drag meant to scroll the panel —
+     before JS ever gets a chance to redirect it via the manual scroll
+     handler in InteractiveGradient.tsx. Once WebKit's native control has
+     claimed a gesture as a horizontal slider-drag, no amount of JS-side
+     preventDefault()/scrollTop reassignment can win it back — that
+     handler's own direction-disambiguation logic (tested via synthetic
+     TouchEvent dispatch, which bypasses this native claiming entirely and
+     so always "worked" in that testing) never got a fair shot on a real
+     device. pan-y explicitly tells the browser vertical drags on this
+     control belong to page/ancestor panning, not the slider, so native
+     WebKit disambiguates it correctly before JS is even involved.
+     Horizontal drags for setting the slider's own value are unaffected —
+     pan-y only claims the vertical axis. */
+  touch-action: pan-y;
 }
 
 /* ── Track ── */
