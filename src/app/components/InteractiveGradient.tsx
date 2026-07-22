@@ -3081,20 +3081,30 @@ export function InteractiveGradient() {
       <div
         ref={panelRef}
         data-role="panel"
+        // transform lives on this OUTER div, overflow-y:auto lives on the
+        // INNER wrapper below — never both on the same element. iOS Safari
+        // has a long-standing bug where an element with both a CSS
+        // transform (translate or scale) and overflow-y:auto/
+        // -webkit-overflow-scrolling:touch fails to respond to touch-scroll
+        // gestures at all. This panel used scale(1.15) + translateY (for
+        // the mobile show/hide slide) on the very element that also needed
+        // to scroll, which is exactly that bug pattern — touchAction:
+        // 'pan-y' alone (added earlier, still needed to override the root
+        // container's touchAction:'none' for canvas drag-to-rotate) wasn't
+        // enough on a real device because the transform blocked native
+        // scroll before touch-action was even consulted.
         style={isMobile
-          // touchAction: 'pan-y' overrides the root container's touchAction:
-          // 'none' (set below for canvas drag-to-rotate) — without it, this
-          // panel silently inherited that restriction and native touch-
-          // scroll gestures didn't work inside it at all, even though
-          // overflow-y:auto was correctly set. Only showed up once content
-          // was tall enough to actually need scrolling (e.g. Multi-FX with
-          // several effects' settings expanded), which is why Gradients —
-          // rarely tall enough to need it — looked fine by comparison.
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom' }
           : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
-          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 flex flex-col gap-[6px] pointer-events-auto transition-transform duration-300 rounded-2xl w-[215px] max-w-full overflow-x-hidden origin-bottom max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] ${!isControlsVisible ? 'pointer-events-none' : ''}`
-          : `control-panel absolute flex flex-col gap-[6px] pointer-events-auto transition-opacity duration-300 w-[215px] max-h-[calc(100vh-2rem)] overflow-y-auto scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
+          : `control-panel absolute pointer-events-auto transition-opacity duration-300 w-[215px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      >
+      <div
+        className={isMobile
+          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
+        style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' } : undefined}
       >
         {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
         <button
@@ -3787,6 +3797,7 @@ export function InteractiveGradient() {
         </Suspense>
         )}
 
+      </div>
       </div>
       {audioFile && (
         <audio
