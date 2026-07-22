@@ -802,6 +802,7 @@ export function InteractiveGradient() {
   const audioMidsLevelRef = useRef(audioMidsLevel);
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
+  const innerPanelScrollRef = useRef<HTMLDivElement>(null);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -2929,6 +2930,52 @@ export function InteractiveGradient() {
     isControlsVisible, isFullyHidden, toggleDisplayWindow,
   ]);
 
+  // Manual touch-drag scroll for the mobile control panel — a fallback
+  // that doesn't depend on native momentum-scroll/touch-action behavior at
+  // all. Three rounds of CSS-only fixes (touchAction:'pan-y', separating
+  // transform off the scrolling element, removing a poisoning
+  // touchAction:'none' ancestor) all produced textbook-correct computed
+  // styles yet still failed to scroll on a real device, which points at an
+  // iOS Safari native-gesture quirk this couldn't pin down further without
+  // device access. This bypasses that entirely: touchmove deltas are read
+  // directly and applied to scrollTop by hand, so it can't be silently
+  // eaten by whatever's blocking the native gesture. Skips drags starting
+  // on an input/select (range sliders, the device-list dropdown) so their
+  // own touch handling isn't hijacked, and only calls preventDefault()
+  // once there's actually somewhere to scroll.
+  useEffect(() => {
+    if (!isMobile) return;
+    const el = innerPanelScrollRef.current;
+    if (!el) return;
+    let dragging = false;
+    let startY = 0;
+    let startScrollTop = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('input, select, textarea')) return;
+      dragging = true;
+      startY = e.touches[0].clientY;
+      startScrollTop = el.scrollTop;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging) return;
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) return;
+      const deltaY = startY - e.touches[0].clientY;
+      el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop + deltaY));
+      e.preventDefault();
+    };
+    const onTouchEnd = () => { dragging = false; };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [isMobile]);
+
   // touchAction intentionally NOT set on the root container below (was
   // 'none') — per the CSS touch-action spec, the effective touch-action for
   // a touch gesture is the INTERSECTION of the hit element's value and every
@@ -3110,6 +3157,7 @@ export function InteractiveGradient() {
           : `control-panel absolute pointer-events-auto transition-opacity duration-300 w-[215px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
       <div
+        ref={innerPanelScrollRef}
         className={isMobile
           ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]'
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
