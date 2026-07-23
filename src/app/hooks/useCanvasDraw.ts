@@ -7,6 +7,26 @@ import { pickRandomEmojiSet, splitGraphemes, EMOJI_PICKER_CATEGORIES } from '../
 import { GRADIENT_DRAW_FNS } from './gradients/_registry';
 import { EFFECT_DRAW_FNS } from './effects/_registry';
 
+// Cached OffscreenCanvas scratch buffers for the DPR-scaling helpers below —
+// these run on every putScaledImageData/getDisplayImageData call, which
+// happens multiple times per frame across several gradient/effect draw
+// functions on a Retina display. Allocating a fresh OffscreenCanvas on every
+// single call (previous behavior) compounds fast in Multi-FX mode with
+// several image-data-consuming effects stacked; reuse two scratch buffers
+// instead, resized in place only when dimensions actually change.
+const scratchOffscreen: Record<string, OffscreenCanvas | undefined> = {};
+function getScratchOffscreen(key: string, width: number, height: number): OffscreenCanvas {
+  let c = scratchOffscreen[key];
+  if (!c) {
+    c = new OffscreenCanvas(width, height);
+    scratchOffscreen[key] = c;
+  } else if (c.width !== width || c.height !== height) {
+    c.width = width;
+    c.height = height;
+  }
+  return c;
+}
+
 // Applies every {param, band, amount} audio binding directly onto a draw
 // context object by key name, so any entry in MODULATABLE_PARAMS works
 // without wiring a bind-icon onto each individual slider row — the context
@@ -174,7 +194,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       if (resolutionMultiplier === 1) {
         ctx.putImageData(imgData, dx, dy);
       } else {
-        const tmp = new OffscreenCanvas(imgData.width, imgData.height);
+        const tmp = getScratchOffscreen('put', imgData.width, imgData.height);
         (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).putImageData(imgData, 0, 0);
         ctx.save();
         ctx.resetTransform();
@@ -194,7 +214,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       if (resolutionMultiplier === 1) {
         return ctx.getImageData(0, 0, displayWidth, displayHeight);
       }
-      const tmp = new OffscreenCanvas(displayWidth, displayHeight);
+      const tmp = getScratchOffscreen('display', displayWidth, displayHeight);
       (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).drawImage(canvas, 0, 0, displayWidth, displayHeight);
       return (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).getImageData(0, 0, displayWidth, displayHeight);
     };

@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyBloom(P: any): void {
   const {
     activeEffects,
@@ -219,9 +221,7 @@ export function applyBloom(P: any): void {
     imageData
   } = P;
             // Blur a copy and composite back with screen blend — bright areas glow
-            const bloomTmp = document.createElement('canvas');
-            bloomTmp.width = displayWidth;
-            bloomTmp.height = displayHeight;
+            const bloomTmp = getScratchCanvas('bloom', displayWidth, displayHeight);
             const bloomCtx = bloomTmp.getContext('2d');
             if (bloomCtx) {
               const audioBloomBoost = isAudioReactive ? audioSubBassLevel / 5 * 20 : 0;

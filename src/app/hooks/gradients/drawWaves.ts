@@ -1,3 +1,11 @@
+// Module-level cache for the per-color-pair strip bitmaps below — was being
+// rebuilt from scratch (fresh canvas per color) on every single frame,
+// unconditionally, even though the colors rarely change frame-to-frame.
+// Keyed by a cheap stringified snapshot of the colors so it only rebuilds
+// when they actually change.
+let waveStripCacheKey = '';
+let waveStripCacheValue: HTMLCanvasElement[] = [];
+
 export function drawWaves(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -247,20 +255,31 @@ export function drawWaves(P: any): CanvasGradient | undefined {
           // gradientColors.length of them) so the per-scanline fill below can blit a
           // cheap bitmap instead of allocating a CanvasGradient on every row — that's
           // what makes riding the gradient along the wave's curve affordable per-frame.
-          const waveStripCache: HTMLCanvasElement[] = [];
-          for (let c = 0; c < gradientColors.length; c++) {
-            const color = gradientColors[c];
-            const nextColor = gradientColors[(c + 1) % gradientColors.length];
-            if (!color || !nextColor) continue;
-            const strip = document.createElement('canvas');
-            strip.width = 64; strip.height = 1;
-            const sCtx = strip.getContext('2d')!;
-            const sGrad = sCtx.createLinearGradient(0, 0, 64, 0);
-            sGrad.addColorStop(0, `rgb(${color.r}, ${color.g}, ${color.b})`);
-            sGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
-            sCtx.fillStyle = sGrad;
-            sCtx.fillRect(0, 0, 64, 1);
-            waveStripCache[c] = strip;
+          // The bitmaps themselves are cached at module scope (was rebuilding every
+          // single frame unconditionally — several fresh canvas allocations/frame
+          // that only actually needed to happen when the colors change).
+          const waveStripKey = gradientColors.map((c: { r: number; g: number; b: number }) => `${c.r},${c.g},${c.b}`).join('|');
+          let waveStripCache: HTMLCanvasElement[];
+          if (waveStripKey === waveStripCacheKey) {
+            waveStripCache = waveStripCacheValue;
+          } else {
+            waveStripCache = [];
+            for (let c = 0; c < gradientColors.length; c++) {
+              const color = gradientColors[c];
+              const nextColor = gradientColors[(c + 1) % gradientColors.length];
+              if (!color || !nextColor) continue;
+              const strip = document.createElement('canvas');
+              strip.width = 64; strip.height = 1;
+              const sCtx = strip.getContext('2d')!;
+              const sGrad = sCtx.createLinearGradient(0, 0, 64, 0);
+              sGrad.addColorStop(0, `rgb(${color.r}, ${color.g}, ${color.b})`);
+              sGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
+              sCtx.fillStyle = sGrad;
+              sCtx.fillRect(0, 0, 64, 1);
+              waveStripCache[c] = strip;
+            }
+            waveStripCacheKey = waveStripKey;
+            waveStripCacheValue = waveStripCache;
           }
 
           const waveRowStep = 8;

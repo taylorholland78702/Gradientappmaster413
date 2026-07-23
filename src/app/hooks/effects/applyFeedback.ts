@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyFeedback(P: any): void {
   const {
     activeEffects,
@@ -219,9 +221,7 @@ export function applyFeedback(P: any): void {
     imageData
   } = P;
             // Trails: composite previous frame (zoomed+rotated+faded) behind current
-            const fbTmp = document.createElement('canvas');
-            fbTmp.width = displayWidth;
-            fbTmp.height = displayHeight;
+            const fbTmp = getScratchCanvas('feedbackTmp', displayWidth, displayHeight);
             const fbTmpCtx = fbTmp.getContext('2d');
             if (fbTmpCtx) fbTmpCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight); // snapshot current
 

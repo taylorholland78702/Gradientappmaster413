@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyGlitch(P: any): void {
   const {
     activeEffects,
@@ -224,9 +226,7 @@ export function applyGlitch(P: any): void {
             // buffer scan) — this is spatial displacement, not a wobble or
             // time-based effect.
             if (canvas.width === 0 || canvas.height === 0) return;
-            const glitchTmp = document.createElement('canvas');
-            glitchTmp.width = displayWidth;
-            glitchTmp.height = displayHeight;
+            const glitchTmp = getScratchCanvas('glitch', displayWidth, displayHeight);
             const gtc = glitchTmp.getContext('2d');
             if (gtc) {
               gtc.drawImage(canvas, 0, 0, displayWidth, displayHeight);

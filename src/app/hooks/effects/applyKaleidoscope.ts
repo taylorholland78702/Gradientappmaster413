@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyKaleidoscope(P: any): void {
   const {
     activeEffects,
@@ -218,9 +220,7 @@ export function applyKaleidoscope(P: any): void {
     audioModulation,
     imageData
   } = P;
-            const tmp = document.createElement('canvas');
-            tmp.width = displayWidth;
-            tmp.height = displayHeight;
+            const tmp = getScratchCanvas('kaleidoscope', displayWidth, displayHeight);
             const tc = tmp.getContext('2d');
             if (tc) {
               tc.drawImage(canvas, 0, 0, displayWidth, displayHeight);

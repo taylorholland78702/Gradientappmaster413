@@ -3010,13 +3010,27 @@ export function InteractiveGradient() {
     let scrolling = false;
     let touchStartCount = 0;
     let touchMoveCount = 0;
+    // Throttled to ~150ms — the debug overlay was calling setState (a full
+    // React re-render) on every single touchmove, which can fire 60+ times
+    // a second during a drag. That's real overhead on top of whatever's
+    // already expensive on this page (canvas effects, many active sliders),
+    // and plausibly a contributing factor to the crash reported while
+    // testing — this diagnostic code should never be adding load anywhere
+    // close to what it's trying to diagnose.
+    let lastDebugUpdate = 0;
+    const pushDebug = (patch: Record<string, any>) => {
+      const now = performance.now();
+      if (now - lastDebugUpdate < 150) return;
+      lastDebugUpdate = now;
+      setScrollDebug(d => ({ ...d, ...patch }));
+    };
     const onTouchStart = (e: TouchEvent) => {
       scrolling = false;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startScrollTop = el.scrollTop;
       touchStartCount++;
-      setScrollDebug(d => ({ ...d, touchStartCount, target: (e.target as HTMLElement).tagName + '.' + (e.target as HTMLElement).className.slice(0, 30) }));
+      pushDebug({ touchStartCount, target: (e.target as HTMLElement).tagName + '.' + (e.target as HTMLElement).className.slice(0, 30) });
     };
     const onTouchMove = (e: TouchEvent) => {
       const touch = e.touches[0];
@@ -3026,7 +3040,7 @@ export function InteractiveGradient() {
       if (!scrolling) {
         const absDx = Math.abs(dx), absDy = Math.abs(dy);
         if (absDx < DIRECTION_THRESHOLD && absDy < DIRECTION_THRESHOLD) {
-          setScrollDebug(d => ({ ...d, touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'below-threshold' }));
+          pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'below-threshold' });
           return;
         }
         // Re-evaluated on every move rather than decided once and locked —
@@ -3039,13 +3053,13 @@ export function InteractiveGradient() {
         // here and a slightly-diagonal scroll swipe shouldn't get read as
         // "trying to drag the slider".
         if (absDy < absDx * 0.8) {
-          setScrollDebug(d => ({ ...d, touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'undecided-horizontal' }));
+          pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'undecided-horizontal' });
           return; // stays undecided — let native/slider handle this move, re-check next one
         }
         scrolling = true;
       }
       const maxScroll = el.scrollHeight - el.clientHeight;
-      setScrollDebug(d => ({ ...d, touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: maxScroll <= 0 ? 'no-overflow' : 'scrolling', scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, scrollTop: el.scrollTop }));
+      pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: maxScroll <= 0 ? 'no-overflow' : 'scrolling', scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, scrollTop: el.scrollTop });
       if (maxScroll <= 0) return;
       el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop - dy));
       e.preventDefault();

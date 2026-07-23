@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyPixelate(P: any): void {
   const {
     activeEffects,
@@ -218,12 +220,10 @@ export function applyPixelate(P: any): void {
     audioModulation,
     imageData
   } = P;
-            const pxTmp = document.createElement('canvas');
             // Audio makes pixels SMALLER on beat (more detail = louder signal)
             const audioPixelReduction = isFirstEffect ? Math.floor(audioModulation * pixelSize * 0.85) : 0;
             const pxSize = Math.max(1, pixelSize - audioPixelReduction);
-            pxTmp.width = Math.max(1, Math.floor(displayWidth / pxSize));
-            pxTmp.height = Math.max(1, Math.floor(displayHeight / pxSize));
+            const pxTmp = getScratchCanvas('pixelate', Math.max(1, Math.floor(displayWidth / pxSize)), Math.max(1, Math.floor(displayHeight / pxSize)));
             const pxCtx = pxTmp.getContext('2d');
             if (pxCtx) {
               pxCtx.drawImage(canvas, 0, 0, pxTmp.width, pxTmp.height);

@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyChromaticTrails(P: any): void {
   const {
     activeEffects,
@@ -253,8 +255,7 @@ export function applyChromaticTrails(P: any): void {
             }
             ctBufCtx.putImageData(ctFringed, 0, 0);
 
-            const ctTmp = document.createElement('canvas');
-            ctTmp.width = displayWidth; ctTmp.height = displayHeight;
+            const ctTmp = getScratchCanvas('chromaticTrailsTmp', displayWidth, displayHeight);
             ctTmp.getContext('2d')!.drawImage(canvas, 0, 0, displayWidth, displayHeight);
 
             ctx.clearRect(0, 0, displayWidth, displayHeight);

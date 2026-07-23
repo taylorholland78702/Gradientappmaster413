@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyGridEffect(P: any): void {
   const {
     activeEffects,
@@ -219,9 +221,7 @@ export function applyGridEffect(P: any): void {
     imageData
   } = P;
             if (canvas.width === 0 || canvas.height === 0) return;
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = displayWidth;
-            tempCanvas.height = displayHeight;
+            const tempCanvas = getScratchCanvas('gridEffect', displayWidth, displayHeight);
             const gCtx = tempCanvas.getContext('2d');
             if (!gCtx) return;
             gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);

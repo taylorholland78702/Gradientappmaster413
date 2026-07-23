@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyMirror(P: any): void {
   const {
     activeEffects,
@@ -228,11 +230,9 @@ export function applyMirror(P: any): void {
             // (visibly "coming from the corner", and at high grid tile counts, too tiny
             // a sliver to read as anything). Downsample to display resolution once and
             // mirror from that instead, matching getDisplayImageData's approach.
-            const mirrorSrc = document.createElement('canvas');
-            mirrorSrc.width = mw; mirrorSrc.height = mh;
+            const mirrorSrc = getScratchCanvas('mirrorSrc', mw, mh);
             mirrorSrc.getContext('2d')!.drawImage(canvas, 0, 0, mw, mh);
-            const mirrorTemp = document.createElement('canvas');
-            mirrorTemp.width = mw; mirrorTemp.height = mh;
+            const mirrorTemp = getScratchCanvas('mirrorTemp', mw, mh);
             const mCtx = mirrorTemp.getContext('2d')!;
             if (mirrorMode === 'horizontal') {
               mCtx.drawImage(mirrorSrc, 0, 0, mw/2, mh, 0, 0, mw/2, mh);

@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applyTriangulate(P: any): void {
   const {
     activeEffects,
@@ -218,10 +220,9 @@ export function applyTriangulate(P: any): void {
     audioModulation,
     imageData
   } = P;
-            const tCtx = document.createElement('canvas').getContext('2d');
+            const tCanvas = getScratchCanvas('triangulate', canvas.width, canvas.height);
+            const tCtx = tCanvas.getContext('2d');
             if (!tCtx) return;
-            tCtx.canvas.width = canvas.width;
-            tCtx.canvas.height = canvas.height;
             tCtx.drawImage(canvas, 0, 0);
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, displayWidth, displayHeight);
