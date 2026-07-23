@@ -808,6 +808,39 @@ export function InteractiveGradient() {
   // directly instead of guessed at from this sandbox. Remove once the real
   // cause is found.
   const [scrollDebug, setScrollDebug] = useState<Record<string, any>>({});
+  // Real bug found via the debug overlay above: the mobile panel's height
+  // cap used CSS `70dvh`, but this app never triggers a native document
+  // scroll (everything scrolls inside this one fixed internal panel), which
+  // is normally what prompts Safari to recalculate dvh as its toolbar
+  // shows/hides. With no such scroll ever happening, the toolbar can stay
+  // expanded while dvh remains sized for the toolbar-collapsed state — so
+  // the panel's own content genuinely fit within its own (too-generous)
+  // height cap (scrollHeight === clientHeight, confirmed via the debug
+  // overlay), while visually extending past the actually-visible screen.
+  // There was nothing to scroll; the cap itself was just wrong.
+  // window.visualViewport.height doesn't have this staleness problem — it
+  // updates live as the toolbar shows/hides regardless of page scrolling —
+  // so it drives the cap instead of the dvh unit.
+  const [visualViewportHeight, setVisualViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800
+  );
+  useEffect(() => {
+    if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const onResize = () => setVisualViewportHeight(vv.height);
+    vv.addEventListener('resize', onResize);
+    vv.addEventListener('scroll', onResize);
+    onResize();
+    return () => {
+      vv.removeEventListener('resize', onResize);
+      vv.removeEventListener('scroll', onResize);
+    };
+  }, [isMobile]);
+  // The outer panel div scales this inner div by 1.15x (scale-[1.15]/
+  // scale(1.15) below) — the layout-box max-height has to target 70% of
+  // the CURRENTLY visible height divided by that same 1.15x, so the
+  // resulting on-screen (scaled) size is what actually fits.
+  const mobilePanelMaxHeight = Math.floor((visualViewportHeight * 0.7) / 1.15);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -3036,6 +3069,8 @@ export function InteractiveGradient() {
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
           SCROLL DEBUG (temp)
+          <br />vvHeight: {Math.round(visualViewportHeight)}
+          <br />maxHeight: {mobilePanelMaxHeight}
           <br />touchstart: {scrollDebug.touchStartCount ?? 0}
           <br />touchmove: {scrollDebug.touchMoveCount ?? 0}
           <br />phase: {scrollDebug.phase ?? '—'}
@@ -3217,9 +3252,9 @@ export function InteractiveGradient() {
       <div
         ref={innerPanelScrollRef}
         className={isMobile
-          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden max-h-[70dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]'
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
-        style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' } : undefined}
+        style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
         {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
         <button
