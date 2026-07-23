@@ -3283,7 +3283,7 @@ export function InteractiveGradient() {
       <div
         ref={innerPanelScrollRef}
         className={isMobile
-          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] [&>*]:flex-shrink-0'
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
