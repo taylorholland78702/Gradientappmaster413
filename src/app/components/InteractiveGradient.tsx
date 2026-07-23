@@ -824,17 +824,6 @@ export function InteractiveGradient() {
   const [visualViewportHeight, setVisualViewportHeight] = useState(() =>
     typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800
   );
-  // Fixing the height cap alone wasn't enough — content was still cut off
-  // at the SAME bottom edge afterward, confirmed via a bottomInset:0 debug
-  // reading (i.e. that specific gap genuinely wasn't the problem here).
-  // The likely remaining cause: `position: fixed; bottom: Npx` on iOS
-  // Safari can use the LARGEST possible viewport as its containing block
-  // for the bottom edge, regardless of what window.innerHeight or
-  // visualViewport currently report — a known decoupling between what JS
-  // sees and what the fixed-positioning containing block actually is.
-  // `top`, anchored directly from visualViewport.offsetTop (which tracks
-  // the visible area's actual shift from the layout viewport's top), is
-  // the standard, more reliable axis for this exact class of bug.
   const [visualViewportOffsetTop, setVisualViewportOffsetTop] = useState(0);
   useEffect(() => {
     if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
@@ -852,16 +841,15 @@ export function InteractiveGradient() {
     };
   }, [isMobile]);
   // The outer panel div scales this inner div by 1.15x (scale-[1.15]/
-  // scale(1.15) below) — the layout-box max-height has to target 70% of
-  // the CURRENTLY visible height divided by that same 1.15x, so the
-  // resulting on-screen (scaled) size is what actually fits.
-  const mobilePanelMaxHeight = Math.floor((visualViewportHeight * 0.7) / 1.15);
-  // Position from the top instead of the bottom: offsetTop is where the
-  // visible area currently starts (0 unless the page is scrolled, which
-  // this app never does at the document level, but included for
-  // correctness), plus the visible height, minus the panel's own scaled
-  // height, minus a 12px gap above the visible bottom edge.
-  const mobilePanelTop = Math.round(visualViewportOffsetTop + visualViewportHeight - mobilePanelMaxHeight * 1.15 - 12);
+  // scale(1.15) below) — the layout-box max-height has to target the
+  // CURRENTLY visible height divided by that same 1.15x, so the resulting
+  // on-screen (scaled) size is what actually fits. Dropped from 0.7 to 0.55
+  // of visible height for a much bigger safety margin — on-device testing
+  // kept showing content visually crowding the bottom edge even when
+  // scrollHeight didn't (yet) exceed clientHeight, so this trades some
+  // panel size for headroom rather than continuing to chase the exact
+  // pixel-perfect budget on a device this can't directly inspect.
+  const mobilePanelMaxHeight = Math.floor((visualViewportHeight * 0.55) / 1.15);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -3093,7 +3081,6 @@ export function InteractiveGradient() {
           <br />vvHeight: {Math.round(visualViewportHeight)}
           <br />maxHeight: {mobilePanelMaxHeight}
           <br />vvOffsetTop: {visualViewportOffsetTop}
-          <br />panelTop: {mobilePanelTop}
           <br />winInnerH: {typeof window !== 'undefined' ? window.innerHeight : '—'}
           <br />touchstart: {scrollDebug.touchStartCount ?? 0}
           <br />touchmove: {scrollDebug.touchMoveCount ?? 0}
@@ -3266,11 +3253,17 @@ export function InteractiveGradient() {
         // container's touchAction:'none' for canvas drag-to-rotate) wasn't
         // enough on a real device because the transform blocked native
         // scroll before touch-action was even consulted.
+        // Reverted the `top` positioning experiment — on-device data showed
+        // winInnerH === vvHeight exactly (no layout/visual viewport
+        // divergence to compensate for), so that theory didn't hold, and it
+        // introduced a real regression (panel floating mid-screen instead
+        // of bottom-anchored). Back to plain, static bottom:12 — simpler,
+        // and nothing here actually needed the dynamic top math.
         style={isMobile
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom', top: mobilePanelTop }
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom' }
           : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
-          ? `control-panel fixed inset-x-0 mx-auto z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
+          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
           : `control-panel absolute pointer-events-auto transition-opacity duration-300 w-[215px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
       <div
