@@ -824,10 +824,25 @@ export function InteractiveGradient() {
   const [visualViewportHeight, setVisualViewportHeight] = useState(() =>
     typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800
   );
+  // Fixing the height cap alone wasn't enough — content was still cut off
+  // at the SAME bottom edge afterward. That's because `position: fixed;
+  // bottom: 12px` on iOS Safari anchors to the LAYOUT viewport, which can
+  // stay taller than the currently-VISIBLE viewport when the toolbar
+  // overlays part of it rather than shrinking it — so `bottom: 12px` can
+  // measure from behind/under the toolbar instead of from the truly-
+  // visible bottom edge, pushing the panel down and off-screen by exactly
+  // the toolbar's height. bottomInset (window.innerHeight minus the
+  // visible viewport's height+offsetTop) is that gap, added on top of the
+  // normal 12px so the panel always sits just above whatever's actually
+  // visible right now.
+  const [visualViewportBottomInset, setVisualViewportBottomInset] = useState(0);
   useEffect(() => {
     if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
     const vv = window.visualViewport;
-    const onResize = () => setVisualViewportHeight(vv.height);
+    const onResize = () => {
+      setVisualViewportHeight(vv.height);
+      setVisualViewportBottomInset(Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)));
+    };
     vv.addEventListener('resize', onResize);
     vv.addEventListener('scroll', onResize);
     onResize();
@@ -841,6 +856,7 @@ export function InteractiveGradient() {
   // the CURRENTLY visible height divided by that same 1.15x, so the
   // resulting on-screen (scaled) size is what actually fits.
   const mobilePanelMaxHeight = Math.floor((visualViewportHeight * 0.7) / 1.15);
+  const mobilePanelBottom = 12 + visualViewportBottomInset;
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -3071,6 +3087,8 @@ export function InteractiveGradient() {
           SCROLL DEBUG (temp)
           <br />vvHeight: {Math.round(visualViewportHeight)}
           <br />maxHeight: {mobilePanelMaxHeight}
+          <br />bottomInset: {visualViewportBottomInset}
+          <br />panelBottom: {mobilePanelBottom}
           <br />touchstart: {scrollDebug.touchStartCount ?? 0}
           <br />touchmove: {scrollDebug.touchMoveCount ?? 0}
           <br />phase: {scrollDebug.phase ?? '—'}
@@ -3243,10 +3261,10 @@ export function InteractiveGradient() {
         // enough on a real device because the transform blocked native
         // scroll before touch-action was even consulted.
         style={isMobile
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom' }
+          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom', bottom: mobilePanelBottom }
           : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
         className={isMobile
-          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
+          ? `control-panel fixed inset-x-0 mx-auto z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
           : `control-panel absolute pointer-events-auto transition-opacity duration-300 w-[215px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
       <div
