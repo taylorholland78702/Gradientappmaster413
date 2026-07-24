@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Shuffle, X } from '@phosphor-icons/react';
+import { CaretDown, Plus, SlidersHorizontal, Shuffle, SpeakerHigh, SpeakerSlash, X } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 
@@ -235,9 +235,17 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       {/* Audiovisuals Section — single pill */}
       <div className="w-full flex">
         <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg shadow-sm overflow-hidden">
-          {/* Mic on/off now lives in the main toolbar (the Audio tab icon
-              doubles as the mic toggle) — removed here to avoid two
-              controls doing the same thing. */}
+          {/* Mic toggle */}
+          <button
+            onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
+            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
+          >
+            {isMicActive
+              ? <SpeakerHigh weight="regular" className="w-4 h-4" />
+              : <SpeakerSlash weight="regular" className="w-4 h-4" />}
+          </button>
+          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Device dropdown */}
           <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
             <select

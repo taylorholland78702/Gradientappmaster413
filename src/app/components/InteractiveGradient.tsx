@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, SpeakerSlash, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -3515,28 +3515,8 @@ export function InteractiveGradient() {
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button
-              onClick={() => {
-                if (isMicActive) {
-                  stopMicVisualization();
-                } else {
-                  // Doubles as the mic toggle now — turning the mic on also
-                  // jumps straight to the Audio tab with the input/device
-                  // settings already expanded, instead of requiring a
-                  // separate trip into a dropdown to find "Turn Mic On".
-                  startMicVisualization(selectedAudioDeviceId);
-                  setActiveTab('audio');
-                  setIsAudioControlsOpen(true);
-                }
-              }}
-              title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
-              aria-label={isMicActive ? 'Turn microphone off' : 'Turn microphone on'}
-              style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }}
-              className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}
-            >
-              {isMicActive
-                ? <SpeakerHigh weight="regular" className="w-4 h-4" />
-                : <SpeakerSlash weight="regular" className="w-4 h-4" />}
+            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <SpeakerHigh weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
             <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
