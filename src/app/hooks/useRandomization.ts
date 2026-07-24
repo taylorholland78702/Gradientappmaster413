@@ -479,19 +479,29 @@ export function useRandomization(params: RandomizationParams) {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      // Pick 0-8 effects. At most one shape-changer is included (they mask the
-      // gradient entirely when stacked), the rest are light/audio effects.
-      const numEffects = Math.floor(Math.random() * 9);
+      // Pick 1-10 effects, skewed toward denser stacks: weight(n) = min(n, 7)
+      // for n = 1..10, so each additional effect is more likely than the
+      // last up through 7, then 7/8/9/10 are equally (and most) likely —
+      // capped rather than left linear the whole way so 10 isn't uniquely
+      // the single most common outcome. At most one shape-changer is
+      // included (they mask the gradient entirely when stacked), the rest
+      // are light/audio effects.
+      const EFFECT_COUNT_WEIGHTS = Array.from({ length: 10 }, (_, i) => Math.min(i + 1, 7));
+      const totalWeight = EFFECT_COUNT_WEIGHTS.reduce((a, b) => a + b, 0);
+      let weightRoll = Math.random() * totalWeight;
+      let numEffects = 1;
+      for (let i = 0; i < EFFECT_COUNT_WEIGHTS.length; i++) {
+        weightRoll -= EFFECT_COUNT_WEIGHTS[i];
+        if (weightRoll < 0) { numEffects = i + 1; break; }
+      }
       const selectedEffects: EffectType[] = [];
-      if (numEffects > 0) {
-        const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-        if (Math.random() < 0.5) {
-          selectedEffects.push(SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)]);
-        }
-        for (const fx of shuffledLight) {
-          if (selectedEffects.length >= numEffects) break;
-          selectedEffects.push(fx);
-        }
+      const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
+      if (Math.random() < 0.5) {
+        selectedEffects.push(SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)]);
+      }
+      for (const fx of shuffledLight) {
+        if (selectedEffects.length >= numEffects) break;
+        selectedEffects.push(fx);
       }
 
       setActiveEffects(selectedEffects);
