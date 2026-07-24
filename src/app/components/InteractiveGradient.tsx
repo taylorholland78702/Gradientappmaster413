@@ -875,8 +875,11 @@ export function InteractiveGradient() {
       const colors = gradientColorsRef.current;
       const targets = targetColorsRef.current;
       let maxColorDiff = 0;
+      // Longer, more overlapping cross-fade while auto-shuffle is running —
+      // see isAutoShuffleOnRef above.
+      const fadeMultiplier = isAutoShuffleOnRef.current ? 0.25 : 1;
       if (!IS_DISPLAY_MODE) {
-        const colorSpd = 0.025 * spd;
+        const colorSpd = 0.025 * spd * fadeMultiplier;
         for (let i = 0; i < colors.length; i++) {
           const c = colors[i];
           const t = targets[i];
@@ -890,9 +893,9 @@ export function InteractiveGradient() {
       }
 
       const angleDiff = Math.abs(targetAngleRef.current - gradientAngleRef.current);
-      gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * (0.1 * spd);
+      gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * (0.1 * spd * fadeMultiplier);
 
-      const zoomSpd = (isAutoModeRef.current ? 0.1 : 0.3) * spd;
+      const zoomSpd = (isAutoModeRef.current ? 0.1 : 0.3) * spd * fadeMultiplier;
       const zoomDiff = Math.abs(targetZoomRef.current - zoomRef.current);
       zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
 
@@ -1363,9 +1366,15 @@ export function InteractiveGradient() {
   // enough to actually fire at 5s.
   const evolveWithFactorRef = useRef(evolveWithFactor);
   evolveWithFactorRef.current = evolveWithFactor;
+  // Slows the master RAF loop's color/angle/zoom lerp while auto-shuffle is
+  // running, so each result has a longer, more overlapping cross-fade into
+  // the next instead of the ~2s ease used for a manual nudge/remix.
+  const isAutoShuffleOnRef = useRef(false);
+  useEffect(() => { isAutoShuffleOnRef.current = isAutoShuffleOn; }, [isAutoShuffleOn]);
   useEffect(() => {
     if (!isAutoShuffleOn) return;
-    const id = setInterval(() => evolveWithFactorRef.current(1), 5000);
+    evolveWithFactorRef.current(1);
+    const id = setInterval(() => evolveWithFactorRef.current(1), 10000);
     return () => clearInterval(id);
   }, [isAutoShuffleOn]);
 
@@ -4025,7 +4034,7 @@ export function InteractiveGradient() {
                   className="flex items-center justify-between gap-2 text-left"
                   aria-pressed={isAutoShuffleOn}
                 >
-                  <span>Auto Shuffle — remix every 5s</span>
+                  <span>Auto Shuffle — remix every 10s</span>
                   <span className="flex items-center gap-2">
                     <Kbd label="⌥⇧W" />
                     <span
