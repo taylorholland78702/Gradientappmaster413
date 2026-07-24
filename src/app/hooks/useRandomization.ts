@@ -27,6 +27,17 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
+// Params whose visual effect is subtle-to-invisible when driven by a fast,
+// noisy audio signal — repositioning a center point or rotating a fade axis
+// a few degrees per beat doesn't read as "reacting to the music" the way a
+// size/intensity/count swing does. Not excluded outright (still eligible if
+// they're the only sliders in a sparse pool), just weighted down so
+// shuffleAudiovisuals's picks are more likely to be ones you can actually
+// see moving.
+const LOW_VISIBILITY_MOD_KEYS = new Set([
+  'angleCenterX', 'angleCenterY', 'angleStartOffset',
+  'blurMotionDirection', 'fadeDirection', 'fisheyeCenterX', 'fisheyeCenterY', 'noiseDirection',
+]);
 const EFFECT_MOD_CATEGORY: Record<string, string[]> = {
   ascii: ['ASCII'], bloom: ['Bloom'], blur: ['Blur'], chromatic: ['Chromatic'], 'chromatic-trails': ['Chroma Trails'],
   dither: ['Dither'], duotone: ['Duotone'], emoji: ['Emoji'], feedback: ['Feedback'], fisheye: ['Fisheye'],
@@ -313,12 +324,33 @@ export function useRandomization(params: RandomizationParams) {
 
     const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
     const bindingCount = Math.min(1 + Math.floor(Math.random() * 3), paramPool.length); // 1-3
-    const shuffledParams = [...paramPool].sort(() => Math.random() - 0.5).slice(0, bindingCount);
+    // Weighted sampling without replacement — low-visibility params (see
+    // LOW_VISIBILITY_MOD_KEYS) are 4x less likely to be picked than a normal
+    // size/intensity/count slider, so a shuffle more reliably lands on
+    // bindings whose audio-reactivity is actually visible on screen, while
+    // still leaving them selectable when they're the only options in a
+    // sparse pool.
+    const candidates = paramPool.map((p) => ({ p, weight: LOW_VISIBILITY_MOD_KEYS.has(p.key) ? 1 : 4 }));
+    const shuffledParams: typeof paramPool = [];
+    for (let i = 0; i < bindingCount && candidates.length > 0; i++) {
+      const totalWeight = candidates.reduce((sum, c) => sum + c.weight, 0);
+      let roll = Math.random() * totalWeight;
+      let pickIndex = 0;
+      for (; pickIndex < candidates.length; pickIndex++) {
+        roll -= candidates[pickIndex].weight;
+        if (roll < 0) break;
+      }
+      shuffledParams.push(candidates[pickIndex].p);
+      candidates.splice(pickIndex, 1);
+    }
     setAudioBindings(shuffledParams.map((p): AudioBinding => ({
       id: `${Date.now()}-${Math.random()}`,
       param: p.key,
       band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
-      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.2 + Math.random() * 2.8)).toFixed(1)),
+      // Floor raised from 0.2 to 0.9 — a near-zero modulation depth binds
+      // technically but never swings far enough to visibly read as
+      // "reacting to the music".
+      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.9 + Math.random() * 2.3)).toFixed(1)),
     })));
   }, [gradientType, activeEffects]);
   const feelingLucky = useCallback(() => {
