@@ -3515,8 +3515,28 @@ export function InteractiveGradient() {
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`relative flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <SpeakerHigh weight="regular" className="w-4 h-4" />
+              {/* Live signal dot — mic being "on" doesn't mean sound is actually
+                  arriving (wrong device, muted input, etc). Green+pulsing when
+                  the analyser is seeing real level; dim red when the mic is on
+                  but nothing is coming through, so that distinction is visible
+                  at a glance instead of only inside the Parameters level bars. */}
+              {isMicActive && (() => {
+                const micLevel = Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel);
+                const hasSignal = micLevel > 0.04;
+                return (
+                  <span
+                    className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none"
+                    style={{
+                      backgroundColor: hasSignal ? '#4ade80' : '#f87171',
+                      opacity: hasSignal ? 0.6 + Math.min(1, micLevel * 2) * 0.4 : 0.85,
+                      transform: `scale(${hasSignal ? 1 + Math.min(1, micLevel * 2) * 0.7 : 1})`,
+                      transition: 'transform 60ms linear, background-color 200ms, opacity 100ms',
+                    }}
+                  />
+                );
+              })()}
             </button>
             <Divider />
             <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
