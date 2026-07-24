@@ -1350,6 +1350,18 @@ export function InteractiveGradient() {
   });
   const { isWavHolding } = wavGesture;
 
+  // Auto-shuffle: repeatedly triggers a full wāv remix (same as holding the
+  // wordmark for a full beat) on a timer, so the artwork keeps evolving
+  // hands-free. evolveWithFactor(1) sets new target values that the master
+  // RAF loop lerps toward over time — that lerp IS the fade between one
+  // result and the next, so no separate opacity/crossfade code is needed.
+  const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
+  useEffect(() => {
+    if (!isAutoShuffleOn) return;
+    const id = setInterval(() => evolveWithFactor(1), 5000);
+    return () => clearInterval(id);
+  }, [isAutoShuffleOn, evolveWithFactor]);
+
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
@@ -2860,6 +2872,11 @@ export function InteractiveGradient() {
         if (e.shiftKey) redoLastChange(); else undoLastChange();
         return;
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        setIsAutoShuffleOn(prev => !prev);
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       const target = e.target as HTMLElement | null;
@@ -2967,7 +2984,7 @@ export function InteractiveGradient() {
     setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
-    isControlsVisible, isFullyHidden, toggleDisplayWindow,
+    isControlsVisible, isFullyHidden, toggleDisplayWindow, setIsAutoShuffleOn,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -3996,6 +4013,23 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
+                <button
+                  onClick={() => setIsAutoShuffleOn(prev => !prev)}
+                  className="flex items-center justify-between gap-2 text-left"
+                  aria-pressed={isAutoShuffleOn}
+                >
+                  <span>Auto Shuffle — remix every 5s</span>
+                  <span className="flex items-center gap-2">
+                    <Kbd label="⌘⇧W" />
+                    <span
+                      className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/20'}`}
+                    >
+                      <span
+                        className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform ${isAutoShuffleOn ? 'translate-x-[18px] bg-black' : 'translate-x-[2px] bg-white'}`}
+                      />
+                    </span>
+                  </span>
+                </button>
               </div>
 
               <div className="flex flex-col gap-3">
