@@ -1356,11 +1356,18 @@ export function InteractiveGradient() {
   // RAF loop lerps toward over time — that lerp IS the fade between one
   // result and the next, so no separate opacity/crossfade code is needed.
   const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
+  // Read through a ref rather than depending on evolveWithFactor directly —
+  // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
+  // frames, and that's one of its deps), which was tearing down and
+  // restarting this interval on every recreation, so it never survived long
+  // enough to actually fire at 5s.
+  const evolveWithFactorRef = useRef(evolveWithFactor);
+  evolveWithFactorRef.current = evolveWithFactor;
   useEffect(() => {
     if (!isAutoShuffleOn) return;
-    const id = setInterval(() => evolveWithFactor(1), 5000);
+    const id = setInterval(() => evolveWithFactorRef.current(1), 5000);
     return () => clearInterval(id);
-  }, [isAutoShuffleOn, evolveWithFactor]);
+  }, [isAutoShuffleOn]);
 
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
