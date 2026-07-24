@@ -479,14 +479,16 @@ export function useRandomization(params: RandomizationParams) {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      // Pick 1-10 effects, skewed toward denser stacks: weight(n) = min(n, 7)
+      // Pick 1-10 effects, skewed toward denser stacks: weight(n) = min(n, 3)
       // for n = 1..10, so each additional effect is more likely than the
-      // last up through 7, then 7/8/9/10 are equally (and most) likely —
-      // capped rather than left linear the whole way so 10 isn't uniquely
-      // the single most common outcome. At most one shape-changer is
+      // last up through 3, then 3 through 10 are equally (and most) likely —
+      // capped lower than a straight linear ramp (was min(n, 7)) since
+      // several effects (chromatic-trails, feedback, triangulate, grid) do
+      // full-canvas per-pixel work every frame, and stacking many of them
+      // was visibly slowing playback. At most one shape-changer is
       // included (they mask the gradient entirely when stacked), the rest
       // are light/audio effects.
-      const EFFECT_COUNT_WEIGHTS = Array.from({ length: 10 }, (_, i) => Math.min(i + 1, 7));
+      const EFFECT_COUNT_WEIGHTS = Array.from({ length: 10 }, (_, i) => Math.min(i + 1, 3));
       const totalWeight = EFFECT_COUNT_WEIGHTS.reduce((a, b) => a + b, 0);
       let weightRoll = Math.random() * totalWeight;
       let numEffects = 1;
