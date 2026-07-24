@@ -803,12 +803,7 @@ export function InteractiveGradient() {
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
   const innerPanelScrollRef = useRef<HTMLDivElement>(null);
-  // TEMPORARY diagnostic overlay for the mobile-scroll investigation — shows
-  // live touch-handler state on-screen so real-device behavior can be seen
-  // directly instead of guessed at from this sandbox. Remove once the real
-  // cause is found.
-  const [scrollDebug, setScrollDebug] = useState<Record<string, any>>({});
-  // Real bug found via the debug overlay above: the mobile panel's height
+  // Real bug found via the (now-removed) debug overlay: the mobile panel's height
   // cap used CSS `70dvh`, but this app never triggers a native document
   // scroll (everything scrolls inside this one fixed internal panel), which
   // is normally what prompts Safari to recalculate dvh as its toolbar
@@ -824,13 +819,11 @@ export function InteractiveGradient() {
   const [visualViewportHeight, setVisualViewportHeight] = useState(() =>
     typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800
   );
-  const [visualViewportOffsetTop, setVisualViewportOffsetTop] = useState(0);
   useEffect(() => {
     if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
     const vv = window.visualViewport;
     const onResize = () => {
       setVisualViewportHeight(vv.height);
-      setVisualViewportOffsetTop(vv.offsetTop);
     };
     vv.addEventListener('resize', onResize);
     vv.addEventListener('scroll', onResize);
@@ -3008,39 +3001,19 @@ export function InteractiveGradient() {
     let startY = 0;
     let startScrollTop = 0;
     let scrolling = false;
-    let touchStartCount = 0;
-    let touchMoveCount = 0;
-    // Throttled to ~150ms — the debug overlay was calling setState (a full
-    // React re-render) on every single touchmove, which can fire 60+ times
-    // a second during a drag. That's real overhead on top of whatever's
-    // already expensive on this page (canvas effects, many active sliders),
-    // and plausibly a contributing factor to the crash reported while
-    // testing — this diagnostic code should never be adding load anywhere
-    // close to what it's trying to diagnose.
-    let lastDebugUpdate = 0;
-    const pushDebug = (patch: Record<string, any>) => {
-      const now = performance.now();
-      if (now - lastDebugUpdate < 150) return;
-      lastDebugUpdate = now;
-      setScrollDebug(d => ({ ...d, ...patch }));
-    };
     const onTouchStart = (e: TouchEvent) => {
       scrolling = false;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startScrollTop = el.scrollTop;
-      touchStartCount++;
-      pushDebug({ touchStartCount, target: (e.target as HTMLElement).tagName + '.' + (e.target as HTMLElement).className.slice(0, 30) });
     };
     const onTouchMove = (e: TouchEvent) => {
       const touch = e.touches[0];
       const dx = touch.clientX - startX;
       const dy = touch.clientY - startY;
-      touchMoveCount++;
       if (!scrolling) {
         const absDx = Math.abs(dx), absDy = Math.abs(dy);
         if (absDx < DIRECTION_THRESHOLD && absDy < DIRECTION_THRESHOLD) {
-          pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'below-threshold' });
           return;
         }
         // Re-evaluated on every move rather than decided once and locked —
@@ -3053,13 +3026,11 @@ export function InteractiveGradient() {
         // here and a slightly-diagonal scroll swipe shouldn't get read as
         // "trying to drag the slider".
         if (absDy < absDx * 0.8) {
-          pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: 'undecided-horizontal' });
           return; // stays undecided — let native/slider handle this move, re-check next one
         }
         scrolling = true;
       }
       const maxScroll = el.scrollHeight - el.clientHeight;
-      pushDebug({ touchMoveCount, dx: Math.round(dx), dy: Math.round(dy), phase: maxScroll <= 0 ? 'no-overflow' : 'scrolling', scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, scrollTop: el.scrollTop });
       if (maxScroll <= 0) return;
       el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop - dy));
       e.preventDefault();
@@ -3086,25 +3057,6 @@ export function InteractiveGradient() {
   // to block gestures for drag-to-rotate, so removing it here loses nothing.
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef}>
-      {isMobile && (
-        <div
-          className="fixed top-2 left-2 z-[9999] pointer-events-none bg-black/90 text-lime-400 text-[9px] leading-tight font-mono px-2 py-1.5 rounded max-w-[200px] break-all"
-          style={{ paddingTop: 'env(safe-area-inset-top)' }}
-        >
-          SCROLL DEBUG (temp)
-          <br />vvHeight: {Math.round(visualViewportHeight)}
-          <br />maxHeight: {mobilePanelMaxHeight}
-          <br />vvOffsetTop: {visualViewportOffsetTop}
-          <br />winInnerH: {typeof window !== 'undefined' ? window.innerHeight : '—'}
-          <br />touchstart: {scrollDebug.touchStartCount ?? 0}
-          <br />touchmove: {scrollDebug.touchMoveCount ?? 0}
-          <br />phase: {scrollDebug.phase ?? '—'}
-          <br />dx/dy: {scrollDebug.dx ?? '—'}/{scrollDebug.dy ?? '—'}
-          <br />scrollTop: {scrollDebug.scrollTop ?? '—'}
-          <br />scrollH/clientH: {scrollDebug.scrollHeight ?? '—'}/{scrollDebug.clientHeight ?? '—'}
-          <br />target: {scrollDebug.target ?? '—'}
-        </div>
-      )}
       <div ref={shakeWrapperRef} className="w-full h-full">
         <canvas
           ref={canvasRef}
