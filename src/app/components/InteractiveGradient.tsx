@@ -2872,7 +2872,7 @@ export function InteractiveGradient() {
         if (e.shiftKey) redoLastChange(); else undoLastChange();
         return;
       }
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'w') {
+      if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'w') {
         e.preventDefault();
         setIsAutoShuffleOn(prev => !prev);
         return;
@@ -4020,7 +4020,7 @@ export function InteractiveGradient() {
                 >
                   <span>Auto Shuffle — remix every 5s</span>
                   <span className="flex items-center gap-2">
-                    <Kbd label="⌘⇧W" />
+                    <Kbd label="⌥⇧W" />
                     <span
                       className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/20'}`}
                     >
