@@ -1374,7 +1374,7 @@ export function InteractiveGradient() {
   useEffect(() => {
     if (!isAutoShuffleOn) return;
     evolveWithFactorRef.current(1);
-    const id = setInterval(() => evolveWithFactorRef.current(1), 10000);
+    const id = setInterval(() => evolveWithFactorRef.current(1), 7000);
     return () => clearInterval(id);
   }, [isAutoShuffleOn]);
 
@@ -2888,7 +2888,10 @@ export function InteractiveGradient() {
         if (e.shiftKey) redoLastChange(); else undoLastChange();
         return;
       }
-      if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'w') {
+      // e.code (physical key), not e.key — Option remaps e.key to a
+      // different character on Mac (e.g. Option+W -> "∑"), so the 'w'
+      // string comparison never matched with Alt held.
+      if (e.altKey && e.shiftKey && e.code === 'KeyW') {
         e.preventDefault();
         setIsAutoShuffleOn(prev => !prev);
         return;
@@ -4034,7 +4037,7 @@ export function InteractiveGradient() {
                   className="flex items-center justify-between gap-2 text-left"
                   aria-pressed={isAutoShuffleOn}
                 >
-                  <span>Auto Shuffle — remix every 10s</span>
+                  <span>Auto Shuffle — remix every 7s</span>
                   <span className="flex items-center gap-2">
                     <Kbd label="⌥⇧W" />
                     <span
