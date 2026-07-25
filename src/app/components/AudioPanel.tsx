@@ -190,7 +190,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
-    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
     audioBindings,
   } = state;
 
@@ -334,12 +333,30 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
               <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0" title="Normalizes each band against its own recent loudness instead of a fixed scale, so quiet passages still register and loud ones don't just max out">Auto Gain</label>
+            {/* Auto Gain and Depth Layer — same toggle-button treatment as
+                the Beat Sync/FX buttons (Palette etc.) below, gray when
+                off. Depth Layer's slider stays, on its own row underneath,
+                since the toggle button itself has no room for one. */}
+            <div className="flex gap-1.5">
               <button
                 onClick={() => setAutoGainEnabled(!autoGainEnabled)}
-                className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${autoGainEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
-              >{autoGainEnabled ? 'ON' : 'OFF'}</button>
+                title="Normalizes each band against its own recent loudness instead of a fixed scale, so quiet passages still register and loud ones don't just max out"
+                className={BEAT_BTN(autoGainEnabled)}
+              >AUTO GAIN</button>
+              <button
+                onClick={() => setDepthLayerEnabled(!depthLayerEnabled)}
+                title="A second, softer light source blended behind the main gradient for atmosphere/depth. Only visible while audio reactivity is on."
+                className={BEAT_BTN(depthLayerEnabled)}
+              >DEPTH LAYER</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="range" min="0" max="2" step="0.05" value={depthLayerStrength}
+                disabled={!depthLayerEnabled}
+                onChange={(e) => setDepthLayerStrength(Number(e.target.value))}
+                className="flex-1 min-w-0 disabled:opacity-40"
+              />
+              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{depthLayerStrength.toFixed(1)}</span>
             </div>
             {/* Shuffle gets its own row — it was previously paired with Auto
                 Gain by leftover space rather than any real relationship
@@ -352,23 +369,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <Shuffle weight="regular" className="w-3.5 h-3.5" />
               SHUFFLE
             </button>
-            {/* Depth Layer — a second, softer light source behind the main
-                gradient for atmosphere/parallax. Toggle to disable outright;
-                slider scales its opacity (0 = invisible, 2 = double default). */}
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0" title="A second, softer light source blended behind the main gradient for atmosphere/depth. Only visible while audio reactivity is on.">Depth Layer</label>
-              <button
-                onClick={() => setDepthLayerEnabled(!depthLayerEnabled)}
-                className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${depthLayerEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
-              >{depthLayerEnabled ? 'ON' : 'OFF'}</button>
-              <input
-                type="range" min="0" max="2" step="0.05" value={depthLayerStrength}
-                disabled={!depthLayerEnabled}
-                onChange={(e) => setDepthLayerStrength(Number(e.target.value))}
-                className="flex-1 min-w-0 disabled:opacity-40"
-              />
-              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{depthLayerStrength.toFixed(1)}</span>
-            </div>
 
             {/* Beat Sync — one umbrella covering two related but distinct
                 things: each band's own BEAT toggle below (continuous
@@ -378,7 +378,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 with no shared header before, which read as two unrelated
                 systems rather than one system with two categories. */}
             <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Beat Sync</span>
-            <span className="text-[9px] text-white/40 -mt-1">Bands</span>
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
               <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~20-60Hz — kick drum fundamental">Sub</div>
@@ -400,7 +399,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -414,7 +412,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -428,7 +425,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -442,19 +438,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
-              </div>
-            </div>
-
-            {/* FX on Beat — second half of the Beat Sync umbrella above. */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/40">Effects</span>
-              <div className="flex gap-1.5">
-                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} className={BEAT_BTN(zoomBeatEnabled)}>ZOOM</button>
-                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} className={BEAT_BTN(shakeBeatEnabled)}>SHAKE</button>
-                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} className={BEAT_BTN(contrastBeatEnabled)}>CONTRAST</button>
-                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} className={BEAT_BTN(paletteBeatEnabled)}>PALETTE</button>
               </div>
             </div>
 
