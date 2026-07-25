@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
+import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -218,20 +219,33 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 {effectsList.map((effect, i) => {
                   const isLastInColumn = i % rows === rows - 1;
                   const isLeftColumn = i < rows;
+                  const isActive = activeEffects.includes(effect.value);
+                  // Manually stacking effects in Multi-FX had no limit at all
+                  // — unlike feelingLucky's remix, which is cost-budgeted
+                  // (see constants/effectCost.ts). A handful of effects do
+                  // full-canvas per-pixel work every frame, and stacking
+                  // several of those manually was the direct cause of real,
+                  // reported playback slowdowns. Once the budget's spent,
+                  // remaining (not-yet-active) effects are disabled rather
+                  // than silently letting the stack keep growing.
+                  const wouldExceedBudget = isMultiFxMode && !isActive
+                    && totalCost(activeEffects) + costOf(effect.value) > MULTI_FX_COST_BUDGET;
                   return (
                     <button
                       key={effect.value}
+                      disabled={wouldExceedBudget}
+                      title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
                       onClick={() => {
                         if (isMultiFxMode) {
                           // Multi-FX mode: toggle effects on/off
-                          if (activeEffects.includes(effect.value)) {
+                          if (isActive) {
                             setActiveEffects(activeEffects.filter(e => e !== effect.value));
-                          } else {
+                          } else if (!wouldExceedBudget) {
                             setActiveEffects([...activeEffects, effect.value]);
                           }
                         } else {
                           // Single-FX mode: select only this effect
-                          if (activeEffects.includes(effect.value) && activeEffects.length === 1) {
+                          if (isActive && activeEffects.length === 1) {
                             // If clicking the only active effect, clear it
                             setActiveEffects([]);
                           } else {
@@ -241,9 +255,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         }
                       }}
                       className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
-                        activeEffects.includes(effect.value)
+                        isActive
                           ? 'bg-white text-black'
-                          : 'text-white hover:bg-white/10'
+                          : wouldExceedBudget
+                            ? 'text-white/30 cursor-not-allowed'
+                            : 'text-white hover:bg-white/10'
                       }`}
                     >
                       {effect.label}

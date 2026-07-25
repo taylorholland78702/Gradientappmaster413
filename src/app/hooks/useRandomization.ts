@@ -7,6 +7,7 @@ import { pickRandomEmojiSet } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
+import { costOf } from '../constants/effectCost';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
 // Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string(s)
@@ -27,20 +28,8 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
-// Relative per-frame compute cost used to budget feelingLucky's effect
-// stack (see numEffects below) — not every effect costs the same, and
-// picking purely by COUNT let several genuinely expensive ones (full-canvas
-// getImageData/pixel loops) land in the same remix and tank playback,
-// especially on a large/high-DPR external display where the canvas itself
-// is already several times more pixels than a laptop's own screen (see the
-// canvas pixel-budget cap in useCanvasDraw.ts for that half of the fix).
-// Default 1 for anything not listed (simple single-pass canvas ops).
-const EFFECT_COST: Partial<Record<EffectType, number>> = {
-  'chromatic-trails': 3, 'grid-effect': 3, triangulate: 3, halftone: 3, dither: 3,
-  ascii: 2, feedback: 2, glitch: 2, vhs: 2, emoji: 2, grain: 2, mirror: 2,
-  blur: 2, 'zoom-blur': 2, ripple: 2, wave: 2, duotone: 2, chromatic: 2, 'slit-scan': 2,
-};
-const costOf = (effect: EffectType) => EFFECT_COST[effect] ?? 1;
+// costOf (effect compute-cost weighting) now lives in constants/effectCost.ts,
+// shared with EffectsTab.tsx's manual Multi-FX toggle budget.
 // Params whose visual effect is subtle-to-invisible when driven by a fast,
 // noisy audio signal — repositioning a center point or rotating a fade axis
 // a few degrees per beat doesn't read as "reacting to the music" the way a
