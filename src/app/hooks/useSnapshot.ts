@@ -514,7 +514,7 @@ export function useSnapshot(params: SnapshotParams) {
     setMasterSensitivity(snapshot.masterSensitivity ?? 1.2);
     setAutoGainEnabled(snapshot.autoGainEnabled ?? true);
     setDepthLayerEnabled(snapshot.depthLayerEnabled ?? true);
-    setDepthLayerStrength(snapshot.depthLayerStrength ?? 1);
+    setDepthLayerStrength(snapshot.depthLayerStrength ?? 2);
     setBassBeatSync(snapshot.bassBeatSync ?? true);
     setMidsBeatSync(snapshot.midsBeatSync ?? false);
     setTrebleBeatSync(snapshot.trebleBeatSync ?? false);

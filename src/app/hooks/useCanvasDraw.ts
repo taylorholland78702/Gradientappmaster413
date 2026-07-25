@@ -370,7 +370,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // Attractor/Flow Field/Reaction-Diffusion). Gated behind audio-active
     // so the default no-audio look is completely unchanged.
     if (audioActiveForDrift && depthLayerEnabled !== false && renderColors.length > 0) {
-      const strength = depthLayerStrength ?? 1;
+      const strength = depthLayerStrength ?? 2;
       const depthOffsetX = Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
       const depthOffsetY = Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
       const dx = centerX + depthOffsetX;

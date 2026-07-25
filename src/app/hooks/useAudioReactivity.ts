@@ -109,8 +109,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   // main gradient for an atmosphere/parallax feel (see useCanvasDraw.ts).
   // On by default; strength scales its opacity (0 = invisible, 2 = double
   // the default). Both only take effect while audio reactivity is on.
+  // Strength no longer has a slider in the UI (AudioPanel.tsx) — fixed at
+  // 2, the top end of the old slider's 0-2 range, its most intense setting.
   const [depthLayerEnabled, setDepthLayerEnabled] = useState(true);
-  const [depthLayerStrength, setDepthLayerStrength] = useState(1);
+  const [depthLayerStrength, setDepthLayerStrength] = useState(2);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
