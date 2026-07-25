@@ -307,6 +307,24 @@
   color: #dc2626 !important;
 }
 
+/* Audio tab icon's live-signal state — same intent as .text-red-500
+   above, but that pattern alone isn't enough here: Phosphor icons render
+   as <svg fill="currentColor"><path/></svg>, and the blanket
+   `.control-panel *` rule above matches the inner <path> directly too.
+   currentColor re-resolves per-element, so the path was using its OWN
+   (still black) computed color regardless of what the class set on the
+   parent <svg> — class needs to reach the path itself, not just the
+   svg root, or the override is silently ignored despite winning the
+   cascade on the svg element. */
+.control-panel .wav-audio-signal-ok,
+.control-panel .wav-audio-signal-ok * {
+  color: #16a34a !important;
+}
+.control-panel .wav-audio-signal-none,
+.control-panel .wav-audio-signal-none * {
+  color: #dc2626 !important;
+}
+
 /* The wāv wordmark keeps its own white/gray/gradient styling — exempt
    from the panel's flat black-text rule above. */
 .control-panel .wav-base-text,
