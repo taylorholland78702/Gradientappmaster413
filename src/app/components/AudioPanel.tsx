@@ -454,8 +454,23 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     return (
                       <div key={b.id} className="flex items-center gap-1.5 bg-black/25 rounded px-1.5 py-1">
                         <span className="text-[9px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
-                        <span className="text-[9px] text-white/50 uppercase">{BAND_LABELS[b.band]}</span>
-                        <span className="text-[9px] text-white/50 w-8 text-right">{b.amount.toFixed(1)}x</span>
+                        <select
+                          value={b.band}
+                          onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
+                          className="text-[9px] text-white/70 bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                        >
+                          {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
+                            <option key={band} value={band}>{BAND_LABELS[band]}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min="-10" max="10" step="0.1"
+                          value={b.amount}
+                          onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: Number(e.target.value) } : x))}
+                          className="w-9 text-[9px] text-white/70 text-right bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                          title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
+                        />
                         <button
                           onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
                           className="text-white/50 hover:text-white transition-all"
