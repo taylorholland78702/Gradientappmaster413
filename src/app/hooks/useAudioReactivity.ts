@@ -31,6 +31,15 @@ export interface UseAudioReactivityParams {
 export function useAudioReactivity(params: UseAudioReactivityParams) {
   const { zoomBeatEnabled } = params;
   const { onBassFlash, onMidsFlash, onTrebleFlash, setTargetColors, setGradientColors, setTargetZoom } = params;
+  // setTargetZoom (and the flash callbacks) arrive as fresh inline closures
+  // on every parent render (InteractiveGradient.tsx wraps them inline, no
+  // useCallback) — read the latest one through a ref instead of depending
+  // on it directly in the reactivity-loop effect below, which was
+  // otherwise tearing down and rebuilding that effect's RAF chain on
+  // nearly every render, never surviving long enough to read a single
+  // frame of audio data.
+  const setTargetZoomRef = useRef(setTargetZoom);
+  setTargetZoomRef.current = setTargetZoom;
 
   // State
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -107,6 +116,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  // Bumped every time analyserRef.current is reassigned to a new node
+  // (device switch) — the reactivity-loop effect below closes over the
+  // analyser at subscribe time and only re-subscribes on a dependency
+  // change, so swapping the ref alone (isAudioEnabled/isAudioReactive
+  // staying true throughout a switch) would otherwise leave it reading a
+  // stale, already-closed analyser forever. Included in that effect's deps.
+  const [analyserVersion, setAnalyserVersion] = useState(0);
   const bassSmoothedRef = useRef(0);
   const midsSmoothedRef = useRef(0);
   const trebleSmoothedRef = useRef(0);
@@ -163,6 +179,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0;
       analyserRef.current = analyser;
+      setAnalyserVersion(v => v + 1);
 
       const audioSource = source instanceof HTMLAudioElement
         ? audioContext.createMediaElementSource(source)
@@ -265,6 +282,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       streamRef.current = stream;
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
+      setAnalyserVersion(v => v + 1);
       if (prevStream) prevStream.getTracks().forEach(track => track.stop());
       if (prevContext) prevContext.close();
 
@@ -484,7 +502,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // zoom, and past roughly 1.6-1.8x the pattern no longer covers the
       // full canvas, exposing the black clear-fill underneath at the edges.
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * masterSensitivity) : 0;
-      setTargetZoom(prev => {
+      setTargetZoomRef.current(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
           const spike = bassRawForZoom * (bassBeatSync ? 0.8 : 0.4);
@@ -605,7 +623,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [isAudioEnabled, isAudioReactive, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, setTargetZoom, zoomBeatEnabled, autoGainEnabled]);
+    // setTargetZoom intentionally excluded — read via setTargetZoomRef
+    // instead (see its declaration above) since the inline wrapper
+    // InteractiveGradient.tsx passes in is a new function identity on
+    // every render, which was tearing down and rebuilding this whole
+    // effect (and its RAF chain) almost continuously.
+  }, [isAudioEnabled, isAudioReactive, analyserVersion, bassMultiplier, midsMultiplier, trebleMultiplier, bassSmoothing, midsSmoothing, trebleSmoothing, bassThreshold, midsThreshold, trebleThreshold, bassMin, bassMax, midsMin, midsMax, trebleMin, trebleMax, masterSensitivity, bassBeatSync, midsBeatSync, trebleBeatSync, subBassMultiplier, subBassBeatSync, zoomBeatEnabled, autoGainEnabled]);
 
   // Poll live level refs at ~15fps to drive the bar graph (every 4th frame)
   useEffect(() => {

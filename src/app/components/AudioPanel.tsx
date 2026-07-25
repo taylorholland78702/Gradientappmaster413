@@ -235,38 +235,49 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       {/* Audiovisuals Section — single pill */}
       <div className="w-full flex">
         <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg shadow-sm overflow-hidden">
-          {/* Mic toggle */}
-          <button
-            onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
-          >
-            {isMicActive
-              ? <Microphone weight="regular" className="w-4 h-4" />
-              : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
-          </button>
-          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-          {/* Device dropdown */}
-          <div className="relative flex items-center px-2 py-1 text-white hover:bg-white/15 transition-all flex-1 justify-center">
-            <select
-              value={selectedAudioDeviceId}
-              onChange={(e) => {
-                setSelectedAudioDeviceId(e.target.value);
-                // startMicVisualization now swaps devices in place (new
-                // stream acquired before the old one is torn down) — no
-                // separate stop+timeout step, which was flipping isMicActive
-                // off with no guarantee the restart actually landed.
-                if (isMicActive) startMicVisualization(e.target.value);
-              }}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+          {/* Mic toggle + device select, combined into one segment: tap the
+              mic icon to turn on/off, tap the chevron to pick an input. The
+              device <select> overlay only turns on once the mic itself is
+              on — picking a device pre-mic already worked via
+              selectedAudioDeviceId, but visually pairing the dropdown with
+              the "ON" state (rather than always-available) matches how the
+              two actions actually relate: there's nothing to switch between
+              until something is listening. */}
+          <div className="flex items-stretch flex-[2]">
+            <button
+              onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
+              className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+              title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
             >
-              {audioInputDevices.map(d => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
-                </option>
-              ))}
-            </select>
-            <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
+              {isMicActive
+                ? <Microphone weight="regular" className="w-4 h-4" />
+                : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
+            </button>
+            <div className="w-px h-4 bg-white/20 flex-shrink-0 self-center" />
+            <div className={`relative flex items-center px-2 py-1 text-white transition-all justify-center ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
+              {isMicActive && (
+                <select
+                  value={selectedAudioDeviceId}
+                  onChange={(e) => {
+                    setSelectedAudioDeviceId(e.target.value);
+                    // startMicVisualization swaps devices in place (new
+                    // stream acquired before the old one is torn down) — no
+                    // separate stop+timeout step, which was flipping
+                    // isMicActive off with no guarantee the restart landed.
+                    startMicVisualization(e.target.value);
+                  }}
+                  title="Select audio input"
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                >
+                  {audioInputDevices.map(d => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
+            </div>
           </div>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Upload */}
