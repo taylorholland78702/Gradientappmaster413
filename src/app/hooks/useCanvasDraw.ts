@@ -169,8 +169,22 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
-    const targetWidth = displayWidth * resolutionMultiplier;
-    const targetHeight = displayHeight * resolutionMultiplier;
+    // Cap total canvas pixel count regardless of window size/DPR — a large
+    // external display (esp. a 5K/6K monitor run at DPR 2, maximized) can
+    // put the canvas at 3-4x the pixel count of a laptop's own screen, and
+    // every per-pixel effect (chromatic-trails, feedback, triangulate, grid,
+    // etc.) scales directly with that area. Scaling resolutionMultiplier
+    // down once here — rather than only ever scaling it up to match DPR —
+    // keeps per-frame cost roughly constant across monitor setups instead
+    // of silently ballooning on a bigger/higher-DPR external display. Floor
+    // of 0.75 keeps it from going soft on an unreasonably tiny viewport.
+    const MAX_CANVAS_PIXELS = 4_000_000;
+    const rawPixels = displayWidth * displayHeight * resolutionMultiplier * resolutionMultiplier;
+    const effectiveResolutionMultiplier = rawPixels > MAX_CANVAS_PIXELS
+      ? Math.max(0.75, resolutionMultiplier * Math.sqrt(MAX_CANVAS_PIXELS / rawPixels))
+      : resolutionMultiplier;
+    const targetWidth = displayWidth * effectiveResolutionMultiplier;
+    const targetHeight = displayHeight * effectiveResolutionMultiplier;
     // Assigning canvas.width/height forces a full reallocation + clear of the backing
     // store, even when the value is unchanged. Only touch it when the size actually
     // changed (window resize, DPR change) — doing this unconditionally every frame was
@@ -187,19 +201,19 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // hasn't changed, causing ctx.scale to compound across frames (2→4→8→…)
     // which shrinks the CSS coordinate space and moves everything toward (0,0).
     ctx.resetTransform();
-    ctx.scale(resolutionMultiplier, resolutionMultiplier);
+    ctx.scale(effectiveResolutionMultiplier, effectiveResolutionMultiplier);
 
     // putImageData ignores ctx transforms, so route through drawImage to respect DPR scale
     const putScaledImageData = (imgData: ImageData, dx = 0, dy = 0) => {
-      if (resolutionMultiplier === 1) {
+      if (effectiveResolutionMultiplier === 1) {
         ctx.putImageData(imgData, dx, dy);
       } else {
         const tmp = getScratchOffscreen('put', imgData.width, imgData.height);
         (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).putImageData(imgData, 0, 0);
         ctx.save();
         ctx.resetTransform();
-        ctx.drawImage(tmp, dx * resolutionMultiplier, dy * resolutionMultiplier,
-          imgData.width * resolutionMultiplier, imgData.height * resolutionMultiplier);
+        ctx.drawImage(tmp, dx * effectiveResolutionMultiplier, dy * effectiveResolutionMultiplier,
+          imgData.width * effectiveResolutionMultiplier, imgData.height * effectiveResolutionMultiplier);
         ctx.restore();
       }
     };
@@ -211,7 +225,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // after putScaledImageData upscales it. This helper downsamples the full physical
     // canvas to CSS-pixel resolution so effects always capture the complete image.
     const getDisplayImageData = (): ImageData => {
-      if (resolutionMultiplier === 1) {
+      if (effectiveResolutionMultiplier === 1) {
         return ctx.getImageData(0, 0, displayWidth, displayHeight);
       }
       const tmp = getScratchOffscreen('display', displayWidth, displayHeight);
@@ -301,6 +315,11 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
+      // Overrides params' raw resolutionMultiplier with the pixel-budget-capped
+      // value computed above, so effects that sample at resolutionMultiplier
+      // (e.g. applyTriangulate) stay consistent with what the canvas is
+      // actually sized to.
+      resolutionMultiplier: effectiveResolutionMultiplier,
     };
 
     if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
