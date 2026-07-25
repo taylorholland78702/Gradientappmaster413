@@ -230,13 +230,27 @@ export function applyTriangulate(P: any): void {
             // Center the grid so pattern emanates from canvas center
             const tHalfCols = Math.ceil(displayWidth / tSz / 2) + 1;
             const tHalfRows = Math.ceil(displayHeight / tSz / 2) + 1;
+            // One full-canvas read instead of two getImageData(x,y,1,1) calls
+            // per cell — at a small triangleSize on a large canvas that was
+            // tens of thousands of individual getImageData calls per frame,
+            // each carrying real per-call overhead. Sampling straight out of
+            // a single typed array is orders of magnitude cheaper.
+            const tPixels = tCtx.getImageData(0, 0, tCanvas.width, tCanvas.height).data;
+            const tSampleW = tCanvas.width;
+            const tSampleH = tCanvas.height;
+            const sample = (px: number, py: number) => {
+              const sx = Math.max(0, Math.min(tSampleW - 1, Math.round(px)));
+              const sy = Math.max(0, Math.min(tSampleH - 1, Math.round(py)));
+              const i = (sy * tSampleW + sx) * 4;
+              return [tPixels[i], tPixels[i + 1], tPixels[i + 2]];
+            };
             for (let r = -tHalfRows; r <= tHalfRows; r++) {
               for (let c = -tHalfCols; c <= tHalfCols; c++) {
                 const x = centerX + c * tSz - tSz / 2;
                 const y = centerY + r * tSz - tSz / 2;
                 const sx1 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2)) * resolutionMultiplier;
                 const sy1 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2)) * resolutionMultiplier;
-                const d1 = tCtx.getImageData(sx1, sy1, 1, 1).data;
+                const d1 = sample(sx1, sy1);
                 ctx.fillStyle = `rgb(${d1[0]},${d1[1]},${d1[2]})`;
                 ctx.beginPath();
                 ctx.moveTo(x, y);
@@ -245,7 +259,7 @@ export function applyTriangulate(P: any): void {
                 ctx.fill();
                 const sx2 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3)) * resolutionMultiplier;
                 const sy2 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3)) * resolutionMultiplier;
-                const d2 = tCtx.getImageData(sx2, sy2, 1, 1).data;
+                const d2 = sample(sx2, sy2);
                 ctx.fillStyle = `rgb(${d2[0]},${d2[1]},${d2[2]})`;
                 ctx.beginPath();
                 ctx.moveTo(x, y);

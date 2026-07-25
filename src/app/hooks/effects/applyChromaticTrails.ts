@@ -225,28 +225,38 @@ export function applyChromaticTrails(P: any): void {
             // fade — distinct from Feedback (no fringing) and from Chromatic
             // (no trail/decay).
             if (canvas.width === 0 || canvas.height === 0) return;
-            if (!chromaticTrailsBufferRef.current || chromaticTrailsBufferRef.current.width !== displayWidth || chromaticTrailsBufferRef.current.height !== displayHeight) {
+            // Trail buffer runs at half linear resolution (1/4 the pixels) —
+            // the per-pixel fringe/decay loop below scales directly with
+            // buffer area, and a chromatic-trail effect reads as a soft
+            // echo regardless, so the downsample costs nothing visually
+            // while cutting the loop's cost to a quarter. drawImage handles
+            // the upscale back to full size when compositing onto the main
+            // canvas.
+            const ctDownsample = 0.5;
+            const ctW = Math.max(1, Math.round(displayWidth * ctDownsample));
+            const ctH = Math.max(1, Math.round(displayHeight * ctDownsample));
+            if (!chromaticTrailsBufferRef.current || chromaticTrailsBufferRef.current.width !== ctW || chromaticTrailsBufferRef.current.height !== ctH) {
               chromaticTrailsBufferRef.current = document.createElement('canvas');
-              chromaticTrailsBufferRef.current.width = displayWidth;
-              chromaticTrailsBufferRef.current.height = displayHeight;
+              chromaticTrailsBufferRef.current.width = ctW;
+              chromaticTrailsBufferRef.current.height = ctH;
             }
             const ctBuf = chromaticTrailsBufferRef.current;
             const ctBufCtx = ctBuf.getContext('2d', { willReadFrequently: true })!;
-            const ctBufData = ctBufCtx.getImageData(0, 0, displayWidth, displayHeight);
+            const ctBufData = ctBufCtx.getImageData(0, 0, ctW, ctH);
             const ctBd = ctBufData.data;
-            const ctOff = Math.round(chromaticTrailsOffset);
+            const ctOff = Math.max(1, Math.round(chromaticTrailsOffset * ctDownsample));
 
             // Fringe + decay the trail: R sampled from the left, B from the
             // right, G stays put, alpha scaled down by the decay factor.
-            const ctFringed = ctx.createImageData(displayWidth, displayHeight);
+            const ctFringed = ctBufCtx.createImageData(ctW, ctH);
             const ctFd = ctFringed.data;
-            for (let y = 0; y < displayHeight; y++) {
-              for (let x = 0; x < displayWidth; x++) {
-                const i = (y * displayWidth + x) * 4;
-                const rx = Math.max(0, Math.min(displayWidth - 1, x - ctOff));
-                const bx = Math.max(0, Math.min(displayWidth - 1, x + ctOff));
-                const ri = (y * displayWidth + rx) * 4;
-                const bi = (y * displayWidth + bx) * 4;
+            for (let y = 0; y < ctH; y++) {
+              for (let x = 0; x < ctW; x++) {
+                const i = (y * ctW + x) * 4;
+                const rx = Math.max(0, Math.min(ctW - 1, x - ctOff));
+                const bx = Math.max(0, Math.min(ctW - 1, x + ctOff));
+                const ri = (y * ctW + rx) * 4;
+                const bi = (y * ctW + bx) * 4;
                 ctFd[i] = ctBd[ri];
                 ctFd[i + 1] = ctBd[i + 1];
                 ctFd[i + 2] = ctBd[bi + 2];
@@ -255,13 +265,13 @@ export function applyChromaticTrails(P: any): void {
             }
             ctBufCtx.putImageData(ctFringed, 0, 0);
 
-            const ctTmp = getScratchCanvas('chromaticTrailsTmp', displayWidth, displayHeight);
-            ctTmp.getContext('2d')!.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+            const ctTmp = getScratchCanvas('chromaticTrailsTmp', ctW, ctH);
+            ctTmp.getContext('2d')!.drawImage(canvas, 0, 0, ctW, ctH);
 
             ctx.clearRect(0, 0, displayWidth, displayHeight);
-            ctx.drawImage(ctBuf, 0, 0);
+            ctx.drawImage(ctBuf, 0, 0, ctW, ctH, 0, 0, displayWidth, displayHeight);
             ctx.globalCompositeOperation = 'lighten';
-            ctx.drawImage(ctTmp, 0, 0);
+            ctx.drawImage(ctTmp, 0, 0, ctW, ctH, 0, 0, displayWidth, displayHeight);
             ctx.globalCompositeOperation = 'source-over';
 
             // Feed the fresh (undecayed) frame back into the trail buffer.

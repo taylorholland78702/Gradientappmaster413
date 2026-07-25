@@ -178,7 +178,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // keeps per-frame cost roughly constant across monitor setups instead
     // of silently ballooning on a bigger/higher-DPR external display. Floor
     // of 0.75 keeps it from going soft on an unreasonably tiny viewport.
-    const MAX_CANVAS_PIXELS = 4_000_000;
+    const MAX_CANVAS_PIXELS = 2_500_000;
     const rawPixels = displayWidth * displayHeight * resolutionMultiplier * resolutionMultiplier;
     const effectiveResolutionMultiplier = rawPixels > MAX_CANVAS_PIXELS
       ? Math.max(0.75, resolutionMultiplier * Math.sqrt(MAX_CANVAS_PIXELS / rawPixels))

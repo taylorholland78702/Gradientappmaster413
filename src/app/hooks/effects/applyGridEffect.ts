@@ -230,6 +230,22 @@ export function applyGridEffect(P: any): void {
             const gridRowsSafeFx = Math.max(2, gridRows);
             const gridColumnsSafeFx = Math.max(2, gridColumns);
             const cw = displayWidth / gridColumnsSafeFx, ch = displayHeight / gridRowsSafeFx;
+            // One full-canvas read instead of two getImageData(x,y,1,1) calls
+            // per cell (up to (rows+1)*(cols+1)*2 individual calls/frame at a
+            // dense grid) — sampling out of a single typed array is far
+            // cheaper than repeated getImageData calls, each of which carries
+            // real per-call overhead regardless of the 1x1 region size.
+            let gridPixels: Uint8ClampedArray | null = null;
+            try {
+              gridPixels = gCtx.getImageData(0, 0, displayWidth, displayHeight).data;
+            } catch (e) { gridPixels = null; }
+            const sampleGrid = (px: number, py: number): [number, number, number] => {
+              if (!gridPixels) return [0, 0, 0];
+              const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(px)));
+              const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(py)));
+              const i = (sy * displayWidth + sx) * 4;
+              return [gridPixels[i], gridPixels[i + 1], gridPixels[i + 2]];
+            };
             for (let r = 0; r < gridRowsSafeFx + 1; r++) {
               for (let c = 0; c < gridColumnsSafeFx + 1; c++) {
                 const x = c * cw, y = r * ch;
@@ -242,12 +258,12 @@ export function applyGridEffect(P: any): void {
                 const sex = Math.min(Math.max(0, x), displayWidth - 1);
                 const sey = Math.min(Math.max(0, y), displayHeight - 1);
                 let cc = '#000', ec = '#000';
-                try {
-                  const cp = gCtx.getImageData(scx, scy, 1, 1).data;
+                if (gridPixels) {
+                  const cp = sampleGrid(scx, scy);
                   cc = `rgb(${cp[0]},${cp[1]},${cp[2]})`;
-                  const ep = gCtx.getImageData(sex, sey, 1, 1).data;
+                  const ep = sampleGrid(sex, sey);
                   ec = `rgb(${ep[0]},${ep[1]},${ep[2]})`;
-                } catch (e) { cc = '#000'; ec = '#333'; }
+                } else { cc = '#000'; ec = '#333'; }
                 const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
                 g.addColorStop(0, cc);
                 g.addColorStop(1, ec);
