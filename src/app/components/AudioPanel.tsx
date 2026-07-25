@@ -236,7 +236,15 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   // Custom Style Presets — user-saved snapshots of the current live
   // settings, persisted locally (see saveCustomPresets above).
   const [customPresets, setCustomPresets] = useState<CustomAudioStylePreset[]>(() => loadCustomPresets());
-  const [selectedPresetName, setSelectedPresetName] = useState('');
+  // No blank/placeholder option in the dropdown (see below), so a native
+  // <select> always shows some real option — defaulting to whatever's
+  // alphabetically first. Matching that here keeps this state in sync with
+  // what's actually displayed without needing an onChange to fire first;
+  // it does NOT apply that preset's settings, just labels the dropdown
+  // consistently with its own default rendering.
+  const [selectedPresetName, setSelectedPresetName] = useState(
+    () => [...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name))[0]?.name ?? ''
+  );
   const [isNamingPreset, setIsNamingPreset] = useState(false);
   const [presetNameDraft, setPresetNameDraft] = useState('');
 
@@ -380,20 +388,29 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
           <div className="flex flex-col gap-1.5">
 
+            {/* Shuffle — moved above Presets. */}
+            <button
+              onClick={onShuffleAudio}
+              className="w-full py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
+              title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
+            >
+              <Shuffle weight="regular" className="w-3.5 h-3.5" />
+              SHUFFLE
+            </button>
+
             {/* Style presets — one-click starting points for common audio/
                 music styles; sets sensitivity/band multipliers/beat-sync/FX
                 on beat, leaves Modulation bindings alone. Built-ins are
                 curated and read-only; anything the user saves shows up
                 under Custom, with Update/Delete once selected. */}
             <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Style Preset</label>
+              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Presets</label>
               <select
                 value={selectedPresetName}
                 onChange={handleStylePresetSelect}
                 title="Apply a curated starting point for a kind of audio/music"
                 className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
               >
-                <option value="" disabled>Choose a style...</option>
                 <optgroup label="Built-in">
                   {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
                     <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
@@ -489,35 +506,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 className={BEAT_BTN(depthLayerEnabled)}
               >DEPTH LAYER</button>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="range" min="0" max="2" step="0.05" value={depthLayerStrength}
-                disabled={!depthLayerEnabled}
-                onChange={(e) => setDepthLayerStrength(Number(e.target.value))}
-                className="flex-1 min-w-0 disabled:opacity-40"
-              />
-              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{depthLayerStrength.toFixed(1)}</span>
-            </div>
-            {/* Shuffle gets its own row — it was previously paired with Auto
-                Gain by leftover space rather than any real relationship
-                between the two, which read as arbitrary. */}
-            <button
-              onClick={onShuffleAudio}
-              className="w-full py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
-              title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
-            >
-              <Shuffle weight="regular" className="w-3.5 h-3.5" />
-              SHUFFLE
-            </button>
 
-            {/* Beat Sync — one umbrella covering two related but distinct
-                things: each band's own BEAT toggle below (continuous
-                response vs. snapping hard on detected onsets) and, further
-                down, which visual macros (Zoom/Shake/Contrast/Palette)
-                pulse on beat. Both used the identical BEAT-button styling
-                with no shared header before, which read as two unrelated
-                systems rather than one system with two categories. */}
-            <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Beat Sync</span>
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
               <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~20-60Hz — kick drum fundamental">Sub</div>
@@ -646,7 +635,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   <select
                     value={modParam}
                     onChange={(e) => setModParam(e.target.value)}
-                    className="flex-[4] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
+                    className="flex-[4] min-w-0 text-[9px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
                   >
                     {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
                       <optgroup key={group.category} label={group.category}>
