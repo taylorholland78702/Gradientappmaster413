@@ -269,20 +269,31 @@ export function applyGlitch(P: any): void {
             // one of glitch art's most recognizable signatures actually
             // controllable instead of a barely-visible side effect.
             if (glitchChromaSplit > 0.5 && displayWidth > 1 && displayHeight > 1) {
-              const gcsSrc = getDisplayImageData();
-              const gcsDst = ctx.createImageData(displayWidth, displayHeight);
-              const gcsOff = Math.round(glitchChromaSplit);
-              for (let y = 0; y < displayHeight; y++) {
-                for (let x = 0; x < displayWidth; x++) {
-                  const i = (y * displayWidth + x) * 4;
-                  const rx = Math.max(0, Math.min(displayWidth - 1, x - gcsOff));
-                  const bx = Math.max(0, Math.min(displayWidth - 1, x + gcsOff));
-                  gcsDst.data[i] = gcsSrc.data[(y * displayWidth + rx) * 4];
+              // Same downsample-then-upscale approach as Chromatic Trails —
+              // a channel-split fringe reads the same at half resolution,
+              // and the loop's cost scales directly with pixel count.
+              const gcsDownsample = 0.5;
+              const gcsW = Math.max(1, Math.round(displayWidth * gcsDownsample));
+              const gcsH = Math.max(1, Math.round(displayHeight * gcsDownsample));
+              const gcsSmallSrc = getScratchCanvas('glitchChromaSplitSrc', gcsW, gcsH);
+              gcsSmallSrc.getContext('2d')!.drawImage(canvas, 0, 0, gcsW, gcsH);
+              const gcsSrc = gcsSmallSrc.getContext('2d')!.getImageData(0, 0, gcsW, gcsH);
+              const gcsDst = ctx.createImageData(gcsW, gcsH);
+              const gcsOff = Math.max(1, Math.round(glitchChromaSplit * gcsDownsample));
+              for (let y = 0; y < gcsH; y++) {
+                for (let x = 0; x < gcsW; x++) {
+                  const i = (y * gcsW + x) * 4;
+                  const rx = Math.max(0, Math.min(gcsW - 1, x - gcsOff));
+                  const bx = Math.max(0, Math.min(gcsW - 1, x + gcsOff));
+                  gcsDst.data[i] = gcsSrc.data[(y * gcsW + rx) * 4];
                   gcsDst.data[i + 1] = gcsSrc.data[i + 1];
-                  gcsDst.data[i + 2] = gcsSrc.data[(y * displayWidth + bx) * 4 + 2];
+                  gcsDst.data[i + 2] = gcsSrc.data[(y * gcsW + bx) * 4 + 2];
                   gcsDst.data[i + 3] = 255;
                 }
               }
-              putScaledImageData(gcsDst);
+              const gcsUpscaled = getScratchCanvas('glitchChromaSplitDst', gcsW, gcsH);
+              gcsUpscaled.getContext('2d')!.putImageData(gcsDst, 0, 0);
+              ctx.clearRect(0, 0, displayWidth, displayHeight);
+              ctx.drawImage(gcsUpscaled, 0, 0, gcsW, gcsH, 0, 0, displayWidth, displayHeight);
             }
 }

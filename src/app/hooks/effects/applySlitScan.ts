@@ -1,3 +1,5 @@
+import { getScratchCanvas } from '../../utils/scratchCanvas';
+
 export function applySlitScan(P: any): void {
   const {
     activeEffects,
@@ -218,8 +220,20 @@ export function applySlitScan(P: any): void {
     audioModulation,
     imageData
   } = P;
-            // Temporal pixel stretching
-            const ssImg = getDisplayImageData();
+            // Temporal pixel stretching. Buffered frames are captured at half
+            // linear resolution (1/4 the pixels/memory) — up to 60 full-res
+            // ImageData frames retained at once was ~500MB at 1920x1080,
+            // real GC pressure on every push/shift. The banding/streaking
+            // this effect produces reads the same at half-res since sampling
+            // already involves large position jumps between frames; nothing
+            // sharp is lost that the effect itself doesn't already blur out.
+            const ssDownsample = 0.5;
+            const ssBufW = Math.max(1, Math.round(displayWidth * ssDownsample));
+            const ssBufH = Math.max(1, Math.round(displayHeight * ssDownsample));
+            const ssCapture = getScratchCanvas('slitScanCapture', ssBufW, ssBufH);
+            const ssCaptureCtx = ssCapture.getContext('2d')!;
+            ssCaptureCtx.drawImage(canvas, 0, 0, ssBufW, ssBufH);
+            const ssImg = ssCaptureCtx.getImageData(0, 0, ssBufW, ssBufH);
             slitScanBufferRef.current.push(ssImg);
             if (slitScanBufferRef.current.length > 60) slitScanBufferRef.current.shift();
 
@@ -257,6 +271,15 @@ export function applySlitScan(P: any): void {
               // for the shift/twist magnitude, which is what "Intensity" now scales.
               const frameSel = Math.min(int, 1);
               const midBuf = (buf.length - 1) / 2;
+              // Buffered frames are ssBufW x ssBufH (see the downsampled
+              // capture above), so sample coordinates — computed at full
+              // display resolution below, unchanged — need scaling down by
+              // ssDownsample before indexing into a buffered frame.
+              const sampleBuf = (sf: ImageData, sx: number, sy: number) => {
+                const bx = Math.max(0, Math.min(ssBufW - 1, Math.round(sx * ssDownsample)));
+                const by = Math.max(0, Math.min(ssBufH - 1, Math.round(sy * ssDownsample)));
+                return (by * ssBufW + bx) * 4;
+              };
 
               if (slitScanDirection === 'horizontal') {
                 for (let y = 0; y < displayHeight; y++) {
@@ -271,7 +294,7 @@ export function applySlitScan(P: any): void {
                     // onto the same edge pixel, producing a solid stripe artifact.
                     const sx = ((x + shift) % displayWidth + displayWidth) % displayWidth;
                     const i = (y * displayWidth + x) * 4;
-                    const si = (y * displayWidth + sx) * 4;
+                    const si = sampleBuf(sf, sx, y);
                     out.data[i] = sf.data[si];
                     out.data[i+1] = sf.data[si+1];
                     out.data[i+2] = sf.data[si+2];
@@ -286,7 +309,7 @@ export function applySlitScan(P: any): void {
                   for (let y = 0; y < displayHeight; y++) {
                     const sy = ((y + shift) % displayHeight + displayHeight) % displayHeight;
                     const i = (y * displayWidth + x) * 4;
-                    const si = (sy * displayWidth + x) * 4;
+                    const si = sampleBuf(sf, x, sy);
                     out.data[i] = sf.data[si];
                     out.data[i+1] = sf.data[si+1];
                     out.data[i+2] = sf.data[si+2];
@@ -317,7 +340,7 @@ export function applySlitScan(P: any): void {
                     const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
                     const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
                     const i = (y * displayWidth + x) * 4;
-                    const si = (sy * displayWidth + sx) * 4;
+                    const si = sampleBuf(sf, sx, sy);
                     out.data[i] = sf.data[si];
                     out.data[i+1] = sf.data[si+1];
                     out.data[i+2] = sf.data[si+2];
@@ -345,7 +368,7 @@ export function applySlitScan(P: any): void {
                     const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
                     const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
                     const i = (y * displayWidth + x) * 4;
-                    const si = (sy * displayWidth + sx) * 4;
+                    const si = sampleBuf(sf, sx, sy);
                     out.data[i] = sf.data[si];
                     out.data[i+1] = sf.data[si+1];
                     out.data[i+2] = sf.data[si+2];
