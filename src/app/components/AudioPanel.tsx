@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Shuffle, SpeakerHigh, SpeakerSlash, X } from '@phosphor-icons/react';
+import { CaretDown, Plus, SlidersHorizontal, Shuffle, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 
@@ -242,8 +242,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
           >
             {isMicActive
-              ? <SpeakerHigh weight="regular" className="w-4 h-4" />
-              : <SpeakerSlash weight="regular" className="w-4 h-4" />}
+              ? <Microphone weight="regular" className="w-4 h-4" />
+              : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
           </button>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
           {/* Device dropdown */}

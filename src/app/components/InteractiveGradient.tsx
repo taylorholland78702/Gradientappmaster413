@@ -3507,7 +3507,13 @@ export function InteractiveGradient() {
               ancestor that promoting this row to its own layer resolves
               in WebKit. */}
           <div style={{ transform: 'translateZ(0)' }} className="flex items-stretch w-full">
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            {/* rounded-bl-lg — same fix as the Hide Controls button's
+                rounded-tl-lg above: this card has no overflow-hidden (see
+                the comment on the card's own div), so this row's leftmost
+                button's hover background needs its own matching corner
+                radius or it hovers as a visible square past the card's
+                bottom-left corner. */}
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
@@ -3515,35 +3521,29 @@ export function InteractiveGradient() {
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`relative flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <SpeakerHigh weight="regular" className="w-4 h-4" />
-              {/* Live signal dot — mic being "on" doesn't mean sound is actually
-                  arriving (wrong device, muted input, etc). Green+pulsing when
-                  the analyser is seeing real level; dim red when the mic is on
-                  but nothing is coming through, so that distinction is visible
-                  at a glance instead of only inside the Parameters level bars. */}
-              {isMicActive && (() => {
-                const micLevel = Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel);
-                const hasSignal = micLevel > 0.04;
-                return (
-                  <span
-                    className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none"
-                    style={{
-                      backgroundColor: hasSignal ? '#4ade80' : '#f87171',
-                      opacity: hasSignal ? 0.6 + Math.min(1, micLevel * 2) * 0.4 : 0.85,
-                      transform: `scale(${hasSignal ? 1 + Math.min(1, micLevel * 2) * 0.7 : 1})`,
-                      transition: 'transform 60ms linear, background-color 200ms, opacity 100ms',
-                    }}
-                  />
-                );
-              })()}
+            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              {/* Icon itself carries the live-signal state now (was a
+                  separate dot overlay) — mic being "on" doesn't mean sound is
+                  actually arriving (wrong device, muted input, etc), so green
+                  vs red on the icon makes that visible at a glance instead of
+                  only inside the Parameters level bars. Default (inherited)
+                  color when the mic is off. */}
+              <SpeakerHigh
+                weight="regular"
+                className="w-4 h-4"
+                style={isMicActive ? {
+                  color: Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? '#4ade80' : '#f87171',
+                  transition: 'color 150ms',
+                } : undefined}
+              />
             </button>
             <Divider />
             <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            {/* rounded-br-lg — see the matching comment on the Gradient tab button. */}
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
