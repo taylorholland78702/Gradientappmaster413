@@ -2940,7 +2940,7 @@ export function InteractiveGradient() {
           break;
         case 's': case 'S':
           e.preventDefault();
-          exportAsPNG();
+          if (e.shiftKey) toggleGifRecording(); else exportAsPNG();
           break;
         case 'r': case 'R':
           e.preventDefault();
@@ -3003,7 +3003,7 @@ export function InteractiveGradient() {
     setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
-    isControlsVisible, isFullyHidden, toggleDisplayWindow, setIsAutoShuffleOn,
+    isControlsVisible, isFullyHidden, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -4059,6 +4059,7 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</span><Kbd label="H" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Refresh — reset to defaults</span><Kbd label="R" /></p>
               </div>
