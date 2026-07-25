@@ -252,10 +252,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               value={selectedAudioDeviceId}
               onChange={(e) => {
                 setSelectedAudioDeviceId(e.target.value);
-                if (isMicActive) {
-                  stopMicVisualization();
-                  setTimeout(() => startMicVisualization(e.target.value), 100);
-                }
+                // startMicVisualization now swaps devices in place (new
+                // stream acquired before the old one is torn down) — no
+                // separate stop+timeout step, which was flipping isMicActive
+                // off with no guarantee the restart actually landed.
+                if (isMicActive) startMicVisualization(e.target.value);
               }}
               className="absolute inset-0 opacity-0 cursor-pointer w-full"
             >

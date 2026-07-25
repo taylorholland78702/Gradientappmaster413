@@ -231,13 +231,17 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     }
   }, [initAudioContext]);
 
+  // Acquires the NEW stream/context before tearing down any previous one
+  // (rather than stop-then-start), so switching devices while already
+  // listening never has a window where isMicActive is false — and if the
+  // new device fails to open, the old stream is left running instead of
+  // the mic silently ending up off. Also used for the initial mic-on.
   const startMicVisualization = async (deviceId?: string) => {
     try {
       const constraints: MediaStreamConstraints = {
         audio: deviceId && deviceId !== 'default' ? { deviceId: { exact: deviceId } } : true,
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
 
       const devices = await navigator.mediaDevices.enumerateDevices();
       const audioInputs = devices.filter(d => d.kind === 'audioinput');
@@ -248,15 +252,21 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       }
 
       const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0;
-      analyserRef.current = analyser;
-
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
+
+      // New stream/context is live and connected — now safe to tear down
+      // whatever was running before.
+      const prevStream = streamRef.current;
+      const prevContext = audioContextRef.current;
+      streamRef.current = stream;
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+      if (prevStream) prevStream.getTracks().forEach(track => track.stop());
+      if (prevContext) prevContext.close();
 
       setIsMicActive(true);
       setIsAudioEnabled(true);
@@ -289,6 +299,22 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     setIsAudioEnabled(false);
     setIsAudioReactive(false);
   };
+
+  // Keeps the device dropdown live: the list was only ever refreshed
+  // inside startMicVisualization, so a device plugged in after the mic was
+  // already running (e.g. an audio interface connected mid-session) never
+  // showed up until a full mic stop/restart. devicechange fires whenever
+  // the OS's set of audio devices changes, regardless of mic state.
+  useEffect(() => {
+    if (!navigator.mediaDevices?.addEventListener) return;
+    const refresh = () => {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        setAudioInputDevices(devices.filter((d) => d.kind === 'audioinput'));
+      });
+    };
+    navigator.mediaDevices.addEventListener('devicechange', refresh);
+    return () => navigator.mediaDevices.removeEventListener('devicechange', refresh);
+  }, []);
 
   const toggleAudio = () => {
     if (audioRef.current) {
