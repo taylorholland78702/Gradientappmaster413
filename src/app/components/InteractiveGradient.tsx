@@ -3527,14 +3527,17 @@ export function InteractiveGradient() {
                   actually arriving (wrong device, muted input, etc), so green
                   vs red on the icon makes that visible at a glance instead of
                   only inside the Parameters level bars. Default (inherited)
-                  color when the mic is off. */}
+                  color when the mic is off. Uses dedicated classes (see
+                  index.css) rather than an inline color style — the panel's
+                  theme CSS has a blanket `.control-panel * { color: #000
+                  !important }` rule, and an !important stylesheet rule always
+                  wins over inline style regardless of specificity, so the
+                  inline color this used before was silently never applied. */}
               <SpeakerHigh
                 weight="regular"
-                className="w-4 h-4"
-                style={isMicActive ? {
-                  color: Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? '#4ade80' : '#f87171',
-                  transition: 'color 150ms',
-                } : undefined}
+                className={`w-4 h-4 transition-colors ${isMicActive
+                  ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? 'wav-audio-signal-ok' : 'wav-audio-signal-none')
+                  : ''}`}
               />
             </button>
             <Divider />
