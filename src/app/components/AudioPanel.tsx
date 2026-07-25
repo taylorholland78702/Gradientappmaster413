@@ -197,6 +197,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const [modParam, setModParam] = useState(MODULATABLE_PARAMS[0].key);
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
   const [modAmount, setModAmount] = useState(1);
+  // FX-on-Beat and Modulation are the two most advanced/least-used-by-default
+  // sections — collapsed behind one toggle so the default view is just
+  // Style Preset, Intensity, Auto Gain, Depth Layer, and the 4 band
+  // sliders (each with its own inline BEAT toggle), which covers the
+  // common case without the panel reading as one big wall of controls.
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const {
     setSelectedAudioDeviceId, setIsAudioControlsOpen,
@@ -334,15 +340,18 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 onClick={() => setAutoGainEnabled(!autoGainEnabled)}
                 className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${autoGainEnabled ? 'bg-white/30 text-white' : 'bg-black/25 text-white hover:bg-white/15'}`}
               >{autoGainEnabled ? 'ON' : 'OFF'}</button>
-              <button
-                onClick={onShuffleAudio}
-                className="ml-auto flex-1 py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
-                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
-              >
-                <Shuffle weight="regular" className="w-3.5 h-3.5" />
-                SHUFFLE
-              </button>
             </div>
+            {/* Shuffle gets its own row — it was previously paired with Auto
+                Gain by leftover space rather than any real relationship
+                between the two, which read as arbitrary. */}
+            <button
+              onClick={onShuffleAudio}
+              className="w-full py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
+              title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
+            >
+              <Shuffle weight="regular" className="w-3.5 h-3.5" />
+              SHUFFLE
+            </button>
             {/* Depth Layer — a second, softer light source behind the main
                 gradient for atmosphere/parallax. Toggle to disable outright;
                 slider scales its opacity (0 = invisible, 2 = double default). */}
@@ -361,6 +370,15 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{depthLayerStrength.toFixed(1)}</span>
             </div>
 
+            {/* Beat Sync — one umbrella covering two related but distinct
+                things: each band's own BEAT toggle below (continuous
+                response vs. snapping hard on detected onsets) and, further
+                down, which visual macros (Zoom/Shake/Contrast/Palette)
+                pulse on beat. Both used the identical BEAT-button styling
+                with no shared header before, which read as two unrelated
+                systems rather than one system with two categories. */}
+            <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Beat Sync</span>
+            <span className="text-[9px] text-white/40 -mt-1">Bands</span>
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
               <div className="w-0 flex-1 min-w-0 text-center text-[9px] font-bold uppercase tracking-wider text-white/50" title="~20-60Hz — kick drum fundamental">Sub</div>
@@ -382,7 +400,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Shape</span>
+                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${subBassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -396,7 +414,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Pulse</span>
+                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setBassBeatSync(!bassBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${bassBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -410,7 +428,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Motion</span>
+                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setMidsBeatSync(!midsBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${midsBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -424,14 +442,14 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/60">Color</span>
+                <span className="text-[10px] font-semibold text-white/60">Gain</span>
                 <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} className={`w-full py-0.5 rounded text-[9px] font-bold transition-all ${trebleBeatSync ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
             </div>
 
-            {/* FX on Beat row */}
+            {/* FX on Beat — second half of the Beat Sync umbrella above. */}
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">FX on Beat</span>
+              <span className="text-[9px] text-white/40">Effects</span>
               <div className="flex gap-1.5">
                 <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} className={BEAT_BTN(zoomBeatEnabled)}>ZOOM</button>
                 <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} className={BEAT_BTN(shakeBeatEnabled)}>SHAKE</button>
@@ -440,88 +458,107 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
             </div>
 
-            {/* Modulation — bind any slider in the app to an audio band.
-                Applied generically by param key in useCanvasDraw.ts, so
-                every entry in MODULATABLE_PARAMS works without a bind-icon
-                on each individual slider row. */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Modulation</span>
-              {audioBindings.length > 0 && (
-                <div className="flex flex-col gap-1 mb-1">
-                  {audioBindings.map((b) => {
-                    const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
-                    return (
-                      <div key={b.id} className="flex items-center gap-1.5 bg-black/25 rounded px-1.5 py-1">
-                        <span className="text-[9px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
-                        <select
-                          value={b.band}
-                          onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
-                          className="text-[9px] text-white/70 bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
-                        >
-                          {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
-                            <option key={band} value={band}>{BAND_LABELS[band]}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min="-10" max="10" step="0.1"
-                          value={b.amount}
-                          onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: Number(e.target.value) } : x))}
-                          className="w-9 text-[9px] text-white/70 text-right bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
-                          title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
-                        />
-                        <button
-                          onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
-                          className="text-white/50 hover:text-white transition-all"
-                          title="Remove binding"
-                        >
-                          <X weight="bold" className="w-3 h-3" />
-                        </button>
-                      </div>
-                    );
-                  })}
+            {/* Advanced — Modulation (bind any slider to an audio band) is
+                the most powerful and least-needed-by-default section, so
+                it's opt-in rather than always taking up space. */}
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full py-1 rounded bg-black/25 text-white/70 hover:text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider"
+            >
+              Advanced
+              <CaretDown weight="regular" className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showAdvanced && (
+              /* Modulation — bind any slider in the app to an audio band.
+                 Applied generically by param key in useCanvasDraw.ts, so
+                 every entry in MODULATABLE_PARAMS works without a bind-icon
+                 on each individual slider row. */
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] text-white/50 font-bold uppercase tracking-wider">Modulation</span>
+                {audioBindings.length > 0 && (
+                  <div className="flex flex-col gap-1 mb-1">
+                    <div className="flex items-center gap-1.5 px-1.5">
+                      <span className="text-[8px] text-white/40 flex-1">Param</span>
+                      <span className="text-[8px] text-white/40 w-9 flex-shrink-0 text-center">Band</span>
+                      <span className="text-[8px] text-white/40 w-9 flex-shrink-0 text-center">Amount</span>
+                      <span className="w-3 flex-shrink-0" />
+                    </div>
+                    {audioBindings.map((b) => {
+                      const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
+                      return (
+                        <div key={b.id} className="flex items-center gap-1.5 bg-black/25 rounded px-1.5 py-1">
+                          <span className="text-[9px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
+                          <select
+                            value={b.band}
+                            onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
+                            className="text-[9px] text-white/70 bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                          >
+                            {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
+                              <option key={band} value={band}>{BAND_LABELS[band]}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            min="-10" max="10" step="0.1"
+                            value={b.amount}
+                            onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: Number(e.target.value) } : x))}
+                            className="w-9 text-[9px] text-white/70 text-right bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                            title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
+                          />
+                          <button
+                            onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
+                            className="text-white/50 hover:text-white transition-all"
+                            title="Remove binding"
+                          >
+                            <X weight="bold" className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <select
+                    value={modParam}
+                    onChange={(e) => setModParam(e.target.value)}
+                    className="flex-[4] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
+                  >
+                    {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
+                      <optgroup key={group.category} label={group.category}>
+                        {group.params.map(p => (
+                          <option key={p.key} value={p.key}>{p.label}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <select
+                    value={modBand}
+                    onChange={(e) => setModBand(e.target.value as AudioBinding['band'])}
+                    className="text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                  >
+                    {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
+                      <option key={band} value={band}>{BAND_LABELS[band]}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    min="-10" max="10" step="0.1"
+                    value={modAmount}
+                    onChange={(e) => setModAmount(Number(e.target.value))}
+                    className="w-7 text-[9px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                    title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
+                  />
+                  <button
+                    onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
+                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                    title="Add modulation binding"
+                  >
+                    <Plus weight="bold" className="w-3 h-3" />
+                  </button>
                 </div>
-              )}
-              <div className="flex items-center gap-1">
-                <select
-                  value={modParam}
-                  onChange={(e) => setModParam(e.target.value)}
-                  className="flex-[4] min-w-0 text-[11px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
-                >
-                  {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
-                    <optgroup key={group.category} label={group.category}>
-                      {group.params.map(p => (
-                        <option key={p.key} value={p.key}>{p.label}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                <select
-                  value={modBand}
-                  onChange={(e) => setModBand(e.target.value as AudioBinding['band'])}
-                  className="text-[9px] text-white bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
-                >
-                  {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
-                    <option key={band} value={band}>{BAND_LABELS[band]}</option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min="-10" max="10" step="0.1"
-                  value={modAmount}
-                  onChange={(e) => setModAmount(Number(e.target.value))}
-                  className="w-7 text-[9px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
-                  title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
-                />
-                <button
-                  onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
-                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
-                  title="Add modulation binding"
-                >
-                  <Plus weight="bold" className="w-3 h-3" />
-                </button>
               </div>
-            </div>
+            )}
 
           </div>
         </div>
