@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Shuffle, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
+import React, { useState, useEffect } from 'react';
+import { CaretDown, Plus, SlidersHorizontal, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, Trash, Check } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 
@@ -117,6 +117,35 @@ const AUDIO_STYLE_PRESETS: AudioStylePreset[] = [
   },
 ];
 
+// User-saved presets, capturing whatever the panel's current live settings
+// are at save time — stored locally rather than through the app's
+// Firestore-backed preset system (usePresets.ts), since these are tied to
+// the user's own mic/speaker setup rather than a "look" worth syncing
+// across devices. `custom: true` distinguishes them from the curated
+// built-ins above so the dropdown can group them and only offer
+// update/delete on the ones the user actually owns.
+type CustomAudioStylePreset = AudioStylePreset & { custom: true };
+const CUSTOM_PRESETS_KEY = 'wav-custom-audio-style-presets';
+
+function loadCustomPresets(): CustomAudioStylePreset[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_PRESETS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomPresets(presets: CustomAudioStylePreset[]) {
+  try {
+    localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(presets));
+  } catch (err) {
+    if (import.meta.env.DEV) console.warn('Failed to persist custom audio style presets:', err);
+  }
+}
+
 export interface AudioPanelState {
   isMicActive: boolean;
   audioInputDevices: MediaDeviceInfo[];
@@ -191,6 +220,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     audioBindings,
+    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
   } = state;
 
   const [modParam, setModParam] = useState(MODULATABLE_PARAMS[0].key);
@@ -202,6 +232,45 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   // sliders (each with its own inline BEAT toggle), which covers the
   // common case without the panel reading as one big wall of controls.
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Custom Style Presets — user-saved snapshots of the current live
+  // settings, persisted locally (see saveCustomPresets above).
+  const [customPresets, setCustomPresets] = useState<CustomAudioStylePreset[]>(() => loadCustomPresets());
+  const [selectedPresetName, setSelectedPresetName] = useState('');
+  const [isNamingPreset, setIsNamingPreset] = useState(false);
+  const [presetNameDraft, setPresetNameDraft] = useState('');
+
+  useEffect(() => { saveCustomPresets(customPresets); }, [customPresets]);
+
+  const selectedCustomPreset = customPresets.find(p => p.name === selectedPresetName) ?? null;
+
+  const currentSettingsAsPreset = (name: string): CustomAudioStylePreset => ({
+    name, title: name, custom: true,
+    masterSensitivity, autoGainEnabled,
+    subBassMultiplier, bassMultiplier, midsMultiplier, trebleMultiplier,
+    subBassBeatSync, bassBeatSync, midsBeatSync, trebleBeatSync,
+    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+  });
+
+  const confirmSaveNewPreset = () => {
+    const name = presetNameDraft.trim();
+    if (!name) return;
+    setCustomPresets(prev => [...prev.filter(p => p.name !== name), currentSettingsAsPreset(name)]);
+    setSelectedPresetName(name);
+    setIsNamingPreset(false);
+    setPresetNameDraft('');
+  };
+
+  const updateSelectedCustomPreset = () => {
+    if (!selectedCustomPreset) return;
+    setCustomPresets(prev => prev.map(p => p.name === selectedCustomPreset.name ? currentSettingsAsPreset(p.name) : p));
+  };
+
+  const deleteSelectedCustomPreset = () => {
+    if (!selectedCustomPreset) return;
+    setCustomPresets(prev => prev.filter(p => p.name !== selectedCustomPreset.name));
+    setSelectedPresetName('');
+  };
 
   const {
     setSelectedAudioDeviceId, setIsAudioControlsOpen,
@@ -231,7 +300,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   };
 
   const handleStylePresetSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const preset = AUDIO_STYLE_PRESETS.find(p => p.name === e.target.value);
+    const name = e.target.value;
+    setSelectedPresetName(name);
+    const preset = AUDIO_STYLE_PRESETS.find(p => p.name === name) ?? customPresets.find(p => p.name === name);
     if (preset) applyStylePreset(preset);
   };
 
@@ -311,21 +382,90 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
             {/* Style presets — one-click starting points for common audio/
                 music styles; sets sensitivity/band multipliers/beat-sync/FX
-                on beat, leaves Modulation bindings alone. */}
+                on beat, leaves Modulation bindings alone. Built-ins are
+                curated and read-only; anything the user saves shows up
+                under Custom, with Update/Delete once selected. */}
             <div className="flex items-center gap-2">
               <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Style Preset</label>
               <select
-                defaultValue=""
+                value={selectedPresetName}
                 onChange={handleStylePresetSelect}
                 title="Apply a curated starting point for a kind of audio/music"
                 className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
               >
                 <option value="" disabled>Choose a style...</option>
-                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                  <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
-                ))}
+                <optgroup label="Built-in">
+                  {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                    <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
+                  ))}
+                </optgroup>
+                {customPresets.length > 0 && (
+                  <optgroup label="Custom">
+                    {[...customPresets].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                      <option key={preset.name} value={preset.name}>{preset.name}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
+              {selectedCustomPreset ? (
+                <>
+                  <button
+                    onClick={updateSelectedCustomPreset}
+                    title={`Overwrite "${selectedCustomPreset.name}" with the current settings`}
+                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                  >
+                    <FloppyDisk weight="regular" className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={deleteSelectedCustomPreset}
+                    title={`Delete "${selectedCustomPreset.name}"`}
+                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                  >
+                    <Trash weight="regular" className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => { setIsNamingPreset(true); setPresetNameDraft(''); }}
+                  title="Save current settings as a new Style Preset"
+                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                >
+                  <Plus weight="bold" className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+
+            {isNamingPreset && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  autoFocus
+                  value={presetNameDraft}
+                  onChange={(e) => setPresetNameDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmSaveNewPreset();
+                    if (e.key === 'Escape') setIsNamingPreset(false);
+                  }}
+                  placeholder="Preset name..."
+                  className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
+                />
+                <button
+                  onClick={confirmSaveNewPreset}
+                  disabled={!presetNameDraft.trim()}
+                  title="Save"
+                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 disabled:opacity-40 transition-all flex-shrink-0"
+                >
+                  <Check weight="bold" className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setIsNamingPreset(false)}
+                  title="Cancel"
+                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                >
+                  <X weight="bold" className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Intensity + Auto Gain */}
             <div className="flex items-center gap-2">
