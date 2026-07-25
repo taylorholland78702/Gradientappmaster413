@@ -511,9 +511,12 @@ export function useSnapshot(params: SnapshotParams) {
     setMidsMultiplier(snapshot.midsMultiplier ?? 2.5);
     setTrebleMultiplier(snapshot.trebleMultiplier ?? 2);
     setSubBassMultiplier(snapshot.subBassMultiplier ?? 3.0);
-    setMasterSensitivity(snapshot.masterSensitivity ?? 1.2);
-    setAutoGainEnabled(snapshot.autoGainEnabled ?? true);
-    setDepthLayerEnabled(snapshot.depthLayerEnabled ?? true);
+    setMasterSensitivity(snapshot.masterSensitivity ?? 1.55);
+    // Always on — no UI toggle for either anymore (AudioPanel.tsx), so a
+    // saved snapshot/preset from before that removal can't silently turn
+    // them back off.
+    setAutoGainEnabled(true);
+    setDepthLayerEnabled(true);
     setDepthLayerStrength(snapshot.depthLayerStrength ?? 2);
     setBassBeatSync(snapshot.bassBeatSync ?? true);
     setMidsBeatSync(snapshot.midsBeatSync ?? false);

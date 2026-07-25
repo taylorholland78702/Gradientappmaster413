@@ -208,9 +208,6 @@ interface AudioPanelProps {
   actions: AudioPanelActions;
 }
 
-const BEAT_BTN = (active: boolean) =>
-  `flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${active ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`;
-
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
     isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
@@ -292,7 +289,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
   const applyStylePreset = (preset: AudioStylePreset) => {
     setMasterSensitivity(preset.masterSensitivity);
-    setAutoGainEnabled(preset.autoGainEnabled);
+    // Auto Gain is always on (no UI toggle) — presets no longer touch it.
     setSubBassMultiplier(preset.subBassMultiplier);
     setBassMultiplier(preset.bassMultiplier);
     setMidsMultiplier(preset.midsMultiplier);
@@ -388,23 +385,20 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
           <div className="flex flex-col gap-1.5">
 
-            {/* Shuffle — moved above Presets. */}
-            <button
-              onClick={onShuffleAudio}
-              className="w-full py-0.5 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex items-center justify-center gap-1.5 text-[9px] font-bold"
-              title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
-            >
-              <Shuffle weight="regular" className="w-3.5 h-3.5" />
-              SHUFFLE
-            </button>
-
             {/* Style presets — one-click starting points for common audio/
                 music styles; sets sensitivity/band multipliers/beat-sync/FX
                 on beat, leaves Modulation bindings alone. Built-ins are
                 curated and read-only; anything the user saves shows up
-                under Custom, with Update/Delete once selected. */}
+                under Custom, with Update/Delete once selected. Shuffle
+                sits inline as an icon-only button, top-left. */}
             <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Presets</label>
+              <button
+                onClick={onShuffleAudio}
+                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
+                className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+              >
+                <Shuffle weight="regular" className="w-3.5 h-3.5" />
+              </button>
               <select
                 value={selectedPresetName}
                 onChange={handleStylePresetSelect}
@@ -484,28 +478,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
             )}
 
-            {/* Intensity + Auto Gain */}
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] text-white whitespace-nowrap flex-shrink-0">Intensity</label>
-              <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1 min-w-0" />
-              <span className="text-[10px] text-white w-6 text-right flex-shrink-0">{masterSensitivity.toFixed(1)}</span>
-            </div>
-            {/* Auto Gain and Depth Layer — same toggle-button treatment as
-                the Beat Sync/FX buttons (Palette etc.) below, gray when
-                off. Depth Layer's slider stays, on its own row underneath,
-                since the toggle button itself has no room for one. */}
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setAutoGainEnabled(!autoGainEnabled)}
-                title="Normalizes each band against its own recent loudness instead of a fixed scale, so quiet passages still register and loud ones don't just max out"
-                className={BEAT_BTN(autoGainEnabled)}
-              >AUTO GAIN</button>
-              <button
-                onClick={() => setDepthLayerEnabled(!depthLayerEnabled)}
-                title="A second, softer light source blended behind the main gradient for atmosphere/depth. Only visible while audio reactivity is on."
-                className={BEAT_BTN(depthLayerEnabled)}
-              >DEPTH LAYER</button>
-            </div>
+            {/* Intensity (masterSensitivity), Auto Gain, and Depth Layer no
+                longer have UI controls — Intensity settled on a fixed
+                middle-ground value, Auto Gain and Depth Layer are always on
+                (see useAudioReactivity.ts's defaults and useSnapshot.ts,
+                which now force both true regardless of what a saved
+                snapshot/preset says). */}
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
