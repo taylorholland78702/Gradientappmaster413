@@ -218,6 +218,17 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
     };
 
+    // For per-pixel gradients too expensive to compute at full display
+    // resolution (marble/caustics/plasma/iridescent — nested trig/noise math
+    // per pixel), this renders a smaller ImageData buffer and stretches it up
+    // to fill the display area via drawImage, which respects the ctx transform
+    // (unlike putImageData) so it composes correctly with the DPR scaling above.
+    const putLowResImageData = (imgData: ImageData) => {
+      const tmp = getScratchOffscreen('lowres', imgData.width, imgData.height);
+      (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).putImageData(imgData, 0, 0);
+      ctx.drawImage(tmp, 0, 0, imgData.width, imgData.height, 0, 0, displayWidth, displayHeight);
+    };
+
     // ctx.getImageData ignores transforms and reads physical pixels.
     // On Retina (2× DPI), getImageData(0,0,displayWidth,displayHeight) captures only
     // the top-left quarter of the physical canvas — centering the gradient at the
@@ -314,7 +325,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
-      displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
+      displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
       // Overrides params' raw resolutionMultiplier with the pixel-budget-capped
       // value computed above, so effects that sample at resolutionMultiplier
       // (e.g. applyTriangulate) stay consistent with what the canvas is

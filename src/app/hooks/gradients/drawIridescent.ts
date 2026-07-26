@@ -212,14 +212,22 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Iridescent (Spectral) gradient - thin-film interference effect
+          // Iridescent (Spectral) gradient - thin-film interference effect,
+          // rendered at half resolution and upscaled (putLowResImageData) —
+          // the per-pixel atan2/sqrt/sin/cos + HSV->RGB branching below is too
+          // expensive to run at full display resolution every frame without
+          // visibly tanking FPS.
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-        
-          const iridescentImageData = ctx.createImageData(displayWidth, displayHeight);
+
+          const iRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const iRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const iInvScale = 2; // 1 / 0.5
+          const iridescentImageData = ctx.createImageData(iRenderW, iRenderH);
           const iridescentData = iridescentImageData.data;
         
           // Audio reactivity: bass affects interference angle
@@ -234,10 +242,12 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
             : 0;
           const totalIridescentIntensity = iridescentIntensity + audioIridescentIntensity;
         
-          for (let iy = 0; iy < displayHeight; iy++) {
-            for (let ix = 0; ix < displayWidth; ix++) {
-              const dx = ix - centerX;
-              const dy = iy - centerY;
+          for (let iy = 0; iy < iRenderH; iy++) {
+            for (let ix = 0; ix < iRenderW; ix++) {
+              const fx = ix * iInvScale;
+              const fy = iy * iInvScale;
+              const dx = fx - centerX;
+              const dy = fy - centerY;
             
               // Calculate viewing angle (simulates looking at surface from different angles)
               const angle = Math.atan2(dy, dx);
@@ -285,14 +295,14 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
               const baseG = (color1.g + (color2.g - color1.g) * colorFrac) * iriRadialBoost;
               const baseB = (color1.b + (color2.b - color1.b) * colorFrac) * iriRadialBoost;
 
-              const idx = (iy * displayWidth + ix) * 4;
+              const idx = (iy * iRenderW + ix) * 4;
               iridescentData[idx]     = Math.min(255, baseR * (1 - totalIridescentIntensity * 0.5) + r * 255 * totalIridescentIntensity);
               iridescentData[idx + 1] = Math.min(255, baseG * (1 - totalIridescentIntensity * 0.5) + g * 255 * totalIridescentIntensity);
               iridescentData[idx + 2] = Math.min(255, baseB * (1 - totalIridescentIntensity * 0.5) + b * 255 * totalIridescentIntensity);
               iridescentData[idx + 3] = 255;
             }
           }
-        
-          putScaledImageData(iridescentImageData);
+
+          putLowResImageData(iridescentImageData);
   return gradient;
 }

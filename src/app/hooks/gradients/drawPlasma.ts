@@ -217,11 +217,18 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Animated plasma effect - smooth rendering
-          const plasmaImageData = ctx.createImageData(displayWidth, displayHeight);
+          // Animated plasma effect - smooth rendering, at half resolution and
+          // upscaled (putLowResImageData) — the stacked sin()/sqrt() math below
+          // is too expensive per-pixel to run at full display resolution every
+          // frame without visibly tanking FPS.
+          const pRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const pRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const pInvScale = 2; // 1 / 0.5
+          const plasmaImageData = ctx.createImageData(pRenderW, pRenderH);
           const plasmaData = plasmaImageData.data;
 
           const plasmaAudioActive = isAudioEnabled && isAudioReactive;
@@ -237,11 +244,13 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
           const plasmaCY = displayHeight / 2;
           const plasmaSeedX = structuralSeed * 210;
           const plasmaSeedY = structuralSeed * 140;
-          for (let py = 0; py < displayHeight; py++) {
-            for (let px = 0; px < displayWidth; px++) {
-              const dx = px - plasmaCX;
-              const dy = py - plasmaCY;
-              const spx = px + plasmaSeedX, spy = py + plasmaSeedY;
+          for (let py = 0; py < pRenderH; py++) {
+            for (let px = 0; px < pRenderW; px++) {
+              const fx = px * pInvScale;
+              const fy = py * pInvScale;
+              const dx = fx - plasmaCX;
+              const dy = fy - plasmaCY;
+              const spx = fx + plasmaSeedX, spy = fy + plasmaSeedY;
               const value = (
                 Math.sin(spx * plasmaScale + gradientAngle * 0.05) +
                 Math.sin(spy * plasmaScale + gradientAngle * 0.05) +
@@ -254,13 +263,13 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
 
               const dist = Math.sqrt(dx * dx + dy * dy);
               const radialBoost = 1 + plasmaBassPulse * (1 - dist / plasmaMaxDist) * 0.8;
-              const idx = (py * displayWidth + px) * 4;
+              const idx = (py * pRenderW + px) * 4;
               plasmaData[idx]     = Math.min(255, Math.round(color1.r * radialBoost));
               plasmaData[idx + 1] = Math.min(255, Math.round(color1.g * radialBoost));
               plasmaData[idx + 2] = Math.min(255, Math.round(color1.b * radialBoost));
               plasmaData[idx + 3] = 255;
             }
           }
-          putScaledImageData(plasmaImageData);
+          putLowResImageData(plasmaImageData);
   return gradient;
 }

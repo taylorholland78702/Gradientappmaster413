@@ -217,7 +217,8 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           ctx.fillStyle = '#000814';
@@ -232,31 +233,38 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
           const causticsPhaseWarp = audioMidsC * 2.5;
           const causticsColorShift = causticsAudio ? audioTrebleLevel * 0.7 : 0;
           const causticsLightFloor = 0.1 + audioBassC * 0.4;  // black areas light up on bass
-          const imageData = ctx.createImageData(displayWidth, displayHeight);
+          // Rendered at half resolution and upscaled (putLowResImageData) — the
+          // stacked sin() waves below are too expensive per-pixel to run at
+          // full display resolution every frame without visibly tanking FPS.
+          const cRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const cRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const cCenterX = centerX * 0.5;
+          const cCenterY = centerY * 0.5;
+          const imageData = ctx.createImageData(cRenderW, cRenderH);
           const d = imageData.data;
           const cScaleXY = causticsScale / displayWidth;
-          const scaleX = cScaleXY * 4 / zoom;
-          const scaleY = (causticsScale / displayHeight) * 4 / zoom;
+          const scaleX = (cScaleXY * 4 / zoom) / 0.5;
+          const scaleY = ((causticsScale / displayHeight) * 4 / zoom) / 0.5;
           const cFreq = causticsFreqBoost;
           const cSeedX = structuralSeed * 2.1;
           const cSeedY = structuralSeed * 1.4;
-          for (let y = 0; y < displayHeight; y++) {
-            for (let x = 0; x < displayWidth; x++) {
-              const nx = (x - centerX) * scaleX + cSeedX;
-              const ny = (y - centerY) * scaleY + cSeedY;
+          for (let y = 0; y < cRenderH; y++) {
+            for (let x = 0; x < cRenderW; x++) {
+              const nx = (x - cCenterX) * scaleX + cSeedX;
+              const ny = (y - cCenterY) * scaleY + cSeedY;
               const w1 = Math.sin(nx * 2.1 * cFreq + Math.sin(ny * 1.3 * cFreq + ct + causticsPhaseWarp) + ct * 0.7);
               const w2 = Math.sin(ny * 2.3 * cFreq + Math.sin(nx * 1.7 * cFreq - ct * 0.8 + causticsPhaseWarp) - ct * 0.5);
               const w3 = Math.sin((nx + ny) * 1.5 * cFreq + ct * 1.1);
               const v = Math.min(1, Math.pow(Math.abs(w1 + w2 + w3) / 3, causticsBrightnessExp) + causticsLightFloor);
               const tVal = (Math.sin(v * Math.PI) * 0.5 + 0.5 + causticsColorShift) % 1;
               const c1 = getMappedColor(tVal, gradientColors, fieldContrast, paletteMode, paletteBands);
-              const idx = (y * displayWidth + x) * 4;
+              const idx = (y * cRenderW + x) * 4;
               d[idx]     = Math.min(255, Math.round(c1.r * (0.3 + v * 0.7)));
               d[idx + 1] = Math.min(255, Math.round(c1.g * (0.3 + v * 0.7)));
               d[idx + 2] = Math.min(255, Math.round(c1.b * (0.3 + v * 0.7)));
               d[idx + 3] = 255;
             }
           }
-          putScaledImageData(imageData);
+          putLowResImageData(imageData);
   return gradient;
 }

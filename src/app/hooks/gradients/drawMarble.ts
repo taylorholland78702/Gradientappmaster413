@@ -217,7 +217,8 @@ export function drawMarble(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           ctx.fillStyle = '#000000';
@@ -232,16 +233,23 @@ export function drawMarble(P: any): CanvasGradient | undefined {
           const marbleVeinBoost = 1 + audioBassM * 3.0;      // vein spacing tightens
           const marbleOctAmpBoost = 1 + audioMidsM * 2.0;    // richer texture on mids
           const marbleColorShift = marbleAudio ? audioTrebleLevel * 0.8 : 0;
-          const imageData3 = ctx.createImageData(displayWidth, displayHeight);
+          // Rendered at half resolution and upscaled (putLowResImageData) — the
+          // octave-loop trig math below is too expensive per-pixel to run at
+          // full display resolution every frame without visibly tanking FPS.
+          const mRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const mRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const mCenterX = centerX * 0.5;
+          const mCenterY = centerY * 0.5;
+          const imageData3 = ctx.createImageData(mRenderW, mRenderH);
           const d3 = imageData3.data;
           const mScale = (1 / zoom) * 3;
           const mOctaves = Math.round(marbleOctaves);
           const mSeedX = structuralSeed * 1.7;
           const mSeedY = structuralSeed * 2.3;
-          for (let y = 0; y < displayHeight; y++) {
-            for (let x = 0; x < displayWidth; x++) {
-              const nx2 = (x - centerX) / displayWidth * mScale + mSeedX;
-              const ny2 = (y - centerY) / displayHeight * mScale + mSeedY;
+          for (let y = 0; y < mRenderH; y++) {
+            for (let x = 0; x < mRenderW; x++) {
+              const nx2 = (x - mCenterX) / mRenderW * mScale + mSeedX;
+              const ny2 = (y - mCenterY) / mRenderH * mScale + mSeedY;
               let turb = 0;
               let freq = 1 * marbleAudioFreq;
               let amp = 1;
@@ -254,13 +262,13 @@ export function drawMarble(P: any): CanvasGradient | undefined {
               const vein = Math.sin(nx2 * marbleVeinFreq * marbleVeinBoost + turb * marbleTurbulence * marbleTurbBoost + mt * 0.1) * 0.5 + 0.5;
               const tVal2 = (vein + marbleColorShift) % 1;
               const c4 = getMappedColor(tVal2, gradientColors, fieldContrast, paletteMode, paletteBands);
-              const idx3 = (y * displayWidth + x) * 4;
+              const idx3 = (y * mRenderW + x) * 4;
               d3[idx3]     = Math.round(c4.r);
               d3[idx3 + 1] = Math.round(c4.g);
               d3[idx3 + 2] = Math.round(c4.b);
               d3[idx3 + 3] = 255;
             }
           }
-          putScaledImageData(imageData3);
+          putLowResImageData(imageData3);
   return gradient;
 }

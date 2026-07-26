@@ -515,6 +515,7 @@ export function useRandomization(params: RandomizationParams) {
       // (not excluded) so they're rarer without losing variety entirely.
       const HEAVY_GRADIENT_WEIGHT: Partial<Record<GradientType, number>> = {
         'reaction-diffusion': 0.25, julia: 0.35, voronoi: 0.5, metaballs: 0.5,
+        marble: 0.5, caustics: 0.5, plasma: 0.5, iridescent: 0.5,
       };
       const weightedGradients = gradientPool.map((g) => ({ g, weight: HEAVY_GRADIENT_WEIGHT[g] ?? 1 }));
       const gradientTotalWeight = weightedGradients.reduce((sum, x) => sum + x.weight, 0);
