@@ -27,7 +27,6 @@ import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
 import { useRandomization } from '../hooks/useRandomization';
-import { useWavGesture } from '../hooks/useWavGesture';
 import { Divider } from './Divider';
 import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
@@ -383,11 +382,6 @@ export function InteractiveGradient() {
   // visible -> mini strip -> fully hidden -> mini strip -> ...
   // A ?display=1 tab starts (and stays) in this tier permanently — see the
   // 'h' key handler below, which is a no-op in display mode.
-  const randomizeWavGradient = () => {
-    const hue = () => Math.floor(Math.random() * 360);
-    const h1 = hue(), h2 = (h1 + 60 + Math.random() * 120) % 360, h3 = (h2 + 60 + Math.random() * 120) % 360;
-    setWavRandomGradient(`linear-gradient(to top, hsl(${h1}, 85%, 60%), hsl(${h2}, 85%, 60%), hsl(${h3}, 85%, 60%))`);
-  };
   // Single-open accordion: expanding one effect's controls collapses whichever
   // other one was open, instead of letting all active effects stack their
   // sliders open simultaneously — with 4-7 effects active that wall of
@@ -1343,18 +1337,18 @@ export function InteractiveGradient() {
     zoom,
   });
 
-  // Shared tap/hold/double-tap gesture handling for the WĀV button — one
-  // instance, spread onto both the collapsed-cluster button and the
-  // main-panel wordmark below (they're mutually exclusive: only one is ever
-  // interactive at a time since the other is opacity-0/pointer-events-none).
-  const wavGesture = useWavGesture(evolveWithFactor, () => {
+  // WĀV button click handler — single click = full remix, shared by both
+  // the collapsed-cluster button and the main-panel wordmark (they're
+  // mutually exclusive: only one is ever interactive at a time since the
+  // other is opacity-0/pointer-events-none). Was tap-to-nudge/hold-or-
+  // double-tap-to-remix via useWavGesture; simplified to one action.
+  const handleWavClick = () => {
     dismissWavHint();
-    randomizeWavGradient();
-  });
-  const { isWavHolding } = wavGesture;
+    evolveWithFactor(1);
+  };
 
-  // Auto-shuffle: repeatedly triggers a full wāv remix (same as holding the
-  // wordmark for a full beat) on a timer, so the artwork keeps evolving
+  // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
+  // wordmark) on a timer, so the artwork keeps evolving
   // hands-free. evolveWithFactor(1) sets new target values that the master
   // RAF loop lerps toward over time — that lerp IS the fade between one
   // result and the next, so no separate opacity/crossfade code is needed.
@@ -3196,19 +3190,12 @@ export function InteractiveGradient() {
             <EyeSlash weight="regular" className="w-5 h-5" />
           </button>
           <button
-            onPointerDown={wavGesture.onPointerDown}
-            onPointerUp={wavGesture.onPointerUp}
-            onPointerLeave={wavGesture.onPointerLeave}
-            className={`relative overflow-hidden w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none bg-white border-2 border-gray-400`}
-            title="Tap: Nudge (W) · Hold/Double-tap: Remix"
-            aria-label="Tap to nudge the current look, hold or double-tap to remix"
+            onClick={handleWavClick}
+            className="w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none bg-black border-2 border-black"
+            title="Shuffle (Shift+W)"
+            aria-label="Shuffle to a new look"
           >
-            <span
-              aria-hidden="true"
-              className={`wav-btn-fill-reveal ${isWavHolding ? 'wav-revealing' : ''}`}
-              style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
-            />
-            <Shuffle weight="regular" className="relative text-black w-5 h-5" />
+            <Shuffle weight="regular" className="text-white w-5 h-5" />
           </button>
           {/* Auto Shuffle toggle — same size/shape/border as the Shuffle
               button above (44x44, white, border-2 border-gray-400) so it
@@ -3329,12 +3316,10 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          onPointerDown={wavGesture.onPointerDown}
-          onPointerUp={wavGesture.onPointerUp}
-          onPointerLeave={wavGesture.onPointerLeave}
+          onClick={handleWavClick}
           className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
-          title="Tap: Nudge · Hold or double-tap: Remix"
-          aria-label="Tap to nudge the current look, hold or double-tap to remix"
+          title="Shuffle (Shift+W)"
+          aria-label="Shuffle to a new look"
         >
           <span className="relative w-full block wav-glow-wrap">
             <span
@@ -3346,20 +3331,7 @@ export function InteractiveGradient() {
               }}
             >wāv</span>
             <span
-              aria-hidden="true"
-              className={`absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-random-fill ${isWavHolding ? 'wav-revealing' : ''}`}
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 900,
-                backgroundImage: wavRandomGradient,
-                backgroundSize: '100% 220%',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
-            >wāv</span>
-            <span
-              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-base-text ${isWavHolding ? 'wav-fill-erasing' : ''}`}
+              className="relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-base-text"
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 900,
@@ -3375,7 +3347,7 @@ export function InteractiveGradient() {
         {showWavHint && (
           <div className="relative w-full -mt-1 mb-1 flex justify-center">
             <div className="flex items-center gap-1.5 bg-black/70 text-white text-[10px] leading-tight px-2.5 py-1.5 rounded-lg shadow-sm">
-              <span>Tap wāv to nudge · Hold or double-tap to remix</span>
+              <span>Tap wāv to shuffle</span>
               <button
                 onClick={dismissWavHint}
                 className="text-white/60 hover:text-white shrink-0 w-[18px] h-[18px] flex items-center justify-center"
@@ -4046,7 +4018,7 @@ export function InteractiveGradient() {
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">The <strong>wāv</strong> header</p>
-                <p className="flex items-center justify-between gap-2">Tap the wordmark to nudge the artwork. Hold for a full beat or double-click to fully remix it.</p>
+                <p className="flex items-center justify-between gap-2">Click the wordmark to remix the artwork.</p>
                 <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
                 <p>Drag the wordmark to move the control panel anywhere on screen.</p>
