@@ -1342,9 +1342,12 @@ export function InteractiveGradient() {
   // mutually exclusive: only one is ever interactive at a time since the
   // other is opacity-0/pointer-events-none). Was tap-to-nudge/hold-or-
   // double-tap-to-remix via useWavGesture; simplified to one action.
+  const [isWavPressed, setIsWavPressed] = useState(false);
   const handleWavClick = () => {
     dismissWavHint();
     evolveWithFactor(1);
+    setIsWavPressed(true);
+    window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
   // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
@@ -3191,11 +3194,11 @@ export function InteractiveGradient() {
           </button>
           <button
             onClick={handleWavClick}
-            className="w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none bg-black border-2 border-black"
+            className={`w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none border-2 transition-colors ${isWavPressed ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title="Shuffle (Shift+W)"
             aria-label="Shuffle to a new look"
           >
-            <Shuffle weight="regular" className="text-white w-5 h-5" />
+            <Shuffle weight="regular" className={`w-5 h-5 ${isWavPressed ? 'text-white' : 'text-black'}`} />
           </button>
           {/* Auto Shuffle toggle — same size/shape/border as the Shuffle
               button above (44x44, white, border-2 border-gray-400) so it
