@@ -16,6 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
@@ -1392,6 +1393,92 @@ export function InteractiveGradient() {
     const minutes = Math.floor(sec / 60);
     const remainder = sec % 60;
     return remainder === 0 ? `${minutes}m` : `${minutes}m ${remainder}s`;
+  };
+  // Clicking the Auto Shuffle button opens this popover (on/off toggle +
+  // interval slider) instead of directly toggling on/off — the interval
+  // control used to live only in the Info panel, which turned out to be too
+  // hard to find from the button itself.
+  //
+  // Rendered through a portal into document.body with position:fixed,
+  // anchored to the trigger button's live getBoundingClientRect() — NOT
+  // positioned relative to the button in normal flow. The button lives
+  // inside the panel's `overflow-y-auto` scroll container, and Chrome
+  // forces overflow-x to `auto` (clipping) whenever overflow-y is
+  // non-visible and overflow-x isn't set explicitly (CSS2.1 overflow
+  // rules) — a relatively-positioned popover wide enough to extend past
+  // that container's right edge got silently clipped there, even though it
+  // still measured a correct (uncl clipped) getBoundingClientRect and had
+  // fully correct computed styles. document.elementFromPoint() at the
+  // popover's own reported coordinates returned the background canvas
+  // instead of the popover, confirming it wasn't clipping-adjacent content
+  // but a real "present in the layout, absent from the painted/hit-tested
+  // page" case — a portal sidesteps the whole ancestor-clipping chain.
+  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number } | null>(null);
+  const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
+  const AUTO_SHUFFLE_POPOVER_WIDTH = 224;
+  const openAutoShufflePopover = (triggerEl: HTMLElement) => {
+    const rect = triggerEl.getBoundingClientRect();
+    const left = Math.min(rect.left, window.innerWidth - AUTO_SHUFFLE_POPOVER_WIDTH - 8);
+    setAutoShufflePopoverAnchor({ top: rect.bottom + 8, left: Math.max(8, left) });
+  };
+  useEffect(() => {
+    if (!autoShufflePopoverAnchor) return;
+    const handleClick = (e: MouseEvent) => {
+      if (autoShufflePopoverRef.current && !autoShufflePopoverRef.current.contains(e.target as Node)) {
+        setAutoShufflePopoverAnchor(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [autoShufflePopoverAnchor]);
+  const renderAutoShufflePopover = () => {
+    if (!autoShufflePopoverAnchor) return null;
+    return createPortal(
+      <div
+        ref={autoShufflePopoverRef}
+        className="fixed z-50 rounded-lg shadow-lg p-3 flex flex-col gap-2"
+        style={{ top: autoShufflePopoverAnchor.top, left: autoShufflePopoverAnchor.left, width: AUTO_SHUFFLE_POPOVER_WIDTH, backgroundColor: 'rgba(20, 20, 20, 0.95)' }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
+          <button
+            onClick={() => setIsAutoShuffleOn(prev => !prev)}
+            aria-pressed={isAutoShuffleOn}
+            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
+            className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
+            style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.2)' }}
+          >
+            <span
+              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
+              style={{ transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)', backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff' }}
+            />
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="range"
+            min={0}
+            max={autoShuffleSliderMax}
+            value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
+            onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
+            className="flex-1"
+            aria-label="Auto Shuffle interval"
+          />
+          <input
+            type="number"
+            min={AUTO_SHUFFLE_MIN_SEC}
+            max={AUTO_SHUFFLE_MAX_SEC}
+            value={autoShuffleIntervalSec}
+            onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
+            className="text-[10px] w-12 text-right rounded px-1 text-white"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.25)' }}
+            aria-label="Auto Shuffle interval in seconds"
+          />
+        </div>
+        <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+      </div>,
+      document.body,
+    );
   };
   // Read through a ref rather than depending on evolveWithFactor directly —
   // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
@@ -3023,6 +3110,7 @@ export function InteractiveGradient() {
           break;
         case 'Escape':
           if (isAboutOpen) { e.preventDefault(); setIsAboutOpen(false); }
+          else if (autoShufflePopoverAnchor) { e.preventDefault(); setAutoShufflePopoverAnchor(null); }
           else if (activeTab) { e.preventDefault(); setActiveTab(null); }
           break;
         default:
@@ -3038,6 +3126,7 @@ export function InteractiveGradient() {
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
     isControlsVisible, isFullyHidden, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
+    autoShufflePopoverAnchor, setAutoShufflePopoverAnchor,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -3242,12 +3331,15 @@ export function InteractiveGradient() {
               reads as its sibling rather than a different control; only
               the icon differs (infinity, for "keeps going on its own"
               vs. Shuffle's one-shot remix) and the fill inverts to black
-              while active so the on/off state is visible at a glance. */}
+              while active so the on/off state is visible at a glance.
+              Click opens a popover (on/off + interval slider) rather than
+              toggling directly — ⌥⇧W keyboard shortcut still toggles on/off
+              immediately. */}
           <button
-            onClick={() => setIsAutoShuffleOn(prev => !prev)}
+            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
             className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
+            aria-label="Auto Shuffle settings"
             aria-pressed={isAutoShuffleOn}
           >
             <InfinityIcon weight="regular" className={`w-4 h-4 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
@@ -3299,6 +3391,24 @@ export function InteractiveGradient() {
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
+        {/* wāv wordmark — purely decorative panel header, no click/drag
+            behavior of its own (the thin bar below it is the actual drag
+            handle). Solid translucent-white fill, same treatment as the
+            About-button wordmark elsewhere, just brighter (0.48 vs 0.4
+            alpha) since it needs to read clearly at panel scale. */}
+        <div className="w-full text-center select-none pt-1">
+          <span
+            className="wav-panel-header-text"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 900,
+              fontSize: '40px',
+              lineHeight: 1,
+              letterSpacing: '-0.03em',
+              color: 'rgba(255, 255, 255, 0.48)',
+            }}
+          >wāv</span>
+        </div>
         {/* Drag handle — thin bar, replaces the old WĀV wordmark as the
             panel's grab target. Desktop-only drag (same clamped-repositioning
             logic the wordmark used to carry); on mobile the bar is still
@@ -3347,7 +3457,7 @@ export function InteractiveGradient() {
           title={isMobile ? undefined : 'Drag to move panel'}
           aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
-          <div className="w-10 h-[3px] rounded-full bg-white/40" />
+          <div className="w-10 h-[3px] rounded-full bg-white/70" />
         </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
@@ -3397,10 +3507,10 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
-            onClick={() => setIsAutoShuffleOn(prev => !prev)}
+            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
             className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
+            aria-label="Auto Shuffle settings"
             aria-pressed={isAutoShuffleOn}
           >
             <InfinityIcon weight="regular" className="w-4 h-4" />
@@ -3951,6 +4061,12 @@ export function InteractiveGradient() {
           loop
         />
       )}
+
+      {/* Auto Shuffle interval popover — single render call site so opening
+          it from either trigger (collapsed cluster or expanded top row,
+          only one of which is ever mounted+clickable at a time) never
+          produces two portaled copies. */}
+      {renderAutoShufflePopover()}
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (

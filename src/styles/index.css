@@ -348,6 +348,13 @@
   color: transparent !important;
 }
 
+/* Panel-header wordmark (InteractiveGradient.tsx, above the drag handle) —
+   same exemption pattern as .wav-base-text above: needs its own translucent
+   fill instead of the panel's flat black-text rule. */
+.control-panel .wav-panel-header-text {
+  color: rgba(255, 255, 255, 0.48) !important;
+}
+
 /* Every panel/button surface that was translucent black becomes a
    single translucent white; white borders/dividers darken to stay
    visible against it; hovers get a subtle dark tint instead of a
