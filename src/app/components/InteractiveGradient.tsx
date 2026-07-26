@@ -1355,6 +1355,44 @@ export function InteractiveGradient() {
   // RAF loop lerps toward over time — that lerp IS the fade between one
   // result and the next, so no separate opacity/crossfade code is needed.
   const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
+  // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
+  // slider in the Info panel. Persisted so it survives a reload, same
+  // pattern as panelPos.
+  const AUTO_SHUFFLE_MIN_SEC = 1;
+  const AUTO_SHUFFLE_MAX_SEC = 3600;
+  const [autoShuffleIntervalSec, setAutoShuffleIntervalSecState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('autoShuffleIntervalSec');
+      const n = saved ? Number(saved) : NaN;
+      if (Number.isFinite(n) && n >= AUTO_SHUFFLE_MIN_SEC) return Math.min(AUTO_SHUFFLE_MAX_SEC, n);
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to read autoShuffleIntervalSec:', err);
+    }
+    return 7;
+  });
+  const setAutoShuffleIntervalSec = (sec: number) => {
+    const clamped = Math.min(AUTO_SHUFFLE_MAX_SEC, Math.max(AUTO_SHUFFLE_MIN_SEC, Math.round(sec)));
+    setAutoShuffleIntervalSecState(clamped);
+    try { localStorage.setItem('autoShuffleIntervalSec', String(clamped)); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to persist autoShuffleIntervalSec:', err);
+    }
+  };
+  // Log-scale mapping so the slider gives useful precision across the whole
+  // 1s-3600s range instead of a linear scale where the first few seconds
+  // (the most commonly used values) would be squeezed into a sliver of the
+  // track.
+  const autoShuffleSliderMax = 1000;
+  const autoShuffleLogRange = Math.log(AUTO_SHUFFLE_MAX_SEC) - Math.log(AUTO_SHUFFLE_MIN_SEC);
+  const autoShuffleSecToSlider = (sec: number) =>
+    Math.round(autoShuffleSliderMax * (Math.log(Math.max(AUTO_SHUFFLE_MIN_SEC, sec)) - Math.log(AUTO_SHUFFLE_MIN_SEC)) / autoShuffleLogRange);
+  const autoShuffleSliderToSec = (v: number) =>
+    Math.round(Math.exp(Math.log(AUTO_SHUFFLE_MIN_SEC) + autoShuffleLogRange * (v / autoShuffleSliderMax)));
+  const formatAutoShuffleInterval = (sec: number) => {
+    if (sec < 60) return `${sec}s`;
+    const minutes = Math.floor(sec / 60);
+    const remainder = sec % 60;
+    return remainder === 0 ? `${minutes}m` : `${minutes}m ${remainder}s`;
+  };
   // Read through a ref rather than depending on evolveWithFactor directly —
   // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
   // frames, and that's one of its deps), which was tearing down and
@@ -1370,9 +1408,9 @@ export function InteractiveGradient() {
   useEffect(() => {
     if (!isAutoShuffleOn) return;
     evolveWithFactorRef.current(1);
-    const id = setInterval(() => evolveWithFactorRef.current(1), 7000);
+    const id = setInterval(() => evolveWithFactorRef.current(1), autoShuffleIntervalSec * 1000);
     return () => clearInterval(id);
-  }, [isAutoShuffleOn]);
+  }, [isAutoShuffleOn, autoShuffleIntervalSec]);
 
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
@@ -3208,7 +3246,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => setIsAutoShuffleOn(prev => !prev)}
             className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
-            title="Auto Shuffle — remix every 7s (⌥⇧W)"
+            title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
             aria-pressed={isAutoShuffleOn}
           >
@@ -3361,7 +3399,7 @@ export function InteractiveGradient() {
           <button
             onClick={() => setIsAutoShuffleOn(prev => !prev)}
             className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
-            title="Auto Shuffle — remix every 7s (⌥⇧W)"
+            title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
             aria-pressed={isAutoShuffleOn}
           >
@@ -3981,7 +4019,7 @@ export function InteractiveGradient() {
                   className="flex items-center justify-between gap-2 text-left"
                   aria-pressed={isAutoShuffleOn}
                 >
-                  <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every 7s</span>
+                  <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
                   <span className="flex items-center gap-2">
                     <Kbd label="⌥⇧W" />
                     <span
@@ -3993,6 +4031,32 @@ export function InteractiveGradient() {
                     </span>
                   </span>
                 </button>
+                {/* Auto Shuffle interval — log-scale slider (see
+                    autoShuffleSecToSlider/autoShuffleSliderToSec) so 1s-3600s
+                    are all reachable with useful precision, plus a direct
+                    number input for typing an exact value. Adjustable
+                    whether Auto Shuffle is currently on or off. */}
+                <div className="flex items-center gap-2 pl-6">
+                  <input
+                    type="range"
+                    min={0}
+                    max={autoShuffleSliderMax}
+                    value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
+                    onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
+                    className="flex-1"
+                    aria-label="Auto Shuffle interval"
+                  />
+                  <input
+                    type="number"
+                    min={AUTO_SHUFFLE_MIN_SEC}
+                    max={AUTO_SHUFFLE_MAX_SEC}
+                    value={autoShuffleIntervalSec}
+                    onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
+                    className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                    aria-label="Auto Shuffle interval in seconds"
+                  />
+                  <span className="text-[10px] text-white/50 shrink-0">sec</span>
+                </div>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
               </div>
