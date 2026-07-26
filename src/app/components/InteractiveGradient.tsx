@@ -1337,11 +1337,10 @@ export function InteractiveGradient() {
     zoom,
   });
 
-  // WĀV button click handler — single click = full remix, shared by both
-  // the collapsed-cluster button and the main-panel wordmark (they're
-  // mutually exclusive: only one is ever interactive at a time since the
-  // other is opacity-0/pointer-events-none). Was tap-to-nudge/hold-or-
-  // double-tap-to-remix via useWavGesture; simplified to one action.
+  // Shuffle click handler — single click = full remix, shared by both the
+  // collapsed-cluster button and the expanded panel's tab-row shuffle
+  // button (they're mutually exclusive: only one is ever interactive at a
+  // time since the other is opacity-0/pointer-events-none).
   const [isWavPressed, setIsWavPressed] = useState(false);
   const handleWavClick = () => {
     dismissWavHint();
@@ -3280,8 +3279,13 @@ export function InteractiveGradient() {
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
-        {/* WĀV wordmark — unboxed, doubles as the invisible drag handle */}
-        <button
+        {/* Drag handle — thin bar, replaces the old WĀV wordmark as the
+            panel's grab target. Desktop-only drag (same clamped-repositioning
+            logic the wordmark used to carry); on mobile the bar is still
+            shown for visual consistency (bottom-sheet grab-bar convention)
+            but has no onMouseDown, matching every other drag-disabled path
+            here. */}
+        <div
           onMouseDown={isMobile ? undefined : (e) => {
             const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
             const rect = panel.getBoundingClientRect();
@@ -3319,49 +3323,12 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          onClick={handleWavClick}
-          className="wav-drag-handle relative w-full flex items-end justify-center select-none cursor-grab active:cursor-grabbing outline-none focus:outline-none focus-visible:outline-none"
-          title="Shuffle (Shift+W)"
-          aria-label="Shuffle to a new look"
+          className={`w-full flex items-center justify-center py-2 select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          title={isMobile ? undefined : 'Drag to move panel'}
+          aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
-          <span className={`relative w-full block wav-glow-wrap transition-transform duration-150 ${isWavPressed ? 'scale-90' : 'scale-100'}`}>
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-stroke-text"
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 900,
-              }}
-            >wāv</span>
-            <span
-              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-base-text transition-opacity duration-150 ${isWavPressed ? 'opacity-60' : 'opacity-100'}`}
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 900,
-              }}
-            >wāv</span>
-          </span>
-        </button>
-
-        {/* First-run gesture hint — tooltips (title attrs) never surface on
-            touch, which is this app's primary target device, so the
-            tap/hold/double-tap vocabulary needs a visible explanation at
-            least once. Dismissed permanently on first interaction. */}
-        {showWavHint && (
-          <div className="relative w-full -mt-1 mb-1 flex justify-center">
-            <div className="flex items-center gap-1.5 bg-black/70 text-white text-[10px] leading-tight px-2.5 py-1.5 rounded-lg shadow-sm">
-              <span>Tap wāv to shuffle</span>
-              <button
-                onClick={dismissWavHint}
-                className="text-white/60 hover:text-white shrink-0 w-[18px] h-[18px] flex items-center justify-center"
-                aria-label="Dismiss hint"
-                title="Dismiss"
-              >
-                <X weight="bold" className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        )}
+          <div className="w-10 h-[3px] rounded-full bg-white/40" />
+        </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
             NOT sticky: ruled out via on-device diagnostic (identical
@@ -3485,9 +3452,13 @@ export function InteractiveGradient() {
 
           <Divider orientation="horizontal" />
 
-          {/* Tab Bar — 5 equal columns via the same inline flex-basis
-              pattern as VCRControls' colStyle (flexBasis: calc((100% -
-              Npx)/5), flexGrow/Shrink: 0) instead of plain `flex-1`.
+          {/* Tab Bar — 6 equal columns (Shuffle + the 5 real tabs) via the
+              same inline flex-basis pattern as VCRControls' colStyle
+              (flexBasis: calc((100% - Npx)/6), flexGrow/Shrink: 0) instead of
+              plain `flex-1` — matches the top icon row's 6-column width
+              exactly, since that row has the same 6 buttons / 5 dividers
+              proportions, just via implicit flex-1 sizing instead of an
+              explicit calc.
               `translateZ(0)` forces this row onto its own GPU compositing
               layer: on a real device (iOS 17+ Safari) this row was
               confirmed via elementFromPoint to be correctly hit-tested
@@ -3503,15 +3474,19 @@ export function InteractiveGradient() {
                 button's hover background needs its own matching corner
                 radius or it hovers as a visible square past the card's
                 bottom-left corner. */}
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={handleWavClick} title="Shuffle (Shift+W)" aria-label="Shuffle to a new look" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${isWavPressed ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <Shuffle weight="regular" className="w-4 h-4" />
+            </button>
+            <Divider />
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               {/* Icon itself carries the live-signal state now (was a
                   separate dot overlay) — mic being "on" doesn't mean sound is
                   actually arriving (wrong device, muted input, etc), so green
@@ -3531,12 +3506,12 @@ export function InteractiveGradient() {
               />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            {/* rounded-br-lg — see the matching comment on the Gradient tab button. */}
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            {/* rounded-br-lg — see the matching comment on the Shuffle button. */}
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
