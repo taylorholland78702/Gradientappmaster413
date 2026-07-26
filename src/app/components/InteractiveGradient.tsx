@@ -3391,16 +3391,25 @@ export function InteractiveGradient() {
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
-        {/* wāv wordmark — doubles as the panel's drag handle (as it did
-            originally, before being split into a decorative wordmark + a
-            separate thin bar). Desktop-only drag (same clamped-
-            repositioning logic as before); on mobile it's shown but not
-            draggable, matching every other drag-disabled path here. */}
+        {/* wāv wordmark — single click opens the About/Info panel; press
+            and hold (or start dragging) turns it into the panel's drag
+            handle instead. On mobile there's no drag capability (the sheet
+            is pinned, not freely positioned) so it's just a plain About
+            button there. Desktop tells click and hold-to-drag apart by
+            racing a hold timer against pointer movement — whichever
+            happens first (a real drag motion, or the timer elapsing while
+            still held) commits to drag mode; releasing before either fires
+            treats it as a tap and opens About instead of repositioning the
+            panel. */}
         <div
           onMouseDown={isMobile ? undefined : (e) => {
             const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
             const rect = panel.getBoundingClientRect();
-            panelDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const origX = rect.left;
+            const origY = rect.top;
+            let dragStarted = false;
             // Clamp to the viewport, leaving at least this much of the panel
             // on-screen — otherwise a user can drag the panel fully off the
             // edge and lose access to every control (no way to recover short
@@ -3410,33 +3419,38 @@ export function InteractiveGradient() {
               x: Math.min(Math.max(x, MIN_VISIBLE - rect.width), window.innerWidth - MIN_VISIBLE),
               y: Math.min(Math.max(y, 0), window.innerHeight - MIN_VISIBLE),
             });
+            const MOVE_THRESHOLD = 4;
+            const HOLD_MS = 350;
+            const holdTimer = window.setTimeout(() => { dragStarted = true; }, HOLD_MS);
             const onMove = (ev: MouseEvent) => {
-              if (!panelDragRef.current) return;
-              setPanelPos(clamp(
-                panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
-                panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
-              ));
+              if (!dragStarted) {
+                const dx = ev.clientX - startX;
+                const dy = ev.clientY - startY;
+                if (Math.hypot(dx, dy) < MOVE_THRESHOLD) return;
+                dragStarted = true;
+              }
+              setPanelPos(clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY)));
             };
             const onUp = (ev: MouseEvent) => {
-              if (panelDragRef.current) {
-                const pos = clamp(
-                  panelDragRef.current.origX + (ev.clientX - panelDragRef.current.startX),
-                  panelDragRef.current.origY + (ev.clientY - panelDragRef.current.startY),
-                );
+              window.clearTimeout(holdTimer);
+              if (dragStarted) {
+                const pos = clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY));
                 try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch (err) {
                   if (import.meta.env.DEV) console.warn('Failed to persist panelPos:', err);
                 }
+              } else {
+                setIsAboutOpen(true);
               }
-              panelDragRef.current = null;
               window.removeEventListener('mousemove', onMove);
               window.removeEventListener('mouseup', onUp);
             };
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
+          onClick={isMobile ? () => setIsAboutOpen(true) : undefined}
           className={`w-full text-center select-none pt-1 ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
-          title={isMobile ? undefined : 'Drag to move panel'}
-          aria-label={isMobile ? undefined : 'Drag to move panel'}
+          title={isMobile ? 'About wāv' : 'Click: About · Hold: drag panel'}
+          aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the panel'}
         >
           <span
             className="wav-panel-header-text"
@@ -4066,32 +4080,6 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About button — the wāv wordmark itself now doubles as the About
-          trigger (outline-only, transparent fill, so it reads as a subtle
-          watermark rather than a solid logo lockup). Bottom-right corner on
-          desktop; moved to top-center on mobile/tablet so it doesn't sit on
-          top of the bottom sheet. Hidden entirely in Display mode
-          (?display=1) so the projected output has zero UI, ever. */}
-      {!IS_DISPLAY_MODE && (
-        <button
-          onClick={() => setIsAboutOpen(true)}
-          className={`pointer-events-auto flex items-center justify-center px-1 py-0.5 ${isMobile ? 'fixed top-4 left-1/2 -translate-x-1/2' : 'absolute bottom-4 right-4'}`}
-          title="About wāv (?)"
-          aria-label="About wāv"
-        >
-          <span
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 900,
-              fontSize: '96px',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: 'rgba(255, 255, 255, 0.4)',
-            }}
-          >wāv</span>
-        </button>
-      )}
-
       {/* About panel */}
       {isAboutOpen && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50">
@@ -4114,7 +4102,7 @@ export function InteractiveGradient() {
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Panel</p>
-                <p>Drag the thin bar above the panel to move it anywhere on screen (desktop only).</p>
+                <p>Click the <strong>wāv</strong> wordmark above the panel for this About screen — press and hold it to drag the panel anywhere on screen instead (desktop only).</p>
               </div>
 
               <div className="flex flex-col gap-3">
