@@ -3391,30 +3391,11 @@ export function InteractiveGradient() {
           : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
-        {/* wāv wordmark — purely decorative panel header, no click/drag
-            behavior of its own (the thin bar below it is the actual drag
-            handle). Solid translucent-white fill, same treatment as the
-            About-button wordmark elsewhere, just brighter (0.48 vs 0.4
-            alpha) since it needs to read clearly at panel scale. */}
-        <div className="w-full text-center select-none pt-1">
-          <span
-            className="wav-panel-header-text"
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 900,
-              fontSize: '40px',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: 'rgba(255, 255, 255, 0.48)',
-            }}
-          >wāv</span>
-        </div>
-        {/* Drag handle — thin bar, replaces the old WĀV wordmark as the
-            panel's grab target. Desktop-only drag (same clamped-repositioning
-            logic the wordmark used to carry); on mobile the bar is still
-            shown for visual consistency (bottom-sheet grab-bar convention)
-            but has no onMouseDown, matching every other drag-disabled path
-            here. */}
+        {/* wāv wordmark — doubles as the panel's drag handle (as it did
+            originally, before being split into a decorative wordmark + a
+            separate thin bar). Desktop-only drag (same clamped-
+            repositioning logic as before); on mobile it's shown but not
+            draggable, matching every other drag-disabled path here. */}
         <div
           onMouseDown={isMobile ? undefined : (e) => {
             const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
@@ -3453,11 +3434,21 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          className={`w-full flex items-center justify-center py-1 select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          className={`w-full text-center select-none pt-1 ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
           title={isMobile ? undefined : 'Drag to move panel'}
           aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
-          <div className="w-10 h-[3px] rounded-full bg-white/70" />
+          <span
+            className="wav-panel-header-text"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 900,
+              fontSize: '60px',
+              lineHeight: 1,
+              letterSpacing: '-0.03em',
+              color: 'rgba(255, 255, 255, 0.48)',
+            }}
+          >wāv</span>
         </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
@@ -4092,7 +4083,7 @@ export function InteractiveGradient() {
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 900,
-              fontSize: '64px',
+              fontSize: '96px',
               lineHeight: 1,
               letterSpacing: '-0.03em',
               color: 'rgba(255, 255, 255, 0.4)',
