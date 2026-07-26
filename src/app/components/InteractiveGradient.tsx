@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -3209,6 +3209,21 @@ export function InteractiveGradient() {
               style={{ backgroundImage: wavRandomGradient, backgroundSize: '100% 220%' }}
             />
             <Shuffle weight="regular" className="relative text-black w-5 h-5" />
+          </button>
+          {/* Auto Shuffle toggle — same size/shape/border as the Shuffle
+              button above (44x44, white, border-2 border-gray-400) so it
+              reads as its sibling rather than a different control; only
+              the icon differs (infinity, for "keeps going on its own"
+              vs. Shuffle's one-shot remix) and the fill inverts to black
+              while active so the on/off state is visible at a glance. */}
+          <button
+            onClick={() => setIsAutoShuffleOn(prev => !prev)}
+            className={`w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
+            title="Auto Shuffle — remix every 7s (⌥⇧W)"
+            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
+            aria-pressed={isAutoShuffleOn}
+          >
+            <InfinityIcon weight="regular" className={`w-5 h-5 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
           </button>
           <button
             onClick={undoLastChange}
