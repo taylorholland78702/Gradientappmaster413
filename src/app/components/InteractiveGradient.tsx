@@ -3185,42 +3185,42 @@ export function InteractiveGradient() {
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className={`w-[35px] h-[35px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Show Controls (H)"
             aria-label="Show Controls"
           >
-            <EyeSlash weight="regular" className="w-5 h-5" />
+            <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
           <button
             onClick={handleWavClick}
-            className={`w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center select-none border-2 transition-colors ${isWavPressed ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
+            className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none border-2 transition-colors ${isWavPressed ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title="Shuffle (Shift+W)"
             aria-label="Shuffle to a new look"
           >
-            <Shuffle weight="regular" className={`w-5 h-5 ${isWavPressed ? 'text-white' : 'text-black'}`} />
+            <Shuffle weight="regular" className={`w-4 h-4 ${isWavPressed ? 'text-white' : 'text-black'}`} />
           </button>
           {/* Auto Shuffle toggle — same size/shape/border as the Shuffle
-              button above (44x44, white, border-2 border-gray-400) so it
+              button above (35x35, white, border-2 border-gray-400) so it
               reads as its sibling rather than a different control; only
               the icon differs (infinity, for "keeps going on its own"
               vs. Shuffle's one-shot remix) and the fill inverts to black
               while active so the on/off state is visible at a glance. */}
           <button
             onClick={() => setIsAutoShuffleOn(prev => !prev)}
-            className={`w-[44px] h-[44px] p-2 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
+            className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title="Auto Shuffle — remix every 7s (⌥⇧W)"
             aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
             aria-pressed={isAutoShuffleOn}
           >
-            <InfinityIcon weight="regular" className={`w-5 h-5 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
+            <InfinityIcon weight="regular" className={`w-4 h-4 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
           </button>
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
-            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className={`w-[35px] h-[35px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Presets (P)"
             aria-label="Presets"
           >
-            <Plus weight="regular" className="w-5 h-5" />
+            <Plus weight="regular" className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -3305,7 +3305,7 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          className={`w-full flex items-center justify-center py-2 select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          className={`w-full flex items-center justify-center py-1 select-none bg-black/25 rounded-lg ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
           title={isMobile ? undefined : 'Drag to move panel'}
           aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
@@ -3924,13 +3924,13 @@ export function InteractiveGradient() {
       {/* About button — the wāv wordmark itself now doubles as the About
           trigger (outline-only, transparent fill, so it reads as a subtle
           watermark rather than a solid logo lockup). Bottom-right corner on
-          desktop; moved to top-right on mobile/tablet so it doesn't sit on
+          desktop; moved to top-center on mobile/tablet so it doesn't sit on
           top of the bottom sheet. Hidden entirely in Display mode
           (?display=1) so the projected output has zero UI, ever. */}
       {!IS_DISPLAY_MODE && (
         <button
           onClick={() => setIsAboutOpen(true)}
-          className={`pointer-events-auto flex items-center justify-center px-1 py-0.5 ${isMobile ? 'fixed top-4 right-4' : 'absolute bottom-4 right-4'}`}
+          className={`pointer-events-auto flex items-center justify-center px-1 py-0.5 ${isMobile ? 'fixed top-4 left-1/2 -translate-x-1/2' : 'absolute bottom-4 right-4'}`}
           title="About wāv (?)"
           aria-label="About wāv"
         >
@@ -3938,10 +3938,10 @@ export function InteractiveGradient() {
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 900,
-              fontSize: '16px',
+              fontSize: '32px',
               lineHeight: 1,
               color: 'transparent',
-              WebkitTextStroke: '1px #ffffff',
+              WebkitTextStroke: '0.5px #ffffff',
             }}
           >wāv</span>
         </button>
