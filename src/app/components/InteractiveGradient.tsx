@@ -3215,24 +3215,6 @@ export function InteractiveGradient() {
             <InfinityIcon weight="regular" className={`w-5 h-5 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
           </button>
           <button
-            onClick={undoLastChange}
-            disabled={undoDepth < 0}
-            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
-            title="Undo (Cmd+Z)"
-            aria-label="Undo"
-          >
-            <ArrowUUpLeft weight="regular" className="w-5 h-5" />
-          </button>
-          <button
-            onClick={redoLastChange}
-            disabled={redoDepth === 0}
-            className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 border border-white/15 shadow-sm flex items-center justify-center ${redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'}`}
-            title="Redo (Cmd+Shift+Z)"
-            aria-label="Redo"
-          >
-            <ArrowUUpRight weight="regular" className="w-5 h-5" />
-          </button>
-          <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
             className={`w-[44px] h-[44px] p-2 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
             title="Presets (P)"
@@ -3368,6 +3350,25 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
+            onClick={handleWavClick}
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isWavPressed ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
+            title="Shuffle (Shift+W)"
+            aria-label="Shuffle to a new look"
+          >
+            <Shuffle weight="regular" className="w-4 h-4" />
+          </button>
+          <Divider />
+          <button
+            onClick={() => setIsAutoShuffleOn(prev => !prev)}
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
+            title="Auto Shuffle — remix every 7s (⌥⇧W)"
+            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
+            aria-pressed={isAutoShuffleOn}
+          >
+            <InfinityIcon weight="regular" className="w-4 h-4" />
+          </button>
+          <Divider />
+          <button
             onClick={exportAsPNG}
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title="Save PNG (S)"
@@ -3379,7 +3380,9 @@ export function InteractiveGradient() {
           <button
             onClick={toggleGifRecording}
             disabled={isFinalizingGif}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative"
+            // rounded-tr-lg — see the matching comment on the Hide Controls
+            // button above (top-left corner of the same row).
+            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative rounded-tr-lg"
             title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF'}
             aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
           >
@@ -3393,41 +3396,6 @@ export function InteractiveGradient() {
             ) : (
               <Gif weight="regular" className="w-4 h-4" />
             )}
-          </button>
-          <Divider />
-          <button
-            onClick={undoLastChange}
-            disabled={undoDepth < 0}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
-              undoDepth >= 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
-            }`}
-            title="Undo (Cmd+Z)"
-            aria-label="Undo"
-          >
-            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={redoLastChange}
-            disabled={redoDepth === 0}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${
-              redoDepth > 0 ? 'text-white hover:bg-white/15' : 'text-white/25 cursor-not-allowed'
-            }`}
-            title="Redo (Cmd+Shift+Z)"
-            aria-label="Redo"
-          >
-            <ArrowUUpRight weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')}
-            // rounded-tr-lg — see the matching comment on the Hide Controls
-            // button above (top-left corner of the same row).
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center rounded-tr-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
-            title="Presets (P)"
-            aria-label="Presets tab"
-          >
-            <FloppyDisk weight="regular" className="w-4 h-4" />
           </button>
           </div>{/* end icon row */}
 
@@ -3452,11 +3420,11 @@ export function InteractiveGradient() {
 
           <Divider orientation="horizontal" />
 
-          {/* Tab Bar — 5 equal columns (Shuffle + Gradient/Effects/Audio/
-              Color; Presets moved up to the top icon row's top-right slot)
-              via the same inline flex-basis pattern as VCRControls'
-              colStyle (flexBasis: calc((100% - Npx)/5), flexGrow/Shrink: 0)
-              instead of plain `flex-1`.
+          {/* Tab Bar — 5 equal columns (Gradient/Effects/Audio/Color/Presets;
+              Shuffle + Auto Shuffle moved up to the top icon row) via the
+              same inline flex-basis pattern as VCRControls' colStyle
+              (flexBasis: calc((100% - Npx)/5), flexGrow/Shrink: 0) instead of
+              plain `flex-1`.
               `translateZ(0)` forces this row onto its own GPU compositing
               layer: on a real device (iOS 17+ Safari) this row was
               confirmed via elementFromPoint to be correctly hit-tested
@@ -3472,11 +3440,7 @@ export function InteractiveGradient() {
                 button's hover background needs its own matching corner
                 radius or it hovers as a visible square past the card's
                 bottom-left corner. */}
-            <button onClick={handleWavClick} title="Shuffle (Shift+W)" aria-label="Shuffle to a new look" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${isWavPressed ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <Shuffle weight="regular" className="w-4 h-4" />
-            </button>
-            <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
@@ -3504,9 +3468,13 @@ export function InteractiveGradient() {
               />
             </button>
             <Divider />
-            {/* rounded-br-lg — see the matching comment on the Shuffle button. */}
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Palette weight="regular" className="w-4 h-4" />
+            </button>
+            <Divider />
+            {/* rounded-br-lg — see the matching comment on the Gradient tab button. */}
+            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <FloppyDisk weight="regular" className="w-4 h-4" />
             </button>
           </div>
         </div>{/* end merged card */}
@@ -3989,17 +3957,21 @@ export function InteractiveGradient() {
 
             <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">The <strong>wāv</strong> header</p>
-                <p className="flex items-center justify-between gap-2">Click the wordmark to remix the artwork.</p>
-                <p className="flex items-center justify-between gap-2"><span>Nudge (tap-equivalent)</span><Kbd label="W" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Remix (hold-equivalent)</span><Kbd label="Shift+W" /></p>
-                <p>Drag the wordmark to move the control panel anywhere on screen.</p>
+                <p className="font-semibold text-white">Panel</p>
+                <p>Drag the thin bar above the panel to move it anywhere on screen (desktop only).</p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Top icon row</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</span><Kbd label="H" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
                 <button
                   onClick={() => setIsAutoShuffleOn(prev => !prev)}
                   className="flex items-center justify-between gap-2 text-left"
                   aria-pressed={isAutoShuffleOn}
                 >
-                  <span>Auto Shuffle — remix every 7s</span>
+                  <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every 7s</span>
                   <span className="flex items-center gap-2">
                     <Kbd label="⌥⇧W" />
                     <span
@@ -4011,16 +3983,8 @@ export function InteractiveGradient() {
                     </span>
                   </span>
                 </button>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Top icon row</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</span><Kbd label="H" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Refresh — reset to defaults</span><Kbd label="R" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
@@ -4043,15 +4007,17 @@ export function InteractiveGradient() {
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">Randomizing</p>
                 <p>Five ways to randomize, from smallest to biggest change:</p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — tap <strong>wāv</strong> for a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
                 <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings (scoped to the current gradient and active effects). Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — hold or double-tap <strong>wāv</strong> to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — click Shuffle to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-white">More shortcuts</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="R" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
