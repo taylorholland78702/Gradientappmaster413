@@ -3327,7 +3327,7 @@ export function InteractiveGradient() {
           title={isMobile ? undefined : 'Drag to move panel'}
           aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
-          <div className="w-10 h-[3px] rounded-full bg-white/40" />
+          <div className="w-10 h-[3px] rounded-full bg-white" />
         </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
@@ -3420,14 +3420,14 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
-            onClick={resetToDefaults}
+            onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')}
             // rounded-tr-lg — see the matching comment on the Hide Controls
             // button above (top-left corner of the same row).
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-tr-lg"
-            title="Reset (R)"
-            aria-label="Reset to defaults"
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center rounded-tr-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
+            title="Presets (P)"
+            aria-label="Presets tab"
           >
-            <ArrowsClockwise weight="regular" className="w-4 h-4" />
+            <FloppyDisk weight="regular" className="w-4 h-4" />
           </button>
           </div>{/* end icon row */}
 
@@ -3452,13 +3452,11 @@ export function InteractiveGradient() {
 
           <Divider orientation="horizontal" />
 
-          {/* Tab Bar — 6 equal columns (Shuffle + the 5 real tabs) via the
-              same inline flex-basis pattern as VCRControls' colStyle
-              (flexBasis: calc((100% - Npx)/6), flexGrow/Shrink: 0) instead of
-              plain `flex-1` — matches the top icon row's 6-column width
-              exactly, since that row has the same 6 buttons / 5 dividers
-              proportions, just via implicit flex-1 sizing instead of an
-              explicit calc.
+          {/* Tab Bar — 5 equal columns (Shuffle + Gradient/Effects/Audio/
+              Color; Presets moved up to the top icon row's top-right slot)
+              via the same inline flex-basis pattern as VCRControls'
+              colStyle (flexBasis: calc((100% - Npx)/5), flexGrow/Shrink: 0)
+              instead of plain `flex-1`.
               `translateZ(0)` forces this row onto its own GPU compositing
               layer: on a real device (iOS 17+ Safari) this row was
               confirmed via elementFromPoint to be correctly hit-tested
@@ -3474,19 +3472,19 @@ export function InteractiveGradient() {
                 button's hover background needs its own matching corner
                 radius or it hovers as a visible square past the card's
                 bottom-left corner. */}
-            <button onClick={handleWavClick} title="Shuffle (Shift+W)" aria-label="Shuffle to a new look" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${isWavPressed ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={handleWavClick} title="Shuffle (Shift+W)" aria-label="Shuffle to a new look" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${isWavPressed ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Shuffle weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <Gradient weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               <MagicWand weight="regular" className="w-4 h-4" />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
               {/* Icon itself carries the live-signal state now (was a
                   separate dot overlay) — mic being "on" doesn't mean sound is
                   actually arriving (wrong device, muted input, etc), so green
@@ -3506,13 +3504,9 @@ export function InteractiveGradient() {
               />
             </button>
             <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <Palette weight="regular" className="w-4 h-4" />
-            </button>
-            <Divider />
             {/* rounded-br-lg — see the matching comment on the Shuffle button. */}
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 5px) / 6)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <FloppyDisk weight="regular" className="w-4 h-4" />
+            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
+              <Palette weight="regular" className="w-4 h-4" />
             </button>
           </div>
         </div>{/* end merged card */}
