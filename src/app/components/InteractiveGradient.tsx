@@ -3305,11 +3305,11 @@ export function InteractiveGradient() {
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
           }}
-          className={`w-full flex items-center justify-center py-1 select-none bg-black/25 rounded-lg ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          className={`w-full flex items-center justify-center py-1 select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
           title={isMobile ? undefined : 'Drag to move panel'}
           aria-label={isMobile ? undefined : 'Drag to move panel'}
         >
-          <div className="w-10 h-[3px] rounded-full bg-white" />
+          <div className="w-10 h-[3px] rounded-full bg-white/40" />
         </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
@@ -3938,10 +3938,9 @@ export function InteractiveGradient() {
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 900,
-              fontSize: '32px',
+              fontSize: '64px',
               lineHeight: 1,
-              color: 'transparent',
-              WebkitTextStroke: '0.5px #ffffff',
+              color: 'rgba(255, 255, 255, 0.4)',
             }}
           >wāv</span>
         </button>
