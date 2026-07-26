@@ -3978,6 +3978,7 @@ export function InteractiveGradient() {
               fontWeight: 900,
               fontSize: '64px',
               lineHeight: 1,
+              letterSpacing: '-0.03em',
               color: 'rgba(255, 255, 255, 0.4)',
             }}
           >wāv</span>
