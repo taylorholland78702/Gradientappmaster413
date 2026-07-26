@@ -212,14 +212,21 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Voronoi (Cellular) gradient - creates stained glass/cell structure effect
+          // Voronoi (Cellular) gradient - creates stained glass/cell structure effect.
+          // Rendered at half resolution and upscaled (putLowResImageData) — this is
+          // the most expensive per-pixel gradient in the app: a nested seed-count ×
+          // pixel-count loop each doing sin/cos/sqrt per seed per pixel.
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-          const voronoiImageData = ctx.createImageData(displayWidth, displayHeight);
+          const vRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const vRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const vInvScale = 2; // 1 / 0.5
+          const voronoiImageData = ctx.createImageData(vRenderW, vRenderH);
           const voronoiData = voronoiImageData.data;
 
           // Seeded random number generator for animated pattern — structuralSeed
@@ -263,14 +270,16 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
           const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
           const voronoiBassPulse = voronoiAudioActive ? audioSubBassLevel : 0;
 
-          for (let vy = 0; vy < displayHeight; vy++) {
-            for (let vx = 0; vx < displayWidth; vx++) {
+          for (let vy = 0; vy < vRenderH; vy++) {
+            for (let vx = 0; vx < vRenderW; vx++) {
+              const fx = vx * vInvScale;
+              const fy = vy * vInvScale;
               let minDist = Infinity;
               let nearestSeed = voronoiSeeds[0];
 
               voronoiSeeds.forEach(seed => {
-                const dx = vx - seed.x;
-                const dy = vy - seed.y;
+                const dx = fx - seed.x;
+                const dy = fy - seed.y;
                 const distortion = totalVoronoiDistortion * (Math.sin(dx * 0.01) * Math.cos(dy * 0.01)) * 100;
                 const dist = Math.sqrt(dx * dx + dy * dy) + distortion;
                 if (dist < minDist) { minDist = dist; nearestSeed = seed; }
@@ -281,19 +290,19 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
               const color = gradientColors[vColorIdx];
               if (!color) continue;
 
-              const vdx = vx - centerX, vdy = vy - centerY;
+              const vdx = fx - centerX, vdy = fy - centerY;
               const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
               // Radial pulse + uniform flash on strong bass hits
               const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
 
-              const idx = (vy * displayWidth + vx) * 4;
+              const idx = (vy * vRenderW + vx) * 4;
               voronoiData[idx]     = Math.min(255, Math.round(color.r * vBoost));
               voronoiData[idx + 1] = Math.min(255, Math.round(color.g * vBoost));
               voronoiData[idx + 2] = Math.min(255, Math.round(color.b * vBoost));
               voronoiData[idx + 3] = 255;
             }
           }
-        
-          putScaledImageData(voronoiImageData);
+
+          putLowResImageData(voronoiImageData);
   return gradient;
 }

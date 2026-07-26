@@ -211,7 +211,8 @@ export function drawAngle(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           // Very subtle audio: slight angle shimmer, no center drift
@@ -225,14 +226,18 @@ export function drawAngle(P: any): CanvasGradient | undefined {
           // route through the canvas compositing pipeline, which is the slow path on this
           // GPU. Radar proves the fix: skip the pipeline entirely and write pixels directly
           // via putImageData, exactly like the radar sweep already does successfully.
-          const angleImageData = ctx.createImageData(displayWidth, displayHeight);
+          // Rendered at half resolution and upscaled (putLowResImageData).
+          const aRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const aRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const aInvScale = 2; // 1 / 0.5
+          const angleImageData = ctx.createImageData(aRenderW, aRenderH);
           const angleData = angleImageData.data;
           const angleNumColors = gradientColors.length;
 
-          for (let ry = 0; ry < displayHeight; ry++) {
-            for (let rx = 0; rx < displayWidth; rx++) {
-              const dx = (rx - conicCenterX) / conicZoom;
-              const dy = (ry - conicCenterY) / conicZoom;
+          for (let ry = 0; ry < aRenderH; ry++) {
+            for (let rx = 0; rx < aRenderW; rx++) {
+              const dx = (rx * aInvScale - conicCenterX) / conicZoom;
+              const dy = (ry * aInvScale - conicCenterY) / conicZoom;
               let pixelAngle = Math.atan2(dy, dx) - conicStartAngle;
               pixelAngle = ((pixelAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
               const t = pixelAngle / (2 * Math.PI);
@@ -244,7 +249,7 @@ export function drawAngle(P: any): CanvasGradient | undefined {
               const color2 = gradientColors[(colorIdx + 1) % angleNumColors];
               if (!color1 || !color2) continue;
 
-              const idx = (ry * displayWidth + rx) * 4;
+              const idx = (ry * aRenderW + rx) * 4;
               angleData[idx] = color1.r + (color2.r - color1.r) * colorFrac;
               angleData[idx + 1] = color1.g + (color2.g - color1.g) * colorFrac;
               angleData[idx + 2] = color1.b + (color2.b - color1.b) * colorFrac;
@@ -252,7 +257,7 @@ export function drawAngle(P: any): CanvasGradient | undefined {
             }
           }
 
-          putScaledImageData(angleImageData);
+          putLowResImageData(angleImageData);
           gradient = undefined;
   return gradient;
 }

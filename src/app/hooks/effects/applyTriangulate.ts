@@ -221,7 +221,9 @@ export function applyTriangulate(P: any): void {
     imageData
   } = P;
             const tCanvas = getScratchCanvas('triangulate', canvas.width, canvas.height);
-            const tCtx = tCanvas.getContext('2d');
+            // willReadFrequently — this scratch canvas exists to be read back
+            // via getImageData every frame (see the sampling comment below).
+            const tCtx = tCanvas.getContext('2d', { willReadFrequently: true });
             if (!tCtx) return;
             tCtx.drawImage(canvas, 0, 0);
             ctx.fillStyle = '#000';

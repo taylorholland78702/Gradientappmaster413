@@ -276,8 +276,10 @@ export function applyGlitch(P: any): void {
               const gcsW = Math.max(1, Math.round(displayWidth * gcsDownsample));
               const gcsH = Math.max(1, Math.round(displayHeight * gcsDownsample));
               const gcsSmallSrc = getScratchCanvas('glitchChromaSplitSrc', gcsW, gcsH);
-              gcsSmallSrc.getContext('2d')!.drawImage(canvas, 0, 0, gcsW, gcsH);
-              const gcsSrc = gcsSmallSrc.getContext('2d')!.getImageData(0, 0, gcsW, gcsH);
+              // willReadFrequently — getImageData right below, every frame.
+              const gcsSmallSrcCtx = gcsSmallSrc.getContext('2d', { willReadFrequently: true })!;
+              gcsSmallSrcCtx.drawImage(canvas, 0, 0, gcsW, gcsH);
+              const gcsSrc = gcsSmallSrcCtx.getImageData(0, 0, gcsW, gcsH);
               const gcsDst = ctx.createImageData(gcsW, gcsH);
               const gcsOff = Math.max(1, Math.round(glitchChromaSplit * gcsDownsample));
               for (let y = 0; y < gcsH; y++) {

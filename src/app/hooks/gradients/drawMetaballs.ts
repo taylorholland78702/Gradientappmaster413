@@ -212,7 +212,8 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           // Like Lava Lamp's field-function blobs, but colored continuously
@@ -227,7 +228,12 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
           const mbTime = (metaballAnimTime + gradientAngle * 0.02) * (1 + audioMidsMb * 2);
           const mbScaleBoost = 1 + audioBassMb * 2.0;
           const mbColorShift = metaAudio ? audioTrebleLevel * 0.8 : 0;
-          const imageDataMb = ctx.createImageData(displayWidth, displayHeight);
+          // Rendered at half resolution and upscaled (putLowResImageData) —
+          // same per-pixel metaball field-sum cost as Lava Lamp.
+          const mRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const mRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const mInvScale = 2; // 1 / 0.5
+          const imageDataMb = ctx.createImageData(mRenderW, mRenderH);
           const dMb = imageDataMb.data;
           const numBalls = Math.max(2, Math.min(metaballCount, 14));
           const balls: Array<{x: number, y: number, r: number}> = [];
@@ -242,10 +248,10 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
             });
           }
           const mbZoomScale = 1 / zoom;
-          for (let y = 0; y < displayHeight; y++) {
-            for (let x = 0; x < displayWidth; x++) {
-              const px = centerX + (x - centerX) * mbZoomScale;
-              const py = centerY + (y - centerY) * mbZoomScale;
+          for (let y = 0; y < mRenderH; y++) {
+            for (let x = 0; x < mRenderW; x++) {
+              const px = centerX + (x * mInvScale - centerX) * mbZoomScale;
+              const py = centerY + (y * mInvScale - centerY) * mbZoomScale;
               let field = 0;
               for (let b = 0; b < balls.length; b++) {
                 const dx = px - balls[b].x, dy = py - balls[b].y;
@@ -259,13 +265,13 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
               const c1Mb = gradientColors[ciMb] || { r: 0, g: 0, b: 0 };
               const c2Mb = gradientColors[(ciMb + 1) % gradientColors.length] || c1Mb;
               const brightnessMb = Math.min(1, field * 0.9);
-              const idxMb = (y * displayWidth + x) * 4;
+              const idxMb = (y * mRenderW + x) * 4;
               dMb[idxMb]     = Math.round((c1Mb.r + (c2Mb.r - c1Mb.r) * cfMb) * brightnessMb);
               dMb[idxMb + 1] = Math.round((c1Mb.g + (c2Mb.g - c1Mb.g) * cfMb) * brightnessMb);
               dMb[idxMb + 2] = Math.round((c1Mb.b + (c2Mb.b - c1Mb.b) * cfMb) * brightnessMb);
               dMb[idxMb + 3] = 255;
             }
           }
-          putScaledImageData(imageDataMb);
+          putLowResImageData(imageDataMb);
   return gradient;
 }

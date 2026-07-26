@@ -99,29 +99,29 @@ export type CanvasDrawParams = Record<string, any>;
 export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
-    asciiColor, asciiSize, attractorAnimTime, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, auroraAnimTime,
+    asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, animValuesRef,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
-    causticsAnimTime, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
+    causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
-    duotoneThreeColor, dustCrackleIntensity, emojiAnimTime, emojiChars, emojiOffsetX, emojiSize,
+    duotoneThreeColor, dustCrackleIntensity, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
-    fisheyeCenterX, fisheyeCenterY, fisheyeStrength, flowAnimTime, flowBufferRef, flowParticleCount,
-    flowParticlesRef, flowScale, flowThickness, flowerAnimTime, flowerCircles, flowerRotation,
+    fisheyeCenterX, fisheyeCenterY, fisheyeStrength, flowBufferRef, flowParticleCount,
+    flowParticlesRef, flowScale, flowThickness, flowerCircles, flowerRotation,
     flowerScale, flowerSpread,
     gradientAngle, gradientAngleRef, gradientColors, gradientColorsRef,
     gradientType, grainIntensity, grainType, gridColumns, gridRotation, gridRows,
     gridShapeSize, gridSides, gridVariation, halftoneCMYK, halftoneMove, halftoneSize,
     halftoneTimeRef, halftoneVariation, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled,
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
-    lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed, liquidAnimTime, liquidScale,
-    liquidStrength, marbleAnimTime, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
-    meshJitter, metaballAnimTime, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
-    moireAnimTime, moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
+    lavaBlobCount, lavaBlobSize, lavaSpeed, liquidScale,
+    liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
+    meshJitter, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
+    moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
@@ -132,7 +132,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     topographicBands, topographicLineWidth, topographicScale,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaCanvasRef,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
-    voronoiAnimTime, voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
+    voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
     waveFrequency, waveNumberRef, waveRotationRef, waveScale, zoom, zoomRef,
   } = params;
 
@@ -166,6 +166,32 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const gradientColors = gradientColorsRef.current;
     const gradientAngle = gradientAngleRef.current;
     const zoom = zoomRef.current;
+    // These 12 anim-time clocks used to be read directly from React state
+    // (via `params`, destructured from the props this hook was called
+    // with). Each ticks via its own ~60fps setInterval/RAF-loop setState in
+    // InteractiveGradient.tsx, and each was also listed in the huge
+    // `drawParams` useMemo's dependency array that gates this whole
+    // effect's re-run — meaning every single tick of any one of these
+    // (while its gradient/effect was active) tore down and rebuilt this
+    // entire ~350-line closure and reassigned drawRef.current, 60x/sec.
+    // animValuesRef mirrors all of them (see InteractiveGradient.tsx) and
+    // is updated in the same places; reading through the ref here instead
+    // lets `drawParams` drop these from its dependency list entirely
+    // (still bumps drawParamsDirtyRef so the RAF loop knows to redraw —
+    // it just no longer needs to reconstruct this closure to do it).
+    const av = animValuesRef.current;
+    const auroraAnimTime = av.auroraAnimTime;
+    const causticsAnimTime = av.causticsAnimTime;
+    const lavaAnimTime = av.lavaAnimTime;
+    const marbleAnimTime = av.marbleAnimTime;
+    const metaballAnimTime = av.metaballAnimTime;
+    const moireAnimTime = av.moireAnimTime;
+    const flowAnimTime = av.flowAnimTime;
+    const attractorAnimTime = av.attractorAnimTime;
+    const liquidAnimTime = av.liquidAnimTime;
+    const emojiAnimTime = av.emojiAnimTime;
+    const voronoiAnimTime = av.voronoiAnimTime;
+    const flowerAnimTime = av.flowerAnimTime;
 
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
@@ -240,8 +266,14 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         return ctx.getImageData(0, 0, displayWidth, displayHeight);
       }
       const tmp = getScratchOffscreen('display', displayWidth, displayHeight);
-      (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).drawImage(canvas, 0, 0, displayWidth, displayHeight);
-      return (tmp.getContext('2d') as OffscreenCanvasRenderingContext2D).getImageData(0, 0, displayWidth, displayHeight);
+      // willReadFrequently: this scratch canvas exists purely so effects can
+      // read pixels back out of it every frame (getImageData right below) —
+      // unlike the main `ctx` above, which stays GPU-accelerated since most
+      // gradients never read it back, this one should skip straight to the
+      // software path instead of paying a GPU->CPU sync on every read.
+      const tmpCtx = tmp.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
+      tmpCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+      return tmpCtx.getImageData(0, 0, displayWidth, displayHeight);
     };
 
     // Crossfade snapshot: on the first frame after gradientType changes,
@@ -324,6 +356,9 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
+      auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
+      moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
+      voronoiAnimTime, flowerAnimTime,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
       // Overrides params' raw resolutionMultiplier with the pixel-budget-capped

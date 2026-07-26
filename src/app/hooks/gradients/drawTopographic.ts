@@ -217,7 +217,8 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           // Posterized noise field with a dark contour line drawn at every band
@@ -225,9 +226,13 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
           // simpler, self-contained noise formula (not sharing Noise's own
           // sliders) so Topographic has its own independent Scale/Bands/Line
           // controls rather than fighting over shared state.
+          // Rendered at half resolution and upscaled (putLowResImageData).
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const topoImageData = ctx.createImageData(displayWidth, displayHeight);
+          const tRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const tRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const tInvScale = 2; // 1 / 0.5
+          const topoImageData = ctx.createImageData(tRenderW, tRenderH);
           const topoData = topoImageData.data;
           const topoCX = displayWidth / 2, topoCY = displayHeight / 2;
           const topoScaleFactor = topographicScale * 0.001;
@@ -241,9 +246,9 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
           const topoSeedX = structuralSeed * 130;
           const topoSeedY = structuralSeed * 90;
 
-          for (let ty = 0; ty < displayHeight; ty++) {
-            for (let tx = 0; tx < displayWidth; tx++) {
-              const dx = tx - topoCX + topoSeedX, dy = ty - topoCY + topoSeedY;
+          for (let ty = 0; ty < tRenderH; ty++) {
+            for (let tx = 0; tx < tRenderW; tx++) {
+              const dx = tx * tInvScale - topoCX + topoSeedX, dy = ty * tInvScale - topoCY + topoSeedY;
               const n1 = Math.sin(dx * topoScaleFactor + topoPhase) * Math.cos(dy * topoScaleFactor * 1.15 - topoPhase);
               const n2 = Math.sin((dx + dy) * topoScaleFactor * 0.5) * 0.5;
               const n3 = Math.cos((dx - dy) * topoScaleFactor * 0.37) * 0.35;
@@ -268,13 +273,13 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
                 b *= (1 - lineMix * 0.85);
               }
 
-              const idx = (ty * displayWidth + tx) * 4;
+              const idx = (ty * tRenderW + tx) * 4;
               topoData[idx] = Math.round(Math.min(255, Math.max(0, r)));
               topoData[idx + 1] = Math.round(Math.min(255, Math.max(0, g)));
               topoData[idx + 2] = Math.round(Math.min(255, Math.max(0, b)));
               topoData[idx + 3] = 255;
             }
           }
-          putScaledImageData(topoImageData);
+          putLowResImageData(topoImageData);
   return gradient;
 }

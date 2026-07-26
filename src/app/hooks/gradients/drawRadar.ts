@@ -211,10 +211,12 @@ export function drawRadar(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Radar sweep gradient - rotating scan line with fade trail
+          // Radar sweep gradient - rotating scan line with fade trail,
+          // rendered at half resolution and upscaled (putLowResImageData).
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
 
@@ -223,13 +225,16 @@ export function drawRadar(P: any): CanvasGradient | undefined {
           const audioRadarFlash = (isAudioEnabled && isAudioReactive) ? audioMidsLevel : 0;
           const effectiveRadarFadeLength = Math.min(360, radarFadeLength + audioRadarTrail);
 
-          const radarImageData = ctx.createImageData(displayWidth, displayHeight);
+          const rRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const rRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const rInvScale = 2; // 1 / 0.5
+          const radarImageData = ctx.createImageData(rRenderW, rRenderH);
           const radarData = radarImageData.data;
 
-          for (let ry = 0; ry < displayHeight; ry++) {
-            for (let rx = 0; rx < displayWidth; rx++) {
-              const dx = rx - centerX;
-              const dy = ry - centerY;
+          for (let ry = 0; ry < rRenderH; ry++) {
+            for (let rx = 0; rx < rRenderW; rx++) {
+              const dx = rx * rInvScale - centerX;
+              const dy = ry * rInvScale - centerY;
               const pixelAngle = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
 
               let angleDiff = (radarSweepAngle - pixelAngle + 360) % 360;
@@ -257,7 +262,7 @@ export function drawRadar(P: any): CanvasGradient | undefined {
               const g = color1.g + (color2.g - color1.g) * colorFrac;
               const b = color1.b + (color2.b - color1.b) * colorFrac;
 
-              const idx = (ry * displayWidth + rx) * 4;
+              const idx = (ry * rRenderW + rx) * 4;
               radarData[idx] = r * brightness;
               radarData[idx + 1] = g * brightness;
               radarData[idx + 2] = b * brightness;
@@ -265,6 +270,6 @@ export function drawRadar(P: any): CanvasGradient | undefined {
             }
           }
 
-          putScaledImageData(radarImageData);
+          putLowResImageData(radarImageData);
   return gradient;
 }

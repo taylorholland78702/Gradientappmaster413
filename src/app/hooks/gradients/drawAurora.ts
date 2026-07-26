@@ -231,7 +231,15 @@ export function drawAurora(P: any): CanvasGradient | undefined {
             const colorIdx = ((b + Math.floor(auroraColorShift * gradientColors.length)) % gradientColors.length + gradientColors.length) % gradientColors.length;
             const color = gradientColors[colorIdx] || gradientColors[0];
             if (!color) continue;
-            for (let x = 0; x < displayWidth; x++) {
+            // Stepping every COLUMN_STRIDE px instead of every single column —
+            // each column was allocating its own CanvasGradient object (plus
+            // 4 addColorStop calls), so at full width this was thousands of
+            // gradient allocations per band per frame. Aurora's bands are
+            // soft, low-frequency waves already, so sampling at this stride
+            // and widening the fillRect to cover the gap reads identically
+            // while cutting the allocation count by COLUMN_STRIDE times.
+            const COLUMN_STRIDE = 3;
+            for (let x = 0; x < displayWidth; x += COLUMN_STRIDE) {
               const nx = x / displayWidth;
               const wave = Math.sin(nx * 4 + auroraTime + b * 1.3) * 0.5 * auroraWaveAmp +
                            Math.sin(nx * 7 - auroraTime * 1.4 + b * 0.9) * 0.25 * auroraWaveAmp +
@@ -250,7 +258,7 @@ export function drawAurora(P: any): CanvasGradient | undefined {
               grad.addColorStop(0.6, `rgba(${mixR},${mixG},${mixB},${alpha})`);
               grad.addColorStop(1, `rgba(${mixR},${mixG},${mixB},0)`);
               ctx.fillStyle = grad;
-              ctx.fillRect(x, cy - bandHeight * 0.5, 1, bandHeight);
+              ctx.fillRect(x, cy - bandHeight * 0.5, COLUMN_STRIDE, bandHeight);
             }
           }
   return gradient;

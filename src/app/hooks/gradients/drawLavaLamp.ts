@@ -211,7 +211,8 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
           ctx.fillStyle = '#000000';
@@ -225,7 +226,13 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
           const lavaOrbitBoost = 1 + audioMidsL * 3.0;         // orbit speed up on mids
           const lavaBrightBoost = 1 + audioBassL * 2.0;        // brightness flares
           const lavaColorShift = lavaAudio ? audioTrebleLevel * 0.8 : 0;
-          const imageData2 = ctx.createImageData(displayWidth, displayHeight);
+          // Rendered at half resolution and upscaled (putLowResImageData) — a
+          // per-pixel metaball field sum over every blob is too expensive at
+          // full display resolution.
+          const lRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const lRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const lInvScale = 2; // 1 / 0.5
+          const imageData2 = ctx.createImageData(lRenderW, lRenderH);
           const d2 = imageData2.data;
           const lavaTime = lt * lavaSpeed * lavaOrbitBoost;
           const numBlobs = Math.max(2, Math.min(lavaBlobCount, 12));
@@ -240,10 +247,10 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
             });
           }
           const scaleF = 1 / zoom;
-          for (let y = 0; y < displayHeight; y++) {
-            for (let x = 0; x < displayWidth; x++) {
-              const px2 = centerX + (x - centerX) * scaleF;
-              const py2 = centerY + (y - centerY) * scaleF;
+          for (let y = 0; y < lRenderH; y++) {
+            for (let x = 0; x < lRenderW; x++) {
+              const px2 = centerX + (x * lInvScale - centerX) * scaleF;
+              const py2 = centerY + (y * lInvScale - centerY) * scaleF;
               let field = 0;
               let colorR = 0, colorG = 0, colorB = 0, colorW = 0;
               for (let b = 0; b < blobs.length; b++) {
@@ -261,7 +268,7 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
               }
               const t3 = Math.min(1, Math.max(0, (field - 0.7) * 3));
               const brightness = (t3 > 0 ? 1 : Math.min(1, field * 0.3)) * lavaBrightBoost;
-              const idx2 = (y * displayWidth + x) * 4;
+              const idx2 = (y * lRenderW + x) * 4;
               const fr = colorW > 0 ? colorR / colorW : 0;
               const fg = colorW > 0 ? colorG / colorW : 0;
               const fb = colorW > 0 ? colorB / colorW : 0;
@@ -271,6 +278,6 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
               d2[idx2 + 3] = 255;
             }
           }
-          putScaledImageData(imageData2);
+          putLowResImageData(imageData2);
   return gradient;
 }

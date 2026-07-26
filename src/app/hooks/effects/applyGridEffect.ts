@@ -222,7 +222,8 @@ export function applyGridEffect(P: any): void {
   } = P;
             if (canvas.width === 0 || canvas.height === 0) return;
             const tempCanvas = getScratchCanvas('gridEffect', displayWidth, displayHeight);
-            const gCtx = tempCanvas.getContext('2d');
+            // willReadFrequently — read back via getImageData every frame below.
+            const gCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
             if (!gCtx) return;
             gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
             ctx.fillStyle = '#000';

@@ -212,13 +212,18 @@ export function drawHelix(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Conical gradient with spiral
+          // Conical gradient with spiral, rendered at half resolution and
+          // upscaled (putLowResImageData).
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const spiralImageData = ctx.createImageData(displayWidth, displayHeight);
+          const hRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const hRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const hInvScale = 2; // 1 / 0.5
+          const spiralImageData = ctx.createImageData(hRenderW, hRenderH);
           const spiralData = spiralImageData.data;
         
           const conicalAudioActive = isAudioEnabled && isAudioReactive;
@@ -232,10 +237,10 @@ export function drawHelix(P: any): CanvasGradient | undefined {
           const conicalBassPulse = conicalAudioActive ? audioSubBassLevel : 0;
           const conicalMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
 
-          for (let sy = 0; sy < displayHeight; sy++) {
-            for (let sx = 0; sx < displayWidth; sx++) {
-              const dx = sx - centerX;
-              const dy = sy - centerY;
+          for (let sy = 0; sy < hRenderH; sy++) {
+            for (let sx = 0; sx < hRenderW; sx++) {
+              const dx = sx * hInvScale - centerX;
+              const dy = sy * hInvScale - centerY;
               const dist = Math.sqrt(dx * dx + dy * dy);
               const spiralAngle = Math.atan2(dy, dx);
               const rawAngle = spiralAngle + (dist * (helixTightness + audioConicalTightness) * 0.01) * (helixTurns + audioConicalTurns) / conicalZoom + gradientAngle * DEG_TO_RAD;
@@ -251,13 +256,13 @@ export function drawHelix(P: any): CanvasGradient | undefined {
               if (!color1 || !color2) continue;
 
               const radialBoost = 1 + conicalBassPulse * (1 - dist / conicalMaxDist) * 0.8;
-              const pixelIndex = (sy * displayWidth + sx) * 4;
+              const pixelIndex = (sy * hRenderW + sx) * 4;
               spiralData[pixelIndex]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
               spiralData[pixelIndex + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
               spiralData[pixelIndex + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
               spiralData[pixelIndex + 3] = 255;
             }
           }
-          putScaledImageData(spiralImageData);
+          putLowResImageData(spiralImageData);
   return gradient;
 }

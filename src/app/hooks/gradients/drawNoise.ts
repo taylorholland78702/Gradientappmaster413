@@ -211,13 +211,21 @@ export function drawNoise(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Perlin-style noise gradient
+          // Perlin-style noise gradient, rendered at half resolution and
+          // upscaled (putLowResImageData) — the per-pixel octave loop below
+          // (each octave: pow + 2x sin/cos, plus domain-warp sin/cos before
+          // it) is too expensive to run at full display resolution every
+          // frame, especially at higher noiseOctaves values.
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
-          const noiseImageData = ctx.createImageData(displayWidth, displayHeight);
+          const nRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+          const nRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+          const nInvScale = 2; // 1 / 0.5
+          const noiseImageData = ctx.createImageData(nRenderW, nRenderH);
           const noiseData = noiseImageData.data;
 
           const audioActive = isAudioEnabled && isAudioReactive;
@@ -235,10 +243,12 @@ export function drawNoise(P: any): CanvasGradient | undefined {
           const noiseCY = displayHeight / 2;
           const warpStrength = noiseWarp * baseNoiseScale * 300;
 
-          for (let ny = 0; ny < displayHeight; ny++) {
-            for (let nx = 0; nx < displayWidth; nx++) {
-              const ndx = nx - noiseCX;
-              const ndy = ny - noiseCY;
+          for (let ny = 0; ny < nRenderH; ny++) {
+            for (let nx = 0; nx < nRenderW; nx++) {
+              const fx = nx * nInvScale;
+              const fy = ny * nInvScale;
+              const ndx = fx - noiseCX;
+              const ndy = fy - noiseCY;
               let rx = ndx * noiseRotCos - ndy * noiseRotSin;
               let ry = ndx * noiseRotSin + ndy * noiseRotCos;
 
@@ -296,13 +306,13 @@ export function drawNoise(P: any): CanvasGradient | undefined {
               const radialPulse = noiseBassBoost * (1 - dist / maxNoiseDist) * 0.8;
               const boost = 1 + radialPulse;
 
-              const idx = (ny * displayWidth + nx) * 4;
+              const idx = (ny * nRenderW + nx) * 4;
               noiseData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * boost));
               noiseData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * boost));
               noiseData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * boost));
               noiseData[idx + 3] = 255;
             }
           }
-          putScaledImageData(noiseImageData);
+          putLowResImageData(noiseImageData);
   return gradient;
 }
