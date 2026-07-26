@@ -3324,7 +3324,7 @@ export function InteractiveGradient() {
           title="Shuffle (Shift+W)"
           aria-label="Shuffle to a new look"
         >
-          <span className="relative w-full block wav-glow-wrap">
+          <span className={`relative w-full block wav-glow-wrap transition-transform duration-150 ${isWavPressed ? 'scale-90' : 'scale-100'}`}>
             <span
               aria-hidden="true"
               className="absolute inset-0 text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-stroke-text"
@@ -3334,7 +3334,7 @@ export function InteractiveGradient() {
               }}
             >wāv</span>
             <span
-              className="relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-base-text"
+              className={`relative text-[72px] w-full text-center tracking-tight leading-[0.9] block wav-base-text transition-opacity duration-150 ${isWavPressed ? 'opacity-60' : 'opacity-100'}`}
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 900,
