@@ -2,6 +2,7 @@ import React from 'react';
 import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
+import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -181,36 +182,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             >RESET</button>
           </div>
           {(() => {
-            const effectsList = ([
-              { value: 'ascii',          label: 'ASCII' },
-              { value: 'bloom',          label: 'Bloom' },
-              { value: 'blur',           label: 'Blur' },
-              { value: 'chromatic',      label: 'Chromatic' },
-              { value: 'chromatic-trails', label: 'Chroma Trails' },
-              { value: 'dither',         label: 'Dither' },
-              { value: 'duotone',        label: 'Duotone' },
-              { value: 'emoji',          label: 'Emoji' },
-              { value: 'feedback',       label: 'Feedback' },
-              { value: 'fisheye',        label: 'Fisheye' },
-              { value: 'glitch',         label: 'Glitch' },
-              { value: 'grain',     label: 'Grain' },
-              { value: 'grid-effect',    label: 'Grid' },
-              { value: 'halftone',       label: 'Halftone' },
-              { value: 'invert',         label: 'Invert' },
-              { value: 'kaleidoscope',   label: 'Kaleido' },
-              { value: 'liquid',         label: 'Liquid' },
-              { value: 'mirror',         label: 'Mirror' },
-              { value: 'photo',          label: 'Photo' },
-              { value: 'pixelate',       label: 'Pixelate' },
-              { value: 'posterize',      label: 'Posterize' },
-              { value: 'scanlines',      label: 'Scanlines' },
-              { value: 'shift',    label: 'Shift' },
-              { value: 'slit-scan',      label: 'Slit-Scan' },
-              { value: 'triangulate',    label: 'Triangulate' },
-              { value: 'vhs',     label: 'VHS' },
-              { value: 'vignette',       label: 'Vignette' },
-              { value: 'wave',label: 'Wave' },
-            ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
+            // Derived from the single per-effect registry (constants/effectRegistry.ts)
+            // instead of a hand-maintained list — adding/removing an effect no longer
+            // requires touching this array too.
+            const effectsList: { value: EffectType; label: string }[] =
+              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }));
             const rows = Math.ceil(effectsList.length / 2);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
@@ -256,7 +232,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         isActive
                           ? 'bg-white text-black'
                           : wouldExceedBudget
-                            ? 'text-white/30 cursor-not-allowed'
+                            ? 'text-white/30 wav-disabled-text cursor-not-allowed'
                             : 'text-white hover:bg-white/10'
                       }`}
                     >

@@ -1,3 +1,5 @@
+import { getScratchPixelBuffer } from '../../utils/scratchCanvas';
+
 export function applyVhs(P: any): void {
   const {
     activeEffects,
@@ -235,6 +237,13 @@ export function applyVhs(P: any): void {
             // Capture one CSS-pixel snapshot so slice extraction works at CSS coords
             const vhsFullImg = getDisplayImageData();
             const numGlitches = Math.floor(15 + effectiveVhsIntensity * 50);
+            // One reused backing buffer sized to the largest possible slice
+            // (h maxes out at 60px tall) instead of a fresh
+            // ctx.createImageData(displayWidth, hInt) allocation per glitch —
+            // up to ~65 full typed-array allocations/frame at high intensity
+            // otherwise. Each iteration just takes a differently-sized view
+            // over the same backing array via subarray().
+            const sliceBuf = getScratchPixelBuffer('vhs-slice', displayWidth * 60 * 4);
             for (let i = 0; i < numGlitches; i++) {
               const y = Math.random() * displayHeight;
               const h = Math.max(2, Math.min(60, Math.random() * 60 * effectiveVhsIntensity));
@@ -243,12 +252,20 @@ export function applyVhs(P: any): void {
               const hInt = Math.max(2, Math.ceil(h));
               if (yInt >= 0 && yInt + hInt <= displayHeight && displayWidth > 0) {
                 try {
-                  const slice = ctx.createImageData(displayWidth, hInt);
+                  const sliceView = sliceBuf.subarray(0, displayWidth * hInt * 4);
                   for (let row = 0; row < hInt; row++) {
                     const srcRow = Math.min(yInt + row, displayHeight - 1);
                     const srcOff = srcRow * displayWidth * 4;
-                    slice.data.set(vhsFullImg.data.subarray(srcOff, srcOff + displayWidth * 4), row * displayWidth * 4);
+                    sliceView.set(vhsFullImg.data.subarray(srcOff, srcOff + displayWidth * 4), row * displayWidth * 4);
                   }
+                  // Cast: TS's ImageData constructor overload wants
+                  // Uint8ClampedArray<ArrayBuffer> specifically, but a plain
+                  // `new Uint8ClampedArray(n)` (and any subarray view of it)
+                  // is typed as the wider ArrayBufferLike-backed variant —
+                  // functionally identical at runtime, same non-issue as the
+                  // pre-existing SharedArrayBuffer variance warnings
+                  // elsewhere in this codebase (useVCRPlayback.ts).
+                  const slice = new ImageData(sliceView as unknown as Uint8ClampedArray<ArrayBuffer>, displayWidth, hInt);
                   ctx.filter = `blur(${blurStrength * 1.5}px)`;
                   putScaledImageData(slice, offset, yInt);
                   ctx.filter = 'none';

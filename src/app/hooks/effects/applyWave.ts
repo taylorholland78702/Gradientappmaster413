@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function applyWave(P: any): void {
   const {
     activeEffects,
@@ -222,7 +224,7 @@ export function applyWave(P: any): void {
             if (canvas.width === 0 || canvas.height === 0) return;
             try {
               const waveData = getDisplayImageData();
-              const tempWave = ctx.createImageData(displayWidth, displayHeight);
+              const tempWave = getScratchImageData('wave', ctx, displayWidth, displayHeight);
               const angleRad = waveDistortionRotation * Math.PI / 180;
               // Audio: bass boosts amplitude, mids boost frequency
               const audioWaveAmp = isAudioReactive ? (audioSubBassLevel / 5) * 80 : 0;

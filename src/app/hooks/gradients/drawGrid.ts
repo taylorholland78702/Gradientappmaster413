@@ -89,6 +89,7 @@ export function drawGrid(P: any): CanvasGradient | undefined {
     gradientType,
     grainIntensity,
     grainType,
+    gridCellAngleStep,
     gridColumns,
     gridRotation,
     gridRows,
@@ -247,7 +248,8 @@ export function drawGrid(P: any): CanvasGradient | undefined {
 
           for (let row = 0; row < gridRowsSafe; row++) {
             for (let col = 0; col < gridColumnsSafe; col++) {
-              const cellAngle = (gradientAngle + row * 30 + col * 30 + audioGridOffset) % 360;
+              const cellAngleStep = gridCellAngleStep ?? 30;
+              const cellAngle = (gradientAngle + row * cellAngleStep + col * cellAngleStep + audioGridOffset) % 360;
               const angleRad = (cellAngle * Math.PI) / 180;
               const cellCenterX = gridOffX + col * cellWidth + cellWidth / 2;
               const cellCenterY = gridOffY + row * cellHeight + cellHeight / 2;

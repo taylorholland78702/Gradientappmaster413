@@ -1,18 +1,12 @@
 import type { EffectType } from './gradientEffects';
-
 // Relative per-frame compute cost, used both by feelingLucky's remix budget
 // (useRandomization.ts) and by the manual Multi-FX toggle (EffectsTab.tsx)
-// to cap how much gets stacked at once. Not every effect costs the same —
-// several do full-canvas getImageData/pixel-loop work every frame
-// (chromatic-trails, grid-effect, triangulate, halftone, dither), several
-// more do multi-pass or per-cell work (ascii, feedback, glitch, etc.), and
-// the rest are simple single-pass canvas ops. Default 1 for anything not
-// listed here.
-export const EFFECT_COST: Partial<Record<EffectType, number>> = {
-  'chromatic-trails': 3, 'grid-effect': 3, triangulate: 3, halftone: 3, dither: 3,
-  ascii: 2, feedback: 2, glitch: 2, vhs: 2, emoji: 2, grain: 2, mirror: 2,
-  blur: 2, wave: 2, duotone: 2, chromatic: 2, 'slit-scan': 2,
-};
+// to cap how much gets stacked at once. Now defined per-effect alongside
+// its drawFn/label/category in constants/effectRegistry.ts — re-exported
+// here since costOf/totalCost/MULTI_FX_COST_BUDGET are logic that belongs
+// in this file, not registry data.
+import { EFFECT_COST } from './effectRegistry';
+export { EFFECT_COST } from './effectRegistry';
 
 export const costOf = (effect: EffectType): number => EFFECT_COST[effect] ?? 1;
 

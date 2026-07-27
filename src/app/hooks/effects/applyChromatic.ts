@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function applyChromatic(P: any): void {
   const {
     activeEffects,
@@ -220,7 +222,7 @@ export function applyChromatic(P: any): void {
   } = P;
             if (displayWidth <= 1 || displayHeight <= 1) return;
             const src = getDisplayImageData();
-            const dst = ctx.createImageData(displayWidth, displayHeight);
+            const dst = getScratchImageData('chromatic', ctx, displayWidth, displayHeight);
             // True 2D RGB split: R→upper-left, G stays, B→lower-right
             // Spikes on treble via audioTrebleLevel
             const trebleSpike = isFirstEffect && isAudioReactive ? (audioTrebleLevel / 90) * chromaticOffset * 1.5 : 0;

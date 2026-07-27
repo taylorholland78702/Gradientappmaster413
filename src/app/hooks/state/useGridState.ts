@@ -7,6 +7,10 @@ export function useGridState() {
   const [gridRotation, setGridRotation] = useState(0);
   const [gridVariation, setGridVariation] = useState(0);
   const [gridShapeSize, setGridShapeSize] = useState(25);
+  // Per-cell rotation stagger — was hardcoded to 30deg in drawGrid.ts
+  // (herringbone look); 0deg gives uniform bands, 90deg gives a
+  // checkerboard-like alternation.
+  const [gridCellAngleStep, setGridCellAngleStep] = useState(30);
 
   return {
     gridSides,
@@ -21,5 +25,7 @@ export function useGridState() {
     setGridVariation,
     gridShapeSize,
     setGridShapeSize,
+    gridCellAngleStep,
+    setGridCellAngleStep,
   };
 }

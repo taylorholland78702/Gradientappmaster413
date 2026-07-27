@@ -1,4 +1,4 @@
-import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { getScratchCanvas, getScratchImageData } from '../../utils/scratchCanvas';
 
 export function applyGlitch(P: any): void {
   const {
@@ -280,7 +280,7 @@ export function applyGlitch(P: any): void {
               const gcsSmallSrcCtx = gcsSmallSrc.getContext('2d', { willReadFrequently: true })!;
               gcsSmallSrcCtx.drawImage(canvas, 0, 0, gcsW, gcsH);
               const gcsSrc = gcsSmallSrcCtx.getImageData(0, 0, gcsW, gcsH);
-              const gcsDst = ctx.createImageData(gcsW, gcsH);
+              const gcsDst = getScratchImageData('glitchChromaSplit', ctx, gcsW, gcsH);
               const gcsOff = Math.max(1, Math.round(glitchChromaSplit * gcsDownsample));
               for (let y = 0; y < gcsH; y++) {
                 for (let x = 0; x < gcsW; x++) {

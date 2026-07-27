@@ -16,7 +16,14 @@ export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'wav
 // for an unrelated gradient pattern, and sharing the same id string between
 // the two was a real footgun for any `=== 'grid'` check plus ambiguous in
 // preset/export data. See EFFECT_ONLY_MIGRATIONS below for old presets.
-export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid-effect' | 'dither' | 'slit-scan' | 'bloom' | 'feedback' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo' | 'glitch';
+//
+// EffectType, ALL_EFFECTS, and AUDIO_EFFECTS now live in effectRegistry.ts,
+// derived from the single per-effect registry object there instead of being
+// hand-authored here — re-exported below so existing imports of this module
+// keep working.
+export type { EffectType } from './effectRegistry';
+export { ALL_EFFECTS, AUDIO_EFFECTS } from './effectRegistry';
+import type { EffectType } from './effectRegistry';
 
 export const DEFAULT_COLORS: ColorRGB[] = [
   { r: 255, g: 100, b: 200 }, // Pink
@@ -102,18 +109,8 @@ export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'auror
 // Gradient types for Randomize (excludes freeform and mesh)
 export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
 
-// Kept in sync with the actual button list in the Effects tab (InteractiveGradient.tsx) —
-// every effect that has a button belongs here so Shuffle (both the Effects-tab button and
-// the WAV button) can pick it, and nothing without a button should be listed.
-// Exception: 'photo' has a button but is deliberately left out of this pool — it's a no-op
-// until the user uploads an image, so a random shuffle landing on it would just look broken.
-export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'glitch', 'grain', 'grid-effect', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave'];
-
 // Gradients that pulse/react visibly with audio
 export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'flow-field', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet'];
-
-// Effects that pulse/react visibly with audio
-export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye', 'bloom', 'feedback', 'glitch', 'kaleidoscope', 'scanlines', 'vhs', 'duotone', 'posterize', 'mirror'];
 
 // Gradient types where click-drag should not move the gradient's center
 export const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'helix', 'flow-field'];

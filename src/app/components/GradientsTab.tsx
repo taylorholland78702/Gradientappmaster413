@@ -9,6 +9,7 @@ export interface GradientsTabProps {
   // Grid
   gridRows: number; setGridRows: (v: number) => void;
   gridColumns: number; setGridColumns: (v: number) => void;
+  gridCellAngleStep: number; setGridCellAngleStep: (v: number) => void;
 
   // Polar Grid
   polygon2Sides: number; setPolygon2Sides: (v: number) => void;
@@ -151,7 +152,7 @@ export interface GradientsTabProps {
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName,
-    gridRows, setGridRows, gridColumns, setGridColumns,
+    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
@@ -252,6 +253,27 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   max="50"
                   value={gridColumns}
                   onChange={(e) => setGridColumns(Number(e.target.value))}
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <label className="text-[10px] text-white whitespace-nowrap" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation">Cell Angle Step:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="90"
+                  value={gridCellAngleStep}
+                  onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="90"
+                  value={gridCellAngleStep}
+                  onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>

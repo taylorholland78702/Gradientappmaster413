@@ -8,6 +8,7 @@ import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf } from '../constants/effectCost';
+import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
 // Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string(s)
@@ -41,15 +42,6 @@ const LOW_VISIBILITY_MOD_KEYS = new Set([
   'angleCenterX', 'angleCenterY', 'angleStartOffset',
   'blurMotionDirection', 'fadeDirection', 'fisheyeCenterX', 'fisheyeCenterY', 'noiseDirection',
 ]);
-const EFFECT_MOD_CATEGORY: Record<string, string[]> = {
-  ascii: ['ASCII'], bloom: ['Bloom'], blur: ['Blur'], chromatic: ['Chromatic'], 'chromatic-trails': ['Chroma Trails'],
-  dither: ['Dither'], duotone: ['Duotone'], emoji: ['Emoji'], feedback: ['Feedback'], fisheye: ['Fisheye'],
-  glitch: ['Glitch'], grain: ['Grain'], 'grid-effect': ['Grid', 'Grid Effect'], halftone: ['Halftone'], invert: ['Invert'], kaleidoscope: ['Kaleidoscope'],
-  liquid: ['Liquid'], mirror: ['Mirror'], photo: ['Photo'], pixelate: ['Pixelate'], posterize: ['Posterize'],
-  scanlines: ['Scanlines'], shift: ['Shift'], 'slit-scan': ['Slit-Scan'], triangulate: ['Triangulate'],
-  vhs: ['VHS'], vignette: ['Vignette'], wave: ['Wave'],
-};
-
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
 // nearly every piece of app state (randomization touches everything by
 // design). The build doesn't type-check (esbuild transpile only), and

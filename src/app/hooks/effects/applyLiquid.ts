@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function applyLiquid(P: any): void {
   const {
     activeEffects,
@@ -223,7 +225,7 @@ export function applyLiquid(P: any): void {
             // like real liquid refraction instead of a single wave direction.
             if (canvas.width === 0 || canvas.height === 0) return;
             const liqSrc = getDisplayImageData();
-            const liqOut = ctx.createImageData(displayWidth, displayHeight);
+            const liqOut = getScratchImageData('liquid', ctx, displayWidth, displayHeight);
             const lScale = liquidScale * 0.006;
             const lTime = liquidAnimTime;
             const lStrength = liquidStrength;

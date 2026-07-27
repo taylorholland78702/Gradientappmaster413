@@ -1,4 +1,5 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
+import { getMappedColor } from '../../utils/fieldCurve';
 export function drawIridescent(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -69,6 +70,7 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
     feedbackDecay,
     feedbackRotation,
     feedbackZoom,
+    fieldContrast,
     fisheyeCenterX,
     fisheyeCenterY,
     fisheyeStrength,
@@ -137,6 +139,8 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
     noiseScale,
     noiseType,
     noiseWarp,
+    paletteBands,
+    paletteMode,
     photoBlendMode,
     photoImageRef,
     photoOpacity,
@@ -284,16 +288,11 @@ export function drawIridescent(P: any): CanvasGradient | undefined {
               const iriRadialBoost = 1 + iriBassPulse * (1 - iriDist2 / iriMaxDist) * 0.8;
 
               const rawColorPos = ((interference + 1) * 0.5 + iriColorShift) % 1;
-              const colorPos = rawColorPos * (gradientColors.length - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
-              const color1 = gradientColors[colorIdx % gradientColors.length];
-              const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-              if (!color1 || !color2) continue;
+              const mapped = getMappedColor(rawColorPos, gradientColors, fieldContrast ?? 1, paletteMode ?? 'linear', paletteBands ?? 4);
 
-              const baseR = (color1.r + (color2.r - color1.r) * colorFrac) * iriRadialBoost;
-              const baseG = (color1.g + (color2.g - color1.g) * colorFrac) * iriRadialBoost;
-              const baseB = (color1.b + (color2.b - color1.b) * colorFrac) * iriRadialBoost;
+              const baseR = mapped.r * iriRadialBoost;
+              const baseG = mapped.g * iriRadialBoost;
+              const baseB = mapped.b * iriRadialBoost;
 
               const idx = (iy * iRenderW + ix) * 4;
               iridescentData[idx]     = Math.min(255, baseR * (1 - totalIridescentIntensity * 0.5) + r * 255 * totalIridescentIntensity);

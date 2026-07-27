@@ -1,4 +1,4 @@
-import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { getScratchCanvas, getScratchImageData } from '../../utils/scratchCanvas';
 
 export function applySlitScan(P: any): void {
   const {
@@ -260,7 +260,7 @@ export function applySlitScan(P: any): void {
             }
 
             if (slitScanBufferRef.current.length >= MIN_BUFFERED_FRAMES) {
-              const out = ctx.createImageData(displayWidth, displayHeight);
+              const out = getScratchImageData('slit-scan', ctx, displayWidth, displayHeight);
               const int = slitScanIntensity;
               const buf = slitScanBufferRef.current;
 

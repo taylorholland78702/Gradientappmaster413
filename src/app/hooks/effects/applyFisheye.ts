@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function applyFisheye(P: any): void {
   const {
     activeEffects,
@@ -220,7 +222,7 @@ export function applyFisheye(P: any): void {
   } = P;
             const w = displayWidth, h = displayHeight;
             const src = getDisplayImageData();
-            const dst = ctx.createImageData(w, h);
+            const dst = getScratchImageData('fisheye', ctx, w, h);
             const cx = (fisheyeCenterX / 100) * w, cy = (fisheyeCenterY / 100) * h;
             const R = Math.min(w / 2, h / 2);
             const str = Math.max(0.01, fisheyeStrength + (isFirstEffect ? audioModulation : 0));
@@ -259,6 +261,13 @@ export function applyFisheye(P: any): void {
                   dst.data[di + 1] = w00*src.data[i00+1] + w10*src.data[i10+1] + w01*src.data[i01+1] + w11*src.data[i11+1];
                   dst.data[di + 2] = w00*src.data[i00+2] + w10*src.data[i10+2] + w01*src.data[i01+2] + w11*src.data[i11+2];
                   dst.data[di + 3] = 255;
+                } else {
+                  // Out-of-bounds bilinear neighbor near the lens edge — a
+                  // fresh createImageData() buffer would leave this pixel
+                  // zero-initialized (transparent black); the reused scratch
+                  // buffer below needs it written explicitly instead, since
+                  // it can carry stale data from a previous frame otherwise.
+                  dst.data[di] = 0; dst.data[di + 1] = 0; dst.data[di + 2] = 0; dst.data[di + 3] = 0;
                 }
               }
             }

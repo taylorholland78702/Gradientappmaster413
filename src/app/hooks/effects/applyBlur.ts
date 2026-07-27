@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function applyBlur(P: any): void {
   const {
     activeEffects,
@@ -251,7 +253,7 @@ export function applyBlur(P: any): void {
               if (canvas.width > 0 && canvas.height > 0) {
                 try {
                   const zbSrc = getDisplayImageData();
-                  const zbDst = ctx.createImageData(displayWidth, displayHeight);
+                  const zbDst = getScratchImageData('blur-zoom', ctx, displayWidth, displayHeight);
                   const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
                   const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
                   const zbSteps = 10;
@@ -283,7 +285,7 @@ export function applyBlur(P: any): void {
               if (canvas.width > 0 && canvas.height > 0) {
                 try {
                   const zbSrc = getDisplayImageData();
-                  const zbDst = ctx.createImageData(displayWidth, displayHeight);
+                  const zbDst = getScratchImageData('blur-radial', ctx, displayWidth, displayHeight);
                   const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
                   // Up to ~45 degrees of total sweep at max slider value.
                   const spinSweep = (blurRadialAmount / 50) * (Math.PI / 4) * (isFirstEffect && isAudioReactive ? 1 + audioMidsLevel * 2 : 1);

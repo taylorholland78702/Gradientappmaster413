@@ -307,6 +307,18 @@
   color: #dc2626 !important;
 }
 
+/* Disabled/greyed-out controls (e.g. Multi-FX budget-exceeded effect
+   buttons) used a low-opacity white (text-white/30) intending a faded look
+   — but the blanket `.control-panel *` rule above forces color to solid
+   opaque #000 regardless of any text-white/* utility class, since it wins
+   on specificity via !important. The result: disabled buttons rendered
+   with the exact same solid black text as enabled ones — no visual
+   difference at all, not just low contrast. This exemption gives disabled
+   controls an actually-faded look against the panel's light surface. */
+.control-panel .wav-disabled-text {
+  color: rgba(0, 0, 0, 0.35) !important;
+}
+
 /* Audio tab icon's live-signal state — same intent as .text-red-500
    above, but that pattern alone isn't enough here: Phosphor icons render
    as <svg fill="currentColor"><path/></svg>, and the blanket
@@ -482,6 +494,33 @@ input[type="range"]::-moz-range-thumb {
 input[type="range"]::-moz-range-thumb:hover {
   box-shadow:
     0 0 0 3px rgba(255,255,255,0.5);
+}
+
+/* ── Touch targets on coarse-pointer (touch) devices ──
+   Slider thumbs (9px) and the grid/effects buttons (text-[10px] py-0.5,
+   under 20px tall) are sized for a mouse cursor, well under the ~44px
+   minimum recommended tap target — fine with a mouse's pixel-precise
+   pointer, genuinely hard to hit with a finger. Scoped to `pointer: coarse`
+   (touchscreens) rather than `isMobile`/viewport width, since a touch
+   laptop or a narrow desktop window shouldn't get the enlarged mouse
+   targets swapped for finger-sized ones or vice versa purely based on
+   screen size. */
+@media (pointer: coarse) {
+  .control-panel input[type="range"] {
+    height: 28px;
+  }
+  .control-panel input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    margin-top: -8.5px;
+  }
+  .control-panel input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  .control-panel button {
+    min-height: 28px;
+  }
 }
 
 /* ── Hide number input spinners ── */

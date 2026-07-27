@@ -1,3 +1,5 @@
+import { getMappedColor } from '../../utils/fieldCurve';
+
 export function drawMetaballs(P: any): CanvasGradient | undefined {
   const {
     structuralSeed,
@@ -69,6 +71,7 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
     feedbackDecay,
     feedbackRotation,
     feedbackZoom,
+    fieldContrast,
     fisheyeCenterX,
     fisheyeCenterY,
     fisheyeStrength,
@@ -137,6 +140,8 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
     noiseScale,
     noiseType,
     noiseWarp,
+    paletteBands,
+    paletteMode,
     photoBlendMode,
     photoImageRef,
     photoOpacity,
@@ -259,16 +264,12 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
                 field += (balls[b].r * balls[b].r) / (dist2 + 1);
               }
               const tValMb = (1 - 1 / (1 + field * 0.6)) * (1 - mbColorShift) + mbColorShift;
-              const colorPosMb = tValMb * (gradientColors.length - 1);
-              const ciMb = Math.floor(colorPosMb);
-              const cfMb = colorPosMb - ciMb;
-              const c1Mb = gradientColors[ciMb] || { r: 0, g: 0, b: 0 };
-              const c2Mb = gradientColors[(ciMb + 1) % gradientColors.length] || c1Mb;
+              const mappedMb = getMappedColor(tValMb, gradientColors, fieldContrast ?? 1, paletteMode ?? 'linear', paletteBands ?? 4);
               const brightnessMb = Math.min(1, field * 0.9);
               const idxMb = (y * mRenderW + x) * 4;
-              dMb[idxMb]     = Math.round((c1Mb.r + (c2Mb.r - c1Mb.r) * cfMb) * brightnessMb);
-              dMb[idxMb + 1] = Math.round((c1Mb.g + (c2Mb.g - c1Mb.g) * cfMb) * brightnessMb);
-              dMb[idxMb + 2] = Math.round((c1Mb.b + (c2Mb.b - c1Mb.b) * cfMb) * brightnessMb);
+              dMb[idxMb]     = Math.round(mappedMb.r * brightnessMb);
+              dMb[idxMb + 1] = Math.round(mappedMb.g * brightnessMb);
+              dMb[idxMb + 2] = Math.round(mappedMb.b * brightnessMb);
               dMb[idxMb + 3] = 255;
             }
           }
