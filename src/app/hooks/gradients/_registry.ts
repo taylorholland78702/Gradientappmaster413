@@ -25,6 +25,7 @@ import { drawAttractor } from './drawAttractor';
 import { drawReactionDiffusion } from './drawReactionDiffusion';
 import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
 import { drawFlower } from './drawFlower';
+import { drawParticles } from './drawParticles';
 
 // Dispatches to the WebGL renderer when the browser/GPU can support it
 // (checked once, memoized in detectRDGLSupport), otherwise the untouched,
@@ -71,4 +72,5 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'attractor': drawAttractor,
   'reaction-diffusion': drawReactionDiffusionAuto,
   'flower': drawFlower,
+  'particles': drawParticles,
 };

@@ -65,6 +65,13 @@ export interface GradientsTabProps {
   attractorDotSize: number; setAttractorDotSize: (v: number) => void;
   attractorTrailFade: number; setAttractorTrailFade: (v: number) => void;
 
+  // Particles
+  particlesCount: number; setParticlesCount: (v: number) => void;
+  particlesSpeed: number; setParticlesSpeed: (v: number) => void;
+  particlesSize: number; setParticlesSize: (v: number) => void;
+  particlesTrail: number; setParticlesTrail: (v: number) => void;
+  particlesGravity: number; setParticlesGravity: (v: number) => void;
+
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
@@ -170,6 +177,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
+    particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
@@ -544,6 +552,26 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Scale', value: attractorScale, set: setAttractorScale, min: 0.3, max: 3, step: 0.1 },
               { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
               { label: 'Fade', value: attractorTrailFade, set: setAttractorTrailFade, min: 0.01, max: 0.3, step: 0.01 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'particles' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
+              { label: 'Speed', value: particlesSpeed, set: setParticlesSpeed, min: 0.1, max: 5, step: 0.1 },
+              { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
+              { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
+              { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
