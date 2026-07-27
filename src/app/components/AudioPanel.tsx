@@ -390,15 +390,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 on beat, leaves Modulation bindings alone. Built-ins are
                 curated and read-only; anything the user saves shows up
                 under Custom, with Update/Delete once selected. Shuffle
-                sits inline as an icon-only button, top-left. */}
+                sits inline as an icon-only button, top-right. */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={onShuffleAudio}
-                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
-                className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
-              >
-                <Shuffle weight="regular" className="w-3.5 h-3.5" />
-              </button>
               <select
                 value={selectedPresetName}
                 onChange={handleStylePresetSelect}
@@ -444,6 +437,13 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   <Plus weight="bold" className="w-3.5 h-3.5" />
                 </button>
               )}
+              <button
+                onClick={onShuffleAudio}
+                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
+                className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+              >
+                <Shuffle weight="regular" className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {isNamingPreset && (

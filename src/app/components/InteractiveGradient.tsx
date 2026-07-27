@@ -1443,16 +1443,19 @@ export function InteractiveGradient() {
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
-  // Anchored to the whole panel (panelRef), not the trigger button — sits
-  // below the entire panel instead of overlapping whatever row/tab content
-  // is underneath the button. panelRef stays mounted (just opacity-0) even
-  // when the collapsed cluster is what's actually showing, so this still
-  // resolves to a sensible position in that case too.
-  const openAutoShufflePopover = () => {
-    const panelEl = panelRef.current;
-    const rect = panelEl ? panelEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
-    const width = Math.max(200, rect.width);
-    const left = Math.min(rect.left, window.innerWidth - width - 8);
+  // Anchored to the trigger button, not the whole panel — floats as an
+  // overlay just below the icon row on top of whatever panel content (the
+  // expanded control panel's tabs/sliders, or the collapsed cluster) sits
+  // underneath it, instead of being pushed below the panel's full height
+  // (which could land far down/off-screen once Effects tab content made
+  // the panel tall). panelRef is still used as a width/position fallback
+  // for keyboard-triggered opens (⌥⇧W) where there's no click event.
+  const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
+    const anchorEl = triggerEl || panelRef.current;
+    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
+    const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
+    const width = Math.max(200, panelRect.width);
+    const left = Math.min(panelRect.left, window.innerWidth - width - 8);
     setAutoShufflePopoverAnchor({ top: rect.bottom + 8, left: Math.max(8, left), width });
   };
   useEffect(() => {
@@ -3394,7 +3397,7 @@ export function InteractiveGradient() {
               toggling directly — ⌥⇧W keyboard shortcut still toggles on/off
               immediately. */}
           <button
-            onClick={() => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover()}
+            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
             className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"
@@ -3571,7 +3574,7 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
-            onClick={() => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover()}
+            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
             className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"
