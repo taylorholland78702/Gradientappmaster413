@@ -71,6 +71,11 @@ export interface GradientsTabProps {
   particlesSize: number; setParticlesSize: (v: number) => void;
   particlesTrail: number; setParticlesTrail: (v: number) => void;
   particlesGravity: number; setParticlesGravity: (v: number) => void;
+  // Tiling
+  tilingSize: number; setTilingSize: (v: number) => void;
+  tilingSymmetry: number; setTilingSymmetry: (v: number) => void;
+  tilingComplexity: number; setTilingComplexity: (v: number) => void;
+  tilingRotation: number; setTilingRotation: (v: number) => void;
 
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
@@ -178,6 +183,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
     particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity,
+    tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
@@ -572,6 +578,25 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
               { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
               { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'tiling' && (
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Tile Size', value: tilingSize, set: setTilingSize, min: 30, max: 300, step: 10 },
+              { label: 'Symmetry', value: tilingSymmetry, set: setTilingSymmetry, min: 2, max: 12, step: 1 },
+              { label: 'Complexity', value: tilingComplexity, set: setTilingComplexity, min: 0.5, max: 10, step: 0.5 },
+              { label: 'Rotation', value: tilingRotation, set: setTilingRotation, min: 0, max: 360, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
