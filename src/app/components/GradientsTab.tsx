@@ -144,6 +144,8 @@ export interface GradientsTabProps {
   flowerCircles: number; setFlowerCircles: (v: number) => void;
   flowerScale: number; setFlowerScale: (v: number) => void;
   flowerSpread: number; setFlowerSpread: (v: number) => void;
+  flowerSymmetry: number; setFlowerSymmetry: (v: number) => void;
+  flowerOpacity: number; setFlowerOpacity: (v: number) => void;
 
   // Helix (conical spiral)
   helixTurns: number; setHelixTurns: (v: number) => void;
@@ -183,6 +185,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     fadeDirection, setFadeDirection,
     radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth,
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
+    flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity,
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
@@ -1300,6 +1303,52 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   step="0.05"
                   value={flowerSpread}
                   onChange={(e) => setFlowerSpread(Number(e.target.value))}
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[10px] text-white whitespace-nowrap" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices">Symmetry:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="3"
+                  max="12"
+                  step="1"
+                  value={flowerSymmetry}
+                  onChange={(e) => setFlowerSymmetry(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="3"
+                  max="12"
+                  step="1"
+                  value={flowerSymmetry}
+                  onChange={(e) => setFlowerSymmetry(Number(e.target.value))}
+                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Opacity:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0.2"
+                  max="1.5"
+                  step="0.05"
+                  value={flowerOpacity}
+                  onChange={(e) => setFlowerOpacity(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="0.2"
+                  max="1.5"
+                  step="0.05"
+                  value={flowerOpacity}
+                  onChange={(e) => setFlowerOpacity(Number(e.target.value))}
                   className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>

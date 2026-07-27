@@ -79,9 +79,11 @@ export function drawFlower(P: any): CanvasGradient | undefined {
     flowThickness,
     flowerAnimTime,
     flowerCircles,
+    flowerOpacity,
     flowerRotation,
     flowerScale,
     flowerSpread,
+    flowerSymmetry,
     gradientAngle,
     gradientAngleRef,
     gradientColors,
@@ -236,8 +238,9 @@ export function drawFlower(P: any): CanvasGradient | undefined {
           const audioLayerBoost = (isAudioEnabled && isAudioReactive) && audioSubBassLevel > 0.65 ? 1 : 0;
           // Create hexagonal pattern of overlapping circles
           const layers = flowerCircles + audioLayerBoost;
+          const symmetry = flowerSymmetry ?? 6;
           for (let layer = 1; layer <= layers; layer++) {
-            const circlesInLayer = layer * 6;
+            const circlesInLayer = layer * symmetry;
             const angleStep = (Math.PI * 2) / circlesInLayer;
             const layerRadius = baseRadius * layer * flowerSpread;
 
@@ -255,9 +258,10 @@ export function drawFlower(P: any): CanvasGradient | undefined {
             if (!color) return;
 
             // Create radial gradient for each circle
+            const opacity = flowerOpacity ?? 1;
             const grad = ctx.createRadialGradient(circle.x, circle.y, 0, circle.x, circle.y, baseRadius);
-            grad.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`);
-            grad.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0.2)`);
+            grad.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${Math.min(1, 0.8 * opacity)})`);
+            grad.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, ${Math.min(1, 0.2 * opacity)})`);
 
             ctx.fillStyle = grad;
             ctx.beginPath();
@@ -265,7 +269,7 @@ export function drawFlower(P: any): CanvasGradient | undefined {
             ctx.fill();
 
             // Draw circle outline
-            ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
+            ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${Math.min(1, 0.5 * opacity)})`;
             ctx.lineWidth = 2;
             ctx.stroke();
           });
