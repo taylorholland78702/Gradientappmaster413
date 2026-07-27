@@ -3509,7 +3509,7 @@ export function InteractiveGradient() {
             window.addEventListener('mouseup', onUp);
           }}
           onClick={isMobile ? () => setIsAboutOpen(true) : undefined}
-          className={`w-full text-center select-none pt-1 ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          className={`w-full text-center select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
           title={isMobile ? 'About wāv' : 'Click: About · Hold: drag panel'}
           aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the panel'}
         >
@@ -3522,14 +3522,15 @@ export function InteractiveGradient() {
               treatment as the rest of the glyphs — it's part of the same
               glyph run, not a separate element. */}
           <svg
-            viewBox="0 0 240 84"
-            style={{ height: '60px', width: 'auto', display: 'inline-block', overflow: 'visible' }}
+            viewBox="0 0 240 74"
+            style={{ height: '78px', width: 'auto', display: 'inline-block', overflow: 'visible' }}
             role="img"
             aria-label="wāv"
           >
             <defs>
               <linearGradient id="wavGlassBody" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.62" />
+                <stop offset="14%" stopColor="#ffffff" stopOpacity="0.55" />
                 <stop offset="42%" stopColor="#ffffff" stopOpacity="0.26" />
                 <stop offset="72%" stopColor="#ffffff" stopOpacity="0.15" />
                 <stop offset="100%" stopColor="#ffffff" stopOpacity="0.58" />
@@ -3555,10 +3556,15 @@ export function InteractiveGradient() {
 
             <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
 
+            {/* Highlight/fringe layers are clipped to the full "wāv" glyph
+                run (including the macron) so the diacritic gets the same
+                sweep + fringe treatment as the letterforms below it — the
+                top band is intentionally low-opacity now (was washing the
+                thin macron out to a flat opaque bar instead of glass). */}
             <g clipPath="url(#wavGlassClip)">
-              <rect x="0" y="0" width="240" height="28" fill="#ffffff" opacity="0.5" filter="url(#wavGlassBlur)" />
-              <rect x="-15" y="4" width="34" height="92" fill="#ffffff" opacity="0.32" transform="rotate(18 120 44)" filter="url(#wavGlassBlur)" />
-              <rect x="0" y="70" width="240" height="7" fill="url(#wavGlassFringe)" filter="url(#wavGlassBlur)" />
+              <rect x="0" y="0" width="240" height="20" fill="#ffffff" opacity="0.22" filter="url(#wavGlassBlur)" />
+              <rect x="-15" y="4" width="34" height="80" fill="#ffffff" opacity="0.3" transform="rotate(18 120 40)" filter="url(#wavGlassBlur)" />
+              <rect x="0" y="60" width="240" height="7" fill="url(#wavGlassFringe)" filter="url(#wavGlassBlur)" />
             </g>
 
             <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.1">wāv</text>
@@ -3712,11 +3718,20 @@ export function InteractiveGradient() {
                   theme CSS has a blanket `.control-panel * { color: #000
                   !important }` rule, and an !important stylesheet rule always
                   wins over inline style regardless of specificity, so the
-                  inline color this used before was silently never applied. */}
+                  inline color this used before was silently never applied.
+                  Also checks audioEnergy (the fully gain/multiplier-adjusted
+                  value that actually drives the reactive visuals), not just
+                  the raw/auto-gain-normalized live*Level meters — a quieter
+                  absolute input (e.g. a BlackHole/loopback device feeding in
+                  well below a physical mic's level, or auto-gain still
+                  warming up its decaying-peak reference) could stay under
+                  the live-meter threshold while genuinely driving visible
+                  reactivity, leaving the icon red despite audio clearly
+                  working. */}
               <SpeakerHigh
                 weight="regular"
                 className={`w-4 h-4 transition-colors ${isMicActive
-                  ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? 'wav-audio-signal-ok' : 'wav-audio-signal-none')
+                  ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'wav-audio-signal-ok' : 'wav-audio-signal-none')
                   : ''}`}
               />
             </button>
