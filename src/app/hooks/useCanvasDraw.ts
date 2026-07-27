@@ -317,13 +317,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     
     // Apply audio reactivity to gradient angle if enabled. audioSubBassLevel
     // isn't naturally 0-1 — its range depends on the Sub multiplier slider
-    // (0-5) and master sensitivity — so without the clamp this could add
-    // several multiples of 360° in a single frame on loud sub-bass, an
-    // unbounded snap that fights the smooth autonomous rotation happening
-    // in the same frame rather than the intended "up to one full turn"
-    // wobble on top of it.
+    // (0-5) and master sensitivity — so it's clamped to 0-1 before use.
+    // This used to swing up to a full 360° on a single loud kick — since
+    // audioSubBassLevel isn't eased frame-to-frame beyond the light smoothing
+    // already applied in useAudioReactivity, that read as the whole pattern
+    // snapping to a near-random new orientation on every hit. Capped to a
+    // much smaller wobble (±20°) so bass still visibly nudges the angle
+    // without the pattern appearing to spin wildly.
     const audioAdjustedAngle = (isAudioEnabled && isAudioReactive)
-      ? gradientAngle + (Math.min(1, audioSubBassLevel) * 360)
+      ? gradientAngle + (Math.min(1, audioSubBassLevel) * 20)
       : gradientAngle;
     
     const angleRad = audioAdjustedAngle * DEG_TO_RAD;
@@ -350,7 +352,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // a constant rate regardless of what's actually happening musically.
     const musicIntensity = musicIntensityRef?.current ?? 1;
     if (audioActiveForDrift) {
-      hueDriftRef.current += (0.08 + audioMidsLevel * 0.5) * musicIntensity;
+      // audioMidsLevel isn't naturally 0-1 — its ceiling depends on the Mids
+      // multiplier slider (0-5) and master sensitivity — so it's clamped to
+      // 1 here before scaling. Unclamped, loud mids could add up to 2.5°/frame
+      // (150°/sec, 2.5 full hue cycles a second), which read as the whole
+      // palette spinning rather than drifting.
+      hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity;
     }
     const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
 
