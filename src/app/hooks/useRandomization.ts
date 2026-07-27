@@ -75,8 +75,8 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanIntensity, setSlitScanDirection,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
-    setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle, setIridescentIntensity,
-    setIridescentScale, setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
+    setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
+    setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
@@ -90,8 +90,8 @@ export function useRandomization(params: RandomizationParams) {
     setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
-    setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionStrength, setWaveFrequency, setWaveNumber,
-    setWaveRotation, setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
+    setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionStrength,
+    setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
   } = params;
 
@@ -600,10 +600,6 @@ export function useRandomization(params: RandomizationParams) {
     setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
     setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
     setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
-    setWaveAmplitude(Math.floor(Math.random() * 60) + 15);            // 15–74
-    setWaveFrequency(Math.floor(Math.random() * 8) + 1);              // 1–8
-    setWaveNumber(Math.floor(Math.random() * 18) + 5);                // 5–22
-    setWaveRotation(Math.floor(Math.random() * 360));
     setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
     setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
     setNoiseDirection(Math.floor(Math.random() * 360));
@@ -619,10 +615,7 @@ export function useRandomization(params: RandomizationParams) {
     setAngleStartOffset(Math.floor(Math.random() * 360));
     setAngleCenterX(50);
     setAngleCenterY(50);
-    setIridescentAngle(Math.floor(Math.random() * 360));
-    setIridescentIntensity(Math.random() * 1.2 + 0.5);                // 0.5–1.7
-    setIridescentScale(Math.random() * 1.5 + 0.5);                    // 0.5–2.0
-    
+
     // Randomize duotone colors
     const randomHexColor = () => {
       const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
@@ -720,7 +713,6 @@ export function useRandomization(params: RandomizationParams) {
     // only nudge the params the active type actually uses, and extended to
     // cover the 10 types that previously had none here at all.
     if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
-    else if (gradientType === 'waves') { setWaveAmplitude(Math.round(rng(10, 80))); setWaveFrequency(Math.round(rng(1, 8))); }
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
     else if (gradientType === 'shapes') setConcentricRingWidth(Math.round(rng(20, 180)));
