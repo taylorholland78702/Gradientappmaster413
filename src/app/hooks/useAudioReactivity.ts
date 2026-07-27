@@ -81,9 +81,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [trebleMax, setTrebleMax] = useState(5);
   // Slider runs 0-10 (see effMasterSensitivity above, which clamps the
   // actual math to a max of 3 — values 3-10 are identical headroom).
-  // Defaults to 7, i.e. already past the clamp, for strong reactivity out
-  // of the box.
-  const [masterSensitivity, setMasterSensitivity] = useState(7);
+  // Defaults to 2, well under the clamp, so reactivity reads as present but
+  // subtle out of the box rather than pinned at max.
+  const [masterSensitivity, setMasterSensitivity] = useState(2);
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);
@@ -514,7 +514,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // shrink their rendered pattern by dividing radius/position math by
       // zoom, and past roughly 1.6-1.8x the pattern no longer covers the
       // full canvas, exposing the black clear-fill underneath at the edges.
-      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity) : 0;
+      // Zoom motion reacts at half the overall Intensity dial — a camera-zoom
+      // punch reads as far more intense per unit of "level" than a color or
+      // bar-height change does, so it needs its own (lower) scale rather than
+      // riding the same Intensity value Color/Shape use.
+      const zoomMotionScale = 0.5;
+      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity * zoomMotionScale) : 0;
       setTargetZoomRef.current(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
