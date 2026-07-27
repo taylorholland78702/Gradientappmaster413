@@ -76,6 +76,7 @@ export interface GradientsTabProps {
   tilingSymmetry: number; setTilingSymmetry: (v: number) => void;
   tilingComplexity: number; setTilingComplexity: (v: number) => void;
   tilingRotation: number; setTilingRotation: (v: number) => void;
+  tilingRowOffset: number; setTilingRowOffset: (v: number) => void;
 
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
@@ -183,7 +184,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
     particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity,
-    tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation,
+    tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingRowOffset, setTilingRowOffset,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
@@ -606,6 +607,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white w-20 shrink-0" title="Shifts every other tile row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min={-tilingSize} max={tilingSize} value={tilingRowOffset} onChange={e => setTilingRowOffset(Number(e.target.value))} className="flex-1" />
+                <input type="number" value={tilingRowOffset} onChange={e => setTilingRowOffset(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
+            </div>
           </div>
         )}
 

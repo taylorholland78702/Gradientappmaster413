@@ -19,6 +19,7 @@ export function drawTiling(P: any): CanvasGradient | undefined {
     tilingComplexity,
     tilingRotation,
     tilingAnimTime,
+    tilingRowOffset,
   } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -42,9 +43,15 @@ export function drawTiling(P: any): CanvasGradient | undefined {
       const fx = px * invScale;
       const fy = py * invScale;
 
-      const tileIndexX = Math.floor(fx / tileSize);
+      // Row offset — brick/halftone-style stagger: every other tile row
+      // is shifted horizontally, same idea as Emoji's row offset. Applied
+      // to the sampling x before tile-column math so it shifts whole
+      // tiles rather than distorting the motif inside them.
       const tileIndexY = Math.floor(fy / tileSize);
-      let lx = (fx / tileSize - tileIndexX - 0.5) * tileSize;
+      const rowStaggerAmt = (((tileIndexY % 2) + 2) % 2 === 1) ? (tilingRowOffset ?? 0) * 0.5 : 0;
+      const sfx = fx - rowStaggerAmt;
+      const tileIndexX = Math.floor(sfx / tileSize);
+      let lx = (sfx / tileSize - tileIndexX - 0.5) * tileSize;
       let ly = (fy / tileSize - tileIndexY - 0.5) * tileSize;
 
       // p4-style alternating 90-degree rotation between neighboring tiles
