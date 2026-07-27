@@ -984,7 +984,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <label className="text-[10px] text-white">Warp:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
-                <span className="text-[10px] text-white w-10 text-right">{noiseWarp.toFixed(2)}</span>
+                <input type="number" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1067,7 +1067,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
-                <span className="text-[10px] text-white w-10 text-right">{radialSizeScale.toFixed(2)}</span>
+                <input type="number" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>

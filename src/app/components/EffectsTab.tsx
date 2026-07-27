@@ -281,7 +281,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
+                    <input type="number" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -526,7 +526,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Radius:</label>
                     <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{bloomRadius}</span>
+                    <input type="number" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -535,17 +535,17 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
                     <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-10 text-right">{feedbackDecay.toFixed(2)}</span>
+                    <input type="number" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Zoom:</label>
                     <input type="range" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{feedbackZoom.toFixed(1)}</span>
+                    <input type="number" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Spin:</label>
                     <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{feedbackRotation > 0 ? '+' : ''}{feedbackRotation}</span>
+                    <input type="number" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
@@ -566,7 +566,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 mt-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
                       <input type="range" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="flex-1" />
-                      <span className="text-[10px] text-white w-8 text-right">{mirrorTileCount}</span>
+                      <input type="number" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   )}
                 </EffectSection>
@@ -595,12 +595,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Spacing:</label>
                     <input type="range" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpacing}</span>
+                    <input type="number" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1 mt-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="flex-1" />
-                    <span className="text-[10px] text-white w-8 text-right">{scanlineSpeed}</span>
+                    <input type="number" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}
