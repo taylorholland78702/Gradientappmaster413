@@ -79,10 +79,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [midsMax, setMidsMax] = useState(5);
   const [trebleMin, setTrebleMin] = useState(0);
   const [trebleMax, setTrebleMax] = useState(5);
-  // Defaults to 75% of the old fixed middle-ground value (1.55) so audio
-  // reactivity starts more subtle, leaving headroom to raise it via the
-  // Intensity slider in AudioPanel.tsx instead of only being able to lower it.
-  const [masterSensitivity, setMasterSensitivity] = useState(1.1625);
+  // Slider runs 0-10 (see effMasterSensitivity above, which clamps the
+  // actual math to a max of 3 — values 3-10 are identical headroom).
+  // Defaults to 7, i.e. already past the clamp, for strong reactivity out
+  // of the box.
+  const [masterSensitivity, setMasterSensitivity] = useState(7);
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);
@@ -416,6 +417,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
       const now = performance.now();
 
+      // Intensity slider now runs 0-10 for finer low-end control, but the
+      // actual reactivity math still only needs up to 3x gain — anything
+      // dialed past 3 has no further effect, so values 3 through 10 all
+      // read identically. This keeps the useful 0-3 range spread across
+      // the same slider width it always had while giving headroom above it.
+      const effMasterSensitivity = Math.min(masterSensitivity, 3);
+
       // ---- SUB-BASS (~20-60Hz — kick drum fundamental) ----
       let subBassSum = 0;
       for (let i = subBassLo; i < subBassHi; i++) subBassSum += dataArray[i];
@@ -446,10 +454,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
       let subBassRaw: number;
       if (subBassBeatSync) {
-        subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * masterSensitivity;
+        subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * effMasterSensitivity;
         subBassBeatPulseRef.current *= 0.6; // snappier decay = cleaner hits
       } else {
-        subBassRaw = subBassNorm * subBassMultiplier * masterSensitivity;
+        subBassRaw = subBassNorm * subBassMultiplier * effMasterSensitivity;
       }
       subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
       const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
@@ -490,10 +498,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const bassAboveThreshold = bassAvgRaw > bassThreshold;
       let bassRaw: number;
       if (bassBeatSync) {
-        bassRaw = bassBeatPulseRef.current * bassMultiplier * masterSensitivity;
+        bassRaw = bassBeatPulseRef.current * bassMultiplier * effMasterSensitivity;
         bassBeatPulseRef.current *= 0.85; // decay
       } else {
-        bassRaw = bassAboveThreshold ? bassNorm * bassMultiplier * masterSensitivity : 0;
+        bassRaw = bassAboveThreshold ? bassNorm * bassMultiplier * effMasterSensitivity : 0;
       }
       bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
@@ -506,7 +514,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // shrink their rendered pattern by dividing radius/position math by
       // zoom, and past roughly 1.6-1.8x the pattern no longer covers the
       // full canvas, exposing the black clear-fill underneath at the edges.
-      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * masterSensitivity) : 0;
+      const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity) : 0;
       setTargetZoomRef.current(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
@@ -541,10 +549,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const midsAboveThreshold = midsAvgRaw > midsThreshold;
       let midsRaw: number;
       if (midsBeatSync) {
-        midsRaw = midsBeatPulseRef.current * midsMultiplier * masterSensitivity;
+        midsRaw = midsBeatPulseRef.current * midsMultiplier * effMasterSensitivity;
         midsBeatPulseRef.current *= 0.85;
       } else {
-        midsRaw = midsAboveThreshold ? midsNorm * midsMultiplier * masterSensitivity : 0;
+        midsRaw = midsAboveThreshold ? midsNorm * midsMultiplier * effMasterSensitivity : 0;
       }
       midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
       const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
@@ -576,10 +584,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const trebleAboveThreshold = trebleAvgRaw > trebleThreshold;
       let trebleRaw: number;
       if (trebleBeatSync) {
-        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * masterSensitivity * 90;
+        trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * effMasterSensitivity * 90;
         trebleBeatPulseRef.current *= 0.85;
       } else {
-        trebleRaw = trebleAboveThreshold ? trebleNorm * trebleMultiplier * masterSensitivity * 90 : 0;
+        trebleRaw = trebleAboveThreshold ? trebleNorm * trebleMultiplier * effMasterSensitivity * 90 : 0;
       }
       trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
       const trebleColorValue = Math.max(trebleMin * 90, Math.min(trebleMax * 90, trebleSmoothedRef.current));
@@ -608,7 +616,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // Global energy — average of all bands, drives brightness in renderers
       const rawEnergy = (bassAvgRaw + midsAvgRaw + trebleAvgRaw) / 3;
       energySmoothedRef.current = 0.25 * energySmoothedRef.current + 0.75 * rawEnergy;
-      setAudioEnergy(Math.min(1, energySmoothedRef.current * masterSensitivity * 2));
+      setAudioEnergy(Math.min(1, energySmoothedRef.current * effMasterSensitivity * 2));
 
       // Music-structure awareness — compare the fast-smoothed energy just
       // computed above to a slow multi-second rolling average. A ratio well

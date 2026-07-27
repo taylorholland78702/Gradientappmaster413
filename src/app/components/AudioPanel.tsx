@@ -485,8 +485,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
             <div className="flex items-center gap-1">
               <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-              <input type="range" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="0.1" max="3" step="0.05" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+              <input type="range" min="0" max="10" step="0.1" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1" />
+              <input type="number" min="0" max="10" step="0.1" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
             </div>
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
