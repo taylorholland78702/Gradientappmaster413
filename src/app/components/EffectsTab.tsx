@@ -38,6 +38,8 @@ export interface EffectsTabProps {
   // Displace
   displaceStrength: number; setDisplaceStrength: (v: number) => void;
   displaceScale: number; setDisplaceScale: (v: number) => void;
+  // CRT
+  crtIntensity: number; setCrtIntensity: (v: number) => void;
   // Photo
   handlePhotoFileClick: () => void;
   photoFileName: string;
@@ -140,6 +142,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
     displaceStrength, setDisplaceStrength, displaceScale, setDisplaceScale,
+    crtIntensity, setCrtIntensity,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
     pixelSize, setPixelSize, triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation,
@@ -430,6 +433,15 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <input type="range" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('crt') && (
+                <EffectSection id="crt" label="CRT" isMulti={isMulti} expanded={expandedEffects.has('crt')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}

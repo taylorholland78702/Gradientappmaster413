@@ -15,6 +15,7 @@ import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrails } from '../hooks/effects/applyChromaticTrails';
+import { applyCrt } from '../hooks/effects/applyCrt';
 import { applyDisplace } from '../hooks/effects/applyDisplace';
 import { applyDither } from '../hooks/effects/applyDither';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
@@ -65,6 +66,9 @@ const EFFECT_REGISTRY = {
   blur: { drawFn: applyBlur, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrails, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
+  // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
+  // same cost tier as Blur/Chromatic.
+  crt: { drawFn: applyCrt, label: 'CRT', cost: 2, category: ['CRT'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid/Fisheye.
