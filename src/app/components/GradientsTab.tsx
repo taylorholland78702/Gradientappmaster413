@@ -288,7 +288,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
         {gradientType === 'grid' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -357,7 +357,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Polar Grid Controls */}
         {gradientType === 'polar-grid' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Radials:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -405,7 +405,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Iridescent Controls */}
         {gradientType === 'iridescent' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Intensity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -457,7 +457,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Aurora Controls */}
         {gradientType === 'aurora' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
               { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
@@ -476,7 +476,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Caustics Controls */}
         {gradientType === 'caustics' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             {[
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
@@ -495,7 +495,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Lava Lamp Controls */}
         {gradientType === 'lava-lamp' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
@@ -513,7 +513,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Marble Controls */}
         {gradientType === 'marble' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
@@ -532,7 +532,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'metaballs' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Count', value: metaballCount, set: setMetaballCount, min: 2, max: 14, step: 1 },
               { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
@@ -550,7 +550,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'truchet' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Tile Size', value: truchetSize, set: setTruchetSize, min: 15, max: 100, step: 5 },
               { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
@@ -568,7 +568,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'moire' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Scale', value: moireScale, set: setMoireScale, min: 3, max: 40, step: 1 },
               { label: 'Offset', value: moireOffset, set: setMoireOffset, min: 0, max: 100, step: 1 },
@@ -586,7 +586,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'flow-field' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
               { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
@@ -605,7 +605,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'attractor' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Points', value: attractorPointCount, set: setAttractorPointCount, min: 1, max: 20, step: 1 },
               { label: 'Speed', value: attractorSpeed, set: setAttractorSpeed, min: 0.1, max: 5, step: 0.1 },
@@ -625,7 +625,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'particles' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
               { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
@@ -646,7 +646,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'tiling' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Tile Size', value: tilingSize, set: setTilingSize, min: 30, max: 300, step: 10 },
               { label: 'Symmetry', value: tilingSymmetry, set: setTilingSymmetry, min: 2, max: 12, step: 1 },
@@ -672,7 +672,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'reaction-diffusion' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             {[
               { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
@@ -691,7 +691,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'topographic' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             {[
               { label: 'Scale', value: topographicScale, set: setTopographicScale, min: 10, max: 100, step: 1 },
@@ -710,7 +710,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'julia' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             {[
               { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
@@ -731,7 +731,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Start Angle:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -800,7 +800,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Shapes Controls */}
         {gradientType === 'shapes' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -871,7 +871,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             Helix gradient (continuous conical spiral) as an alternate mode,
             same precedent as Radar merging into Radial Burst. */}
         {gradientType === 'windmill' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1035,7 +1035,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Waves Controls */}
         {gradientType === 'waves' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Amplitude:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1125,7 +1125,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Noise Controls */}
         {gradientType === 'noise' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center gap-1">
               <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
               <div className="flex gap-1 flex-1">
@@ -1195,7 +1195,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Complexity:</label>
@@ -1216,7 +1216,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Radial Controls */}
         {gradientType === 'radial' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1273,7 +1273,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             standalone Radar gradient (rotating scan line) as an alternate
             mode, same precedent as Zoom Blur merging into Blur. */}
         {gradientType === 'radial-burst' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1398,7 +1398,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
+          <div className="w-full px-3 py-1 bg-black/20 border border-white/8 rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Cell Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1446,7 +1446,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Fade Controls */}
         {gradientType === 'fade' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Direction:</label>
@@ -1461,7 +1461,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
+          <div className="w-full px-3 py-1 bg-black/20 border border-white/8 rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Circles:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">

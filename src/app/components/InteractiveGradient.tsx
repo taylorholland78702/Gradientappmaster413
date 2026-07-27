@@ -3513,18 +3513,56 @@ export function InteractiveGradient() {
           title={isMobile ? 'About wāv' : 'Click: About · Hold: drag panel'}
           aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the panel'}
         >
-          <span
-            className="wav-panel-header-text"
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 900,
-              fontSize: '60px',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: '#ffffff',
-              WebkitTextStroke: '1px #9ca3af',
-            }}
-          >wāv</span>
+          {/* Liquid Glass wordmark — replaced the flat white-fill/grey-stroke
+              span with an SVG so the "glass" read (translucent body, bright
+              uneven rim instead of a flat stroke, soft highlight sweep, thin
+              spectrum fringe along the bottom edge) has no color of its own
+              and works over any gradient behind the panel. One shared <text>
+              per layer means the macron over the "a" always gets the same
+              treatment as the rest of the glyphs — it's part of the same
+              glyph run, not a separate element. */}
+          <svg
+            viewBox="0 0 240 84"
+            style={{ height: '60px', width: 'auto', display: 'inline-block', overflow: 'visible' }}
+            role="img"
+            aria-label="wāv"
+          >
+            <defs>
+              <linearGradient id="wavGlassBody" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                <stop offset="42%" stopColor="#ffffff" stopOpacity="0.26" />
+                <stop offset="72%" stopColor="#ffffff" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.58" />
+              </linearGradient>
+              <linearGradient id="wavGlassRim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.98" />
+                <stop offset="55%" stopColor="#ffffff" stopOpacity="0.48" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.92" />
+              </linearGradient>
+              <linearGradient id="wavGlassFringe" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.7" />
+                <stop offset="35%" stopColor="#f0abfc" stopOpacity="0.6" />
+                <stop offset="70%" stopColor="#fde68a" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0.7" />
+              </linearGradient>
+              <clipPath id="wavGlassClip">
+                <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5">wāv</text>
+              </clipPath>
+              <filter id="wavGlassBlur" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="1.6" />
+              </filter>
+            </defs>
+
+            <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
+
+            <g clipPath="url(#wavGlassClip)">
+              <rect x="0" y="0" width="240" height="28" fill="#ffffff" opacity="0.5" filter="url(#wavGlassBlur)" />
+              <rect x="-15" y="4" width="34" height="92" fill="#ffffff" opacity="0.32" transform="rotate(18 120 44)" filter="url(#wavGlassBlur)" />
+              <rect x="0" y="70" width="240" height="7" fill="url(#wavGlassFringe)" filter="url(#wavGlassBlur)" />
+            </g>
+
+            <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.1">wāv</text>
+          </svg>
         </div>
 
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.

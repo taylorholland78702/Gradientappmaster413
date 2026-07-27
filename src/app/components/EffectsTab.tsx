@@ -299,19 +299,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
-                      <button
-                        onClick={() => setAsciiColor(!asciiColor)}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        {asciiColor ? 'ON' : 'OFF'}
-                      </button>
-                    </div>
-                  </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Chars:</label>
                     <input
@@ -320,8 +307,17 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       onChange={(e) => setAsciiChars(e.target.value)}
                       placeholder=" .:-=+*x#%@"
                       title="Darkest to brightest, left to right"
-                      className="flex-1 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
                     />
+                    <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
+                    <button
+                      onClick={() => setAsciiColor(!asciiColor)}
+                      className={`shrink-0 px-2 py-0.5 text-[10px] rounded transition-all ${
+                        asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                      }`}
+                    >
+                      {asciiColor ? 'ON' : 'OFF'}
+                    </button>
                   </div>
                 </EffectSection>
               )}
@@ -471,9 +467,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  {!photoFileName && (
-                    <div className="text-[9px] text-white/40 mt-1">No photo uploaded — this effect is invisible until you upload one.</div>
-                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic-trails') && (
@@ -933,30 +926,32 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    <button
+                      onClick={() => {
+                        const randomHex = () => {
+                          const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                          const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                          const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                          return `#${r}${g}${b}`;
+                        };
+                        setDuotoneColor1(randomHex());
+                        setDuotoneColor2(randomHex());
+                        if (duotoneThreeColor) setDuotoneColor3(randomHex());
+                      }}
+                      title="Shuffle Colors"
+                      aria-label="Shuffle Colors"
+                      className="shrink-0 p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all"
+                    >
+                      <Shuffle weight="regular" className="w-3 h-3" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      const randomHex = () => {
-                        const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-                        const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-                        const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-                        return `#${r}${g}${b}`;
-                      };
-                      setDuotoneColor1(randomHex());
-                      setDuotoneColor2(randomHex());
-                      if (duotoneThreeColor) setDuotoneColor3(randomHex());
-                    }}
-                    className="w-full mt-1 px-2 py-1 rounded text-[10px] bg-black/25 text-white hover:bg-white/15 transition-all"
-                  >
-                    Shuffle Colors
-                  </button>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Color 1:</label>
                     <input
                       type="color"
                       value={duotoneColor1}
                       onChange={(e) => setDuotoneColor1(e.target.value)}
-                      className="w-12 h-6 rounded cursor-pointer"
+                      className="w-10 h-5 rounded cursor-pointer border-0 p-0"
                     />
                   </div>
                   <div className="flex items-center justify-between gap-1">
@@ -965,7 +960,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       type="color"
                       value={duotoneColor2}
                       onChange={(e) => setDuotoneColor2(e.target.value)}
-                      className="w-12 h-6 rounded cursor-pointer"
+                      className="w-10 h-5 rounded cursor-pointer border-0 p-0"
                     />
                   </div>
                   <div className="flex items-center justify-between gap-1">
@@ -986,7 +981,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         type="color"
                         value={duotoneColor3}
                         onChange={(e) => setDuotoneColor3(e.target.value)}
-                        className="w-12 h-6 rounded cursor-pointer"
+                        className="w-10 h-5 rounded cursor-pointer border-0 p-0"
                       />
                     </div>
                   )}
