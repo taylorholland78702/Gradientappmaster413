@@ -3509,7 +3509,7 @@ export function InteractiveGradient() {
             window.addEventListener('mouseup', onUp);
           }}
           onClick={isMobile ? () => setIsAboutOpen(true) : undefined}
-          className={`w-full text-center select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
+          className={`w-full flex justify-center select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
           title={isMobile ? 'About wāv' : 'Click: About · Hold: drag panel'}
           aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the panel'}
         >
