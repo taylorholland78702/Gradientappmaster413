@@ -1,3 +1,36 @@
+// Draws one particle as a small line (sides=1), circle (sides=2), or
+// regular polygon (sides 3-8, triangle through octagon) inscribed in a
+// circle of radius `size`. pCtx.fillStyle is assumed already set by the
+// caller.
+function drawParticleShape(pCtx: CanvasRenderingContext2D, x: number, y: number, size: number, sides: number): void {
+  const n = Math.round(sides);
+  if (n <= 1) {
+    pCtx.beginPath();
+    pCtx.moveTo(x - size, y);
+    pCtx.lineTo(x + size, y);
+    pCtx.strokeStyle = pCtx.fillStyle as string;
+    pCtx.lineWidth = Math.max(1, size * 0.4);
+    pCtx.stroke();
+    return;
+  }
+  if (n === 2) {
+    pCtx.beginPath();
+    pCtx.arc(x, y, size, 0, Math.PI * 2);
+    pCtx.fill();
+    return;
+  }
+  pCtx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const vx = x + Math.cos(angle) * size;
+    const vy = y + Math.sin(angle) * size;
+    if (i === 0) pCtx.moveTo(vx, vy);
+    else pCtx.lineTo(vx, vy);
+  }
+  pCtx.closePath();
+  pCtx.fill();
+}
+
 export function drawParticles(P: any): CanvasGradient | undefined {
   const {
     ctx,
@@ -14,6 +47,7 @@ export function drawParticles(P: any): CanvasGradient | undefined {
     particlesSize,
     particlesTrail,
     particlesGravity,
+    particlesSides,
     particlesBufferRef,
     particlesPointsRef,
   } = P;
@@ -72,9 +106,7 @@ export function drawParticles(P: any): CanvasGradient | undefined {
 
             const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
             pCtx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)`;
-            pCtx.beginPath();
-            pCtx.arc(p.x, p.y, size, 0, Math.PI * 2);
-            pCtx.fill();
+            drawParticleShape(pCtx, p.x, p.y, size, particlesSides ?? 2);
           }
 
           ctx.fillStyle = '#000000';

@@ -6,6 +6,8 @@ export function useParticlesState() {
   const [particlesSize, setParticlesSize] = useState(3);
   const [particlesTrail, setParticlesTrail] = useState(0.08);
   const [particlesGravity, setParticlesGravity] = useState(0);
+  // 1 = short line, 2 = circle, 3-8 = regular polygon (triangle..octagon)
+  const [particlesSides, setParticlesSides] = useState(2);
   const particlesBufferRef = useRef<HTMLCanvasElement | null>(null);
   const particlesPointsRef = useRef<{ x: number; y: number; vx: number; vy: number }[]>([]);
 
@@ -20,6 +22,8 @@ export function useParticlesState() {
     setParticlesTrail,
     particlesGravity,
     setParticlesGravity,
+    particlesSides,
+    setParticlesSides,
     particlesBufferRef,
     particlesPointsRef,
   };
