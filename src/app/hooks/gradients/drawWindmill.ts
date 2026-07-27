@@ -173,6 +173,7 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
     windmillThickness,
     windmillTightness,
     windmillZoom,
+    windmillZoomResponse,
     triangleSize,
     topographicBands,
     topographicLineWidth,
@@ -227,7 +228,7 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
           // 4. Treble cycles color palette position
           const audioColorCycle = spiralAudioActive ? audioTrebleLevel * gradientColors.length : 0;
 
-          const zoomDampening = 0.3;
+          const zoomDampening = windmillZoomResponse ?? 0.3;
           const dampenedZoom = 1 + (zoom - 1) * zoomDampening;
           const spiralScale = 1 / dampenedZoom;
           const spiralSegments = 60 * windmillTightness / 5;

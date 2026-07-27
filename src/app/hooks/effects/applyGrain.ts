@@ -57,7 +57,9 @@ export function applyGrain(P: any): void {
     duotoneColor3,
     duotoneIntensity,
     duotoneThreeColor,
+    dustCrackleColor,
     dustCrackleIntensity,
+    dustCrackleLength,
     emojiAnimTime,
     emojiChars,
     emojiOffsetX,
@@ -234,7 +236,9 @@ export function applyGrain(P: any): void {
             putScaledImageData(imageData);
 
             if (dustCrackleIntensity > 0) {
-              ctx.strokeStyle = `rgba(0,0,0,${dustCrackleIntensity * 0.3})`;
+              const crackleLen = dustCrackleLength ?? 1;
+              const crackleColor = dustCrackleColor || '#000000';
+              ctx.strokeStyle = crackleColor + Math.round(dustCrackleIntensity * 0.3 * 255).toString(16).padStart(2, '0');
               ctx.lineWidth = 1;
               const numCracks = Math.floor(20 * dustCrackleIntensity);
               for (let i = 0; i < numCracks; i++) {
@@ -242,7 +246,7 @@ export function applyGrain(P: any): void {
                 let x = Math.random() * displayWidth;
                 let y = Math.random() * displayHeight;
                 ctx.moveTo(x, y);
-                const steps = Math.floor(10 + Math.random() * 30);
+                const steps = Math.floor((10 + Math.random() * 30) * crackleLen);
                 for (let j = 0; j < steps; j++) {
                   x += (Math.random() - 0.5) * 20;
                   y += (Math.random() - 0.5) * 20;

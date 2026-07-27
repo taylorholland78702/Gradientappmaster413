@@ -47,6 +47,7 @@ export interface EffectsTabProps {
   pixelSize: number; setPixelSize: (v: number) => void;
   // Triangulate
   triangleSize: number; setTriangleSize: (v: number) => void;
+  triangulateVariation: number; setTriangulateVariation: (v: number) => void;
   // Chromatic
   chromaticOffset: number; setChromaticOffset: (v: number) => void;
   chromaticAngle: number; setChromaticAngle: (v: number) => void;
@@ -107,6 +108,8 @@ export interface EffectsTabProps {
   // VHS
   vhsGlitchIntensity: number; setVhsGlitchIntensity: (v: number) => void;
   dustCrackleIntensity: number; setDustCrackleIntensity: (v: number) => void;
+  dustCrackleLength: number; setDustCrackleLength: (v: number) => void;
+  dustCrackleColor: string; setDustCrackleColor: (v: string) => void;
   // Wave
   waveDistortionStrength: number; setWaveDistortionStrength: (v: number) => void;
   waveDistortionRotation: number; setWaveDistortionRotation: (v: number) => void;
@@ -135,7 +138,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
-    pixelSize, setPixelSize, triangleSize, setTriangleSize,
+    pixelSize, setPixelSize, triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation,
     chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle,
     fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY,
     bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius,
@@ -155,6 +158,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
     gridShapeSize, setGridShapeSize, gridVariation, setGridVariation, gridRotationDirection, setGridRotationDirection,
     vhsGlitchIntensity, setVhsGlitchIntensity, dustCrackleIntensity, setDustCrackleIntensity,
+    dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
@@ -472,6 +476,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <label className="text-[10px] text-white whitespace-nowrap" title="Fraction of cells that flip to the other diagonal split, for an irregular woven look instead of a uniform pattern">Variation:</label>
+                  <input type="range" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic') && (
@@ -661,6 +670,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
+                  {dustCrackleIntensity > 0 && (
+                    <>
+                      <div className="flex items-center gap-1 mt-1">
+                        <label className="text-[10px] text-white whitespace-nowrap">Crack Length:</label>
+                        <input type="range" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="flex-1" />
+                        <input type="number" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                      </div>
+                      <div className="flex items-center justify-between gap-1 mt-1">
+                        <label className="text-[10px] text-white whitespace-nowrap">Crack Color:</label>
+                        <input
+                          type="color"
+                          value={dustCrackleColor}
+                          onChange={(e) => setDustCrackleColor(e.target.value)}
+                          className="w-12 h-6 rounded cursor-pointer"
+                        />
+                      </div>
+                    </>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('blur') && (

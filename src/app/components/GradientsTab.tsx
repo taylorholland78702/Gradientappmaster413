@@ -101,6 +101,7 @@ export interface GradientsTabProps {
   windmillTightness: number; setWindmillTightness: (v: number) => void;
   windmillRotations: number; setWindmillRotations: (v: number) => void;
   windmillThickness: number; setWindmillThickness: (v: number) => void;
+  windmillZoomResponse: number; setWindmillZoomResponse: (v: number) => void;
 
   // Waves
   waveAmplitude: number; setWaveAmplitude: (v: number) => void;
@@ -172,6 +173,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
+    windmillZoomResponse, setWindmillZoomResponse,
     waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency,
     waveNumber, setWaveNumber, waveNumberRef, waveRotation, setWaveRotation, waveRotationRef, drawParamsDirtyRef,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
@@ -686,7 +688,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
                   className="flex-1"
                 />
-                <span className="text-[10px] text-white w-10 text-right">{concentricRingWidth}</span>
+                <input
+                  type="number"
+                  min="10"
+                  max="300"
+                  value={concentricRingWidth}
+                  onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                />
               </div>
             </div>
             <div className="flex items-center justify-between mb-1">
@@ -796,6 +805,29 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   max="100"
                   value={windmillThickness}
                   onChange={(e) => setWindmillThickness(Number(e.target.value))}
+                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white whitespace-nowrap" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients">Zoom Response:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={windmillZoomResponse}
+                  onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={windmillZoomResponse}
+                  onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
                   className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
                 />
               </div>

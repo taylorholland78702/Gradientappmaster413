@@ -175,6 +175,7 @@ export function applyTriangulate(P: any): void {
     windmillTightness,
     windmillZoom,
     triangleSize,
+    triangulateVariation,
     topographicBands,
     topographicLineWidth,
     topographicScale,
@@ -246,27 +247,48 @@ export function applyTriangulate(P: any): void {
               const i = (sy * tSampleW + sx) * 4;
               return [tPixels[i], tPixels[i + 1], tPixels[i + 2]];
             };
+            // Orientation variation — every cell used to split along the same
+            // fixed diagonal (top-left to bottom-right), giving a uniform
+            // "woven" look regardless of content. A deterministic per-cell
+            // hash (not Math.random(), which would flicker a different split
+            // every frame) flips a fraction of cells to the other diagonal
+            // instead, similar in spirit to Halftone's halftoneVariation.
+            const triVariation = triangulateVariation ?? 0;
             for (let r = -tHalfRows; r <= tHalfRows; r++) {
               for (let c = -tHalfCols; c <= tHalfCols; c++) {
                 const x = centerX + c * tSz - tSz / 2;
                 const y = centerY + r * tSz - tSz / 2;
-                const sx1 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2)) * resolutionMultiplier;
-                const sy1 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2)) * resolutionMultiplier;
-                const d1 = sample(sx1, sy1);
-                ctx.fillStyle = `rgb(${d1[0]},${d1[1]},${d1[2]})`;
+                const cellHash = Math.abs(Math.sin(r * 12.9898 + c * 78.233)) % 1;
+                const flipped = triVariation > 0 && cellHash < triVariation;
+                const sxA = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2)) * resolutionMultiplier;
+                const syA = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2)) * resolutionMultiplier;
+                const dA = sample(sxA, syA);
+                ctx.fillStyle = `rgb(${dA[0]},${dA[1]},${dA[2]})`;
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + tSz, y);
-                ctx.lineTo(x + tSz, y + tSz);
+                if (flipped) {
+                  ctx.moveTo(x + tSz, y);
+                  ctx.lineTo(x, y);
+                  ctx.lineTo(x, y + tSz);
+                } else {
+                  ctx.moveTo(x, y);
+                  ctx.lineTo(x + tSz, y);
+                  ctx.lineTo(x + tSz, y + tSz);
+                }
                 ctx.fill();
-                const sx2 = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3)) * resolutionMultiplier;
-                const sy2 = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3)) * resolutionMultiplier;
-                const d2 = sample(sx2, sy2);
-                ctx.fillStyle = `rgb(${d2[0]},${d2[1]},${d2[2]})`;
+                const sxB = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3)) * resolutionMultiplier;
+                const syB = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3)) * resolutionMultiplier;
+                const dB = sample(sxB, syB);
+                ctx.fillStyle = `rgb(${dB[0]},${dB[1]},${dB[2]})`;
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x, y + tSz);
-                ctx.lineTo(x + tSz, y + tSz);
+                if (flipped) {
+                  ctx.moveTo(x + tSz, y);
+                  ctx.lineTo(x + tSz, y + tSz);
+                  ctx.lineTo(x, y + tSz);
+                } else {
+                  ctx.moveTo(x, y);
+                  ctx.lineTo(x, y + tSz);
+                  ctx.lineTo(x + tSz, y + tSz);
+                }
                 ctx.fill();
               }
             }
