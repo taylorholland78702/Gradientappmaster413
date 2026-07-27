@@ -511,7 +511,7 @@ export function useSnapshot(params: SnapshotParams) {
     setMidsMultiplier(snapshot.midsMultiplier ?? 2.5);
     setTrebleMultiplier(snapshot.trebleMultiplier ?? 2);
     setSubBassMultiplier(snapshot.subBassMultiplier ?? 3.0);
-    setMasterSensitivity(snapshot.masterSensitivity ?? 2);
+    setMasterSensitivity(snapshot.masterSensitivity ?? 1);
     // Always on — no UI toggle for either anymore (AudioPanel.tsx), so a
     // saved snapshot/preset from before that removal can't silently turn
     // them back off.
