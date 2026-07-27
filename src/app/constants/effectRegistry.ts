@@ -16,7 +16,6 @@ import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrails } from '../hooks/effects/applyChromaticTrails';
 import { applyCrt } from '../hooks/effects/applyCrt';
-import { applyDisplace } from '../hooks/effects/applyDisplace';
 import { applyDither } from '../hooks/effects/applyDither';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
@@ -33,7 +32,6 @@ import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
-import { applyScanlines } from '../hooks/effects/applyScanlines';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
 import { applyTriangulate } from '../hooks/effects/applyTriangulate';
@@ -68,11 +66,10 @@ const EFFECT_REGISTRY = {
   'chromatic-trails': { drawFn: applyChromaticTrails, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
   // same cost tier as Blur/Chromatic.
-  crt: { drawFn: applyCrt, label: 'CRT', cost: 2, category: ['CRT'], audio: false },
+  crt: { drawFn: applyCrt, label: 'Cathode', cost: 2, category: ['Cathode'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid/Fisheye.
-  displace: { drawFn: applyDisplace, label: 'Displace', cost: 2, category: ['Displace'], audio: false },
   dither: { drawFn: applyDither, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
   duotone: { drawFn: applyDuotone, label: 'Duotone', cost: 2, category: ['Duotone'], audio: true },
   emoji: { drawFn: applyEmoji, label: 'Emoji', cost: 2, category: ['Emoji'], audio: false },
@@ -96,7 +93,6 @@ const EFFECT_REGISTRY = {
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: false },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
-  scanlines: { drawFn: applyScanlines, label: 'Scanlines', cost: 1, category: ['Scanlines'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
   triangulate: { drawFn: applyTriangulate, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },

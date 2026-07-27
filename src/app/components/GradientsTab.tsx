@@ -16,8 +16,6 @@ export interface GradientsTabProps {
   concentricRingCount: number; setConcentricRingCount: (v: number) => void;
 
   // Iridescent
-  iridescentIntensity: number; setIridescentIntensity: (v: number) => void;
-  iridescentScale: number; setIridescentScale: (v: number) => void;
 
   // Aurora
   auroraBandCount: number; setAuroraBandCount: (v: number) => void;
@@ -119,12 +117,6 @@ export interface GradientsTabProps {
   windmillMode: 'blades' | 'helix'; setWindmillMode: (v: 'blades' | 'helix') => void;
 
   // Waves
-  waveAmplitude: number; setWaveAmplitude: (v: number) => void;
-  waveFrequency: number; setWaveFrequency: (v: number) => void;
-  waveNumber: number; setWaveNumber: (v: number) => void;
-  waveNumberRef: React.MutableRefObject<number>;
-  waveRotation: number; setWaveRotation: (v: number) => void;
-  waveRotationRef: React.MutableRefObject<number>;
   drawParamsDirtyRef: React.MutableRefObject<boolean>;
 
 
@@ -173,7 +165,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     gradientType, setGradientType, getGradientDisplayName,
     gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
-    iridescentIntensity, setIridescentIntensity, iridescentScale, setIridescentScale,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize,
@@ -194,8 +185,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
-    waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency,
-    waveNumber, setWaveNumber, waveNumberRef, waveRotation, setWaveRotation, waveRotationRef, drawParamsDirtyRef,
+    drawParamsDirtyRef,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
     plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
@@ -404,57 +394,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
         
         {/* Iridescent Controls */}
-        {gradientType === 'iridescent' && (
-          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Intensity:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={iridescentIntensity}
-                  onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={iridescentIntensity}
-                  onChange={(e) => setIridescentIntensity(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  value={iridescentScale}
-                  onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  value={iridescentScale}
-                  onChange={(e) => setIridescentScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
         {/* Aurora Controls */}
         {gradientType === 'aurora' && (
           <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
@@ -1030,96 +969,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </>
             )}
-          </div>
-        )}
-
-        {/* Waves Controls */}
-        {gradientType === 'waves' && (
-          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Amplitude:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={waveAmplitude}
-                  onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="200"
-                  value={waveAmplitude}
-                  onChange={(e) => setWaveAmplitude(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Frequency:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={waveFrequency}
-                  onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={waveFrequency}
-                  onChange={(e) => setWaveFrequency(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Number:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={waveNumber}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={waveNumber}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveNumber(v); waveNumberRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={waveRotation}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={waveRotation}
-                  onChange={(e) => { const v = Number(e.target.value); setWaveRotation(v); waveRotationRef.current = v; drawParamsDirtyRef.current = true; }}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
           </div>
         )}
 

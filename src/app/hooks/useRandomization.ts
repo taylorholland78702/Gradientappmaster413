@@ -83,8 +83,8 @@ export function useRandomization(params: RandomizationParams) {
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
-    setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection, setScanLineSize, setScanlineIntensity,
-    setScanlineSpacing, setScanlineSpeed, setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
+    setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection,
+    setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -172,11 +172,6 @@ export function useRandomization(params: RandomizationParams) {
 
     // Ripple
     setRippleAmplitude(Math.floor(Math.random() * 45) + 5);            // 5–49
-
-    // Scanlines
-    setScanlineIntensity(Math.random());                                // 0–1
-    setScanlineSpacing(Math.floor(Math.random() * 18) + 2);            // 2–19
-    setScanlineSpeed(Math.random() * 5);                                // 0–5
 
     // ASCII
     setAsciiSize(Math.floor(Math.random() * 34) + 6);                  // 6–39
@@ -587,7 +582,6 @@ export function useRandomization(params: RandomizationParams) {
     setLinesThickness(Math.floor(Math.random() * 20) + 1);            // 1–20
     setLiquifyStrength(Math.floor(Math.random() * 60) + 10);          // 10–69
     setPinchStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
-    setScanLineSize(Math.floor(Math.random() * 10) + 2);              // 2–11
     setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
     setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
     setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
@@ -717,7 +711,6 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'dither') setDitherLevels(Math.round(rng(2, 16)));
       else if (eff === 'feedback') { setFeedbackDecay(rng(0.5, 0.97)); setFeedbackZoom(rng(0, 5)); }
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
-      else if (eff === 'scanlines') { setScanlineIntensity(rng(0, 1)); setScanlineSpacing(Math.round(rng(2, 20))); }
       else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));
       else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }
     }

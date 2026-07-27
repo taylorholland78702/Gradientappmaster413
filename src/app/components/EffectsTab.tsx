@@ -36,8 +36,6 @@ export interface EffectsTabProps {
   liquidStrength: number; setLiquidStrength: (v: number) => void;
   liquidScale: number; setLiquidScale: (v: number) => void;
   // Displace
-  displaceStrength: number; setDisplaceStrength: (v: number) => void;
-  displaceScale: number; setDisplaceScale: (v: number) => void;
   // CRT
   crtIntensity: number; setCrtIntensity: (v: number) => void;
   // Photo
@@ -74,9 +72,6 @@ export interface EffectsTabProps {
   vignetteStrength: number; setVignetteStrength: (v: number) => void;
   vignetteSoftness: number; setVignetteSoftness: (v: number) => void;
   // Scanlines
-  scanlineIntensity: number; setScanlineIntensity: (v: number) => void;
-  scanlineSpacing: number; setScanlineSpacing: (v: number) => void;
-  scanlineSpeed: number; setScanlineSpeed: (v: number) => void;
   // Shift
   colorShiftHue: number; setColorShiftHue: (v: number) => void;
   // Grain
@@ -141,7 +136,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
     isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
-    displaceStrength, setDisplaceStrength, displaceScale, setDisplaceScale,
     crtIntensity, setCrtIntensity,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
@@ -152,7 +146,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation,
     mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount,
     vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness,
-    scanlineIntensity, setScanlineIntensity, scanlineSpacing, setScanlineSpacing, scanlineSpeed, setScanlineSpeed,
     colorShiftHue, setColorShiftHue,
     grainIntensity, setGrainIntensity, grainType, setGrainType,
     blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
@@ -416,24 +409,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('displace') && (
-                <EffectSection id="displace" label="Displace" isMulti={isMulti} expanded={expandedEffects.has('displace')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                    <input type="range" min="0" max="100" value={displaceStrength} onChange={(e) => setDisplaceStrength(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={displaceStrength} onChange={(e) => setDisplaceStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('crt') && (
-                <EffectSection id="crt" label="CRT" isMulti={isMulti} expanded={expandedEffects.has('crt')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={expandedEffects.has('crt')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="flex-1" />
@@ -607,25 +584,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
                     <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('scanlines') && (
-                <EffectSection id="scanlines" label="Scanlines" isMulti={isMulti} expanded={expandedEffects.has('scanlines')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Spacing:</label>
-                    <input type="range" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <input type="range" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                 </EffectSection>
               )}

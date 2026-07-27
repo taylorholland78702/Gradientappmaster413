@@ -2,7 +2,6 @@ import { drawRadial } from './drawRadial';
 import { drawAngle } from './drawAngle';
 import { drawPolarGrid } from './drawPolarGrid';
 import { drawWindmill } from './drawWindmill';
-import { drawWaves } from './drawWaves';
 import { drawShapes } from './drawShapes';
 import { drawFade } from './drawFade';
 import { drawNoise } from './drawNoise';
@@ -12,7 +11,6 @@ import { drawPlasma } from './drawPlasma';
 import { drawGrid } from './drawGrid';
 import { drawRadialBurst } from './drawRadialBurst';
 import { drawVoronoi } from './drawVoronoi';
-import { drawIridescent } from './drawIridescent';
 import { drawAurora } from './drawAurora';
 import { drawCaustics } from './drawCaustics';
 import { drawLavaLamp } from './drawLavaLamp';
@@ -51,7 +49,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'angle': drawAngle,
   'polar-grid': drawPolarGrid,
   'windmill': drawWindmill,
-  'waves': drawWaves,
   'shapes': drawShapes,
   'fade': drawFade,
   'noise': drawNoise,
@@ -61,7 +58,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'grid': drawGrid,
   'radial-burst': drawRadialBurst,
   'voronoi': drawVoronoi,
-  'iridescent': drawIridescent,
   'aurora': drawAurora,
   'caustics': drawCaustics,
   'lava-lamp': drawLavaLamp,

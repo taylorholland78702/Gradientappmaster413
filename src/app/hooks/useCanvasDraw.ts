@@ -116,7 +116,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     gradientAngle, gradientAngleRef, gradientColors, gradientColorsRef,
     gradientType, grainIntensity, grainType, gridColumns, gridRotation, gridRows,
     gridShapeSize, gridSides, gridVariation, halftoneCMYK, halftoneMove, halftoneSize,
-    halftoneTimeRef, halftoneVariation, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled,
+    halftoneTimeRef, halftoneVariation, isAudioEnabled,
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
     lavaBlobCount, lavaBlobSize, lavaSpeed, liquidScale,
     liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
@@ -126,14 +126,14 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
-    resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
-    scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
+    resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef,
+    shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
     slitScanIntensity, windmillRotations, windmillThickness, windmillTightness, windmillZoom, triangleSize,
     topographicBands, topographicLineWidth, topographicScale,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaCanvasRef,
     truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vignetteSoftness, vignetteStrength,
-    voronoiCellCount, voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength,
-    waveFrequency, waveNumberRef, waveRotationRef, waveScale, zoom, zoomRef,
+    voronoiCellCount, voronoiDistortion, waveDistortionRotation, waveDistortionStrength,
+    zoom, zoomRef,
   } = params;
 
   // Global chromatic drift: continuous hue rotation driven by mids, applied

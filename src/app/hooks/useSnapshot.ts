@@ -35,9 +35,9 @@ export function useSnapshot(params: SnapshotParams) {
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity,
     grainType, gridCellAngleStep, gridColumns, gridRotation, gridRows, gridShapeSize, gridSides,
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
-    hexGridSize, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled, isAudioReactive,
+    hexGridSize, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
-    linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength, displaceStrength, displaceScale, crtIntensity,
+    linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength, crtIntensity,
     marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount, moireOffset,
@@ -45,8 +45,8 @@ export function useSnapshot(params: SnapshotParams) {
     noiseWarp, paletteBeatEnabled, photoBlendMode, photoImageRef, photoOpacity, pinchStrength,
     pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides,
     posterizeLevels, radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstMode, radialBurstSize,
-    radialBurstSpread, radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleFrequency, scanLineSize,
-    scanlineIntensity, scanlineSpacing, scanlineSpeed, sepiaIntensity, setActiveEffects, setAngleCenterX,
+    radialBurstSpread, radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleFrequency,
+    sepiaIntensity, setActiveEffects, setAngleCenterX,
     setAngleCenterY, setAngleStartOffset, setAsciiChars, setAsciiColor, setAsciiSize, setAuroraBandCount,
     setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax,
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
@@ -70,10 +70,10 @@ export function useSnapshot(params: SnapshotParams) {
     setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity,
     setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGridCellAngleStep, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK,
-    setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle,
-    setIridescentIntensity, setIridescentScale, setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
+    setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
+    setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
-    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setDisplaceStrength, setDisplaceScale, setCrtIntensity, setMarbleOctaves, setMarbleTurbulence,
+    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMeshGridSize, setMeshJitter, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
     setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed,
@@ -81,21 +81,21 @@ export function useSnapshot(params: SnapshotParams) {
     setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
     setRadarSweepAngle, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
-    setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
+    setRippleFrequency, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength,
-    setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency,
-    setWaveNumber, setWaveRotation, setWaveScale, setZoom, setZoomBeatEnabled, shakeBeatEnabled,
+    setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionRotation, setWaveDistortionStrength,
+    setZoom, setZoomBeatEnabled, shakeBeatEnabled,
     shapesCount, shapesSides, slitScanDirection, slitScanIntensity, solarizeThreshold, windmillRotations,
     windmillThickness, windmillTightness, windmillZoom, windmillZoomResponse, windmillMode, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness,
     truchetVariation, twistAmount, vhsGlitchIntensity, vignetteSoftness, vignetteStrength, voronoiCellCount,
-    voronoiDistortion, waveAmplitude, waveDistortionRotation, waveDistortionStrength, waveFrequency, waveNumber,
-    waveRotation, waveScale, zoom, zoomBeatEnabled,
+    voronoiDistortion, waveDistortionRotation, waveDistortionStrength,
+    zoom, zoomBeatEnabled,
   } = params;
 
   // Dev-only: every setXxx destructured above must be a real function. A
@@ -106,7 +106,7 @@ export function useSnapshot(params: SnapshotParams) {
   // since a missing key never lands in `params` at all.
   if (import.meta.env.DEV) {
     const setters: Record<string, unknown> = {
-      setActiveEffects, setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiChars, setAsciiColor, setAsciiSize, setAttractorDotSize, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorTrailFade, setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides, setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset, setAudioBindings, setAuroraBandCount, setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax, setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX, setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom, setFieldContrast, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setGlitchBlockSize, setGlitchChromaSplit, setGlitchIntensity, setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGridCellAngleStep, setGridColumns, setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK, setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHelixTightness, setHelixTurns, setHexGridSize, setInvertAmount, setIridescentAngle, setIridescentIntensity, setIridescentScale, setIsAudioEnabled, setIsAudioReactive, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount, setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setDisplaceStrength, setDisplaceScale, setCrtIntensity, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing, setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBands, setPaletteBeatEnabled, setPaletteMode, setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed, setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadarSweepAngle, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setResolutionMultiplier, setRippleAmplitude, setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold, setStructuralSeed, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTrebleBeatSync, setTrebleMax, setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength, setVoronoiCellCount, setVoronoiDistortion, setWaveAmplitude, setWaveDistortionRotation, setWaveDistortionStrength, setWaveFrequency, setWaveNumber, setWaveRotation, setWaveScale, setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setZoom, setZoomBeatEnabled,
+      setActiveEffects, setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiChars, setAsciiColor, setAsciiSize, setAttractorDotSize, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorTrailFade, setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides, setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset, setAudioBindings, setAuroraBandCount, setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax, setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX, setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom, setFieldContrast, setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setGlitchBlockSize, setGlitchChromaSplit, setGlitchIntensity, setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGridCellAngleStep, setGridColumns, setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK, setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHelixTightness, setHelixTurns, setHexGridSize, setInvertAmount, setIsAudioEnabled, setIsAudioReactive, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount, setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing, setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBands, setPaletteBeatEnabled, setPaletteMode, setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed, setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadarSweepAngle, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setResolutionMultiplier, setRippleAmplitude, setRippleFrequency, setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold, setStructuralSeed, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTrebleBeatSync, setTrebleMax, setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVignetteSoftness, setVignetteStrength, setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionRotation, setWaveDistortionStrength, setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setZoom, setZoomBeatEnabled,
     };
     for (const name in setters) {
       if (typeof setters[name] !== 'function') {
@@ -144,9 +144,6 @@ export function useSnapshot(params: SnapshotParams) {
       halftoneMove,
       halftoneMoveSpeed,
       vignetteStrength,
-      scanlineIntensity,
-      scanlineSpacing,
-      scanlineSpeed,
       colorShiftHue,
       digitalNoiseIntensity,
       duotoneIntensity,
@@ -162,7 +159,6 @@ export function useSnapshot(params: SnapshotParams) {
       linesThickness,
       liquifyStrength,
       pinchStrength,
-      scanLineSize,
       sepiaIntensity,
       solarizeThreshold,
       gridSides,
@@ -183,10 +179,6 @@ export function useSnapshot(params: SnapshotParams) {
       shapesCount,
       concentricRingWidth,
       concentricRingCount,
-      waveAmplitude,
-      waveFrequency,
-      waveNumber,
-      waveRotation,
       noiseScale,
       noiseOctaves,
       noiseDirection,
@@ -203,9 +195,6 @@ export function useSnapshot(params: SnapshotParams) {
       angleStartOffset,
       angleCenterX,
       angleCenterY,
-      iridescentAngle,
-      iridescentIntensity,
-      iridescentScale,
       resolutionMultiplier,
       baseAIColors: baseAIColors ? [...baseAIColors] : null,
       submittedAIPrompt,
@@ -249,7 +238,7 @@ export function useSnapshot(params: SnapshotParams) {
       zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
-      liquidScale, liquidStrength, displaceStrength, displaceScale, crtIntensity,
+      liquidScale, liquidStrength, crtIntensity,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
       mirrorMode, mirrorTileCount,
@@ -263,7 +252,7 @@ export function useSnapshot(params: SnapshotParams) {
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
-      waveDistortionRotation, waveScale,
+      waveDistortionRotation,
     };
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
       activeEffects, kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, triangulateVariation,
@@ -272,15 +261,14 @@ export function useSnapshot(params: SnapshotParams) {
       vignetteStrength, colorShiftHue, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2,
       dustCrackleColor, dustCrackleIntensity, dustCrackleLength, hexGridSize, lightLeakIntensity, linesCount, linesAngle,
       linesThickness, liquifyStrength, pinchStrength,
-      scanLineSize, sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
+      sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
       duotoneColor3, duotoneThreeColor, vhsGlitchIntensity,
       polygon2Sides, waveDistortionStrength,
       windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
-      waveAmplitude, waveFrequency, waveNumber, waveRotation, noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
+      noiseScale, noiseOctaves, noiseDirection, plasmaSpeed,
       plasmaComplexity, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize,
       helixTurns, helixTightness, gridRotation, gridCellAngleStep,
       angleStartOffset, angleCenterX, angleCenterY,
-      iridescentAngle, iridescentIntensity, iridescentScale,
       baseAIColors, submittedAIPrompt,
       asciiChars, asciiColor, asciiSize,
       emojiChars, emojiSize, emojiRotateSpeed, emojiOffsetX, emojiSizeVariation,
@@ -318,7 +306,7 @@ export function useSnapshot(params: SnapshotParams) {
       zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
-      liquidScale, liquidStrength, displaceStrength, displaceScale, crtIntensity,
+      liquidScale, liquidStrength, crtIntensity,
       marbleOctaves, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
       mirrorMode, mirrorTileCount,
@@ -332,7 +320,7 @@ export function useSnapshot(params: SnapshotParams) {
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion,
-      waveDistortionRotation, waveScale]);
+      waveDistortionRotation]);
 
   const applySnapshot = useCallback((snapshot: any) => {
     const colors = snapshot.gradientColors || DEFAULT_COLORS;
@@ -372,9 +360,6 @@ export function useSnapshot(params: SnapshotParams) {
     setHalftoneMove(snapshot.halftoneMove ?? false);
     setHalftoneMoveSpeed(snapshot.halftoneMoveSpeed ?? 1);
     setVignetteStrength(snapshot.vignetteStrength ?? 0.5);
-    setScanlineIntensity(snapshot.scanlineIntensity ?? 0.4);
-    setScanlineSpacing(snapshot.scanlineSpacing ?? 4);
-    setScanlineSpeed(snapshot.scanlineSpeed ?? 1);
     setColorShiftHue(snapshot.colorShiftHue ?? 5);
     setDigitalNoiseIntensity(snapshot.digitalNoiseIntensity ?? 0.3);
     setDuotoneIntensity(snapshot.duotoneIntensity ?? 1);
@@ -390,7 +375,6 @@ export function useSnapshot(params: SnapshotParams) {
     setLinesThickness(snapshot.linesThickness ?? 1);
     setLiquifyStrength(snapshot.liquifyStrength ?? 30);
     setPinchStrength(snapshot.pinchStrength ?? 0.5);
-    setScanLineSize(snapshot.scanLineSize ?? 4);
     setSepiaIntensity(snapshot.sepiaIntensity ?? 1);
     setSolarizeThreshold(snapshot.solarizeThreshold ?? 128);
     setGridSides(snapshot.gridSides ?? 7);
@@ -411,10 +395,6 @@ export function useSnapshot(params: SnapshotParams) {
     setShapesCount(snapshot.shapesCount ?? 8);
     setConcentricRingWidth(snapshot.concentricRingWidth ?? 100);
     setConcentricRingCount(snapshot.concentricRingCount ?? 10);
-    setWaveAmplitude(snapshot.waveAmplitude ?? 44);
-    setWaveFrequency(snapshot.waveFrequency ?? 5);
-    setWaveNumber(snapshot.waveNumber || 3);
-    setWaveRotation(snapshot.waveRotation || 0);
     setNoiseScale(snapshot.noiseScale ?? 25);
     setNoiseOctaves(snapshot.noiseOctaves ?? 2);
     setNoiseDirection(snapshot.noiseDirection || 0);
@@ -431,9 +411,6 @@ export function useSnapshot(params: SnapshotParams) {
     setAngleStartOffset(snapshot.angleStartOffset ?? 0);
     setAngleCenterX(snapshot.angleCenterX ?? 50);
     setAngleCenterY(snapshot.angleCenterY ?? 50);
-    setIridescentAngle(snapshot.iridescentAngle ?? 45);
-    setIridescentIntensity(snapshot.iridescentIntensity ?? 0.8);
-    setIridescentScale(snapshot.iridescentScale ?? 2);
     setResolutionMultiplier(snapshot.resolutionMultiplier || 1);
     setBaseAIColors(snapshot.baseAIColors);
     setSubmittedAIPrompt(snapshot.submittedAIPrompt);
@@ -581,8 +558,6 @@ export function useSnapshot(params: SnapshotParams) {
     setLavaSpeed(snapshot.lavaSpeed ?? 1);
     setLiquidScale(snapshot.liquidScale ?? 3);
     setLiquidStrength(snapshot.liquidStrength ?? 30);
-    setDisplaceStrength(snapshot.displaceStrength ?? 30);
-    setDisplaceScale(snapshot.displaceScale ?? 3);
     setCrtIntensity(snapshot.crtIntensity ?? 0.6);
     setMarbleOctaves(snapshot.marbleOctaves ?? 5);
     setMarbleTurbulence(snapshot.marbleTurbulence ?? 1.5);
@@ -613,7 +588,6 @@ export function useSnapshot(params: SnapshotParams) {
     setVoronoiCellCount(snapshot.voronoiCellCount ?? 19);
     setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
     setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
-    setWaveScale(snapshot.waveScale ?? 1.0);
     // Live audio-reactivity levels (audioSubBassLevel etc.) are NOT part of
     // buildSnapshot's output — they're continuously-changing values synced
     // separately over the per-frame anim channel (see below), same as
