@@ -35,6 +35,9 @@ export interface EffectsTabProps {
   // Liquid
   liquidStrength: number; setLiquidStrength: (v: number) => void;
   liquidScale: number; setLiquidScale: (v: number) => void;
+  // Displace
+  displaceStrength: number; setDisplaceStrength: (v: number) => void;
+  displaceScale: number; setDisplaceScale: (v: number) => void;
   // Photo
   handlePhotoFileClick: () => void;
   photoFileName: string;
@@ -136,6 +139,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
     isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
+    displaceStrength, setDisplaceStrength, displaceScale, setDisplaceScale,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
     pixelSize, setPixelSize, triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation,
@@ -409,6 +413,22 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('displace') && (
+                <EffectSection id="displace" label="Displace" isMulti={isMulti} expanded={expandedEffects.has('displace')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1 mt-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                    <input type="range" min="0" max="100" value={displaceStrength} onChange={(e) => setDisplaceStrength(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="100" value={displaceStrength} onChange={(e) => setDisplaceStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.5" max="10" step="0.5" value={displaceScale} onChange={(e) => setDisplaceScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

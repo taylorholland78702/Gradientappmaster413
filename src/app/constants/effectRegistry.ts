@@ -15,6 +15,7 @@ import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrails } from '../hooks/effects/applyChromaticTrails';
+import { applyDisplace } from '../hooks/effects/applyDisplace';
 import { applyDither } from '../hooks/effects/applyDither';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
@@ -64,6 +65,10 @@ const EFFECT_REGISTRY = {
   blur: { drawFn: applyBlur, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrails, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
+  // Organic noise-driven pixel warp, distinct from Liquid's periodic
+  // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
+  // Liquid/Fisheye.
+  displace: { drawFn: applyDisplace, label: 'Displace', cost: 2, category: ['Displace'], audio: false },
   dither: { drawFn: applyDither, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
   duotone: { drawFn: applyDuotone, label: 'Duotone', cost: 2, category: ['Duotone'], audio: true },
   emoji: { drawFn: applyEmoji, label: 'Emoji', cost: 2, category: ['Emoji'], audio: false },

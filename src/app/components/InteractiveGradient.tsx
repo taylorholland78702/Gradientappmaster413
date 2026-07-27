@@ -85,6 +85,7 @@ import { useLavaState } from '../hooks/state/useLavaState';
 import { useLightLeakState } from '../hooks/state/useLightLeakState';
 import { useLinesState } from '../hooks/state/useLinesState';
 import { useLiquidState } from '../hooks/state/useLiquidState';
+import { useDisplaceState } from '../hooks/state/useDisplaceState';
 import { useLiquifyState } from '../hooks/state/useLiquifyState';
 import { useMarbleState } from '../hooks/state/useMarbleState';
 import { useMetaballState } from '../hooks/state/useMetaballState';
@@ -309,6 +310,7 @@ export function InteractiveGradient() {
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
   const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
   const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
+  const { displaceStrength, setDisplaceStrength, displaceScale, setDisplaceScale } = useDisplaceState();
   const { liquifyStrength, setLiquifyStrength } = useLiquifyState();
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
@@ -1157,7 +1159,7 @@ export function InteractiveGradient() {
     gridVariation, halftoneCMYK, halftoneMove, halftoneMoveSpeed, halftoneSize, halftoneVariation,
     hexGridSize, iridescentAngle, iridescentIntensity, iridescentScale, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
-    linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength,
+    linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength, displaceStrength, displaceScale,
     marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount, moireOffset,
@@ -1183,7 +1185,7 @@ export function InteractiveGradient() {
     setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize, setIridescentAngle,
     setIridescentIntensity, setIridescentScale, setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
-    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
+    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setDisplaceStrength, setDisplaceScale, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
     setMidsThreshold, setMirrorMode, setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed,
@@ -1313,7 +1315,7 @@ export function InteractiveGradient() {
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
-    setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
+    setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength, setDisplaceStrength, setDisplaceScale,
     setNoiseType, setNoiseWarp, setPlasmaZoomScale, setRadialSizeScale, setRippleFrequency, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
@@ -2606,7 +2608,7 @@ export function InteractiveGradient() {
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
     lavaBlobCount, lavaBlobSize, lavaSpeed,
     liquidScale,
-    liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq,
+    liquidStrength, displaceStrength, displaceScale, marbleOctaves, marbleTurbulence, marbleVeinFreq,
     metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
@@ -3914,6 +3916,10 @@ export function InteractiveGradient() {
             emojiPickerSearch={emojiPickerSearch}
             setEmojiPickerSearch={setEmojiPickerSearch}
             liquidStrength={liquidStrength}
+            displaceStrength={displaceStrength}
+            setDisplaceStrength={setDisplaceStrength}
+            displaceScale={displaceScale}
+            setDisplaceScale={setDisplaceScale}
             setLiquidStrength={setLiquidStrength}
             liquidScale={liquidScale}
             setLiquidScale={setLiquidScale}
