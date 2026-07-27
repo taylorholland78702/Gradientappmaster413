@@ -22,11 +22,11 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // pools since it's a no-op with no uploaded image.
 const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
-  'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
+  'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
   noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
-  voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
+  voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 // costOf (effect compute-cost weighting) now lives in constants/effectCost.ts,

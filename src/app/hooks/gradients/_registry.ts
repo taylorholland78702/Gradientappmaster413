@@ -10,7 +10,6 @@ import { drawTopographic } from './drawTopographic';
 import { drawJulia } from './drawJulia';
 import { drawPlasma } from './drawPlasma';
 import { drawGrid } from './drawGrid';
-import { drawHelix } from './drawHelix';
 import { drawRadialBurst } from './drawRadialBurst';
 import { drawVoronoi } from './drawVoronoi';
 import { drawIridescent } from './drawIridescent';
@@ -58,7 +57,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'julia': drawJulia,
   'plasma': drawPlasma,
   'grid': drawGrid,
-  'helix': drawHelix,
   'radial-burst': drawRadialBurst,
   'voronoi': drawVoronoi,
   'iridescent': drawIridescent,

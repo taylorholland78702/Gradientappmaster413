@@ -102,6 +102,7 @@ export interface GradientsTabProps {
   windmillRotations: number; setWindmillRotations: (v: number) => void;
   windmillThickness: number; setWindmillThickness: (v: number) => void;
   windmillZoomResponse: number; setWindmillZoomResponse: (v: number) => void;
+  windmillMode: 'blades' | 'helix'; setWindmillMode: (v: 'blades' | 'helix') => void;
 
   // Waves
   waveAmplitude: number; setWaveAmplitude: (v: number) => void;
@@ -176,7 +177,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
-    windmillZoomResponse, setWindmillZoomResponse,
+    windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
     waveAmplitude, setWaveAmplitude, waveFrequency, setWaveFrequency,
     waveNumber, setWaveNumber, waveNumberRef, waveRotation, setWaveRotation, waveRotationRef, drawParamsDirtyRef,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
@@ -748,95 +749,169 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
         
-        {/* Spiral Controls */}
+        {/* Spiral Controls — 'helix' mode folds in the former standalone
+            Helix gradient (continuous conical spiral) as an alternate mode,
+            same precedent as Radar merging into Radial Burst. */}
         {gradientType === 'windmill' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Tightness:</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={windmillTightness}
-                  onChange={(e) => setWindmillTightness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={windmillTightness}
-                  onChange={(e) => setWindmillTightness(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
+                <button
+                  onClick={() => setWindmillMode('blades')}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    windmillMode === 'blades' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Blades
+                </button>
+                <button
+                  onClick={() => setWindmillMode('helix')}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    windmillMode === 'helix' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Helix
+                </button>
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Rotations:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={windmillRotations}
-                  onChange={(e) => setWindmillRotations(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={windmillRotations}
-                  onChange={(e) => setWindmillRotations(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Thickness:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="5"
-                  max="100"
-                  value={windmillThickness}
-                  onChange={(e) => setWindmillThickness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={windmillThickness}
-                  onChange={(e) => setWindmillThickness(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white whitespace-nowrap" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients">Zoom Response:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={windmillZoomResponse}
-                  onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={windmillZoomResponse}
-                  onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            {windmillMode === 'blades' ? (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Tightness:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      value={windmillTightness}
+                      onChange={(e) => setWindmillTightness(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={windmillTightness}
+                      onChange={(e) => setWindmillTightness(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Rotations:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={windmillRotations}
+                      onChange={(e) => setWindmillRotations(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={windmillRotations}
+                      onChange={(e) => setWindmillRotations(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Thickness:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="5"
+                      max="100"
+                      value={windmillThickness}
+                      onChange={(e) => setWindmillThickness(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={windmillThickness}
+                      onChange={(e) => setWindmillThickness(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white whitespace-nowrap" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients">Zoom Response:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={windmillZoomResponse}
+                      onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={windmillZoomResponse}
+                      onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Turns:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      value={helixTurns}
+                      onChange={(e) => setHelixTurns(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={helixTurns}
+                      onChange={(e) => setHelixTurns(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Tightness:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="2"
+                      step="0.1"
+                      value={helixTightness}
+                      onChange={(e) => setHelixTightness(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="0.1"
+                      max="2"
+                      step="0.1"
+                      value={helixTightness}
+                      onChange={(e) => setHelixTightness(Number(e.target.value))}
+                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1383,55 +1458,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Conical Spiral Controls */}
-        {gradientType === 'helix' && (
-          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Turns:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={helixTurns}
-                  onChange={(e) => setHelixTurns(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={helixTurns}
-                  onChange={(e) => setHelixTurns(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Tightness:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={helixTightness}
-                  onChange={(e) => setHelixTightness(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="2"
-                        step="0.1"
-                        value={helixTightness}
-                        onChange={(e) => setHelixTightness(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Shared field-mapping controls — appear for any scalar-field gradient
             (one continuous 0-1 value mapped to the palette per pixel), reusing
