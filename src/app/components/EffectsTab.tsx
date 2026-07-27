@@ -724,7 +724,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('blur') && (
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mb-1">
+                  <div className="flex items-center gap-1">
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}

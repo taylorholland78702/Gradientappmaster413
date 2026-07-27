@@ -288,7 +288,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Grid Controls */}
         {gradientType === 'grid' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -330,7 +330,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white whitespace-nowrap" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation">Cell Angle Step:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -357,7 +357,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Polar Grid Controls */}
         {gradientType === 'polar-grid' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Radials:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -405,7 +405,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Iridescent Controls */}
         {gradientType === 'iridescent' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Intensity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -731,7 +731,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Start Angle:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -752,7 +752,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -800,7 +800,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Shapes Controls */}
         {gradientType === 'shapes' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -821,7 +821,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Sides:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -842,7 +842,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -871,7 +871,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             same precedent as Radar merging into Radial Burst. */}
         {gradientType === 'windmill' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
@@ -894,7 +894,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             {windmillMode === 'blades' ? (
               <>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Tightness:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -915,7 +915,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Rotations:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -936,7 +936,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Thickness:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -983,7 +983,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Turns:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1035,7 +1035,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Waves Controls */}
         {gradientType === 'waves' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Amplitude:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1056,7 +1056,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Frequency:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1077,7 +1077,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Number:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1098,7 +1098,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1125,7 +1125,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Noise Controls */}
         {gradientType === 'noise' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1146,7 +1146,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Detail:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1167,14 +1167,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Warp:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
@@ -1195,14 +1195,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
@@ -1216,7 +1216,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Radial Controls */}
         {gradientType === 'radial' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1237,7 +1237,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Center Y:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1273,7 +1273,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             mode, same precedent as Zoom Blur merging into Blur. */}
         {gradientType === 'radial-burst' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
@@ -1296,7 +1296,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             {radialBurstMode === 'burst' ? (
               <>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Burst Count:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1317,7 +1317,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Spread:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1338,7 +1338,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Size:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1362,7 +1362,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between">
                   <label className="text-[10px] text-white">Fade Length:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1398,7 +1398,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
           <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Cell Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1419,7 +1419,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Distortion:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1446,7 +1446,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Fade Controls */}
         {gradientType === 'fade' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
@@ -1461,7 +1461,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Flower Controls */}
         {gradientType === 'flower' && (
           <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Circles:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1482,7 +1482,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1505,7 +1505,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Spread:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
@@ -1528,7 +1528,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <label className="text-[10px] text-white whitespace-nowrap" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices">Symmetry:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input
