@@ -647,11 +647,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('grain') && (
                 <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
@@ -698,6 +693,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
                     <input type="range" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -724,7 +724,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('blur') && (
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
@@ -993,6 +994,41 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('grid-effect') && (
                 <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid-effect')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
+                    <div className="flex gap-0.5 flex-1">
+                      <button
+                        onClick={() => setGridRotationDirection('none')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'none'
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        OFF
+                      </button>
+                      <button
+                        onClick={() => setGridRotationDirection('clockwise')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'clockwise'
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        ⟳
+                      </button>
+                      <button
+                        onClick={() => setGridRotationDirection('counterclockwise')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          gridRotationDirection === 'counterclockwise'
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        ⟲
+                      </button>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Sides:</label>
                     <div className="flex items-center gap-1 flex-1">
@@ -1100,41 +1136,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onChange={(e) => setGridVariation(Number(e.target.value))}
                         className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
                       />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
-                    <div className="flex gap-0.5 flex-1">
-                      <button
-                        onClick={() => setGridRotationDirection('none')}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'none'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        OFF
-                      </button>
-                      <button
-                        onClick={() => setGridRotationDirection('clockwise')}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'clockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        ⟳
-                      </button>
-                      <button
-                        onClick={() => setGridRotationDirection('counterclockwise')}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'counterclockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        ⟲
-                      </button>
                     </div>
                   </div>
                 </EffectSection>
