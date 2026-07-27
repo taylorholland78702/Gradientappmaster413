@@ -412,7 +412,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
               { label: 'Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -430,7 +430,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -448,7 +448,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -467,7 +467,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
               { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -485,7 +485,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
               { label: 'Speed', value: metaballSpeed, set: setMetaballSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -503,7 +503,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
               { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -521,7 +521,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Offset', value: moireOffset, set: setMoireOffset, min: 0, max: 100, step: 1 },
               { label: 'Speed', value: moireSpeed, set: setMoireSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -540,7 +540,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
               { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -560,7 +560,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
               { label: 'Fade', value: attractorTrailFade, set: setAttractorTrailFade, min: 0.01, max: 0.3, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -580,7 +580,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
               { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -599,7 +599,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Complexity', value: tilingComplexity, set: setTilingComplexity, min: 0.5, max: 10, step: 0.5 },
               { label: 'Rotation', value: tilingRotation, set: setTilingRotation, min: 0, max: 360, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -624,7 +624,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
               { label: 'Speed', value: reactionDiffusionSpeed, set: setReactionDiffusionSpeed, min: 0.2, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -642,7 +642,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
               { label: 'Line Width', value: topographicLineWidth, set: setTopographicLineWidth, min: 0.01, max: 0.15, step: 0.005 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
@@ -661,7 +661,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Zoom', value: juliaZoom, set: setJuliaZoom, min: 0.3, max: 3, step: 0.1 },
               { label: 'Detail', value: juliaIterations, set: setJuliaIterations, min: 20, max: 120, step: 5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className={`flex items-center justify-between ${i < arr.length - 1 ? 'mb-1' : ''}`}>
+              <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
