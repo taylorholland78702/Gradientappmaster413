@@ -3536,9 +3536,9 @@ export function InteractiveGradient() {
                 <stop offset="100%" stopColor="#ffffff" stopOpacity="0.58" />
               </linearGradient>
               <linearGradient id="wavGlassRim" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.98" />
-                <stop offset="55%" stopColor="#ffffff" stopOpacity="0.48" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.92" />
+                <stop offset="0%" stopColor="#eef1f6" stopOpacity="1" />
+                <stop offset="55%" stopColor="#d7dce6" stopOpacity="0.75" />
+                <stop offset="100%" stopColor="#eef1f6" stopOpacity="0.98" />
               </linearGradient>
               <clipPath id="wavGlassClip">
                 <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5">wāv</text>
@@ -3546,23 +3546,38 @@ export function InteractiveGradient() {
               <filter id="wavGlassBlur" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="1.6" />
               </filter>
+              {/* Ambient lift so the mark still separates from flat/light
+                  backgrounds (white especially) where a translucent-on-
+                  translucent read alone has almost nothing to grab onto —
+                  dark or busy backgrounds don't need it but aren't hurt by
+                  it either since it's a soft, low-opacity shadow. */}
+              <filter id="wavGlassDropShadow" x="-30%" y="-40%" width="160%" height="200%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.28" />
+              </filter>
             </defs>
 
-            <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
+            <g filter="url(#wavGlassDropShadow)">
+              <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
 
-            {/* Highlight layers are clipped to the full "wāv" glyph run
-                (including the macron) so the diacritic gets the same sweep
-                treatment as the letterforms below it — the top band is
-                intentionally low-opacity (was washing the thin macron out
-                to a flat opaque bar instead of glass). No color anywhere —
-                a colored fringe along the bottom edge read as an unwanted
-                purple/yellow tint rather than a glass cue. */}
-            <g clipPath="url(#wavGlassClip)">
-              <rect x="0" y="0" width="240" height="20" fill="#ffffff" opacity="0.22" filter="url(#wavGlassBlur)" />
-              <rect x="-15" y="4" width="34" height="80" fill="#ffffff" opacity="0.3" transform="rotate(18 120 40)" filter="url(#wavGlassBlur)" />
+              {/* Highlight layers are clipped to the full "wāv" glyph run
+                  (including the macron) so the diacritic gets the same sweep
+                  treatment as the letterforms below it — the top band is
+                  intentionally low-opacity (was washing the thin macron out
+                  to a flat opaque bar instead of glass). No color anywhere —
+                  a colored fringe along the bottom edge read as an unwanted
+                  purple/yellow tint rather than a glass cue. */}
+              <g clipPath="url(#wavGlassClip)">
+                <rect x="0" y="0" width="240" height="20" fill="#ffffff" opacity="0.22" filter="url(#wavGlassBlur)" />
+                <rect x="-15" y="4" width="34" height="80" fill="#ffffff" opacity="0.3" transform="rotate(18 120 40)" filter="url(#wavGlassBlur)" />
+              </g>
+
+              {/* Rim stroke nudged toward a cool light grey (was pure
+                  white) and thickened slightly — on a colorful/dark
+                  background it still reads as a bright glass edge, but on
+                  white it now gives the letterforms a visible boundary
+                  instead of nearly vanishing into the page. */}
+              <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.6">wāv</text>
             </g>
-
-            <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.1">wāv</text>
           </svg>
         </div>
 
