@@ -469,6 +469,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       
       const effectCtx: Record<string, any> = {
         ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
+        // Same ref-sourced overrides as drawCtx above — effects that read an
+        // anim-time value (applyLiquid, applyEmoji) need the live value too,
+        // not the stale one baked into `params` from whenever this closure
+        // was last rebuilt. Missing this made liquidAnimTime read as
+        // `undefined` here, and Math.sin(undefined) => NaN propagated through
+        // applyLiquid's coordinate math into a fully-black frame (NaN written
+        // into a Uint8ClampedArray clamps to 0).
+        auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
+        moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
+        voronoiAnimTime, flowerAnimTime,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,

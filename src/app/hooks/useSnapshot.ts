@@ -511,7 +511,7 @@ export function useSnapshot(params: SnapshotParams) {
     setMidsMultiplier(snapshot.midsMultiplier ?? 2.5);
     setTrebleMultiplier(snapshot.trebleMultiplier ?? 2);
     setSubBassMultiplier(snapshot.subBassMultiplier ?? 3.0);
-    setMasterSensitivity(snapshot.masterSensitivity ?? 1.55);
+    setMasterSensitivity(snapshot.masterSensitivity ?? 1.1625);
     // Always on — no UI toggle for either anymore (AudioPanel.tsx), so a
     // saved snapshot/preset from before that removal can't silently turn
     // them back off.
@@ -564,7 +564,7 @@ export function useSnapshot(params: SnapshotParams) {
     setRadialSizeScale(snapshot.radialSizeScale ?? 1.0);
     setRippleAmplitude(snapshot.rippleAmplitude ?? 20);
     setRippleFrequency(snapshot.rippleFrequency ?? 0.015);
-    setSlitScanDirection(snapshot.slitScanDirection ?? 'horizontal');
+    setSlitScanDirection(snapshot.slitScanDirection ?? 'radial');
     setSlitScanIntensity(snapshot.slitScanIntensity ?? 0.5);
     setTruchetSize(snapshot.truchetSize ?? 40);
     setTruchetThickness(snapshot.truchetThickness ?? 4);

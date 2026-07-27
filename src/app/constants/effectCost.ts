@@ -11,7 +11,7 @@ import type { EffectType } from './gradientEffects';
 export const EFFECT_COST: Partial<Record<EffectType, number>> = {
   'chromatic-trails': 3, 'grid-effect': 3, triangulate: 3, halftone: 3, dither: 3,
   ascii: 2, feedback: 2, glitch: 2, vhs: 2, emoji: 2, grain: 2, mirror: 2,
-  blur: 2, 'zoom-blur': 2, ripple: 2, wave: 2, duotone: 2, chromatic: 2, 'slit-scan': 2,
+  blur: 2, wave: 2, duotone: 2, chromatic: 2, 'slit-scan': 2,
 };
 
 export const costOf = (effect: EffectType): number => EFFECT_COST[effect] ?? 1;

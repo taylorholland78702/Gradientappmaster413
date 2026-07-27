@@ -46,8 +46,8 @@ const EFFECT_MOD_CATEGORY: Record<string, string[]> = {
   dither: ['Dither'], duotone: ['Duotone'], emoji: ['Emoji'], feedback: ['Feedback'], fisheye: ['Fisheye'],
   glitch: ['Glitch'], grain: ['Grain'], 'grid-effect': ['Grid', 'Grid Effect'], halftone: ['Halftone'], invert: ['Invert'], kaleidoscope: ['Kaleidoscope'],
   liquid: ['Liquid'], mirror: ['Mirror'], photo: ['Photo'], pixelate: ['Pixelate'], posterize: ['Posterize'],
-  ripple: ['Ripple'], scanlines: ['Scanlines'], shift: ['Shift'], 'slit-scan': ['Slit-Scan'], triangulate: ['Triangulate'],
-  vhs: ['VHS'], vignette: ['Vignette'], wave: ['Wave'], 'zoom-blur': ['Blur'],
+  scanlines: ['Scanlines'], shift: ['Shift'], 'slit-scan': ['Slit-Scan'], triangulate: ['Triangulate'],
+  vhs: ['VHS'], vignette: ['Vignette'], wave: ['Wave'],
 };
 
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
@@ -504,27 +504,8 @@ export function useRandomization(params: RandomizationParams) {
       const gradientPool = (audioActive && Math.random() < 0.7)
         ? AUDIO_GRADIENTS
         : FEELING_LUCKY_GRADIENT_TYPES;
-      // Weighted rather than uniform pick — a handful of gradient types are
-      // intrinsically expensive on their own even with zero effects layered
-      // on top (reaction-diffusion runs a full cellular-automaton grid sim
-      // every frame; julia does escape-time fractal iteration per pixel;
-      // voronoi/metaballs are per-pixel distance-field math). Only one
-      // gradient ever renders at a time so these don't compound with each
-      // other the way stacked effects do, but a heavy gradient plus a
-      // heavy effect stack on top of it is still a bad remix — de-weighted
-      // (not excluded) so they're rarer without losing variety entirely.
-      const HEAVY_GRADIENT_WEIGHT: Partial<Record<GradientType, number>> = {
-        'reaction-diffusion': 0.25, julia: 0.35, voronoi: 0.5, metaballs: 0.5,
-        marble: 0.5, caustics: 0.5, plasma: 0.5, iridescent: 0.5,
-      };
-      const weightedGradients = gradientPool.map((g) => ({ g, weight: HEAVY_GRADIENT_WEIGHT[g] ?? 1 }));
-      const gradientTotalWeight = weightedGradients.reduce((sum, x) => sum + x.weight, 0);
-      let gradientRoll = Math.random() * gradientTotalWeight;
-      let randomGradient: GradientType = gradientPool[0];
-      for (const x of weightedGradients) {
-        gradientRoll -= x.weight;
-        if (gradientRoll < 0) { randomGradient = x.g; break; }
-      }
+      // Uniform pick — every gradient type in the pool has an equal chance.
+      const randomGradient: GradientType = gradientPool[Math.floor(Math.random() * gradientPool.length)];
       setGradientType(randomGradient);
 
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
@@ -744,7 +725,6 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'dither') setDitherLevels(Math.round(rng(2, 16)));
       else if (eff === 'feedback') { setFeedbackDecay(rng(0.5, 0.97)); setFeedbackZoom(rng(0, 5)); }
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
-      else if (eff === 'ripple') setRippleAmplitude(Math.round(rng(5, 50)));
       else if (eff === 'scanlines') { setScanlineIntensity(rng(0, 1)); setScanlineSpacing(Math.round(rng(2, 20))); }
       else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));
       else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }

@@ -79,9 +79,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [midsMax, setMidsMax] = useState(5);
   const [trebleMin, setTrebleMin] = useState(0);
   const [trebleMax, setTrebleMax] = useState(5);
-  // No Intensity slider in the UI anymore (AudioPanel.tsx) — settled on the
-  // midpoint of the old slider's 0.1-3 range as a fixed middle-ground value.
-  const [masterSensitivity, setMasterSensitivity] = useState(1.55);
+  // Defaults to 75% of the old fixed middle-ground value (1.55) so audio
+  // reactivity starts more subtle, leaving headroom to raise it via the
+  // Intensity slider in AudioPanel.tsx instead of only being able to lower it.
+  const [masterSensitivity, setMasterSensitivity] = useState(1.1625);
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);

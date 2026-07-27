@@ -329,11 +329,13 @@ export function applySlitScan(P: any): void {
                     const sf = buf[fi];
                     const normOffset = (fi - midBuf) / midBuf;
                     const shift = normOffset * int * md * 0.35;
-                    // Reflect instead of clamping to 0 — clamping collapsed every
-                    // pixel within |shift| of center onto the exact same source
-                    // pixel, producing a solid-color disc in the middle of the canvas.
-                    let sd = d + shift;
-                    if (sd < 0) sd = -sd;
+                    // Wrap instead of reflecting — same fix as horizontal/vertical's
+                    // x/y wrap above. Reflecting (sd = -sd when negative) sent every
+                    // pixel at the reflection radius (sd === 0) to the exact same
+                    // source pixel — the buffered frame's own center point — which
+                    // collapsed an entire ring of pixels onto one color, showing up
+                    // as a visible ring/halo seam at that radius.
+                    let sd = ((d + shift) % md + md) % md;
                     const angle = Math.atan2(y - cy, x - cx);
                     const twist = normOffset * int * 1.4;
                     const sAngle = angle + twist;

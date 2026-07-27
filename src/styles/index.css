@@ -349,10 +349,12 @@
 }
 
 /* Panel-header wordmark (InteractiveGradient.tsx, above the drag handle) —
-   same exemption pattern as .wav-base-text above: needs its own translucent
-   fill instead of the panel's flat black-text rule. */
+   same exemption pattern as .wav-base-text above: needs its own solid-white
+   fill (with a thin gray outline) instead of the panel's flat black-text
+   rule. */
 .control-panel .wav-panel-header-text {
-  color: rgba(255, 255, 255, 0.48) !important;
+  color: #ffffff !important;
+  -webkit-text-stroke: 1px #9ca3af;
 }
 
 /* Every panel/button surface that was translucent black becomes a

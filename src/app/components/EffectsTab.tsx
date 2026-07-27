@@ -76,7 +76,7 @@ export interface EffectsTabProps {
   grainIntensity: number; setGrainIntensity: (v: number) => void;
   grainType: 'fine' | 'medium' | 'coarse' | 'film'; setGrainType: (v: 'fine' | 'medium' | 'coarse' | 'film') => void;
   // Blur
-  blurType: 'gaussian' | 'motion' | 'radial'; setBlurType: (v: 'gaussian' | 'motion' | 'radial') => void;
+  blurType: 'gaussian' | 'motion' | 'radial' | 'zoom'; setBlurType: (v: 'gaussian' | 'motion' | 'radial' | 'zoom') => void;
   blurGaussianAmount: number; setBlurGaussianAmount: (v: number) => void;
   blurMotionAmount: number; setBlurMotionAmount: (v: number) => void;
   blurMotionDirection: number; setBlurMotionDirection: (v: number) => void;
@@ -203,7 +203,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'photo',          label: 'Photo' },
               { value: 'pixelate',       label: 'Pixelate' },
               { value: 'posterize',      label: 'Posterize' },
-              { value: 'ripple',         label: 'Ripple' },
               { value: 'scanlines',      label: 'Scanlines' },
               { value: 'shift',    label: 'Shift' },
               { value: 'slit-scan',      label: 'Slit-Scan' },
@@ -211,7 +210,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               { value: 'vhs',     label: 'VHS' },
               { value: 'vignette',       label: 'Vignette' },
               { value: 'wave',label: 'Wave' },
-              { value: 'zoom-blur',       label: 'Zoom Blur' },
             ] as { value: EffectType; label: string }[]).filter(e => e.value !== 'none');
             const rows = Math.ceil(effectsList.length / 2);
             return (
@@ -304,54 +302,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <span className="text-[10px] text-white w-8 text-right">{kaleidoscopeRotateSpeed.toFixed(1)}</span>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('ripple') && (
-                <EffectSection id="ripple" label="Ripple" isMulti={isMulti} expanded={expandedEffects.has('ripple')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Frequency:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="1"
-                        max="100"
-                        step="1"
-                        value={Math.round(rippleFrequency * 2000)}
-                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="100"
-                        step="1"
-                        value={Math.round(rippleFrequency * 2000)}
-                        onChange={(e) => setRippleFrequency(Number(e.target.value) / 2000)}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Amplitude:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="5"
-                        max="50"
-                        value={rippleAmplitude}
-                        onChange={(e) => setRippleAmplitude(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="50"
-                        value={rippleAmplitude}
-                        onChange={(e) => setRippleAmplitude(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
                   </div>
                 </EffectSection>
               )}
@@ -614,15 +564,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('zoom-blur') && (
-                <EffectSection id="zoom-blur" label="Zoom Blur" isMulti={isMulti} expanded={expandedEffects.has('zoom-blur')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1 mt-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
-                  <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
-                  <span className="text-[10px] text-white w-8 text-right">{blurRadialAmount}</span>
-                </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('mirror') && (
                 <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={expandedEffects.has('mirror')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1 mt-1">
@@ -780,6 +721,16 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       >
                         Radial
                       </button>
+                      <button
+                        onClick={() => setBlurType('zoom')}
+                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                          blurType === 'zoom'
+                            ? 'bg-white text-black'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Zoom
+                      </button>
                     </div>
                   </div>
                   {blurType === 'gaussian' && (
@@ -851,7 +802,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </div>
                     </>
                   )}
-                  {blurType === 'radial' && (
+                  {(blurType === 'radial' || blurType === 'zoom') && (
                     <div className="flex items-center justify-between gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                       <div className="flex items-center gap-1 flex-1">
@@ -947,6 +898,22 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
+                  <button
+                    onClick={() => {
+                      const randomHex = () => {
+                        const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                        const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                        const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+                        return `#${r}${g}${b}`;
+                      };
+                      setDuotoneColor1(randomHex());
+                      setDuotoneColor2(randomHex());
+                      if (duotoneThreeColor) setDuotoneColor3(randomHex());
+                    }}
+                    className="w-full mt-1 px-2 py-1 rounded text-[10px] bg-black/25 text-white hover:bg-white/15 transition-all"
+                  >
+                    Shuffle Colors
+                  </button>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Color 1:</label>
                     <input

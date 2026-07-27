@@ -1413,13 +1413,19 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number } | null>(null);
+  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
-  const AUTO_SHUFFLE_POPOVER_WIDTH = 224;
-  const openAutoShufflePopover = (triggerEl: HTMLElement) => {
-    const rect = triggerEl.getBoundingClientRect();
-    const left = Math.min(rect.left, window.innerWidth - AUTO_SHUFFLE_POPOVER_WIDTH - 8);
-    setAutoShufflePopoverAnchor({ top: rect.bottom + 8, left: Math.max(8, left) });
+  // Anchored to the whole panel (panelRef), not the trigger button — sits
+  // below the entire panel instead of overlapping whatever row/tab content
+  // is underneath the button. panelRef stays mounted (just opacity-0) even
+  // when the collapsed cluster is what's actually showing, so this still
+  // resolves to a sensible position in that case too.
+  const openAutoShufflePopover = () => {
+    const panelEl = panelRef.current;
+    const rect = panelEl ? panelEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
+    const width = Math.max(200, rect.width);
+    const left = Math.min(rect.left, window.innerWidth - width - 8);
+    setAutoShufflePopoverAnchor({ top: rect.bottom + 8, left: Math.max(8, left), width });
   };
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
@@ -1433,24 +1439,36 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
+    // Styled to match the panel's other dropdowns (e.g. GradientsTab's type
+    // picker: rounded-lg border border-white/10 bg-black/25, black text) —
+    // this popover is portaled to document.body, outside the .control-panel
+    // DOM subtree, so it doesn't get that theme CSS applied automatically;
+    // the colors below are that same theme's resolved light-on-dark values
+    // written out directly instead.
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
-        className="fixed z-50 rounded-lg shadow-lg p-3 flex flex-col gap-2"
-        style={{ top: autoShufflePopoverAnchor.top, left: autoShufflePopoverAnchor.left, width: AUTO_SHUFFLE_POPOVER_WIDTH, backgroundColor: 'rgba(20, 20, 20, 0.95)' }}
+        className="fixed z-50 rounded-lg shadow-sm p-3 flex flex-col gap-2"
+        style={{
+          top: autoShufflePopoverAnchor.top,
+          left: autoShufflePopoverAnchor.left,
+          width: autoShufflePopoverAnchor.width,
+          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+        }}
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
+          <span className="text-xs flex items-center gap-2 text-black"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
           <button
             onClick={() => setIsAutoShuffleOn(prev => !prev)}
             aria-pressed={isAutoShuffleOn}
             aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
             className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
-            style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.2)' }}
+            style={{ backgroundColor: isAutoShuffleOn ? '#000000' : 'rgba(0, 0, 0, 0.15)' }}
           >
             <span
-              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
-              style={{ transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)', backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff' }}
+              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform bg-white"
+              style={{ transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
             />
           </button>
         </div>
@@ -1470,12 +1488,12 @@ export function InteractiveGradient() {
             max={AUTO_SHUFFLE_MAX_SEC}
             value={autoShuffleIntervalSec}
             onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-            className="text-[10px] w-12 text-right rounded px-1 text-white"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.25)' }}
+            className="text-[10px] w-12 text-right rounded px-1 text-black"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.06)', border: '1px solid rgba(0, 0, 0, 0.2)' }}
             aria-label="Auto Shuffle interval in seconds"
           />
         </div>
-        <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+        <p className="text-[10px] text-black/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
       </div>,
       document.body,
     );
@@ -3339,7 +3357,7 @@ export function InteractiveGradient() {
               toggling directly — ⌥⇧W keyboard shortcut still toggles on/off
               immediately. */}
           <button
-            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
+            onClick={() => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover()}
             className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"
@@ -3463,7 +3481,8 @@ export function InteractiveGradient() {
               fontSize: '60px',
               lineHeight: 1,
               letterSpacing: '-0.03em',
-              color: 'rgba(255, 255, 255, 0.48)',
+              color: '#ffffff',
+              WebkitTextStroke: '1px #9ca3af',
             }}
           >wāv</span>
         </div>
@@ -3515,7 +3534,7 @@ export function InteractiveGradient() {
           </button>
           <Divider />
           <button
-            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
+            onClick={() => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover()}
             className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"

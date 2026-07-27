@@ -120,7 +120,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'reactionDiffusionFeed', label: 'Reaction Diffusion Feed', category: 'Reaction-Diffusion', min: 0.02, max: 0.08 },
   { key: 'reactionDiffusionKill', label: 'Reaction Diffusion Kill', category: 'Reaction-Diffusion', min: 0.04, max: 0.07 },
   { key: 'reactionDiffusionSpeed', label: 'Reaction Diffusion Speed', category: 'Reaction-Diffusion', min: 0.2, max: 3.0 },
-  { key: 'rippleAmplitude', label: 'Ripple Amplitude', category: 'Ripple', min: 5.0, max: 50.0 },
   { key: 'scanlineIntensity', label: 'Scanline Intensity', category: 'Scanlines', min: 0.0, max: 1.0 },
   { key: 'scanlineSpacing', label: 'Scanline Spacing', category: 'Scanlines', min: 2.0, max: 20.0 },
   { key: 'scanlineSpeed', label: 'Scanline Speed', category: 'Scanlines', min: 0.0, max: 5.0 },

@@ -16,7 +16,7 @@ export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'wav
 // for an unrelated gradient pattern, and sharing the same id string between
 // the two was a real footgun for any `=== 'grid'` check plus ambiguous in
 // preset/export data. See EFFECT_ONLY_MIGRATIONS below for old presets.
-export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid-effect' | 'dither' | 'slit-scan' | 'zoom-blur' | 'bloom' | 'feedback' | 'ripple' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo' | 'glitch';
+export type EffectType = 'none' | 'kaleidoscope' | 'invert' | 'pixelate' | 'triangulate' | 'chromatic' | 'fisheye' | 'grain' | 'posterize' | 'halftone' | 'vhs' | 'blur' | 'wave' | 'shift' | 'duotone' | 'vignette' | 'grid-effect' | 'dither' | 'slit-scan' | 'bloom' | 'feedback' | 'mirror' | 'ascii' | 'liquid' | 'chromatic-trails' | 'scanlines' | 'emoji' | 'photo' | 'glitch';
 
 export const DEFAULT_COLORS: ColorRGB[] = [
   { r: 255, g: 100, b: 200 }, // Pink
@@ -54,6 +54,13 @@ export const migrateId = (id: string): string => ID_MIGRATIONS[id] || id;
 // only ever runs on activeEffects arrays (via migrateIds below).
 const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
   'grid': 'grid-effect',
+  // Zoom Blur was folded into Blur as a 4th mode (blurType: 'zoom') rather
+  // than staying a separate effect — old presets/snapshots that reference
+  // it by its old id still activate the (now-merged) Blur effect instead of
+  // silently dropping it. blurType itself isn't migrated here (this only
+  // touches activeEffects id strings), so an old zoom-blur preset loads as
+  // Blur in whatever mode was last selected rather than specifically Zoom.
+  'zoom-blur': 'blur',
 };
 export const migrateIds = (ids: string[] | undefined | null): string[] =>
   (ids || []).map(id => EFFECT_ONLY_MIGRATIONS[id] || migrateId(id));
@@ -100,13 +107,13 @@ export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor
 // the WAV button) can pick it, and nothing without a button should be listed.
 // Exception: 'photo' has a button but is deliberately left out of this pool — it's a no-op
 // until the user uploads an image, so a random shuffle landing on it would just look broken.
-export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'glitch', 'grain', 'grid-effect', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'ripple', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave', 'zoom-blur'];
+export const ALL_EFFECTS: EffectType[] = ['ascii', 'bloom', 'blur', 'chromatic', 'chromatic-trails', 'dither', 'duotone', 'emoji', 'feedback', 'fisheye', 'glitch', 'grain', 'grid-effect', 'halftone', 'invert', 'kaleidoscope', 'liquid', 'mirror', 'pixelate', 'posterize', 'scanlines', 'shift', 'slit-scan', 'triangulate', 'vhs', 'vignette', 'wave'];
 
 // Gradients that pulse/react visibly with audio
 export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'flow-field', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet'];
 
 // Effects that pulse/react visibly with audio
-export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye', 'bloom', 'feedback', 'glitch', 'kaleidoscope', 'ripple', 'scanlines', 'vhs', 'zoom-blur', 'duotone', 'posterize', 'mirror'];
+export const AUDIO_EFFECTS: EffectType[] = ['blur', 'vignette', 'chromatic', 'wave', 'shift', 'grain', 'fisheye', 'bloom', 'feedback', 'glitch', 'kaleidoscope', 'scanlines', 'vhs', 'duotone', 'posterize', 'mirror'];
 
 // Gradient types where click-drag should not move the gradient's center
 export const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'helix', 'flow-field'];

@@ -242,6 +242,37 @@ export function applyBlur(P: any): void {
               }
               ctx.globalAlpha = 1.0;
               ctx.filter = 'none';
+            } else if (blurType === 'zoom') {
+              // True zoom blur: per-pixel multi-sample toward center
+              // (flying-toward-camera look) — merged in from the former
+              // standalone Zoom Blur effect, now a 4th Blur mode alongside
+              // Gaussian/Motion/Radial (spin). Shares blurRadialAmount with
+              // the Radial mode rather than getting its own slider.
+              if (canvas.width > 0 && canvas.height > 0) {
+                try {
+                  const zbSrc = getDisplayImageData();
+                  const zbDst = ctx.createImageData(displayWidth, displayHeight);
+                  const zbCx = displayWidth / 2, zbCy = displayHeight / 2;
+                  const zbAmt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
+                  const zbSteps = 10;
+                  for (let y = 0; y < displayHeight; y++) {
+                    for (let x = 0; x < displayWidth; x++) {
+                      let r = 0, g = 0, b = 0;
+                      for (let s = 0; s < zbSteps; s++) {
+                        const t = 1 - zbAmt * (s / zbSteps);
+                        const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(zbCx + (x - zbCx) * t)));
+                        const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(zbCy + (y - zbCy) * t)));
+                        const si = (sy * displayWidth + sx) * 4;
+                        r += zbSrc.data[si]; g += zbSrc.data[si+1]; b += zbSrc.data[si+2];
+                      }
+                      const di = (y * displayWidth + x) * 4;
+                      zbDst.data[di] = r / zbSteps; zbDst.data[di+1] = g / zbSteps;
+                      zbDst.data[di+2] = b / zbSteps; zbDst.data[di+3] = 255;
+                    }
+                  }
+                  putScaledImageData(zbDst);
+                } catch(e) { /* skip */ }
+              }
             } else if (blurType === 'radial') {
               // True rotational ("spin") blur: samples an arc around the
               // center at a fixed radius, sweeping angle each step, instead of
