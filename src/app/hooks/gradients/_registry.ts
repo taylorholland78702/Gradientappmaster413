@@ -25,7 +25,6 @@ import { drawFlowField } from './drawFlowField';
 import { drawAttractor } from './drawAttractor';
 import { drawReactionDiffusion } from './drawReactionDiffusion';
 import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
-import { drawRadar } from './drawRadar';
 import { drawFlower } from './drawFlower';
 
 // Dispatches to the WebGL renderer when the browser/GPU can support it
@@ -73,6 +72,5 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'flow-field': drawFlowField,
   'attractor': drawAttractor,
   'reaction-diffusion': drawReactionDiffusionAuto,
-  'radar': drawRadar,
   'flower': drawFlower,
 };

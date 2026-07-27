@@ -385,7 +385,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
 
     // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower', 'radar'];
+    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'helix', 'radial-burst', 'freeform', 'flower'];
     if (!directRenderTypes.includes(gradientType)) {
       if (gradient) {
         addGradientStops(gradient, renderColors);

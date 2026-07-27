@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'iridescent' | 'radar' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia';
+export type GradientType = 'radial' | 'angle' | 'windmill' | 'polar-grid' | 'waves' | 'fade' | 'helix' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'iridescent' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'flow-field' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -45,6 +45,15 @@ export const TWO_PI = Math.PI * 2;
 // Firestore or the local rated-results cache — still contain the old ids,
 // so any external data must be run through this map before use.
 export const ID_MIGRATIONS: Record<string, string> = {
+  // Radar was folded into Radial Burst as a 'sweep' mode (radialBurstMode)
+  // rather than staying a separate gradient type — old presets/results that
+  // reference it by the old id still land on the (now-merged) Radial Burst
+  // gradient instead of silently falling back to a default. The mode itself
+  // isn't migrated here (this only remaps the id string), so an old radar
+  // preset loads as Radial Burst in whatever mode was last selected rather
+  // than specifically 'sweep' — same accepted tradeoff as zoom-blur's
+  // migration into Blur below.
+  'radar': 'radial-burst',
   'film-grain': 'grain',
   'color-shift': 'shift',
   'vhs-glitch': 'vhs',
@@ -95,7 +104,7 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   'lava-lamp': 'Lava Lamp', marble: 'Marble',
   noise: 'Noise', plasma: 'Plasma',
   'polar-grid': 'Polar Grid',
-  radar: 'Radar', radial: 'Radial', 'radial-burst': 'Radial Burst',
+  radial: 'Radial', 'radial-burst': 'Radial Burst',
   shapes: 'Shapes', windmill: 'Windmill',
   voronoi: 'Voronoi', waves: 'Waves',
   metaballs: 'Metaballs', truchet: 'Truchet', moire: 'Moire', 'flow-field': 'Flow Field',
@@ -104,13 +113,13 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
 };
 
 // Full gradient type list for UI
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flow-field', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'metaballs', 'moire', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'truchet', 'voronoi', 'waves', 'windmill'];
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flow-field', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'metaballs', 'moire', 'noise', 'plasma', 'polar-grid', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'truchet', 'voronoi', 'waves', 'windmill'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
-export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radar', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
+export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'helix', 'iridescent', 'julia', 'lava-lamp', 'marble', 'noise', 'plasma', 'polar-grid', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'topographic', 'voronoi', 'waves', 'windmill', 'metaballs', 'truchet', 'moire', 'flow-field'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'radar', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'flow-field', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet'];
+export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'waves', 'plasma', 'noise', 'windmill', 'helix', 'grid', 'angle', 'fade', 'flower', 'voronoi', 'iridescent', 'polar-grid', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'flow-field', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet'];
 
 // Gradient types where click-drag should not move the gradient's center
-export const NO_DRAG_TYPES = ['windmill', 'radar', 'flower', 'helix', 'flow-field'];
+export const NO_DRAG_TYPES = ['windmill', 'flower', 'helix', 'flow-field'];

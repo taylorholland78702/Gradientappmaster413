@@ -150,6 +150,7 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
     radarFadeLength,
     radarSweepAngle,
     radialBurstCount,
+    radialBurstMode,
     radialBurstSize,
     radialBurstSpread,
     radialSizeScale,
@@ -212,9 +213,69 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
     displayWidth,
     displayHeight,
     putScaledImageData,
-    getDisplayImageData
+    getDisplayImageData,
+    putLowResImageData
   } = P;
   let gradient: CanvasGradient | undefined;
+          if (radialBurstMode === 'sweep') {
+            // Rotating radar-style sweep — folded in from the former
+            // standalone Radar gradient, rendered at half resolution and
+            // upscaled (putLowResImageData). See InteractiveGradient.tsx's
+            // RAF loop for radarSweepAngle's per-frame animation, gated on
+            // radialBurstModeRef instead of a 'radar' gradientType now.
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+            const audioRadarTrail = (isAudioEnabled && isAudioReactive) ? audioSubBassLevel * 120 : 0;
+            const audioRadarFlash = (isAudioEnabled && isAudioReactive) ? audioMidsLevel : 0;
+            const effectiveRadarFadeLength = Math.min(360, radarFadeLength + audioRadarTrail);
+
+            const rRenderW = Math.max(1, Math.round(displayWidth * 0.5));
+            const rRenderH = Math.max(1, Math.round(displayHeight * 0.5));
+            const rInvScale = 2; // 1 / 0.5
+            const radarImageData = ctx.createImageData(rRenderW, rRenderH);
+            const radarData = radarImageData.data;
+
+            for (let ry = 0; ry < rRenderH; ry++) {
+              for (let rx = 0; rx < rRenderW; rx++) {
+                const dx = rx * rInvScale - centerX;
+                const dy = ry * rInvScale - centerY;
+                const pixelAngle = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+
+                let angleDiff = (radarSweepAngle - pixelAngle + 360) % 360;
+
+                let brightness = 0;
+                const beamHalf = radarBeamWidth / 2;
+                if (angleDiff <= beamHalf) {
+                  brightness = 1;
+                } else if (angleDiff <= beamHalf + effectiveRadarFadeLength) {
+                  brightness = 1 - ((angleDiff - beamHalf) / effectiveRadarFadeLength);
+                }
+                if (angleDiff <= beamHalf + 3) brightness = Math.max(brightness, audioRadarFlash);
+
+                const colorPos = (pixelAngle / 360) * (gradientColors.length - 1);
+                const colorIdx = Math.floor(colorPos);
+                const colorFrac = colorPos - colorIdx;
+                const color1 = gradientColors[colorIdx % gradientColors.length];
+                const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
+
+                if (!color1 || !color2) continue;
+
+                const r = color1.r + (color2.r - color1.r) * colorFrac;
+                const g = color1.g + (color2.g - color1.g) * colorFrac;
+                const b = color1.b + (color2.b - color1.b) * colorFrac;
+
+                const idx = (ry * rRenderW + rx) * 4;
+                radarData[idx] = r * brightness;
+                radarData[idx + 1] = g * brightness;
+                radarData[idx + 2] = b * brightness;
+                radarData[idx + 3] = 255;
+              }
+            }
+
+            putLowResImageData(radarImageData);
+            return gradient;
+          }
           // Multiple radial gradients - centered and sized to fit window on load
           ctx.fillStyle = 'rgb(0, 0, 0)';
           ctx.fillRect(0, 0, displayWidth, displayHeight);

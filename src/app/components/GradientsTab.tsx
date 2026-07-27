@@ -128,6 +128,7 @@ export interface GradientsTabProps {
   radialBurstCount: number; setRadialBurstCount: (v: number) => void;
   radialBurstSpread: number; setRadialBurstSpread: (v: number) => void;
   radialBurstSize: number; setRadialBurstSize: (v: number) => void;
+  radialBurstMode: 'burst' | 'sweep'; setRadialBurstMode: (v: 'burst' | 'sweep') => void;
 
   // Voronoi
   voronoiCellCount: number; setVoronoiCellCount: (v: number) => void;
@@ -181,6 +182,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
     plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
+    radialBurstMode, setRadialBurstMode,
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
     fadeDirection, setFadeDirection,
     radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth,
@@ -1073,72 +1075,130 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Radial Burst Controls */}
+        {/* Radial Burst Controls — 'sweep' mode folds in the former
+            standalone Radar gradient (rotating scan line) as an alternate
+            mode, same precedent as Zoom Blur merging into Blur. */}
         {gradientType === 'radial-burst' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Burst Count:</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="3"
-                  max="16"
-                  value={radialBurstCount}
-                  onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="16"
-                  value={radialBurstCount}
-                  onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
+                <button
+                  onClick={() => setRadialBurstMode('burst')}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    radialBurstMode === 'burst' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Burst
+                </button>
+                <button
+                  onClick={() => setRadialBurstMode('sweep')}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    radialBurstMode === 'sweep' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Sweep
+                </button>
               </div>
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Spread:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value={radialBurstSpread}
-                  onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="100"
-                  value={radialBurstSpread}
-                  onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="text-[10px] text-white">Size:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={radialBurstSize}
-                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="200"
-                  value={radialBurstSize}
-                  onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            {radialBurstMode === 'burst' ? (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Burst Count:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="3"
+                      max="16"
+                      value={radialBurstCount}
+                      onChange={(e) => setRadialBurstCount(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="16"
+                      value={radialBurstCount}
+                      onChange={(e) => setRadialBurstCount(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <label className="text-[10px] text-white">Spread:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={radialBurstSpread}
+                      onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="10"
+                      max="100"
+                      value={radialBurstSpread}
+                      onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
+                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <label className="text-[10px] text-white">Size:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="10"
+                      max="200"
+                      value={radialBurstSize}
+                      onChange={(e) => setRadialBurstSize(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="10"
+                      max="200"
+                      value={radialBurstSize}
+                      onChange={(e) => setRadialBurstSize(Number(e.target.value))}
+                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-white">Fade Length:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="10"
+                      max="180"
+                      value={radarFadeLength}
+                      onChange={(e) => setRadarFadeLength(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="10"
+                      max="180"
+                      value={radarFadeLength}
+                      onChange={(e) => setRadarFadeLength(Number(e.target.value))}
+                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Beam Width:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
         
@@ -1203,39 +1263,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Radar Controls */}
-        {gradientType === 'radar' && (
-          <div className="w-full p-2 bg-black/20 border border-white/8 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white">Fade Length:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="180"
-                  value={radarFadeLength}
-                  onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="180"
-                  value={radarFadeLength}
-                  onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Beam Width:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (

@@ -24,7 +24,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
   'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], helix: ['Helix'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
-  noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radar: ['Radar'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
+  noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill'],
 };
@@ -731,7 +731,7 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
     else if (gradientType === 'shapes') setConcentricRingWidth(Math.round(rng(20, 180)));
-    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); }
+    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); setRadarBeamWidth(Math.round(rng(1, 90))); }
     else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
     else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
     else if (gradientType === 'aurora') { setAuroraBandCount(Math.round(rng(2, 12))); setAuroraWaveSpeed(rng(0.1, 3)); }
@@ -743,7 +743,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flow-field') { setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
-    else if (gradientType === 'radar') setRadarBeamWidth(Math.round(rng(1, 90)));
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.

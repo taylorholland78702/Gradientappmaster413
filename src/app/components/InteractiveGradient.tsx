@@ -343,7 +343,9 @@ export function InteractiveGradient() {
   const { posterizeLevels, setPosterizeLevels, posterizeSolarize, setPosterizeSolarize } = usePosterizeState();
   const { radarSweepAngle, setRadarSweepAngle, radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth } = useRadarState();
   const { radialSizeScale, setRadialSizeScale } = useRadialState();
-  const { radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize } = useRadialBurstState();
+  const { radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize, radialBurstMode, setRadialBurstMode } = useRadialBurstState();
+  const radialBurstModeRef = useRef(radialBurstMode);
+  radialBurstModeRef.current = radialBurstMode;
   const { reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed } = useReactionDiffusionState();
   const { reactionDiffusionGridRef } = useReactionDiffusionGridState();
   const { redoStackRef, redoDepth, setRedoDepth } = useRedoState();
@@ -997,7 +999,8 @@ export function InteractiveGradient() {
 
       // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
       // Voronoi comment above — that value is pushed from the controller instead.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'radar' && isPlayActive) {
+      // Folded into Radial Burst as radialBurstMode === 'sweep'.
+      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'radial-burst' && radialBurstModeRef.current === 'sweep' && isPlayActive) {
         setRadarSweepAngle(prev => {
           const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
           const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
@@ -1158,7 +1161,7 @@ export function InteractiveGradient() {
     moireScale, moireSpeed, noiseDirection, noiseOctaves, noiseScale, noiseType,
     noiseWarp, paletteBeatEnabled, photoBlendMode, photoImageRef, photoOpacity, pinchStrength,
     pixelSize, plasmaComplexity, plasmaSpeed, plasmaZoomScale, polygon2Sides,
-    posterizeLevels, radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize,
+    posterizeLevels, radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstMode, radialBurstSize,
     radialBurstSpread, radialSizeScale, resolutionMultiplier, rippleAmplitude, rippleFrequency, scanLineSize,
     scanlineIntensity, scanlineSpacing, scanlineSpeed, sepiaIntensity, setActiveEffects, setAngleCenterX,
     setAngleCenterY, setAngleStartOffset, setAsciiChars, setAsciiColor, setAsciiSize, setAuroraBandCount,
@@ -1184,7 +1187,7 @@ export function InteractiveGradient() {
     setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setPaletteBeatEnabled,
     setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPlasmaZoomScale, setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength,
-    setRadarSweepAngle, setRadialBurstCount, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
+    setRadarSweepAngle, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier, setRippleAmplitude,
     setRippleFrequency, setScanLineSize, setScanlineIntensity, setScanlineSpacing, setScanlineSpeed, setSepiaIntensity,
     setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSolarizeThreshold,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setSubBassBeatSync, setSubBassMultiplier,
@@ -1834,6 +1837,7 @@ export function InteractiveGradient() {
       plasmaSpeed,
       plasmaComplexity,
       radialBurstCount,
+      radialBurstMode,
       radialBurstSpread,
       radialBurstSize,
       voronoiCellCount,
@@ -1860,7 +1864,7 @@ export function InteractiveGradient() {
     vhsGlitchIntensity, gridRows, gridColumns, polygon2Sides, waveDistortionStrength,
     windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, shapesSides, shapesCount,
     concentricRingWidth, concentricRingCount, waveAmplitude, waveFrequency,
-    noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread,
+    noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread,
     voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
     iridescentAngle, iridescentIntensity, iridescentScale,
     isAudioEnabled, isAudioReactive,
@@ -2523,7 +2527,7 @@ export function InteractiveGradient() {
     gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations,
     windmillThickness, windmillZoom, windmillZoomResponse, shapesSides, shapesCount, concentricRingWidth, concentricRingCount,
     waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
-    plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
+    plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, helixTurns, helixTightness,
     iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength,
     flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, flowerAnimTime,
@@ -2537,7 +2541,7 @@ export function InteractiveGradient() {
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, scanlineIntensity, scanlineSpacing, scanlineSpeed, colorShiftHue, pinchStrength, scanLineSize, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, waveAmplitude, waveFrequency, waveNumber, waveRotation, waveScale, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, iridescentAngle, iridescentIntensity, iridescentScale, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
   // Keep wave refs in sync so the draw function always reads current values without stale closure.
   useEffect(() => { waveNumberRef.current = waveNumber; drawParamsDirtyRef.current = true; }, [waveNumber]);
@@ -2603,7 +2607,7 @@ export function InteractiveGradient() {
     moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels, prevBassForRippleRef,
-    radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
+    radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstMode, radialBurstSize, radialBurstSpread,
     radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
     resolutionMultiplier, rippleAmplitude, rippleAutoFrameRef, rippleRingsRef, scanlineIntensity,
     scanlineSpacing, scanlineSpeed, shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
@@ -3835,6 +3839,8 @@ export function InteractiveGradient() {
             setRadialBurstSpread={setRadialBurstSpread}
             radialBurstSize={radialBurstSize}
             setRadialBurstSize={setRadialBurstSize}
+            radialBurstMode={radialBurstMode}
+            setRadialBurstMode={setRadialBurstMode}
             voronoiCellCount={voronoiCellCount}
             setVoronoiCellCount={setVoronoiCellCount}
             voronoiDistortion={voronoiDistortion}
