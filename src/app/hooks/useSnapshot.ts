@@ -22,7 +22,7 @@ export function useSnapshot(params: SnapshotParams) {
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
     voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
-    metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
+    metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, tilingAnimTime,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleColor, dustCrackleIntensity, dustCrackleLength,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
     feedbackDecay, feedbackRotation, feedbackZoom, fisheyeCenterX, fisheyeCenterY, fisheyeStrength,
@@ -56,7 +56,7 @@ export function useSnapshot(params: SnapshotParams) {
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setStructuralSeed, setAudioBindings,
     setVoronoiAnimTime, setFlowerAnimTime, setAuroraAnimTime, setCausticsAnimTime, setLavaAnimTime, setMarbleAnimTime,
-    setMetaballAnimTime, setMoireAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime,
+    setMetaballAnimTime, setMoireAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime, setTilingAnimTime,
     setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
@@ -224,7 +224,7 @@ export function useSnapshot(params: SnapshotParams) {
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
-      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
+      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, tilingAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -293,7 +293,7 @@ export function useSnapshot(params: SnapshotParams) {
       glitchIntensity, glitchBlockSize, glitchChromaSplit,
       fieldContrast, paletteMode, paletteBands, invertAmount, structuralSeed, audioBindings,
       voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime,
-      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime,
+      metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, tilingAnimTime,
       fadeDirection,
       feedbackDecay, feedbackRotation, feedbackZoom,
       fisheyeCenterX, fisheyeCenterY,
@@ -492,6 +492,7 @@ export function useSnapshot(params: SnapshotParams) {
     setLiquidAnimTime(snapshot.liquidAnimTime ?? 0);
     setEmojiAnimTime(snapshot.emojiAnimTime ?? 0);
     setAttractorAnimTime(snapshot.attractorAnimTime ?? 0);
+    setTilingAnimTime(snapshot.tilingAnimTime ?? 0);
     setFadeDirection(snapshot.fadeDirection ?? 0);
     setFeedbackDecay(snapshot.feedbackDecay ?? 0.85);
     setFeedbackRotation(snapshot.feedbackRotation ?? 0);

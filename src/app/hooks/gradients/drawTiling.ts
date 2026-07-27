@@ -18,6 +18,7 @@ export function drawTiling(P: any): CanvasGradient | undefined {
     tilingSymmetry,
     tilingComplexity,
     tilingRotation,
+    tilingAnimTime,
   } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -32,7 +33,7 @@ export function drawTiling(P: any): CanvasGradient | undefined {
   const symmetry = Math.max(2, Math.round(tilingSymmetry ?? 6));
   const sectorAngle = (Math.PI * 2) / symmetry;
   const complexity = Math.max(0.5, tilingComplexity ?? 3);
-  const rotRad = ((tilingRotation ?? 0) * Math.PI) / 180;
+  const rotRad = ((tilingRotation ?? 0) + (tilingAnimTime ?? 0)) * Math.PI / 180;
   const cosR = Math.cos(rotRad);
   const sinR = Math.sin(rotRad);
 
