@@ -3540,12 +3540,6 @@ export function InteractiveGradient() {
                 <stop offset="55%" stopColor="#ffffff" stopOpacity="0.48" />
                 <stop offset="100%" stopColor="#ffffff" stopOpacity="0.92" />
               </linearGradient>
-              <linearGradient id="wavGlassFringe" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.7" />
-                <stop offset="35%" stopColor="#f0abfc" stopOpacity="0.6" />
-                <stop offset="70%" stopColor="#fde68a" stopOpacity="0.65" />
-                <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0.7" />
-              </linearGradient>
               <clipPath id="wavGlassClip">
                 <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5">wāv</text>
               </clipPath>
@@ -3556,15 +3550,16 @@ export function InteractiveGradient() {
 
             <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
 
-            {/* Highlight/fringe layers are clipped to the full "wāv" glyph
-                run (including the macron) so the diacritic gets the same
-                sweep + fringe treatment as the letterforms below it — the
-                top band is intentionally low-opacity now (was washing the
-                thin macron out to a flat opaque bar instead of glass). */}
+            {/* Highlight layers are clipped to the full "wāv" glyph run
+                (including the macron) so the diacritic gets the same sweep
+                treatment as the letterforms below it — the top band is
+                intentionally low-opacity (was washing the thin macron out
+                to a flat opaque bar instead of glass). No color anywhere —
+                a colored fringe along the bottom edge read as an unwanted
+                purple/yellow tint rather than a glass cue. */}
             <g clipPath="url(#wavGlassClip)">
               <rect x="0" y="0" width="240" height="20" fill="#ffffff" opacity="0.22" filter="url(#wavGlassBlur)" />
               <rect x="-15" y="4" width="34" height="80" fill="#ffffff" opacity="0.3" transform="rotate(18 120 40)" filter="url(#wavGlassBlur)" />
-              <rect x="0" y="60" width="240" height="7" fill="url(#wavGlassFringe)" filter="url(#wavGlassBlur)" />
             </g>
 
             <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.1">wāv</text>
