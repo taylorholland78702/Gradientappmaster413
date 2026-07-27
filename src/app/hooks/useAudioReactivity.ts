@@ -60,12 +60,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [trebleOnsetTick, setTrebleOnsetTick] = useState(0);
   const [audioInputDevices, setAudioInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState('default');
-  const [bassMultiplier, setBassMultiplier] = useState(3.5);
-  const [midsMultiplier, setMidsMultiplier] = useState(2.5);
-  const [trebleMultiplier, setTrebleMultiplier] = useState(2);
-  const [bassSmoothing, setBassSmoothing] = useState(0.2);
-  const [midsSmoothing, setMidsSmoothing] = useState(0.2);
-  const [trebleSmoothing, setTrebleSmoothing] = useState(0.2);
+  // Multipliers and smoothing defaults tuned down — these three feed every
+  // downstream consumer (zoom, gradient angle, hue drift, shimmer, audio
+  // bindings), so high multipliers + fast (low) smoothing compounded into
+  // motion that snapped and overshot on every hit rather than flowing.
+  const [bassMultiplier, setBassMultiplier] = useState(1.5);
+  const [midsMultiplier, setMidsMultiplier] = useState(1.2);
+  const [trebleMultiplier, setTrebleMultiplier] = useState(1);
+  const [bassSmoothing, setBassSmoothing] = useState(0.55);
+  const [midsSmoothing, setMidsSmoothing] = useState(0.55);
+  const [trebleSmoothing, setTrebleSmoothing] = useState(0.55);
   const [bassThreshold, setBassThreshold] = useState(0);
   const [midsThreshold, setMidsThreshold] = useState(0);
   const [trebleThreshold, setTrebleThreshold] = useState(0);
@@ -87,7 +91,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);
-  const [subBassMultiplier, setSubBassMultiplier] = useState(3.0);
+  const [subBassMultiplier, setSubBassMultiplier] = useState(1.5);
   const [subBassBeatSync, setSubBassBeatSync] = useState(true);
   const [liveSubBassLevel, setLiveSubBassLevel] = useState(0);
   const [bpm, setBpm] = useState(0);
@@ -459,7 +463,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       } else {
         subBassRaw = subBassNorm * subBassMultiplier * effMasterSensitivity;
       }
-      subBassSmoothedRef.current = 0.35 * subBassSmoothedRef.current + 0.65 * subBassRaw;
+      subBassSmoothedRef.current = 0.65 * subBassSmoothedRef.current + 0.35 * subBassRaw;
       const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
 
       // ---- BASS (~60-250Hz) ----
@@ -482,7 +486,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         }
         lastBeatTimeRef.current = now;
         setBassOnsetTick(t => t + 1);
-        if (bassBeatSync) bassBeatPulseRef.current = 1.0;
+        if (bassBeatSync) bassBeatPulseRef.current = 0.6;
         // Mids/treble BEAT pulses used to also fire here, off the bass
         // band's onset — so "Mids BEAT" and "Treble BEAT" weren't actually
         // detecting mids or treble transients at all, just flashing in sync
