@@ -85,9 +85,10 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [trebleMax, setTrebleMax] = useState(5);
   // Slider runs 0-10 (see effMasterSensitivity above, which clamps the
   // actual math to a max of 3 — values 3-10 are identical headroom).
-  // Defaults to 1, well under the clamp, so reactivity reads as present but
-  // subtle out of the box rather than pinned at max.
-  const [masterSensitivity, setMasterSensitivity] = useState(1);
+  // Defaults to 0.4, deliberately very subtle out of the box, leaving the
+  // slider's 0.4-3 range (a 7.5x swing) as real headroom to dial reactivity
+  // up rather than starting already close to its ceiling.
+  const [masterSensitivity, setMasterSensitivity] = useState(0.4);
   const [bassBeatSync, setBassBeatSync] = useState(true);
   const [midsBeatSync, setMidsBeatSync] = useState(false);
   const [trebleBeatSync, setTrebleBeatSync] = useState(false);
