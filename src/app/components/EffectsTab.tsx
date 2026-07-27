@@ -179,7 +179,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           <div className="w-full flex gap-0 border-b border-white/10">
             <button
               onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
@@ -189,7 +189,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
           {(() => {
@@ -241,7 +241,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       }}
                       className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                         isActive
-                          ? 'bg-white text-black'
+                          ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
                             ? 'text-white/30 wav-disabled-text cursor-not-allowed'
                             : 'text-white hover:bg-white/10'
@@ -305,14 +305,14 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setAsciiColor(!asciiColor)}
                         className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          asciiColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                          asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
                         {asciiColor ? 'ON' : 'OFF'}
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Chars:</label>
                     <input
                       type="text"
@@ -332,22 +332,22 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
                     <input type="range" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Size Var:</label>
                     <input type="range" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Shifts every other row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
                     <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="flex-1" />
                     <input type="number" value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
                     <input
                       type="text"
@@ -454,19 +454,19 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       title={photoFileName || 'Upload a photo'}
                     >{photoFileName ? `📷 ${photoFileName}` : 'Upload Photo…'}</button>
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Blend:</label>
                     <div className="flex-1 flex gap-0.5">
                       {(['overlay', 'multiply', 'screen', 'source-over'] as const).map(mode => (
                         <button
                           key={mode}
                           onClick={() => setPhotoBlendMode(mode)}
-                          className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                          className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
                         >{mode === 'source-over' ? 'Normal' : mode[0].toUpperCase() + mode.slice(1)}</button>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
                     <input type="range" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -508,7 +508,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap" title="Fraction of cells that flip to the other diagonal split, for an irregular woven look instead of a uniform pattern">Variation:</label>
                   <input type="range" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -522,7 +522,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Angle:</label>
                     <input type="range" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -536,12 +536,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Center X:</label>
                     <input type="range" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Center Y:</label>
                     <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -588,14 +588,14 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-1 flex-1">
                       {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
                         <button key={mode} onClick={() => setMirrorMode(mode)}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}>
+                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>
                           {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
                         </button>
                       ))}
                     </div>
                   </div>
                   {mirrorMode === 'grid' && (
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
                       <input type="range" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -610,7 +610,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
                     <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -624,12 +624,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={scanlineIntensity} onChange={(e) => setScanlineIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Spacing:</label>
                     <input type="range" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="2" max="20" step="1" value={scanlineSpacing} onChange={(e) => setScanlineSpacing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
                     <input type="range" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="5" step="0.1" value={scanlineSpeed} onChange={(e) => setScanlineSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -659,7 +659,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGrainType('fine')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'fine'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -669,7 +669,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGrainType('medium')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'medium'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -679,7 +679,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGrainType('coarse')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'coarse'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -689,7 +689,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGrainType('film')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'film'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -704,12 +704,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   {dustCrackleIntensity > 0 && (
                     <>
-                      <div className="flex items-center gap-1 mt-1">
+                      <div className="flex items-center gap-1">
                         <label className="text-[10px] text-white whitespace-nowrap">Crack Length:</label>
                         <input type="range" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="flex-1" />
                         <input type="number" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                       </div>
-                      <div className="flex items-center justify-between gap-1 mt-1">
+                      <div className="flex items-center justify-between gap-1">
                         <label className="text-[10px] text-white whitespace-nowrap">Crack Color:</label>
                         <input
                           type="color"
@@ -730,7 +730,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setBlurType('gaussian')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'gaussian'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -740,7 +740,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setBlurType('motion')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'motion'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -750,7 +750,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setBlurType('radial')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'radial'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -760,7 +760,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setBlurType('zoom')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'zoom'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -894,7 +894,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setHalftoneMove(!halftoneMove)}
                         className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneMove
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -907,7 +907,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
                         className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneCMYK
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -972,7 +972,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <button
                       onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
                       className={`px-2 py-0.5 rounded text-[10px] transition-all ${
-                        duotoneThreeColor ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                        duotoneThreeColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                       }`}
                     >
                       {duotoneThreeColor ? 'ON' : 'OFF'}
@@ -1109,7 +1109,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGridRotationDirection('none')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'none'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1119,7 +1119,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGridRotationDirection('clockwise')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'clockwise'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1129,7 +1129,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setGridRotationDirection('counterclockwise')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'counterclockwise'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1209,7 +1209,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setSlitScanDirection('horizontal')}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'horizontal'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1219,7 +1219,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setSlitScanDirection('vertical')}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'vertical'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1229,7 +1229,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setSlitScanDirection('radial')}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'radial'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1239,7 +1239,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setSlitScanDirection('circular')}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'circular'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1282,7 +1282,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setDitherType('bayer')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'bayer'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >
@@ -1292,7 +1292,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         onClick={() => setDitherType('floyd-steinberg')}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'floyd-steinberg'
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black font-bold'
                             : 'bg-black/25 text-white hover:bg-white/15'
                         }`}
                       >

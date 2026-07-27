@@ -208,6 +208,55 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
+  // Shared field-mapping controls — appear for any scalar-field gradient
+  // (one continuous 0-1 value mapped to the palette per pixel), reusing a
+  // single fieldContrast/paletteMode/paletteBands state rather than a
+  // near-duplicate set per gradient, since only one is ever active.
+  // Rendered as a Fragment (no wrapping box) directly inside each
+  // gradient's own control card so it reads as one continuous list of
+  // rows with no dividing line, instead of a visually separate card.
+  // Fade only wires up Contrast (it blends exactly 2 explicit colors
+  // rather than indexing the full palette, so Banded/Cyclic don't apply
+  // the same way).
+  const renderFieldMappingRows = () => (
+    <>
+      <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-1'}`}>
+        <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
+        <div className="flex items-center gap-1 flex-1 ml-2">
+          <input type="range" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+        </div>
+      </div>
+      {gradientType !== 'fade' && (
+        <div className="flex items-center gap-1 mb-1">
+          <label className="text-[10px] text-white whitespace-nowrap">Palette:</label>
+          <div className="flex gap-1 flex-1">
+            {(['linear', 'banded', 'cyclic'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setPaletteMode(mode)}
+                className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${
+                  paletteMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {gradientType !== 'fade' && paletteMode !== 'linear' && (
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
+          <div className="flex items-center gap-1 flex-1 ml-2">
+            <input type="range" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="flex-1" />
+            <input type="number" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
 
@@ -224,7 +273,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   onClick={() => setGradientType(type)}
                   className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                     gradientType === type
-                      ? 'bg-white text-black'
+                      ? 'bg-white text-black font-bold'
                       : 'text-white hover:bg-white/10'
                   }`}
                 >
@@ -426,7 +475,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Caustics Controls */}
         {gradientType === 'caustics' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
@@ -439,6 +488,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            {renderFieldMappingRows()}
           </div>
         )}
 
@@ -462,7 +512,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Marble Controls */}
         {gradientType === 'marble' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
@@ -476,6 +526,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            {renderFieldMappingRows()}
           </div>
         )}
 
@@ -620,7 +671,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {gradientType === 'reaction-diffusion' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
@@ -634,11 +685,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            {renderFieldMappingRows()}
           </div>
         )}
 
         {gradientType === 'topographic' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Scale', value: topographicScale, set: setTopographicScale, min: 10, max: 100, step: 1 },
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
@@ -652,11 +704,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            {renderFieldMappingRows()}
           </div>
         )}
 
         {gradientType === 'julia' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
               { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
               { label: 'Imag (c)', value: juliaImaginary, set: setJuliaImaginary, min: -1, max: 1, step: 0.01 },
@@ -671,6 +724,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
+            {renderFieldMappingRows()}
           </div>
         )}
 
@@ -817,13 +871,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             same precedent as Radar merging into Radial Burst. */}
         {gradientType === 'windmill' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
                   onClick={() => setWindmillMode('blades')}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    windmillMode === 'blades' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                    windmillMode === 'blades' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   Blades
@@ -831,7 +885,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setWindmillMode('helix')}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    windmillMode === 'helix' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                    windmillMode === 'helix' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   Helix
@@ -1140,7 +1194,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Plasma Gradient Controls */}
         {gradientType === 'plasma' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white">Complexity:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1148,13 +1202,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white">Scale:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
+            {renderFieldMappingRows()}
           </div>
         )}
         
@@ -1218,13 +1273,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             mode, same precedent as Zoom Blur merging into Blur. */}
         {gradientType === 'radial-burst' && (
           <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
                   onClick={() => setRadialBurstMode('burst')}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    radialBurstMode === 'burst' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                    radialBurstMode === 'burst' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   Burst
@@ -1232,7 +1287,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setRadialBurstMode('sweep')}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    radialBurstMode === 'sweep' ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+                    radialBurstMode === 'sweep' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
                 >
                   Sweep
@@ -1262,7 +1317,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center justify-between mt-1">
                   <label className="text-[10px] text-white">Spread:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1283,7 +1338,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center justify-between mt-1">
                   <label className="text-[10px] text-white">Size:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">
                     <input
@@ -1390,14 +1445,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Fade Controls */}
         {gradientType === 'fade' && (
-          <div className="w-full p-2 bg-black/25 rounded-t-lg [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
+          <div className="w-full p-2 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white">Direction:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
+            {renderFieldMappingRows()}
           </div>
         )}
 
@@ -1521,60 +1577,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-
-        {/* Shared field-mapping controls — appear for any scalar-field gradient
-            (one continuous 0-1 value mapped to the palette per pixel), reusing
-            a single fieldContrast/paletteMode/paletteBands state rather than a
-            near-duplicate set per gradient, since only one is ever active.
-            Fade only wires up Contrast (it blends exactly 2 explicit colors
-            rather than indexing the full palette, so Banded/Cyclic don't
-            apply the same way). */}
-        {(['reaction-diffusion', 'marble', 'caustics', 'topographic', 'julia', 'plasma', 'fade'] as GradientType[]).includes(gradientType) && (
-          // -mt cancels out the parent .control-panel flex column's own
-          // gap-[6px] (GradientsTab.tsx's top-level blocks are siblings in
-          // that flex column) — otherwise this box and the gradient's own
-          // controls box directly above it would show a gap between them
-          // despite having no margin of their own, undermining the
-          // rounded-t/rounded-b pairing that's supposed to read as one panel.
-          <div className="w-full -mt-[6px]">
-            <div className="w-full p-2 bg-black/25 rounded-b-lg [&>*:last-child]:mb-0">
-            <div className={`flex items-center justify-between ${gradientType === 'fade' ? '' : 'mb-1'}`}>
-              <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            {gradientType !== 'fade' && (
-            <div className="flex items-center gap-1 mb-1">
-              <label className="text-[10px] text-white whitespace-nowrap">Palette:</label>
-              <div className="flex gap-1 flex-1">
-                {(['linear', 'banded', 'cyclic'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setPaletteMode(mode)}
-                    className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${
-                      paletteMode === mode ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
-                    }`}
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-            </div>
-            )}
-            {gradientType !== 'fade' && paletteMode !== 'linear' && (
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            )}
-            </div>
-          </div>
-        )}
 
     </>
   );
