@@ -3493,7 +3493,7 @@ export function InteractiveGradient() {
         ref={innerPanelScrollRef}
         className={isMobile
           ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] [&>*]:flex-shrink-0'
-          : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-y-auto'}
+          : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-x-hidden overflow-y-auto'}
         style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
       >
         {/* wāv wordmark — single click opens the About/Info panel; press
