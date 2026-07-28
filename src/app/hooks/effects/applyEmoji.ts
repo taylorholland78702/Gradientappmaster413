@@ -233,8 +233,15 @@ export function applyEmoji(P: any): void {
             // ±eSize, so one extra row/col of margin on each side is always
             // enough to keep the grid fully covering the canvas at any stagger
             // amount — no modulo wrapping needed.
-            const colsE = Math.ceil(displayWidth / eSize) + 2;
-            const rowsE = Math.ceil(displayHeight / eSize) + 2;
+            // Column/row range anchored so a cell boundary always sits at
+            // centerX/centerY (instead of starting the grid at raw (0,0)) —
+            // otherwise cells realign away from the top-left corner as
+            // emojiSize changes rather than growing/shrinking from the
+            // canvas's middle.
+            const colStartE = Math.floor(-centerX / eSize) - 1;
+            const colEndE = Math.ceil((displayWidth - centerX) / eSize) + 1;
+            const rowStartE = Math.floor(-centerY / eSize) - 1;
+            const rowEndE = Math.ceil((displayHeight - centerY) / eSize) + 1;
             const idatE = imageData.data;
             const baseAngle = emojiAnimTime * (Math.PI / 180);
             const rowStaggerX = emojiOffsetX;
@@ -253,10 +260,10 @@ export function applyEmoji(P: any): void {
             // the ramp gets used somewhere, the same idea as the audio Auto Gain.
             const cellBrightness: number[] = [];
             let minBrightness = Infinity, maxBrightness = -Infinity;
-            for (let r = -1; r < rowsE; r++) {
-              for (let c = -1; c < colsE; c++) {
-                const cellCx = c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
-                const cellCy = r * eSize + Math.floor(eSize / 2);
+            for (let r = rowStartE; r < rowEndE; r++) {
+              for (let c = colStartE; c < colEndE; c++) {
+                const cellCx = centerX + c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
+                const cellCy = centerY + r * eSize + Math.floor(eSize / 2);
                 if (cellCx < 0 || cellCx >= displayWidth || cellCy < 0 || cellCy >= displayHeight) {
                   cellBrightness.push(-1);
                   continue;
@@ -270,12 +277,12 @@ export function applyEmoji(P: any): void {
             }
             const brightnessRange = Math.max(0.001, maxBrightness - minBrightness);
             let cellIdx = 0;
-            for (let r = -1; r < rowsE; r++) {
-              for (let c = -1; c < colsE; c++) {
+            for (let r = rowStartE; r < rowEndE; r++) {
+              for (let c = colStartE; c < colEndE; c++) {
                 const brightness = cellBrightness[cellIdx++];
                 if (brightness < 0) continue;
-                const cellCx = c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
-                const cellCy = r * eSize + Math.floor(eSize / 2);
+                const cellCx = centerX + c * eSize + Math.floor(eSize / 2) + (((r % 2) + 2) % 2 === 1 ? rowStaggerX : 0);
+                const cellCy = centerY + r * eSize + Math.floor(eSize / 2);
                 const normalizedBrightness = (brightness - minBrightness) / brightnessRange;
                 const emojiIdx = Math.min(emojis.length - 1, Math.floor(normalizedBrightness * emojis.length));
                 const glyph = emojis[emojiIdx];

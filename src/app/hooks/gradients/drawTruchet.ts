@@ -221,8 +221,15 @@ export function drawTruchet(P: any): CanvasGradient | undefined {
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
           const tSize = Math.max(10, truchetSize) / zoom;
-          const cols = Math.ceil(displayWidth / tSize) + 2;
-          const rows = Math.ceil(displayHeight / tSize) + 2;
+          // Column/row range anchored so a tile boundary always sits at
+          // centerX/centerY, instead of starting the grid at raw (0,0) —
+          // otherwise tiles realign away from the top-left corner as
+          // truchetSize changes rather than growing/shrinking from the
+          // canvas's middle.
+          const colStart = Math.floor(-centerX / tSize) - 1;
+          const colEnd = Math.ceil((displayWidth - centerX) / tSize) + 1;
+          const rowStart = Math.floor(-centerY / tSize) - 1;
+          const rowEnd = Math.ceil((displayHeight - centerY) / tSize) + 1;
           // Treble thickens strokes on hi-hat/cymbal transients; bass adds
           // extra phase advance so the tile-flip maze re-shuffles faster on
           // a kick instead of only drifting with the constant angle rate.
@@ -234,12 +241,12 @@ export function drawTruchet(P: any): CanvasGradient | undefined {
           // shifts as the playhead advances, so tiles progressively re-flip
           // and the maze visibly evolves rather than only recoloring in place.
           const trAngleOffset = gradientAngle * 0.3 + (truchetAudio ? audioSubBassLevel * 40 : 0);
-          for (let row = -1; row < rows; row++) {
-            for (let col = -1; col < cols; col++) {
+          for (let row = rowStart; row < rowEnd; row++) {
+            for (let col = colStart; col < colEnd; col++) {
               const seed = Math.sin(col * 127.1 + row * 311.7 + 43.7 + trAngleOffset * 0.6) * 43758.5453;
               const seedFrac = seed - Math.floor(seed);
               const flip = seedFrac < truchetVariation;
-              const cx0 = col * tSize, cy0 = row * tSize;
+              const cx0 = centerX + col * tSize, cy0 = centerY + row * tSize;
               const colorPos = (((row + col) / 6 + trAngleOffset / 360) % 1 + 1) % 1;
               const cIdx = Math.floor(((colorPos * gradientColors.length) % gradientColors.length + gradientColors.length) % gradientColors.length);
               const color = gradientColors[cIdx] || { r: 255, g: 255, b: 255 };

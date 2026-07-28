@@ -38,10 +38,15 @@ export function drawTiling(P: any): CanvasGradient | undefined {
   const cosR = Math.cos(rotRad);
   const sinR = Math.sin(rotRad);
 
+  // Sampled relative to canvas center (not raw top-left px/py) so the tile
+  // grid grows/shrinks symmetrically from the middle as tilingSize changes,
+  // instead of realigning away from a fixed (0,0) corner.
+  const centerFx = renderW * invScale / 2;
+  const centerFy = renderH * invScale / 2;
   for (let py = 0; py < renderH; py++) {
     for (let px = 0; px < renderW; px++) {
-      const fx = px * invScale;
-      const fy = py * invScale;
+      const fx = px * invScale - centerFx;
+      const fy = py * invScale - centerFy;
 
       // Row offset — brick/halftone-style stagger: every other tile row
       // is shifted horizontally, same idea as Emoji's row offset. Applied

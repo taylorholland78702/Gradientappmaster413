@@ -223,17 +223,25 @@ export function applyAscii(P: any): void {
             if (!imageData) return;
             const aSize = Math.max(6, asciiSize);
             const chars = asciiChars.length > 0 ? asciiChars : ' .:-=+*x#%@';
-            const colsA = Math.ceil(displayWidth / aSize);
-            const rowsA = Math.ceil(displayHeight / aSize);
+            // Grid anchored so a cell boundary always sits at centerX/centerY
+            // (instead of starting at raw (0,0)) — otherwise cells realign
+            // away from the top-left corner as asciiSize changes rather than
+            // growing/shrinking from the canvas's middle.
+            const colStartA = Math.floor(-centerX / aSize) - 1;
+            const colEndA = Math.ceil((displayWidth - centerX) / aSize) + 1;
+            const rowStartA = Math.floor(-centerY / aSize) - 1;
+            const rowEndA = Math.ceil((displayHeight - centerY) / aSize) + 1;
             const idatA = imageData.data;
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, displayWidth, displayHeight);
             ctx.font = `${aSize}px monospace`;
             ctx.textBaseline = 'top';
-            for (let r = 0; r < rowsA; r++) {
-              for (let c = 0; c < colsA; c++) {
-                const px = Math.min(displayWidth - 1, c * aSize + Math.floor(aSize / 2));
-                const py = Math.min(displayHeight - 1, r * aSize + Math.floor(aSize / 2));
+            for (let r = rowStartA; r < rowEndA; r++) {
+              for (let c = colStartA; c < colEndA; c++) {
+                const cellX = centerX + c * aSize;
+                const cellY = centerY + r * aSize;
+                const px = Math.min(displayWidth - 1, Math.max(0, cellX + Math.floor(aSize / 2)));
+                const py = Math.min(displayHeight - 1, Math.max(0, cellY + Math.floor(aSize / 2)));
                 const pIdx = (py * displayWidth + px) * 4;
                 const pr = idatA[pIdx], pg = idatA[pIdx + 1], pb = idatA[pIdx + 2];
                 const brightness = (pr + pg + pb) / 3 / 255;
@@ -241,7 +249,7 @@ export function applyAscii(P: any): void {
                 const ch = chars[charIdx];
                 if (ch === ' ') continue;
                 ctx.fillStyle = asciiColor ? `rgb(${pr},${pg},${pb})` : '#ffffff';
-                ctx.fillText(ch, c * aSize, r * aSize);
+                ctx.fillText(ch, cellX, cellY);
               }
             }
 }
