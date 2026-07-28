@@ -328,6 +328,11 @@ export function InteractiveGradient() {
   // about which layout mode is active at a given width.
   const isMobile = useIsMobile(1024);
   const panelRef = useRef<HTMLDivElement>(null);
+  // The first icon row (Eye/Shuffle/Infinity/Camera/GIF) — the "control
+  // panel" the wordmark sits above. Measured on open so the About popup's
+  // top edge can align with it instead of the wordmark itself.
+  const topIconRowRef = useRef<HTMLDivElement>(null);
+  const [aboutPopupOffsetY, setAboutPopupOffsetY] = useState(0);
   // Closing (or switching) a tab shrinks the panel's content height, but
   // the browser doesn't reset scroll position on its own -- on the mobile
   // sheet (capped at 70dvh with its own overflow-y-auto) this could leave
@@ -338,6 +343,15 @@ export function InteractiveGradient() {
   useEffect(() => {
     panelRef.current?.scrollTo({ top: 0 });
   }, [activeTab]);
+  // Measure the top icon row's offset from the panel's own top edge (the
+  // wordmark sits above it) so the About popup can align its top edge with
+  // the icon row's top-left corner instead of the wordmark's.
+  useEffect(() => {
+    if (!isAboutOpen || isMobile) return;
+    const panelTop = panelRef.current?.getBoundingClientRect().top ?? 0;
+    const rowTop = topIconRowRef.current?.getBoundingClientRect().top ?? panelTop;
+    setAboutPopupOffsetY(rowTop - panelTop);
+  }, [isAboutOpen, isMobile]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -3355,7 +3369,7 @@ export function InteractiveGradient() {
           no panel body stacked underneath it here. */}
       {!isControlsVisible && !isFullyHidden && (
         <div
-          className={`pointer-events-auto flex items-stretch bg-black/25 rounded-full shadow-sm origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute'}`}
+          className={`pointer-events-auto flex items-stretch bg-black/25 rounded-full shadow-sm origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute scale-[1.15]'}`}
           style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
         >
           <button
@@ -3607,7 +3621,7 @@ export function InteractiveGradient() {
             clip (no child here has its own background that could actually
             overflow the rounded box in the working case) for not silently
             eating a row when that rounding happens. */}
-        <div className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
+        <div ref={topIconRowRef} className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
           <div className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
@@ -4235,16 +4249,18 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel — anchored over the control panel (same top-left origin
-          it uses) instead of screen-centered, and the click-catcher behind
-          it stays unblurred so the gradient result underneath isn't blurred
-          out; only the card itself keeps its own frosted-glass surface. */}
+      {/* About panel — top edge anchored to the top icon row's top-left
+          corner (the "control panel below the WAV button"), not the
+          wordmark above it, using the offset measured into
+          aboutPopupOffsetY. The click-catcher behind it stays unblurred so
+          the gradient result underneath isn't blurred out; only the card
+          itself keeps its own frosted-glass surface. */}
       {isAboutOpen && (
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
           <div
             className={`absolute bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-6' : ''}`}
-            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + aboutPopupOffsetY } : { top: 16 + aboutPopupOffsetY, left: 16 })}
           >
             <button
               onClick={() => setIsAboutOpen(false)}
