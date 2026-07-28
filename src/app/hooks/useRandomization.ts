@@ -36,16 +36,19 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 // rendered at identical sharpness, so it couldn't act as a release valve for
 // the heaviest combinations. Below a "light" total effect cost, shuffle
 // renders at full device resolution (max quality); above it, resolution
-// scales down gradually toward a 0.75x floor as the stack gets heavier —
-// the same floor useCanvasDraw.ts's own pixel-budget cap already uses, so
-// this never goes softer than that existing safety net would anyway.
-const LIGHT_EFFECT_COST = 6;
-const HEAVY_EFFECT_COST = 17;
+// scales down gradually toward a 0.6x floor as the stack gets heavier.
+// Tuned more aggressively than the original 6/17/0.75 curve — starts
+// scaling down sooner (cost 4 instead of 6, so a typical 2-3 effect result
+// already gets some relief instead of only the densest stacks) and goes
+// lower at the top end (0.6x instead of 0.75x) — a deliberate trade of
+// sharpness for speed on heavier combos, not a free win.
+const LIGHT_EFFECT_COST = 4;
+const HEAVY_EFFECT_COST = 15;
 const resolutionForEffectCost = (totalCost: number): number => {
   const baseline = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
   if (totalCost <= LIGHT_EFFECT_COST) return baseline;
   const t = Math.min(1, (totalCost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
-  return baseline * (1 - t * 0.25);
+  return baseline * (1 - t * 0.4);
 };
 // Params whose visual effect is subtle-to-invisible when driven by a fast,
 // noisy audio signal — repositioning a center point or rotating a fade axis
