@@ -3714,7 +3714,7 @@ export function InteractiveGradient() {
             // rounded-tr-lg — see the matching comment on the Hide Controls
             // button above (top-left corner of the same row).
             className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative rounded-tr-lg"
-            title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF'}
+            title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF (Shift+S)'}
             aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
           >
             {isFinalizingGif ? (
