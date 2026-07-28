@@ -41,6 +41,25 @@ function applyAudioBindings(target: Record<string, any>, bindings: { param: stri
   }
 }
 
+// Same math as applyAudioBindings, but returns a small {param: value} object
+// instead of mutating a target in place — every binding always reads off the
+// same unmodified `params` base regardless of which effect is currently
+// drawing, so the result is identical for every effect in the active stack.
+// Computing it once per frame and spreading the (small, bindings-length)
+// result into each effect's context avoids re-running the same bindings
+// lookup+math once per active effect for a result that never changes within
+// the frame.
+function computeAudioBoundOverrides(base: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
+  const overrides: Record<string, number> = {};
+  for (const binding of bindings) {
+    const value = base[binding.param];
+    if (typeof value !== 'number') continue;
+    const level = levels[binding.band as keyof typeof levels] ?? 0;
+    overrides[binding.param] = value + level * binding.amount;
+  }
+  return overrides;
+}
+
 // Rotates every color's hue by `degrees` (RGB -> HSL -> rotate -> RGB).
 // Used by the global chromatic-drift effect below — a single insertion
 // point that shifts hue for every gradient/effect at once instead of
@@ -447,7 +466,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     if (canvas.width === 0 || canvas.height === 0) {
       return;
     }
-    
+
+    // Computed once per frame, not once per active effect — every binding
+    // always reads off the same unmodified `params`, so re-deriving this
+    // per effect in a dense Multi-FX stack repeated identical work for no
+    // reason (see computeAudioBoundOverrides above).
+    const audioBoundOverrides = (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0)
+      ? computeAudioBoundOverrides(params, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 })
+      : null;
+
     activeEffects.forEach((effectType, index) => {
       // Additional safety check before each effect
       if (canvas.width === 0 || canvas.height === 0) {
@@ -489,10 +516,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,
+        ...audioBoundOverrides,
       };
-      if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
-        applyAudioBindings(effectCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
-      }
       try {
         const effectDrawFn = EFFECT_DRAW_FNS[effectType];
         if (effectDrawFn) {

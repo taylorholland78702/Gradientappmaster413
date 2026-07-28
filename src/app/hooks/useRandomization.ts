@@ -31,6 +31,22 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 // costOf (effect compute-cost weighting) now lives in constants/effectCost.ts,
 // shared with EffectsTab.tsx's manual Multi-FX toggle budget.
+// resolutionMultiplier previously stayed at whatever it already was through
+// every Shuffle — a light single-effect result and a dense 8-effect stack
+// rendered at identical sharpness, so it couldn't act as a release valve for
+// the heaviest combinations. Below a "light" total effect cost, shuffle
+// renders at full device resolution (max quality); above it, resolution
+// scales down gradually toward a 0.75x floor as the stack gets heavier —
+// the same floor useCanvasDraw.ts's own pixel-budget cap already uses, so
+// this never goes softer than that existing safety net would anyway.
+const LIGHT_EFFECT_COST = 6;
+const HEAVY_EFFECT_COST = 17;
+const resolutionForEffectCost = (totalCost: number): number => {
+  const baseline = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  if (totalCost <= LIGHT_EFFECT_COST) return baseline;
+  const t = Math.min(1, (totalCost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
+  return baseline * (1 - t * 0.25);
+};
 // Params whose visual effect is subtle-to-invisible when driven by a fast,
 // noisy audio signal — repositioning a center point or rotating a fade axis
 // a few degrees per beat doesn't read as "reacting to the music" the way a
@@ -54,7 +70,7 @@ export type RandomizationParams = Record<string, any>;
 export function useRandomization(params: RandomizationParams) {
   const {
     activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
-    kaleidoscopeSegments, pixelSize,
+    kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
@@ -281,12 +297,13 @@ export function useRandomization(params: RandomizationParams) {
     if (selectedEffects.length > 1) {
       setIsMultiFxMode(true);
     }
+    setResolutionMultiplier(resolutionForEffectCost(selectedEffects.reduce((sum, e) => sum + costOf(e), 0)));
     // Previously this button only ever picked WHICH effects were active —
     // every effect's own sliders (bloom radius, mirror tiles, emoji size,
     // etc.) stayed wherever they last were, so repeated shuffles looked
     // identical apart from which effects were on.
     randomizeUncoveredParams();
-  }, [saveCurrentState, randomizeUncoveredParams]);
+  }, [saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier]);
   const shuffleAudiovisuals = useCallback(() => {
     setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
     setSubBassMultiplier(Math.random() * 5);
@@ -541,6 +558,7 @@ export function useRandomization(params: RandomizationParams) {
       setActiveEffects(selectedEffects);
       if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
+      setResolutionMultiplier(resolutionForEffectCost(spentCost));
 
       setTargetAngle(Math.random() * 360);
       setTargetZoom(1);
@@ -636,7 +654,7 @@ export function useRandomization(params: RandomizationParams) {
     if (audioActive) shuffleAudiovisuals();
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }

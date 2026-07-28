@@ -1329,7 +1329,7 @@ export function InteractiveGradient() {
     feelingLucky, evolveWithFactor, shuffleAudiovisuals,
   } = useRandomization({
     activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
-    kaleidoscopeSegments, pixelSize,
+    kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
