@@ -3632,8 +3632,8 @@ export function InteractiveGradient() {
             clip (no child here has its own background that could actually
             overflow the rounded box in the working case) for not silently
             eating a row when that rounding happens. */}
-        <div ref={topIconRowRef} className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
-          <div className="flex items-stretch">
+        <div className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
+          <div ref={topIconRowRef} className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
             // rounded-tl-lg matches the container's own rounded-lg corner —
