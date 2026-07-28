@@ -341,6 +341,13 @@ export function InteractiveGradient() {
   // popover's height so it doesn't stretch down to cover whatever tab
   // content/sliders happen to be open underneath.
   const threeRowPanelRef = useRef<HTMLDivElement>(null);
+  // The collapsed (isControlsVisible === false) pill row — a completely
+  // separate DOM element from the full panel above. topIconRowRef/
+  // threeRowPanelRef still point at the full panel's (hidden but present,
+  // opacity-0) nodes even while collapsed, so the Auto Shuffle popover needs
+  // its own anchor for the collapsed state or it positions itself against
+  // the full panel's offscreen/hidden geometry instead of the visible pill.
+  const collapsedPillRef = useRef<HTMLDivElement>(null);
   const [aboutPopupOffsetY, setAboutPopupOffsetY] = useState(0);
   // Closing (or switching) a tab shrinks the panel's content height, but
   // the browser doesn't reset scroll position on its own -- on the mobile
@@ -1464,7 +1471,7 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
   // dismiss check below (see that handler for why).
@@ -1478,8 +1485,24 @@ export function InteractiveGradient() {
   // still used as a width/position fallback for keyboard-triggered opens
   // (⌥⇧W) where there's no click event.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
-    const anchorEl = triggerEl || panelRef.current;
     autoShuffleTriggerElRef.current = triggerEl ?? null;
+    // Collapsed pill is a separate DOM element from the full panel — anchor
+    // directly to its own geometry instead of topIconRowRef/threeRowPanelRef/
+    // panelRef, which still measure the full panel's (hidden, opacity-0)
+    // position while collapsed and would otherwise float the popover under
+    // wherever the full panel would be, not under the visible pill.
+    if (!isControlsVisible && collapsedPillRef.current) {
+      const pillRect = collapsedPillRef.current.getBoundingClientRect();
+      const width = Math.max(200, pillRect.width);
+      const left = Math.min(pillRect.left, window.innerWidth - width - 8);
+      const top = pillRect.bottom;
+      // No height — the collapsed pill has no wide panel content below it
+      // that the popover needs to avoid covering, so let it size to its own
+      // content instead of guessing a fixed pixel height.
+      setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width });
+      return;
+    }
+    const anchorEl = triggerEl || panelRef.current;
     const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
     const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
     // Top edge flush against the icon row's own bottom line (no gap), and
@@ -3410,6 +3433,7 @@ export function InteractiveGradient() {
           no panel body stacked underneath it here. */}
       {!isControlsVisible && !isFullyHidden && (
         <div
+          ref={collapsedPillRef}
           className={`pointer-events-auto flex items-stretch bg-black/25 rounded-full shadow-sm origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute scale-[1.15]'}`}
           style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
         >
