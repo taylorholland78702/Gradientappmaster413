@@ -1453,6 +1453,9 @@ export function InteractiveGradient() {
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
+  // The button that opened the popover — excluded from the outside-click
+  // dismiss check below (see that handler for why).
+  const autoShuffleTriggerElRef = useRef<HTMLElement | null>(null);
   // Anchored to the trigger button, not the whole panel — floats as an
   // overlay just below the icon row on top of whatever panel content (the
   // expanded control panel's tabs/sliders, or the collapsed cluster) sits
@@ -1462,6 +1465,7 @@ export function InteractiveGradient() {
   // for keyboard-triggered opens (⌥⇧W) where there's no click event.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
     const anchorEl = triggerEl || panelRef.current;
+    autoShuffleTriggerElRef.current = triggerEl ?? null;
     const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
     const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
     // Top edge flush against the icon row's own bottom line (no gap), and
@@ -1478,7 +1482,16 @@ export function InteractiveGradient() {
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
     const handleClick = (e: MouseEvent) => {
-      if (autoShufflePopoverRef.current && !autoShufflePopoverRef.current.contains(e.target as Node)) {
+      // Excluding the trigger button itself, not just the popover, matters
+      // because this listens on 'mousedown' (so it can close before an
+      // outside click's own action fires) while the trigger's onClick
+      // re-opens the popover on 'click' — mousedown fires first. Without
+      // this exclusion, clicking the trigger again while open would close it
+      // here on mousedown, then immediately reopen it when the same click's
+      // onClick handler ran, making the button look like it never closes.
+      const target = e.target as Node;
+      if (autoShufflePopoverRef.current && !autoShufflePopoverRef.current.contains(target)
+        && !(autoShuffleTriggerElRef.current && autoShuffleTriggerElRef.current.contains(target))) {
         setAutoShufflePopoverAnchor(null);
       }
     };
