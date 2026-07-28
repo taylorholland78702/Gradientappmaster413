@@ -33,7 +33,7 @@ interface PresetsPanelProps {
   deletePreset: (id: string) => void;
   renamePreset: (id: string, newName: string) => void;
   updatePreset: (id: string) => void;
-  savePresetWithName: (name: string) => void;
+  savePresetWithName: (name: string) => void | Promise<void>;
   movePresetToFolder: (id: string, folder: string) => void;
   addFolder: (name: string) => void;
   renameFolder: (oldName: string, newName: string) => void;
@@ -46,6 +46,12 @@ interface PresetsPanelProps {
   signInWithEmail: (email: string, password: string) => void;
   signUpWithEmail: (email: string, password: string) => void;
   signOutUser: () => void;
+  // Reports whether the "name this new preset" field is open, so the parent
+  // can pause Auto Shuffle for that window — otherwise a running Auto
+  // Shuffle keeps randomizing state out from under the user while they're
+  // still typing the name, and the preset that gets saved doesn't match
+  // what they saw when they clicked "+".
+  onAddingPresetChange?: (isAdding: boolean) => void;
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
@@ -73,6 +79,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   signInWithEmail,
   signUpWithEmail,
   signOutUser,
+  onAddingPresetChange,
 }) => {
   const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -94,6 +101,9 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   React.useEffect(() => {
     if (openNewPresetSignal > 0) setIsAddingPreset(true);
   }, [openNewPresetSignal]);
+  React.useEffect(() => {
+    onAddingPresetChange?.(isAddingPreset);
+  }, [isAddingPreset, onAddingPresetChange]);
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
@@ -123,12 +133,17 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     setTimeout(() => setSavedPresetId(prev => (prev === id ? null : prev)), 1200);
   };
 
-  const confirmAdd = () => {
-    if (newPresetName.trim()) {
-      savePresetWithName(newPresetName.trim());
+  const confirmAdd = async () => {
+    const name = newPresetName.trim();
+    setNewPresetName('');
+    if (name) {
+      // Keep isAddingPreset (and therefore the paused Auto Shuffle) true
+      // through the actual async save, not just until the name is
+      // submitted — otherwise Auto Shuffle could resume and randomize
+      // state again while the Firestore write is still in flight.
+      await savePresetWithName(name);
     }
     setIsAddingPreset(false);
-    setNewPresetName('');
   };
 
   const cancelAdd = () => {

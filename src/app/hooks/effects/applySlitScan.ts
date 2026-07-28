@@ -327,7 +327,14 @@ export function applySlitScan(P: any): void {
                     const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
                     const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * frameSel), buf.length - 1);
                     const sf = buf[fi];
-                    const normOffset = (fi - midBuf) / midBuf;
+                    // Continuous (not bucketed) offset for the geometric shift/twist —
+                    // fi still selects which buffered frame supplies the temporal
+                    // streaking texture, but deriving the displacement from fi too
+                    // means every pixel in a bucket gets the exact same shift, and the
+                    // innermost bucket covers by far the largest disc (small d already
+                    // rounds to fi=0), showing up as a solid unwarped circle at the
+                    // center with a hard edge against the first real ring.
+                    const normOffset = Math.min((d / md) * frameSel, 1) * 2 - 1;
                     const shift = normOffset * int * md * 0.35;
                     // Wrap instead of reflecting — same fix as horizontal/vertical's
                     // x/y wrap above. Reflecting (sd = -sd when negative) sent every
@@ -362,7 +369,8 @@ export function applySlitScan(P: any): void {
                     const fi = Math.min(Math.floor(norm * (buf.length - 1) * frameSel), buf.length - 1);
                     const sf = buf[fi];
                     const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                    const normOffset = (fi - midBuf) / midBuf;
+                    // Continuous, same reasoning as the radial branch above.
+                    const normOffset = Math.min(norm * frameSel, 1) * 2 - 1;
                     const angleShift = normOffset * int * 1.6;
                     const sAngle = angle + angleShift;
                     let sd = d * (1 - normOffset * int * 0.25);

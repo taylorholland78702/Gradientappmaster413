@@ -380,10 +380,17 @@ export function useRandomization(params: RandomizationParams) {
         if (pick <= 0) { baseResult = r; break; }
       }
       const blendFactor = 0.3 + Math.random() * 0.4; // 30-70% blend
-      
+
       // Use base result's gradient type and effects with some variation
-      // Ensure we always have a valid gradient type (fallback to current or random if base is null)
-      const targetGradientType = baseResult.data.gradientType || currentGradientType || FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
+      // Ensure we always have a valid gradient type (fallback to current or random if base is null).
+      // baseResult can be a rated result saved before a gradient/effect type
+      // was removed from the app (e.g. Waves/Iridescent) — validate against
+      // the current type list rather than trusting the stored string, or a
+      // stale type silently renders nothing.
+      const baseGradientType: GradientType | undefined = baseResult.data.gradientType;
+      const targetGradientType = (baseGradientType && FEELING_LUCKY_GRADIENT_TYPES.includes(baseGradientType))
+        ? baseGradientType
+        : currentGradientType || FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(targetGradientType);
       
       // Blend colors from base with some random variation
@@ -406,8 +413,9 @@ export function useRandomization(params: RandomizationParams) {
       setTargetColors(adjustedColors);
       setGradientColors(adjustedColors); // Also update current colors immediately
       
-      // Use similar effects from base result
-      const baseEffects = baseResult.data.activeEffects || [];
+      // Use similar effects from base result — same staleness risk as the
+      // gradient type above, so drop any effect id no longer in ALL_EFFECTS.
+      const baseEffects: EffectType[] = (baseResult.data.activeEffects || []).filter((e: EffectType) => ALL_EFFECTS.includes(e));
       const keepEffectsCount = Math.floor(baseEffects.length * blendFactor);
       const keptEffects = baseEffects.slice(0, keepEffectsCount);
       
@@ -502,25 +510,20 @@ export function useRandomization(params: RandomizationParams) {
       const LIGHT_FX: EffectType[] = audioActive
         ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
         : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
-      // Roll a total COST budget (not a raw effect count) skewed toward
-      // denser stacks: weight(n) = min(n, 3) for n = 1..10, same curve as
-      // before, but now n is spent in cost-units (see EFFECT_COST above)
-      // rather than one unit per effect. A budget that lands on a couple of
-      // heavy effects (chromatic-trails, grid-effect, triangulate, halftone,
-      // dither at 3 each) naturally stops there, while the same budget
-      // spent on light effects (bloom, vignette, posterize, etc. at 1 each)
-      // still fills out a dense stack — bounds total per-frame compute cost
-      // instead of just effect count. At most one shape-changer is
-      // included (they mask the gradient entirely when stacked), the rest
-      // are light/audio effects.
-      const EFFECT_COUNT_WEIGHTS = Array.from({ length: 10 }, (_, i) => Math.min(i + 1, 3));
-      const totalWeight = EFFECT_COUNT_WEIGHTS.reduce((a, b) => a + b, 0);
-      let weightRoll = Math.random() * totalWeight;
-      let costBudget = 1;
-      for (let i = 0; i < EFFECT_COUNT_WEIGHTS.length; i++) {
-        weightRoll -= EFFECT_COUNT_WEIGHTS[i];
-        if (weightRoll < 0) { costBudget = i + 1; break; }
-      }
+      // Roll a total COST budget (not a raw effect count), n is spent in
+      // cost-units (see EFFECT_COST above) rather than one unit per effect.
+      // A budget that lands on a couple of heavy effects (chromatic-trails,
+      // grid-effect, triangulate, halftone, dither at 3 each) naturally
+      // stops there, while the same budget spent on light effects (bloom,
+      // vignette, posterize, etc. at 1 each) still fills out a dense stack —
+      // bounds total per-frame compute cost instead of just effect count.
+      // At most one shape-changer is included (they mask the gradient
+      // entirely when stacked), the rest are light/audio effects.
+      // Average EFFECT_COST is ~1.8, so a budget centered around 9-10
+      // (triangular distribution, sum of two uniforms) lands the common
+      // case at 4-8 active effects instead of the previous 1-10 flat/low
+      // range which mostly resolved to 1-3.
+      const costBudget = 4 + Math.floor(((Math.random() + Math.random()) / 2) * 14);
       const selectedEffects: EffectType[] = [];
       let spentCost = 0;
       const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);

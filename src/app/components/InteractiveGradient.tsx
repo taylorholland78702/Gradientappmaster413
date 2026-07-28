@@ -1376,6 +1376,10 @@ export function InteractiveGradient() {
   // RAF loop lerps toward over time — that lerp IS the fade between one
   // result and the next, so no separate opacity/crossfade code is needed.
   const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
+  // True while the "name this new preset" field is open (see PresetsPanel's
+  // onAddingPresetChange) — pauses Auto Shuffle for that window so it can't
+  // randomize the very state the user is trying to save out from under them.
+  const [isNewPresetPending, setIsNewPresetPending] = useState(false);
   // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
   // slider in the Info panel. Persisted so it survives a reload, same
   // pattern as panelPos.
@@ -1534,11 +1538,11 @@ export function InteractiveGradient() {
   const isAutoShuffleOnRef = useRef(false);
   useEffect(() => { isAutoShuffleOnRef.current = isAutoShuffleOn; }, [isAutoShuffleOn]);
   useEffect(() => {
-    if (!isAutoShuffleOn) return;
+    if (!isAutoShuffleOn || isNewPresetPending) return;
     evolveWithFactorRef.current(1);
     const id = setInterval(() => evolveWithFactorRef.current(1), autoShuffleIntervalSec * 1000);
     return () => clearInterval(id);
-  }, [isAutoShuffleOn, autoShuffleIntervalSec]);
+  }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending]);
 
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
@@ -3343,49 +3347,73 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* Collapsed cluster — only rendered while the panel is hidden but not fully hidden */}
+      {/* Collapsed cluster — only rendered while the panel is hidden but not
+          fully hidden. Single pill (all 4 corners rounded, hairline
+          Dividers between icons) matching the expanded panel's top icon
+          row, rather than separate individually-rounded buttons — same
+          visual language, just condensed to a standalone bar since there's
+          no panel body stacked underneath it here. */}
       {!isControlsVisible && !isFullyHidden && (
         <div
-          className={`pointer-events-auto flex gap-1.5 origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute'}`}
+          className={`pointer-events-auto flex items-stretch bg-black/25 rounded-full shadow-sm origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute'}`}
           style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
         >
           <button
             onClick={() => setIsControlsVisible(true)}
-            className={`w-[35px] h-[35px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-l-full"
             title="Show Controls (H)"
             aria-label="Show Controls"
           >
             <EyeSlash weight="regular" className="w-4 h-4" />
           </button>
+          <Divider />
           <button
             onClick={handleWavClick}
-            className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center select-none border-2 transition-colors ${isWavPressed ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
+            className={`w-[35px] py-1.5 transition-all flex items-center justify-center select-none ${isWavPressed ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
             title="Shuffle (Shift+W)"
             aria-label="Shuffle to a new look"
           >
-            <Shuffle weight="regular" className={`w-4 h-4 ${isWavPressed ? 'text-white' : 'text-black'}`} />
+            <Shuffle weight="regular" className="w-4 h-4" />
           </button>
-          {/* Auto Shuffle toggle — same size/shape/border as the Shuffle
-              button above (35x35, white, border-2 border-gray-400) so it
-              reads as its sibling rather than a different control; only
-              the icon differs (infinity, for "keeps going on its own"
-              vs. Shuffle's one-shot remix) and the fill inverts to black
-              while active so the on/off state is visible at a glance.
-              Click opens a popover (on/off + interval slider) rather than
-              toggling directly — ⌥⇧W keyboard shortcut still toggles on/off
-              immediately. */}
+          <Divider />
+          {/* Auto Shuffle toggle — click opens a popover (on/off + interval
+              slider) rather than toggling directly; ⌥⇧W still toggles on/off
+              immediately. Active state shown via a filled background instead
+              of a border/color swap now that it lives in the flat pill. */}
           <button
             onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
-            className={`w-[35px] h-[35px] p-1.5 rounded-lg shadow-sm flex items-center justify-center border-2 transition-all ${isAutoShuffleOn ? 'bg-black border-black' : 'bg-white border-gray-400'}`}
+            className={`w-[35px] py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"
             aria-pressed={isAutoShuffleOn}
+            disabled={isNewPresetPending}
           >
-            <InfinityIcon weight="regular" className={`w-4 h-4 ${isAutoShuffleOn ? 'text-white' : 'text-black'}`} />
+            <InfinityIcon weight="regular" className="w-4 h-4" />
           </button>
+          <Divider />
+          <button
+            onClick={undoLastChange}
+            disabled={undoDepth < 0}
+            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center disabled:opacity-30 disabled:hover:bg-transparent"
+            title="Undo (⌘Z)"
+            aria-label="Undo"
+          >
+            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
+          </button>
+          <Divider />
+          <button
+            onClick={redoLastChange}
+            disabled={redoDepth <= 0}
+            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center disabled:opacity-30 disabled:hover:bg-transparent"
+            title="Redo (⌘⇧Z)"
+            aria-label="Redo"
+          >
+            <ArrowUUpRight weight="regular" className="w-4 h-4" />
+          </button>
+          <Divider />
           <button
             onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
-            className={`w-[35px] h-[35px] p-1.5 rounded-lg transition-all bg-black/25 text-white border border-white/15 shadow-sm hover:bg-white/15 flex items-center justify-center`}
+            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-r-full"
             title="Presets (P)"
             aria-label="Presets"
           >
@@ -3607,10 +3635,11 @@ export function InteractiveGradient() {
           <Divider />
           <button
             onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
+            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
             title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
             aria-label="Auto Shuffle settings"
             aria-pressed={isAutoShuffleOn}
+            disabled={isNewPresetPending}
           >
             <InfinityIcon weight="regular" className="w-4 h-4" />
           </button>
@@ -4166,6 +4195,7 @@ export function InteractiveGradient() {
           renamePreset={renamePreset}
           updatePreset={updatePreset}
           savePresetWithName={savePresetWithName}
+          onAddingPresetChange={setIsNewPresetPending}
           movePresetToFolder={movePresetToFolder}
           addFolder={addFolder}
           renameFolder={renameFolder}
@@ -4205,11 +4235,17 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel */}
+      {/* About panel — anchored over the control panel (same top-left origin
+          it uses) instead of screen-centered, and the click-catcher behind
+          it stays unblurred so the gradient result underneath isn't blurred
+          out; only the card itself keeps its own frosted-glass surface. */}
       {isAboutOpen && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAboutOpen(false)} />
-          <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm mx-6 max-h-[80vh] overflow-y-auto text-white shadow-2xl">
+        <div className="absolute inset-0 pointer-events-auto z-50">
+          <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
+          <div
+            className={`absolute bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-6' : ''}`}
+            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+          >
             <button
               onClick={() => setIsAboutOpen(false)}
               className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
