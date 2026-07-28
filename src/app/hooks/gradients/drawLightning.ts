@@ -73,7 +73,7 @@ export function drawLightning(P: any): CanvasGradient | undefined {
 
   const bolts = lightningBoltsRef.current;
   const count = Math.max(1, Math.min(8, Math.round(lightningBoltCount)));
-  const spawnChance = (count / 90) * (1 + bassBoost * 5) + (bassBoost > 0.35 ? 0.25 : 0);
+  const spawnChance = (count / 45) * (1 + bassBoost * 5) + (bassBoost > 0.35 ? 0.35 : 0);
   if (Math.random() < spawnChance && bolts.length < count * 2) {
     const x1 = displayWidth * (0.1 + Math.random() * 0.8);
     const y1 = 0;
@@ -104,14 +104,14 @@ export function drawLightning(P: any): CanvasGradient | undefined {
     lgCtx.lineCap = 'round';
     // Glow pass (thick, low alpha) then core pass (thin, bright) — cheap
     // stand-in for a true blur-based glow.
-    lgCtx.strokeStyle = `rgba(${color.r},${color.g},${color.b},${alpha * 0.25})`;
-    lgCtx.lineWidth = 6;
+    lgCtx.strokeStyle = `rgba(${color.r},${color.g},${color.b},${alpha * 0.4})`;
+    lgCtx.lineWidth = 10;
     lgCtx.beginPath();
     for (const s of segments) { lgCtx.moveTo(s.x1, s.y1); lgCtx.lineTo(s.x2, s.y2); }
     lgCtx.stroke();
 
-    lgCtx.strokeStyle = `rgba(${Math.min(255, color.r + 60)},${Math.min(255, color.g + 60)},${Math.min(255, color.b + 60)},${alpha})`;
-    lgCtx.lineWidth = 1.5;
+    lgCtx.strokeStyle = `rgba(${Math.min(255, color.r + 90)},${Math.min(255, color.g + 90)},${Math.min(255, color.b + 90)},${alpha})`;
+    lgCtx.lineWidth = 2.2;
     lgCtx.beginPath();
     for (const s of segments) { lgCtx.moveTo(s.x1, s.y1); lgCtx.lineTo(s.x2, s.y2); }
     lgCtx.stroke();

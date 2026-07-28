@@ -48,11 +48,11 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
   // Spawn chance scales with how many rocket "slots" are configured and
   // spikes hard on a bass hit — a quiet section still launches occasionally
   // so the gradient never looks fully dormant.
-  const spawnChance = (count / 240) * (1 + bassBoost * 4) + (bassBoost > 0.3 ? 0.15 : 0);
-  if (Math.random() < spawnChance && particles.length < 2200) {
+  const spawnChance = (count / 130) * (1 + bassBoost * 4) + (bassBoost > 0.3 ? 0.2 : 0);
+  if (Math.random() < spawnChance && particles.length < 3200) {
     const launchX = displayWidth * (0.15 + Math.random() * 0.7);
     const launchY = displayHeight * (0.15 + Math.random() * 0.55);
-    const speed = Math.min(displayWidth, displayHeight) * (0.006 + Math.random() * 0.008) * (1 + trebleBoost);
+    const speed = Math.min(displayWidth, displayHeight) * (0.009 + Math.random() * 0.011) * (1 + trebleBoost);
     const color = gradientColors[Math.floor(Math.random() * gradientColors.length)] || { r: 255, g: 255, b: 255 };
     for (let i = 0; i < perBurst; i++) {
       const angle = (i / perBurst) * Math.PI * 2 + Math.random() * 0.3;
@@ -69,7 +69,7 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
   }
 
   const gravity = Math.min(displayWidth, displayHeight) * 0.00018;
-  const dotBase = Math.max(0.5, 1.4 + midsBoost * 1.5);
+  const dotBase = Math.max(0.5, 2.2 + midsBoost * 2);
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.x += p.vx;
@@ -83,7 +83,7 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
       continue;
     }
     const t = p.life / p.maxLife;
-    const alpha = Math.max(0, 1 - t) * 0.85;
+    const alpha = Math.max(0, 1 - t) * 0.95;
     const size = dotBase * (1 - t * 0.5);
     fwCtx.fillStyle = `rgba(${p.r},${p.g},${p.b},${alpha})`;
     fwCtx.fillRect(p.x - size / 2, p.y - size / 2, size, size);

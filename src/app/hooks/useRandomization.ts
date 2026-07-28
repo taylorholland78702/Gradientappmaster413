@@ -76,6 +76,8 @@ export function useRandomization(params: RandomizationParams) {
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
+    setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides,
+    setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
@@ -123,14 +125,29 @@ export function useRandomization(params: RandomizationParams) {
     setGridVariation(Math.random());                                    // 0–1
 
     // Fireworks
-    setFireworksCount(Math.floor(Math.random() * 12) + 3);             // 3–14
-    setFireworksParticleCount(Math.floor(Math.random() * 85) + 15);    // 15–99
-    setFireworksTrailFade(Math.random() * 0.25 + 0.05);                // 0.05–0.3
+    setFireworksCount(Math.floor(Math.random() * 10) + 5);             // 5–14
+    setFireworksParticleCount(Math.floor(Math.random() * 90) + 30);    // 30–119
+    setFireworksTrailFade(Math.random() * 0.2 + 0.05);                 // 0.05–0.25
 
     // Lightning
-    setLightningBoltCount(Math.floor(Math.random() * 7) + 1);          // 1–7
-    setLightningJitter(Math.random() * 0.8 + 0.15);                    // 0.15–0.95
-    setLightningBranchiness(Math.random() * 0.7);                      // 0–0.7
+    setLightningBoltCount(Math.floor(Math.random() * 6) + 2);          // 2–7
+    setLightningJitter(Math.random() * 0.7 + 0.25);                    // 0.25–0.95
+    setLightningBranchiness(Math.random() * 0.6 + 0.15);               // 0.15–0.75
+
+    // Particles
+    setParticlesCount(Math.floor(Math.random() * 490) + 10);           // 10–499
+    setParticlesSize(Math.random() * 9.5 + 0.5);                       // 0.5–10
+    setParticlesSides(Math.floor(Math.random() * 8) + 1);              // 1–8
+    setParticlesSpeed(Math.random() * 4.9 + 0.1);                      // 0.1–5
+    setParticlesTrail(Math.random() * 0.48 + 0.02);                    // 0.02–0.5
+    setParticlesGravity(Math.random() * 3);                            // 0–3
+
+    // Tiling
+    setTilingSize(Math.floor(Math.random() * 27) * 10 + 30);           // 30–300
+    setTilingSymmetry(Math.floor(Math.random() * 11) + 2);             // 2–12
+    setTilingComplexity(Math.floor(Math.random() * 20) * 0.5 + 0.5);   // 0.5–10
+    setTilingRotation(Math.floor(Math.random() * 360));                // 0–359
+    setTilingRowOffset(Math.floor(Math.random() * 301) - 150);         // -150–150
 
     // Aurora
     setAuroraBandCount(Math.floor(Math.random() * 10) + 2);            // 2–11

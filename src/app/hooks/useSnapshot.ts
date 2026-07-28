@@ -504,12 +504,12 @@ export function useSnapshot(params: SnapshotParams) {
     setTilingComplexity(snapshot.tilingComplexity ?? 3);
     setTilingRotation(snapshot.tilingRotation ?? 0);
     setTilingRowOffset(snapshot.tilingRowOffset ?? 0);
-    setFireworksCount(snapshot.fireworksCount ?? 6);
-    setFireworksParticleCount(snapshot.fireworksParticleCount ?? 40);
-    setFireworksTrailFade(snapshot.fireworksTrailFade ?? 0.12);
-    setLightningBoltCount(snapshot.lightningBoltCount ?? 3);
-    setLightningJitter(snapshot.lightningJitter ?? 0.5);
-    setLightningBranchiness(snapshot.lightningBranchiness ?? 0.35);
+    setFireworksCount(snapshot.fireworksCount ?? 10);
+    setFireworksParticleCount(snapshot.fireworksParticleCount ?? 70);
+    setFireworksTrailFade(snapshot.fireworksTrailFade ?? 0.09);
+    setLightningBoltCount(snapshot.lightningBoltCount ?? 5);
+    setLightningJitter(snapshot.lightningJitter ?? 0.6);
+    setLightningBranchiness(snapshot.lightningBranchiness ?? 0.5);
     setReactionDiffusionFeed(snapshot.reactionDiffusionFeed ?? 0.037);
     setReactionDiffusionKill(snapshot.reactionDiffusionKill ?? 0.06);
     setReactionDiffusionSpeed(snapshot.reactionDiffusionSpeed ?? 1);
