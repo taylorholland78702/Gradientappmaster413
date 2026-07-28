@@ -1547,10 +1547,12 @@ export function InteractiveGradient() {
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
-        // Squared top corners (flush against the icon row's bottom edge —
-        // rounding there would leave a visible gap/mismatch), rounded
-        // bottom corners.
-        className="fixed z-50 rounded-b-lg shadow-sm p-3 flex flex-col gap-2"
+        // Squared top corners when flush against the full panel's icon row
+        // (rounding there would leave a visible gap/mismatch) — but the
+        // collapsed pill is itself fully rounded (rounded-full), so squared
+        // top corners there read as a mismatched notch; round all four
+        // corners in that state instead.
+        className={`fixed z-50 shadow-sm p-3 flex flex-col gap-2 ${isControlsVisible ? 'rounded-b-lg' : 'rounded-lg'}`}
         style={{
           top: autoShufflePopoverAnchor.top,
           left: autoShufflePopoverAnchor.left,
