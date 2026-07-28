@@ -451,7 +451,6 @@ export function useRandomization(params: RandomizationParams) {
       
       // Set FX parameters with blending
       if (baseResult.data.kaleidoscopeSegments) setKaleidoscopeSegments(Math.round(blendValue(baseResult.data.kaleidoscopeSegments, 3, 22)));
-      if (baseResult.data.twistAmount) setTwistAmount(blendValue(baseResult.data.twistAmount, 0, 5));
       if (baseResult.data.pixelSize) setPixelSize(Math.round(blendValue(baseResult.data.pixelSize, 5, 54)));
       if (baseResult.data.vignetteStrength) setVignetteStrength(blendValue(baseResult.data.vignetteStrength, 0, 1));
       if (baseResult.data.windmillTightness) setWindmillTightness(Math.round(blendValue(baseResult.data.windmillTightness, 1, 20)));
@@ -554,7 +553,6 @@ export function useRandomization(params: RandomizationParams) {
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
 
       setKaleidoscopeSegments(randIntInRange(RANGES.kaleidoscopeSegments));
-      setTwistAmount(randInRange(RANGES.twistAmount));
       setPixelSize(randIntInRange(RANGES.pixelSize));
       setTriangleSize(randIntInRange(RANGES.triangleSize));
       setChromaticOffset(randIntInRange(RANGES.chromaticOffset));
@@ -700,7 +698,6 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(...RANGES.waveDistortionStrength)));
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(...RANGES.pixelSize)));
       else if (eff === 'shift') setColorShiftHue(Math.round(rng(...RANGES.colorShiftHue)));
-      else if (eff === 'twist') setTwistAmount(rng(...RANGES.twistAmount));
       else if (eff === 'triangulate') setTriangleSize(Math.round(rng(...RANGES.triangleSize)));
       else if (eff === 'bloom') { setBloomIntensity(rng(0, 2)); setBloomRadius(Math.round(rng(2, 40))); }
       else if (eff === 'chromatic-trails') { setChromaticTrailsDecay(rng(0.5, 0.99)); setChromaticTrailsOffset(Math.round(rng(1, 30))); }

@@ -83,7 +83,11 @@ const EFFECT_REGISTRY = {
   glitch: { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffect, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
-  halftone: { drawFn: applyHalftone, label: 'Halftone', cost: 3, category: ['Halftone'], audio: false },
+  // CMYK mode (halftoneCMYK, ~40% of shuffles) draws 4 full rotated dot
+  // grids with individual ctx.arc()+fill() calls each — even capped (see
+  // applyHalftone.ts) that's several times costlier than a single-pass
+  // per-pixel effect, so this sits a tier above Dither/Triangulate/Grid.
+  halftone: { drawFn: applyHalftone, label: 'Halftone', cost: 4, category: ['Halftone'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
   // Same under-pricing issue as fisheye above — full-res per-pixel

@@ -234,7 +234,14 @@ export function applyHalftone(P: any): void {
               ctx.fillRect(0, 0, displayWidth, displayHeight);
               ctx.globalCompositeOperation = 'multiply';
               const diag = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight) / 2 + sz * 2;
-              const steps = Math.ceil(diag * 2 / sz);
+              // Capped — at small halftoneSize this grid (which has to cover a
+              // bounding circle, not just the canvas rect, so it stays full at
+              // any rotation) can reach ~800 steps per axis; squared and ×4
+              // channels of individual ctx.arc()+fill() calls, that's several
+              // million vector draws in a single frame. Capping trades a
+              // slightly coarser dot pitch at extreme small sizes for staying
+              // in the same cost ballpark as every other per-pixel effect.
+              const steps = Math.min(Math.ceil(diag * 2 / sz), 100);
               const cmykChannels = [
                 { angle: 15,  color: 'rgba(0,255,255,1)'   }, // Cyan
                 { angle: 75,  color: 'rgba(255,0,255,1)'   }, // Magenta
