@@ -292,7 +292,6 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
           const spreadFactor = (radialBurstSpread + audioBurstSpread) * 0.01;
           const audioSizeBoost = 1 + audioBass * 1.2 + audioMids * 0.4;
           const audioBrightness = 1 + audioBass * 1.5 + audioMids * 0.8;
-
           for (let i = 0; i < burstCount; i++) {
             const burstAngle = (i * 360 / burstCount + gradientAngle) * DEG_TO_RAD;
             const offsetDist = fitRadius * spreadFactor * burstScale * sizeScale;
@@ -313,5 +312,31 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
             ctx.fillRect(0, 0, displayWidth, displayHeight);
           }
           ctx.globalCompositeOperation = 'source-over';
+
+          // 'lighter' is a true per-channel sum, not regular alpha-over
+          // blending — with enough bursts overlapping (shuffle can land on
+          // up to ~17), or a couple of bursts sized large enough to blanket
+          // most of the canvas (max Size + min Spread makes every burst
+          // individually cover the whole canvas), the additive sum
+          // saturates every channel to 255 across a wide area, reading as a
+          // solid white screen instead of a burst pattern. Soft-clipping
+          // only pixels that actually blew out (rather than scaling every
+          // burst's alpha down up front) leaves well-separated/typical burst
+          // combos — which never approach saturation — completely
+          // untouched, instead of dimming them to guard against a worst
+          // case they were never going to hit.
+          const burstImg = getDisplayImageData();
+          const bd = burstImg.data;
+          const SOFT_CEIL = 235; // headroom below pure white so it still reads as a bright highlight, not a flat wall
+          for (let p = 0; p < bd.length; p += 4) {
+            const peak = Math.max(bd[p], bd[p + 1], bd[p + 2]);
+            if (peak > SOFT_CEIL) {
+              const scale = SOFT_CEIL / peak;
+              bd[p] *= scale;
+              bd[p + 1] *= scale;
+              bd[p + 2] *= scale;
+            }
+          }
+          putScaledImageData(burstImg);
   return gradient;
 }

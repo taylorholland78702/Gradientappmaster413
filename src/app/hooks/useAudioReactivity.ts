@@ -514,25 +514,29 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // Sub-bass drives Shape (audioSubBassLevel); bass drives Pulse/zoom
       setAudioSubBassLevel(subBassGradientValue);
 
-      // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds)
-      // Capped much lower than before (was up to 3.5x/2.2x) — most gradients
-      // shrink their rendered pattern by dividing radius/position math by
-      // zoom, and past roughly 1.6-1.8x the pattern no longer covers the
-      // full canvas, exposing the black clear-fill underneath at the edges.
+      // Bass drives zoom — always decay toward 1, additive spike on hits (never compounds).
+      // Pulses BELOW 1, not above: most gradients scale their rendered
+      // pattern by dividing radius/position math by zoom, so a value below 1
+      // makes the pattern LARGER (never exposes the black clear-fill at the
+      // edges, since growing only crops excess beyond the canvas) instead of
+      // above 1, which shrinks the pattern below full canvas coverage. Was
+      // previously pulsed upward (shrinking) and relied on capping the
+      // ceiling low enough to avoid exposing edges — fragile across ~24
+      // different gradient implementations with their own zoom math, and
+      // still visibly exposed edges on some of them. Flipping the direction
+      // makes edge-safety a property of the math (grow-only) instead of a
+      // tuned constant.
       // Zoom motion reacts at a quarter of the overall Intensity dial — a
       // camera-zoom punch reads as far more intense per unit of "level" than
       // a color or bar-height change does, so it needs its own (much lower)
       // scale rather than riding the same Intensity value Color/Shape use.
-      // Spike size and the ceiling it's clamped to are also halved from
-      // their original values (was 0.8/0.4 spike, 1.8x/1.4x ceiling) — still
-      // too punchy at those levels even with a low input scale.
       const zoomMotionScale = 0.25;
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity * zoomMotionScale) : 0;
       setTargetZoomRef.current(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
           const spike = bassRawForZoom * (bassBeatSync ? 0.4 : 0.2);
-          return Math.min(decayed + spike, 1 + (bassBeatSync ? 0.4 : 0.2));
+          return Math.max(decayed - spike, 1 - (bassBeatSync ? 0.4 : 0.2));
         }
         return decayed;
       });
