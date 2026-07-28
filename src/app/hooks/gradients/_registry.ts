@@ -25,6 +25,8 @@ import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffus
 import { drawFlower } from './drawFlower';
 import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
+import { drawFireworks } from './drawFireworks';
+import { drawLightning } from './drawLightning';
 
 // Dispatches to the WebGL renderer when the browser/GPU can support it
 // (checked once, memoized in detectRDGLSupport), otherwise the untouched,
@@ -71,4 +73,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'flower': drawFlower,
   'particles': drawParticles,
   'tiling': drawTiling,
+  'fireworks': drawFireworks,
+  'lightning': drawLightning,
 };

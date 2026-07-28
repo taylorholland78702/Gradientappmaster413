@@ -46,6 +46,8 @@ import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
 import { useParticlesState } from '../hooks/state/useParticlesState';
 import { useTilingState } from '../hooks/state/useTilingState';
+import { useFireworksState } from '../hooks/state/useFireworksState';
+import { useLightningState } from '../hooks/state/useLightningState';
 import { useAudioBindingsState } from '../hooks/state/useAudioBindingsState';
 import { useAuroraState } from '../hooks/state/useAuroraState';
 import { useBloomState } from '../hooks/state/useBloomState';
@@ -272,6 +274,8 @@ export function InteractiveGradient() {
   const { attractorAnimTime, setAttractorAnimTime, attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize, attractorTrailFade, setAttractorTrailFade, attractorBufferRef, attractorPointsRef } = useAttractorState();
   const { particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity, particlesSides, setParticlesSides, particlesBufferRef, particlesPointsRef } = useParticlesState();
   const { tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingAnimTime, setTilingAnimTime, tilingRowOffset, setTilingRowOffset } = useTilingState();
+  const { fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade, fireworksBufferRef, fireworksParticlesRef } = useFireworksState();
+  const { lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness, lightningBufferRef, lightningBoltsRef } = useLightningState();
   const { auroraAnimTime, setAuroraAnimTime, auroraBandCount, setAuroraBandCount, auroraWaveSpeed, setAuroraWaveSpeed, auroraBandHeight, setAuroraBandHeight } = useAuroraState();
   const { bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius } = useBloomState();
   const { blurType, setBlurType } = useBlurState();
@@ -915,15 +919,15 @@ export function InteractiveGradient() {
       zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
 
       // Skip draw when idle: nothing is actively animating and all values have settled.
-      // Reaction-Diffusion is a standing exception — it's a live simulation that keeps
-      // evolving on its own (feed/kill drift, perpetual sprinkling; see
-      // drawReactionDiffusion.ts) rather than easing toward a fixed target, so without
-      // this it would only ever get the handful of draw calls needed for colors/angle/
-      // zoom to converge and then freeze solid, which is exactly the "diffuses and then
-      // becomes static" bug this is fixing — the sim being alive under the hood is
-      // meaningless if this loop stops calling draw() at all.
+      // Reaction-Diffusion/Fireworks/Lightning are standing exceptions — each is a live
+      // simulation that keeps evolving on its own (feed/kill drift and perpetual
+      // sprinkling for Reaction-Diffusion; spawning/aging particles or bolts into a
+      // persistent fading buffer for the other two) rather than easing toward a fixed
+      // target, so without this they'd only ever get the handful of draw calls needed
+      // for colors/angle/zoom to converge and then freeze solid — the sim being alive
+      // under the hood is meaningless if this loop stops calling draw() at all.
       const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current
-        || gradientTypeRef.current === 'reaction-diffusion';
+        || gradientTypeRef.current === 'reaction-diffusion' || gradientTypeRef.current === 'fireworks' || gradientTypeRef.current === 'lightning';
       const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
 
       if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {
@@ -1156,6 +1160,8 @@ export function InteractiveGradient() {
     metaballAnimTime, setMetaballAnimTime, moireAnimTime, setMoireAnimTime, flowAnimTime, setFlowAnimTime,
     liquidAnimTime, setLiquidAnimTime, emojiAnimTime, setEmojiAnimTime, attractorAnimTime, setAttractorAnimTime,
     tilingAnimTime, setTilingAnimTime,
+    fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
+    lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     structuralSeed, setStructuralSeed,
     audioBindings, setAudioBindings,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
@@ -1346,6 +1352,8 @@ export function InteractiveGradient() {
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity,
     setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation,
+    setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
+    setLightningBoltCount, setLightningJitter, setLightningBranchiness,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
     setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
@@ -2595,7 +2603,7 @@ export function InteractiveGradient() {
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame
@@ -2632,6 +2640,8 @@ export function InteractiveGradient() {
     asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
     particlesBufferRef, particlesPointsRef, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides,
     tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset,
+    fireworksBufferRef, fireworksParticlesRef, fireworksCount, fireworksParticleCount, fireworksTrailFade,
+    lightningBufferRef, lightningBoltsRef, lightningBoltCount, lightningJitter, lightningBranchiness,
     attractorScale, attractorDotSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, animValuesRef,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
@@ -3918,6 +3928,18 @@ export function InteractiveGradient() {
             setTilingRotation={setTilingRotation}
             tilingRowOffset={tilingRowOffset}
             setTilingRowOffset={setTilingRowOffset}
+            fireworksCount={fireworksCount}
+            setFireworksCount={setFireworksCount}
+            fireworksParticleCount={fireworksParticleCount}
+            setFireworksParticleCount={setFireworksParticleCount}
+            fireworksTrailFade={fireworksTrailFade}
+            setFireworksTrailFade={setFireworksTrailFade}
+            lightningBoltCount={lightningBoltCount}
+            setLightningBoltCount={setLightningBoltCount}
+            lightningJitter={lightningJitter}
+            setLightningJitter={setLightningJitter}
+            lightningBranchiness={lightningBranchiness}
+            setLightningBranchiness={setLightningBranchiness}
             reactionDiffusionFeed={reactionDiffusionFeed}
             setReactionDiffusionFeed={setReactionDiffusionFeed}
             reactionDiffusionKill={reactionDiffusionKill}

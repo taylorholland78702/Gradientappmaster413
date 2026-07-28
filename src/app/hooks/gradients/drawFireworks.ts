@@ -1,0 +1,96 @@
+// Rocket bursts scattering particles into a persistent fading-trail buffer —
+// same buffer/fade mechanic as Attractor/Flow Field, but the particles are
+// short-lived (explode outward under gravity, fade, die) instead of an
+// infinite walker, so this reads as actual explosive motion rather than an
+// ambient drifting pattern. Bass hits trigger extra bursts; treble brightens
+// sparkle. Drawn with fillRect per particle, not a pixel loop, so cost scales
+// with particle count, not canvas resolution.
+export function drawFireworks(P: any): CanvasGradient | undefined {
+  const {
+    ctx,
+    canvas,
+    displayWidth,
+    displayHeight,
+    gradientColors,
+    isAudioEnabled,
+    isAudioReactive,
+    audioSubBassLevel,
+    audioMidsLevel,
+    audioTrebleLevel,
+    fireworksCount,
+    fireworksParticleCount,
+    fireworksTrailFade,
+    fireworksBufferRef,
+    fireworksParticlesRef,
+  } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  if (!fireworksBufferRef.current || fireworksBufferRef.current.width !== displayWidth || fireworksBufferRef.current.height !== displayHeight) {
+    fireworksBufferRef.current = document.createElement('canvas');
+    fireworksBufferRef.current.width = displayWidth;
+    fireworksBufferRef.current.height = displayHeight;
+    fireworksParticlesRef.current = [];
+  }
+  const fwCtx = fireworksBufferRef.current.getContext('2d')!;
+  const fwAudio = isAudioEnabled && isAudioReactive;
+  const bassBoost = fwAudio ? audioSubBassLevel * 0.6 : 0;
+  const trebleBoost = fwAudio ? audioTrebleLevel * 0.5 : 0;
+  const midsBoost = fwAudio ? audioMidsLevel * 0.3 : 0;
+
+  fwCtx.fillStyle = `rgba(0,0,0,${Math.max(0.02, Math.min(1, fireworksTrailFade))})`;
+  fwCtx.fillRect(0, 0, displayWidth, displayHeight);
+
+  const particles = fireworksParticlesRef.current;
+  const count = Math.max(1, Math.min(15, Math.round(fireworksCount)));
+  const perBurst = Math.max(8, Math.min(150, Math.round(fireworksParticleCount)));
+
+  // Spawn chance scales with how many rocket "slots" are configured and
+  // spikes hard on a bass hit — a quiet section still launches occasionally
+  // so the gradient never looks fully dormant.
+  const spawnChance = (count / 240) * (1 + bassBoost * 4) + (bassBoost > 0.3 ? 0.15 : 0);
+  if (Math.random() < spawnChance && particles.length < 2200) {
+    const launchX = displayWidth * (0.15 + Math.random() * 0.7);
+    const launchY = displayHeight * (0.15 + Math.random() * 0.55);
+    const speed = Math.min(displayWidth, displayHeight) * (0.006 + Math.random() * 0.008) * (1 + trebleBoost);
+    const color = gradientColors[Math.floor(Math.random() * gradientColors.length)] || { r: 255, g: 255, b: 255 };
+    for (let i = 0; i < perBurst; i++) {
+      const angle = (i / perBurst) * Math.PI * 2 + Math.random() * 0.3;
+      const spread = speed * (0.6 + Math.random() * 0.5);
+      particles.push({
+        x: launchX, y: launchY,
+        vx: Math.cos(angle) * spread,
+        vy: Math.sin(angle) * spread,
+        life: 1,
+        maxLife: 45 + Math.random() * 35,
+        r: color.r, g: color.g, b: color.b,
+      });
+    }
+  }
+
+  const gravity = Math.min(displayWidth, displayHeight) * 0.00018;
+  const dotBase = Math.max(0.5, 1.4 + midsBoost * 1.5);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += gravity;
+    p.vx *= 0.988;
+    p.vy *= 0.988;
+    p.life += 1;
+    if (p.life >= p.maxLife) {
+      particles.splice(i, 1);
+      continue;
+    }
+    const t = p.life / p.maxLife;
+    const alpha = Math.max(0, 1 - t) * 0.85;
+    const size = dotBase * (1 - t * 0.5);
+    fwCtx.fillStyle = `rgba(${p.r},${p.g},${p.b},${alpha})`;
+    fwCtx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+  }
+
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, displayWidth, displayHeight);
+  ctx.drawImage(fireworksBufferRef.current, 0, 0);
+  return gradient;
+}

@@ -74,6 +74,8 @@ export function useRandomization(params: RandomizationParams) {
   const {
     activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
+    setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
+    setLightningBoltCount, setLightningJitter, setLightningBranchiness,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
@@ -119,6 +121,16 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstSize(Math.floor(Math.random() * 190) + 10);          // 10–199
     setGridShapeSize(Math.floor(Math.random() * 99) + 1);              // 1–99
     setGridVariation(Math.random());                                    // 0–1
+
+    // Fireworks
+    setFireworksCount(Math.floor(Math.random() * 12) + 3);             // 3–14
+    setFireworksParticleCount(Math.floor(Math.random() * 85) + 15);    // 15–99
+    setFireworksTrailFade(Math.random() * 0.25 + 0.05);                // 0.05–0.3
+
+    // Lightning
+    setLightningBoltCount(Math.floor(Math.random() * 7) + 1);          // 1–7
+    setLightningJitter(Math.random() * 0.8 + 0.15);                    // 0.15–0.95
+    setLightningBranchiness(Math.random() * 0.7);                      // 0–0.7
 
     // Aurora
     setAuroraBandCount(Math.floor(Math.random() * 10) + 2);            // 2–11

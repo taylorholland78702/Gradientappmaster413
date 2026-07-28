@@ -77,6 +77,16 @@ export interface GradientsTabProps {
   tilingRotation: number; setTilingRotation: (v: number) => void;
   tilingRowOffset: number; setTilingRowOffset: (v: number) => void;
 
+  // Fireworks
+  fireworksCount: number; setFireworksCount: (v: number) => void;
+  fireworksParticleCount: number; setFireworksParticleCount: (v: number) => void;
+  fireworksTrailFade: number; setFireworksTrailFade: (v: number) => void;
+
+  // Lightning
+  lightningBoltCount: number; setLightningBoltCount: (v: number) => void;
+  lightningJitter: number; setLightningJitter: (v: number) => void;
+  lightningBranchiness: number; setLightningBranchiness: (v: number) => void;
+
   // Reaction-Diffusion
   reactionDiffusionFeed: number; setReactionDiffusionFeed: (v: number) => void;
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
@@ -177,6 +187,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     attractorTrailFade, setAttractorTrailFade,
     particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity, particlesSides, setParticlesSides,
     tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingRowOffset, setTilingRowOffset,
+    fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
+    lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
@@ -607,6 +619,42 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <input type="number" value={tilingRowOffset} onChange={e => setTilingRowOffset(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
+          </div>
+        )}
+
+        {gradientType === 'fireworks' && (
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Rocket Slots', value: fireworksCount, set: setFireworksCount, min: 1, max: 15, step: 1 },
+              { label: 'Particles', value: fireworksParticleCount, set: setFireworksParticleCount, min: 8, max: 150, step: 1 },
+              { label: 'Trail Fade', value: fireworksTrailFade, set: setFireworksTrailFade, min: 0.02, max: 0.5, step: 0.01 },
+            ].map(({ label, value, set, min, max, step }) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'lightning' && (
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {[
+              { label: 'Bolt Slots', value: lightningBoltCount, set: setLightningBoltCount, min: 1, max: 8, step: 1 },
+              { label: 'Jitter', value: lightningJitter, set: setLightningJitter, min: 0.1, max: 1, step: 0.05 },
+              { label: 'Branching', value: lightningBranchiness, set: setLightningBranchiness, min: 0, max: 0.85, step: 0.05 },
+            ].map(({ label, value, set, min, max, step }) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
