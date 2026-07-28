@@ -336,6 +336,11 @@ export function InteractiveGradient() {
   // panel" the wordmark sits above. Measured on open so the About popup's
   // top edge can align with it instead of the wordmark itself.
   const topIconRowRef = useRef<HTMLDivElement>(null);
+  // Bottom edge of just the icon row + VCR controls + tab bar card (not the
+  // whole variable-height panel below it) — used to cap the Auto Shuffle
+  // popover's height so it doesn't stretch down to cover whatever tab
+  // content/sliders happen to be open underneath.
+  const threeRowPanelRef = useRef<HTMLDivElement>(null);
   const [aboutPopupOffsetY, setAboutPopupOffsetY] = useState(0);
   // Closing (or switching) a tab shrinks the panel's content height, but
   // the browser doesn't reset scroll position on its own -- on the mobile
@@ -1465,26 +1470,28 @@ export function InteractiveGradient() {
   // dismiss check below (see that handler for why).
   const autoShuffleTriggerElRef = useRef<HTMLElement | null>(null);
   // Anchored to the trigger button, not the whole panel — floats as an
-  // overlay just below the icon row on top of whatever panel content (the
-  // expanded control panel's tabs/sliders, or the collapsed cluster) sits
-  // underneath it, instead of being pushed below the panel's full height
-  // (which could land far down/off-screen once Effects tab content made
-  // the panel tall). panelRef is still used as a width/position fallback
-  // for keyboard-triggered opens (⌥⇧W) where there's no click event.
+  // overlay just below the icon row, on top of the icon row + VCR controls
+  // + tab bar card only. Capped to threeRowPanelRef's own bottom (not
+  // panelRef's, which spans the panel's full variable-height content below
+  // the tab bar — using that stretched the popover down to cover whatever
+  // tab/slider content happened to be open underneath it). panelRef is
+  // still used as a width/position fallback for keyboard-triggered opens
+  // (⌥⇧W) where there's no click event.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
     const anchorEl = triggerEl || panelRef.current;
     autoShuffleTriggerElRef.current = triggerEl ?? null;
     const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
     const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
     // Top edge flush against the icon row's own bottom line (no gap), and
-    // bottom edge flush against the panel's own bottom — the popover fills
-    // exactly the space below the first row instead of floating as an
-    // independently-sized box under it.
+    // bottom edge flush against the three-row card's own bottom — the
+    // popover fills exactly the space below the first row within that card,
+    // not the whole panel.
     const iconRowRect = topIconRowRef.current ? topIconRowRef.current.getBoundingClientRect() : rect;
+    const threeRowRect = threeRowPanelRef.current ? threeRowPanelRef.current.getBoundingClientRect() : panelRect;
     const width = Math.max(200, panelRect.width);
     const left = Math.min(panelRect.left, window.innerWidth - width - 8);
     const top = iconRowRect.bottom;
-    const height = Math.max(80, panelRect.bottom - top);
+    const height = Math.max(80, threeRowRect.bottom - top);
     setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width, height });
   };
   useEffect(() => {
@@ -3655,7 +3662,7 @@ export function InteractiveGradient() {
             clip (no child here has its own background that could actually
             overflow the rounded box in the working case) for not silently
             eating a row when that rounding happens. */}
-        <div className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
+        <div ref={threeRowPanelRef} className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
           <div ref={topIconRowRef} className="flex items-stretch">
           <button
             onClick={() => setIsControlsVisible(false)}
