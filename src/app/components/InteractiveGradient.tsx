@@ -4312,7 +4312,13 @@ export function InteractiveGradient() {
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
           <div
-            className={`absolute bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-6' : ''}`}
+            // mx-6 previously sat alongside the left-1/2 + -translate-x-1/2
+            // centering — margin on a translate-centered absolute element
+            // shifts it off-axis instead of adding equal breathing room, so
+            // this pushed the popup ~24px right of true center on mobile.
+            // w-[calc(100%-3rem)] gives the same edge clearance without
+            // touching the centering transform.
+            className={`absolute bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-3rem)]' : ''}`}
             style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + aboutPopupOffsetY } : { top: 16 + aboutPopupOffsetY, left: 16 })}
           >
             <button
