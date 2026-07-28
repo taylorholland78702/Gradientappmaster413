@@ -1451,7 +1451,7 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // Anchored to the trigger button, not the whole panel — floats as an
   // overlay just below the icon row on top of whatever panel content (the
@@ -1464,9 +1464,16 @@ export function InteractiveGradient() {
     const anchorEl = triggerEl || panelRef.current;
     const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
     const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
+    // Top edge flush against the icon row's own bottom line (no gap), and
+    // bottom edge flush against the panel's own bottom — the popover fills
+    // exactly the space below the first row instead of floating as an
+    // independently-sized box under it.
+    const iconRowRect = topIconRowRef.current ? topIconRowRef.current.getBoundingClientRect() : rect;
     const width = Math.max(200, panelRect.width);
     const left = Math.min(panelRect.left, window.innerWidth - width - 8);
-    setAutoShufflePopoverAnchor({ top: rect.bottom + 8, left: Math.max(8, left), width });
+    const top = iconRowRect.bottom;
+    const height = Math.max(80, panelRect.bottom - top);
+    setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width, height });
   };
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
@@ -1489,11 +1496,15 @@ export function InteractiveGradient() {
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
-        className="fixed z-50 rounded-lg shadow-sm p-3 flex flex-col gap-2"
+        // Squared top corners (flush against the icon row's bottom edge —
+        // rounding there would leave a visible gap/mismatch), rounded
+        // bottom corners.
+        className="fixed z-50 rounded-b-lg shadow-sm p-3 flex flex-col gap-2"
         style={{
           top: autoShufflePopoverAnchor.top,
           left: autoShufflePopoverAnchor.left,
           width: autoShufflePopoverAnchor.width,
+          height: autoShufflePopoverAnchor.height,
           backgroundColor: 'rgba(255, 255, 255, 0.92)',
           border: '1px solid rgba(0, 0, 0, 0.1)',
         }}
