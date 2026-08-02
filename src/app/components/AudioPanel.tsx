@@ -554,16 +554,18 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             </div>
 
             {/* FX on Beat — previously only settable via Style Presets and
-                Shuffle, with no manual control. Compact single row (not a
-                new collapsible section) since it's four booleans, same
-                density tier as the BEAT toggles above. */}
-            <div className="flex items-center gap-1">
-              <label className="text-[10px] text-white whitespace-nowrap">FX on Beat:</label>
-              <div className="flex-1 flex gap-1">
-                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${zoomBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Zoom</button>
-                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${shakeBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Shake</button>
-                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${contrastBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Contrast</button>
-                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${paletteBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Palette</button>
+                Shuffle, with no manual control. Label sits on its own line
+                (same pattern as the SUB/BASS/MIDS/TREBLE column headers
+                above) so all four buttons get the full row width instead of
+                splitting it with an inline label — "Contrast"/"Palette"
+                were getting squeezed to the point of near-illegibility. */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[9px] font-bold uppercase tracking-wider text-white/50">FX on Beat</label>
+              <div className="flex gap-1.5">
+                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${zoomBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Zoom</button>
+                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${shakeBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Shake</button>
+                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${contrastBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Contrast</button>
+                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${paletteBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Palette</button>
               </div>
             </div>
 
