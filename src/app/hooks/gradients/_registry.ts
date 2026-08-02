@@ -28,6 +28,9 @@ import { drawAngleGL, detectAngleGLSupport } from './drawAngleGL';
 import { drawCausticsGL, detectCausticsGLSupport } from './drawCausticsGL';
 import { drawMarbleGL, detectMarbleGLSupport } from './drawMarbleGL';
 import { drawLavaLampGL, detectLavaLampGLSupport } from './drawLavaLampGL';
+import { drawJuliaGL, detectJuliaGLSupport } from './drawJuliaGL';
+import { drawMetaballsGL, detectMetaballsGLSupport } from './drawMetaballsGL';
+import { drawRadialBurstSweepGL, detectRadialBurstGLSupport } from './drawRadialBurstGL';
 import { drawFlower } from './drawFlower';
 import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
@@ -122,6 +125,43 @@ function drawLavaLampAuto(P: any): CanvasGradient | undefined {
   return drawLavaLamp(P);
 }
 
+function drawJuliaAuto(P: any): CanvasGradient | undefined {
+  if (detectJuliaGLSupport()) {
+    try {
+      return drawJuliaGL(P);
+    } catch (err) {
+      console.error('WebGL Julia failed, falling back to CPU:', err);
+    }
+  }
+  return drawJulia(P);
+}
+
+function drawMetaballsAuto(P: any): CanvasGradient | undefined {
+  if (detectMetaballsGLSupport()) {
+    try {
+      return drawMetaballsGL(P);
+    } catch (err) {
+      console.error('WebGL Metaballs failed, falling back to CPU:', err);
+    }
+  }
+  return drawMetaballs(P);
+}
+
+// Only the 'sweep' submode has a genuine per-pixel loop worth porting — the
+// default burst mode already composites via native canvas gradients (see
+// drawRadialBurstGL.ts) — so this checks the mode before even attempting
+// the GL path, unlike the other Auto wrappers here.
+function drawRadialBurstAuto(P: any): CanvasGradient | undefined {
+  if (P.radialBurstMode === 'sweep' && detectRadialBurstGLSupport()) {
+    try {
+      return drawRadialBurstSweepGL(P);
+    } catch (err) {
+      console.error('WebGL Radial Burst (sweep) failed, falling back to CPU:', err);
+    }
+  }
+  return drawRadialBurst(P);
+}
+
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngleAuto,
@@ -131,16 +171,16 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'fade': drawFade,
   'noise': drawNoiseAuto,
   'topographic': drawTopographic,
-  'julia': drawJulia,
+  'julia': drawJuliaAuto,
   'plasma': drawPlasmaAuto,
   'grid': drawGrid,
-  'radial-burst': drawRadialBurst,
+  'radial-burst': drawRadialBurstAuto,
   'voronoi': drawVoronoi,
   'aurora': drawAurora,
   'caustics': drawCausticsAuto,
   'lava-lamp': drawLavaLampAuto,
   'marble': drawMarbleAuto,
-  'metaballs': drawMetaballs,
+  'metaballs': drawMetaballsAuto,
   'truchet': drawTruchet,
   'moire': drawMoire,
   'flow-field': drawFlowField,
