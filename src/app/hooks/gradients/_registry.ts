@@ -31,6 +31,10 @@ import { drawLavaLampGL, detectLavaLampGLSupport } from './drawLavaLampGL';
 import { drawJuliaGL, detectJuliaGLSupport } from './drawJuliaGL';
 import { drawMetaballsGL, detectMetaballsGLSupport } from './drawMetaballsGL';
 import { drawRadialBurstSweepGL, detectRadialBurstGLSupport } from './drawRadialBurstGL';
+import { drawTilingGL, detectTilingGLSupport } from './drawTilingGL';
+import { drawTopographicGL, detectTopographicGLSupport } from './drawTopographicGL';
+import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
+import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
 import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
@@ -162,20 +166,67 @@ function drawRadialBurstAuto(P: any): CanvasGradient | undefined {
   return drawRadialBurst(P);
 }
 
+function drawTilingAuto(P: any): CanvasGradient | undefined {
+  if (detectTilingGLSupport()) {
+    try {
+      return drawTilingGL(P);
+    } catch (err) {
+      console.error('WebGL Tiling failed, falling back to CPU:', err);
+    }
+  }
+  return drawTiling(P);
+}
+
+function drawTopographicAuto(P: any): CanvasGradient | undefined {
+  if (detectTopographicGLSupport()) {
+    try {
+      return drawTopographicGL(P);
+    } catch (err) {
+      console.error('WebGL Topographic failed, falling back to CPU:', err);
+    }
+  }
+  return drawTopographic(P);
+}
+
+function drawVoronoiAuto(P: any): CanvasGradient | undefined {
+  if (detectVoronoiGLSupport()) {
+    try {
+      return drawVoronoiGL(P);
+    } catch (err) {
+      console.error('WebGL Voronoi failed, falling back to CPU:', err);
+    }
+  }
+  return drawVoronoi(P);
+}
+
+// Only the 'helix' submode has a genuine per-pixel loop worth porting —
+// the default 'blades' mode already draws via vector paths, same reasoning
+// as Radial Burst's sweep-only port above.
+function drawWindmillAuto(P: any): CanvasGradient | undefined {
+  if (P.windmillMode === 'helix' && detectWindmillGLSupport()) {
+    try {
+      return drawWindmillHelixGL(P);
+    } catch (err) {
+      console.error('WebGL Windmill (helix) failed, falling back to CPU:', err);
+    }
+  }
+  return drawWindmill(P);
+}
+
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngleAuto,
   'polar-grid': drawPolarGrid,
-  'windmill': drawWindmill,
+  'windmill': drawWindmillAuto,
   'shapes': drawShapes,
   'fade': drawFade,
   'noise': drawNoiseAuto,
-  'topographic': drawTopographic,
+  'topographic': drawTopographicAuto,
   'julia': drawJuliaAuto,
   'plasma': drawPlasmaAuto,
   'grid': drawGrid,
   'radial-burst': drawRadialBurstAuto,
-  'voronoi': drawVoronoi,
+  'voronoi': drawVoronoiAuto,
   'aurora': drawAurora,
   'caustics': drawCausticsAuto,
   'lava-lamp': drawLavaLampAuto,
@@ -188,7 +239,7 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'reaction-diffusion': drawReactionDiffusionAuto,
   'flower': drawFlower,
   'particles': drawParticles,
-  'tiling': drawTiling,
+  'tiling': drawTilingAuto,
   'fireworks': drawFireworks,
   'lightning': drawLightning,
 };
