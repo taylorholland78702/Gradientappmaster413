@@ -230,28 +230,52 @@ export function applyKaleidoscope(P: any): void {
               const cx = displayWidth / 2, cy = displayHeight / 2;
               const seg = Math.max(1, kaleidoscopeSegments + (isFirstEffect ? Math.floor(audioModulation * 8) : 0));
               const aps = (Math.PI * 2) / seg;
+              const half = aps / 2;
               // Use diagonal so segments always reach every corner
               const r = Math.sqrt(cx * cx + cy * cy) * 1.5;
+              const scale = r / Math.max(cx, cy);
               // Accumulate rotation each frame
               kaleidoAngleRef.current += (kaleidoscopeRotateSpeed / 200) * (1 + (isAudioReactive ? audioMidsLevel * 3 : 0));
               ctx.save();
               ctx.translate(cx, cy);
               ctx.rotate(kaleidoAngleRef.current);
               ctx.translate(-cx, -cy);
+              // True kaleidoscope: each "petal" is a single wedge of the source
+              // mirrored onto itself (a right half drawn normally, a left half
+              // that's the same content flipped across the petal's centerline),
+              // then that self-symmetric petal is rotate-copied around the
+              // circle every `aps` so petals tile edge-to-edge with no overlap
+              // or gaps — unlike the old version, which clipped the whole image
+              // into fixed 90°-wide wedges regardless of segment count, so
+              // wedges overlapped/gapped instead of meeting seamlessly.
               for (let i = 0; i < seg; i++) {
+                const baseAngle = i * aps;
+
+                // Right half of the petal: [baseAngle, baseAngle + half]
                 ctx.save();
                 ctx.translate(cx, cy);
-                ctx.rotate(i * aps);
+                ctx.rotate(baseAngle);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(r, -r);
-                ctx.lineTo(r, r);
+                ctx.lineTo(r, 0);
+                ctx.lineTo(r * Math.cos(half), r * Math.sin(half));
                 ctx.closePath();
                 ctx.clip();
-                if (i % 2 === 0) ctx.scale(1, -1);
-                ctx.rotate(-i * aps);
-                // Scale source up so it fills beyond edges
-                const scale = r / Math.max(cx, cy);
+                ctx.drawImage(tmp, -cx * scale, -cy * scale, displayWidth * scale, displayHeight * scale);
+                ctx.restore();
+
+                // Left half: [baseAngle - half, baseAngle], the right half's
+                // content mirrored across the petal's centerline (baseAngle).
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(baseAngle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(r, 0);
+                ctx.lineTo(r * Math.cos(half), -r * Math.sin(half));
+                ctx.closePath();
+                ctx.clip();
+                ctx.scale(1, -1);
                 ctx.drawImage(tmp, -cx * scale, -cy * scale, displayWidth * scale, displayHeight * scale);
                 ctx.restore();
               }

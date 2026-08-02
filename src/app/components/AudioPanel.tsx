@@ -553,6 +553,20 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
             </div>
 
+            {/* FX on Beat — previously only settable via Style Presets and
+                Shuffle, with no manual control. Compact single row (not a
+                new collapsible section) since it's four booleans, same
+                density tier as the BEAT toggles above. */}
+            <div className="flex items-center gap-1">
+              <label className="text-[10px] text-white whitespace-nowrap">FX on Beat:</label>
+              <div className="flex-1 flex gap-1">
+                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${zoomBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Zoom</button>
+                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${shakeBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Shake</button>
+                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${contrastBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Contrast</button>
+                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" className={`flex-1 py-0.5 rounded text-[9px] font-bold transition-all ${paletteBeatEnabled ? 'bg-white/30 text-white beat-active' : 'bg-black/25 text-white hover:bg-white/15'}`}>Palette</button>
+              </div>
+            </div>
+
             {/* Advanced — Modulation (bind any slider to an audio band) is
                 the most powerful and least-needed-by-default section, so
                 it's opt-in rather than always taking up space. */}
