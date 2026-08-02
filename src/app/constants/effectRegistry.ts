@@ -13,6 +13,7 @@
 import { applyAscii } from '../hooks/effects/applyAscii';
 import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
+import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrails } from '../hooks/effects/applyChromaticTrails';
 import { applyCrt } from '../hooks/effects/applyCrt';
@@ -56,12 +57,31 @@ interface EffectRegistryEntry {
   audio: boolean;
 }
 
+// Only Blur's Zoom/Radial modes have a genuine per-pixel bottleneck worth a
+// GPU port (10-12 texture samples + trig per pixel at full resolution, no
+// downsampling compromise — every other effect in this registry is a
+// single sample per pixel, already cheap). Gaussian/Motion already run via
+// native ctx.filter/ctx.drawImage, so this checks blurType before even
+// attempting GL, same reasoning as the gradient layer's sweep/helix-only
+// GL wrappers (see gradients/_registry.ts).
+function applyBlurAuto(P: any): void {
+  if ((P.blurType === 'zoom' || P.blurType === 'radial') && detectBlurGLSupport()) {
+    try {
+      if (P.blurType === 'zoom') applyBlurZoomGL(P); else applyBlurRadialGL(P);
+      return;
+    } catch (err) {
+      console.error('WebGL Blur failed, falling back to CPU:', err);
+    }
+  }
+  applyBlur(P);
+}
+
 // Alphabetical by id — this order is what both the Effects-tab button grid
 // and ALL_EFFECTS iterate in, so keep new entries sorted in.
 const EFFECT_REGISTRY = {
   ascii: { drawFn: applyAscii, label: 'ASCII', cost: 2, category: ['ASCII'], audio: false },
   bloom: { drawFn: applyBloom, label: 'Bloom', cost: 1, category: ['Bloom'], audio: true },
-  blur: { drawFn: applyBlur, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
+  blur: { drawFn: applyBlurAuto, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrails, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
