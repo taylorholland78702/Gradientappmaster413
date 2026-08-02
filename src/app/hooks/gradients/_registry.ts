@@ -40,6 +40,8 @@ import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
 import { drawFireworks } from './drawFireworks';
 import { drawLightning } from './drawLightning';
+import { drawFireworksGL, detectFireworksGLSupport } from './drawFireworksGL';
+import { drawLightningGL, detectLightningGLSupport } from './drawLightningGL';
 
 // Dispatches to the WebGL renderer when the browser/GPU can support it
 // (checked once, memoized in detectRDGLSupport), otherwise the untouched,
@@ -213,6 +215,33 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
   return drawWindmill(P);
 }
 
+// Persistent-buffer particle/vector gradients — same capability-detect +
+// fallback pattern, but gated on detectParticleGLSupport (plain WebGL2,
+// see glParticleShared.ts) since they use a different rendering technique
+// (point sprites / triangle-quad lines into a preserveDrawingBuffer canvas)
+// than the stateless field shaders above.
+function drawFireworksAuto(P: any): CanvasGradient | undefined {
+  if (detectFireworksGLSupport()) {
+    try {
+      return drawFireworksGL(P);
+    } catch (err) {
+      console.error('WebGL Fireworks failed, falling back to CPU:', err);
+    }
+  }
+  return drawFireworks(P);
+}
+
+function drawLightningAuto(P: any): CanvasGradient | undefined {
+  if (detectLightningGLSupport()) {
+    try {
+      return drawLightningGL(P);
+    } catch (err) {
+      console.error('WebGL Lightning failed, falling back to CPU:', err);
+    }
+  }
+  return drawLightning(P);
+}
+
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngleAuto,
@@ -240,6 +269,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'flower': drawFlower,
   'particles': drawParticles,
   'tiling': drawTilingAuto,
-  'fireworks': drawFireworks,
-  'lightning': drawLightning,
+  'fireworks': drawFireworksAuto,
+  'lightning': drawLightningAuto,
 };

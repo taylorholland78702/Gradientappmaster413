@@ -625,8 +625,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'fireworks' && (
           <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
             {[
-              { label: 'Rocket Slots', value: fireworksCount, set: setFireworksCount, min: 1, max: 15, step: 1 },
-              { label: 'Particles', value: fireworksParticleCount, set: setFireworksParticleCount, min: 8, max: 150, step: 1 },
+              { label: 'Rocket Slots', value: fireworksCount, set: setFireworksCount, min: 1, max: 30, step: 1 },
+              { label: 'Particles', value: fireworksParticleCount, set: setFireworksParticleCount, min: 8, max: 400, step: 1 },
               { label: 'Trail Fade', value: fireworksTrailFade, set: setFireworksTrailFade, min: 0.02, max: 0.5, step: 0.01 },
             ].map(({ label, value, set, min, max, step }) => (
               <div key={label} className="flex items-center justify-between">

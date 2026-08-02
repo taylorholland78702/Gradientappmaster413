@@ -42,8 +42,8 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
   fwCtx.fillRect(0, 0, displayWidth, displayHeight);
 
   const particles = fireworksParticlesRef.current;
-  const count = Math.max(1, Math.min(15, Math.round(fireworksCount)));
-  const perBurst = Math.max(8, Math.min(150, Math.round(fireworksParticleCount)));
+  const count = Math.max(1, Math.min(30, Math.round(fireworksCount)));
+  const perBurst = Math.max(8, Math.min(400, Math.round(fireworksParticleCount)));
 
   // Spawn chance scales with how many rocket "slots" are configured and
   // spikes hard on a bass hit — a quiet section still launches occasionally
