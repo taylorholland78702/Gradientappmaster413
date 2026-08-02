@@ -22,6 +22,8 @@ import { drawFlowField } from './drawFlowField';
 import { drawAttractor } from './drawAttractor';
 import { drawReactionDiffusion } from './drawReactionDiffusion';
 import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
+import { drawPlasmaGL, detectPlasmaGLSupport } from './drawPlasmaGL';
+import { drawNoiseGL, detectNoiseGLSupport } from './drawNoiseGL';
 import { drawFlower } from './drawFlower';
 import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
@@ -46,6 +48,32 @@ function drawReactionDiffusionAuto(P: any): CanvasGradient | undefined {
   return drawReactionDiffusion(P);
 }
 
+// Same dispatch pattern as Reaction-Diffusion above, gated on the much
+// lighter detectFieldGLSupport check (plain WebGL2, no float-framebuffer
+// requirement) — see glShared.ts and drawPlasmaGL.ts for why these two
+// checks are kept separate rather than shared.
+function drawPlasmaAuto(P: any): CanvasGradient | undefined {
+  if (detectPlasmaGLSupport()) {
+    try {
+      return drawPlasmaGL(P);
+    } catch (err) {
+      console.error('WebGL Plasma failed, falling back to CPU:', err);
+    }
+  }
+  return drawPlasma(P);
+}
+
+function drawNoiseAuto(P: any): CanvasGradient | undefined {
+  if (detectNoiseGLSupport()) {
+    try {
+      return drawNoiseGL(P);
+    } catch (err) {
+      console.error('WebGL Noise failed, falling back to CPU:', err);
+    }
+  }
+  return drawNoise(P);
+}
+
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngle,
@@ -53,10 +81,10 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'windmill': drawWindmill,
   'shapes': drawShapes,
   'fade': drawFade,
-  'noise': drawNoise,
+  'noise': drawNoiseAuto,
   'topographic': drawTopographic,
   'julia': drawJulia,
-  'plasma': drawPlasma,
+  'plasma': drawPlasmaAuto,
   'grid': drawGrid,
   'radial-burst': drawRadialBurst,
   'voronoi': drawVoronoi,
