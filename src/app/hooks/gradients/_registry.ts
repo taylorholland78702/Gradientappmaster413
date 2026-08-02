@@ -24,6 +24,10 @@ import { drawReactionDiffusion } from './drawReactionDiffusion';
 import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
 import { drawPlasmaGL, detectPlasmaGLSupport } from './drawPlasmaGL';
 import { drawNoiseGL, detectNoiseGLSupport } from './drawNoiseGL';
+import { drawAngleGL, detectAngleGLSupport } from './drawAngleGL';
+import { drawCausticsGL, detectCausticsGLSupport } from './drawCausticsGL';
+import { drawMarbleGL, detectMarbleGLSupport } from './drawMarbleGL';
+import { drawLavaLampGL, detectLavaLampGLSupport } from './drawLavaLampGL';
 import { drawFlower } from './drawFlower';
 import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
@@ -74,9 +78,53 @@ function drawNoiseAuto(P: any): CanvasGradient | undefined {
   return drawNoise(P);
 }
 
+function drawAngleAuto(P: any): CanvasGradient | undefined {
+  if (detectAngleGLSupport()) {
+    try {
+      return drawAngleGL(P);
+    } catch (err) {
+      console.error('WebGL Angle failed, falling back to CPU:', err);
+    }
+  }
+  return drawAngle(P);
+}
+
+function drawCausticsAuto(P: any): CanvasGradient | undefined {
+  if (detectCausticsGLSupport()) {
+    try {
+      return drawCausticsGL(P);
+    } catch (err) {
+      console.error('WebGL Caustics failed, falling back to CPU:', err);
+    }
+  }
+  return drawCaustics(P);
+}
+
+function drawMarbleAuto(P: any): CanvasGradient | undefined {
+  if (detectMarbleGLSupport()) {
+    try {
+      return drawMarbleGL(P);
+    } catch (err) {
+      console.error('WebGL Marble failed, falling back to CPU:', err);
+    }
+  }
+  return drawMarble(P);
+}
+
+function drawLavaLampAuto(P: any): CanvasGradient | undefined {
+  if (detectLavaLampGLSupport()) {
+    try {
+      return drawLavaLampGL(P);
+    } catch (err) {
+      console.error('WebGL Lava Lamp failed, falling back to CPU:', err);
+    }
+  }
+  return drawLavaLamp(P);
+}
+
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
-  'angle': drawAngle,
+  'angle': drawAngleAuto,
   'polar-grid': drawPolarGrid,
   'windmill': drawWindmill,
   'shapes': drawShapes,
@@ -89,9 +137,9 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'radial-burst': drawRadialBurst,
   'voronoi': drawVoronoi,
   'aurora': drawAurora,
-  'caustics': drawCaustics,
-  'lava-lamp': drawLavaLamp,
-  'marble': drawMarble,
+  'caustics': drawCausticsAuto,
+  'lava-lamp': drawLavaLampAuto,
+  'marble': drawMarbleAuto,
   'metaballs': drawMetaballs,
   'truchet': drawTruchet,
   'moire': drawMoire,
