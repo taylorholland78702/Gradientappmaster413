@@ -428,14 +428,13 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // read identically. This keeps the useful 0-3 range spread across
       // the same slider width it always had while giving headroom above it.
       //
-      // 1x and above stays a plain linear multiplier (unchanged from
-      // before, so wherever a mood/preset loads the slider stays exactly
-      // as reactive as it always has been). Below 1x eases in quadratically
-      // instead of linearly, so dragging the slider down gives a calmer,
-      // steeper falloff toward near-silent at the bottom instead of just
-      // "a bit less" — at 0.3x you're already close to nothing rather than
-      // still clearly audible-reactive.
-      const mSens = Math.min(masterSensitivity, 3);
+      // Compressed so whatever reactivity used to appear at slider position
+      // 0.4 now takes sliding up to 5 to reach — a ~12.5x input squeeze that
+      // lessens the overall intensity across the whole range, not just the
+      // low end. Below 1x (post-squeeze) still eases in quadratically
+      // instead of linearly for a calmer, steeper falloff near zero.
+      const SENS_INPUT_SCALE = 0.4 / 5;
+      const mSens = Math.min(masterSensitivity * SENS_INPUT_SCALE, 3);
       const effMasterSensitivity = mSens >= 1 ? mSens : mSens * mSens;
 
       // ---- SUB-BASS (~20-60Hz — kick drum fundamental) ----
