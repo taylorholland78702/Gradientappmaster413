@@ -191,7 +191,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, animValuesRef,
+    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, masterSensitivity, animValuesRef,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
@@ -442,13 +442,21 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // below so both settle down in sparse sections instead of running at
     // a constant rate regardless of what's actually happening musically.
     const musicIntensity = musicIntensityRef?.current ?? 1;
+    // Both hue drift and the depth layer below used to run at this rate
+    // (including drift's 0.08 baseline) regardless of the Intensity slider —
+    // turning Intensity all the way down still left the palette rotating and
+    // the depth layer pulsing at full strength, which read as "still way too
+    // reactive" even with the per-band audio gain silenced. Same 0.4-now-
+    // needs-5 squeeze as effMasterSensitivity in useAudioReactivity.ts, so
+    // both collapse toward motionless as Intensity approaches 0.
+    const audioIntensityFraction = Math.min(1, (masterSensitivity ?? 0) / 5);
     if (audioActiveForDrift) {
       // audioMidsLevel isn't naturally 0-1 — its ceiling depends on the Mids
       // multiplier slider (0-5) and master sensitivity — so it's clamped to
       // 1 here before scaling. Unclamped, loud mids could add up to 2.5°/frame
       // (150°/sec, 2.5 full hue cycles a second), which read as the whole
       // palette spinning rather than drifting.
-      hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity;
+      hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity * audioIntensityFraction;
     }
     const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
 
@@ -565,7 +573,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         depthCenterY = centerY + Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
         depthColor = renderColors[renderColors.length - 1] || renderColors[0];
         depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
-        depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
+        depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength * audioIntensityFraction);
       }
       const overlayStage = getPostGradientOverlayStage({
         shimmerFraction: shimmerCount / Math.max(1, displayWidth * displayHeight),
@@ -643,7 +651,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         const dy = centerY + depthOffsetY;
         const depthColor = renderColors[renderColors.length - 1] || renderColors[0];
         const depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
-        const depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
+        const depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength * audioIntensityFraction);
         const depthGrad = ctx.createRadialGradient(dx, dy, 0, dx, dy, depthRadius);
         depthGrad.addColorStop(0, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},${depthAlpha})`);
         depthGrad.addColorStop(1, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},0)`);
