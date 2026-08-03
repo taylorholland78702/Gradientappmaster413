@@ -626,6 +626,17 @@ export function InteractiveGradient() {
     initAudioContext,
   } = audio;
 
+  // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
+  // single slider) rather than three separate per-band ones — the
+  // underlying bass/mids/treble smoothing refs stay independent internally,
+  // but in practice they're always tuned together, so this sets all three
+  // at once.
+  const setReactionSmoothing = useCallback((v: number) => {
+    setBassSmoothing(v);
+    setMidsSmoothing(v);
+    setTrebleSmoothing(v);
+  }, [setBassSmoothing, setMidsSmoothing, setTrebleSmoothing]);
+
   // useVCRPlayback — VCR recording/playback state and handlers
   const vcr = useVCRPlayback({
     isRecording,
@@ -4248,6 +4259,7 @@ export function InteractiveGradient() {
           state={{
             isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
             masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
+            reactionSmoothing: bassSmoothing,
             bassBeatSync, midsBeatSync, trebleBeatSync,
             liveBassLevel, liveMidsLevel, liveTrebleLevel,
             audioFileName, waveformData, audioFileMetadata,
@@ -4258,6 +4270,7 @@ export function InteractiveGradient() {
           actions={{
             setSelectedAudioDeviceId, setIsAudioControlsOpen,
             setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+            setReactionSmoothing,
             setAudioBindings,
             setSubBassMultiplier, setSubBassBeatSync,
             setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,

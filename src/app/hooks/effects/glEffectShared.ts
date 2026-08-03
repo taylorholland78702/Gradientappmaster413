@@ -10,6 +10,7 @@
 // row v=0, which already matches this codebase's top-down vUv convention
 // (see gradients/glShared.ts) — texture(uTex, vUv) samples correctly with
 // no flip needed.
+import { getSharedFieldGL } from '../gradients/glShared';
 
 export const FULLSCREEN_VERT_SRC = `#version 300 es
 const vec2 verts[3] = vec2[3](vec2(-1.0,-1.0), vec2(3.0,-1.0), vec2(-1.0,3.0));
@@ -49,30 +50,30 @@ export function linkProgram(gl: WebGL2RenderingContext, vertSrc: string, fragSrc
   return program;
 }
 
-// One canvas + WebGL2 context shared by every post-process effect, same
-// reasoning as the field-shader gradients' shared canvas: browsers cap the
-// number of live WebGL contexts a page can hold, so one context serves all
-// of these rather than one each.
-let sharedCanvas: HTMLCanvasElement | null = null;
-let sharedGL: WebGL2RenderingContext | null = null;
-
+// Delegates to the SAME shared canvas/context the field-shader gradients use
+// (gradients/glShared.ts's getSharedFieldGL) rather than maintaining a
+// second WebGL2 context of its own. This used to be a genuinely separate
+// context — harmless on its own (browsers allow several contexts), but it
+// meant a GL gradient's output and a GL effect's input/output were textures
+// living in two different contexts, which can't share resources. Textures
+// (and the ping-pong framebuffers in glEffectPipeline.ts) can now only be
+// chained across gradient <-> effect stages because both sides render into
+// the same context.
 export function getSharedEffectGL(width: number, height: number): { gl: WebGL2RenderingContext; canvas: HTMLCanvasElement } {
-  if (!sharedCanvas || !sharedGL) {
-    sharedCanvas = document.createElement('canvas');
-    sharedGL = sharedCanvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false }) as WebGL2RenderingContext;
-  }
-  const w = Math.max(1, width), h = Math.max(1, height);
-  if (sharedCanvas.width !== w) sharedCanvas.width = w;
-  if (sharedCanvas.height !== h) sharedCanvas.height = h;
-  return { gl: sharedGL, canvas: sharedCanvas };
+  return getSharedFieldGL(width, height);
 }
 
 let inputTexture: WebGLTexture | null = null;
 let inputTextureGL: WebGL2RenderingContext | null = null;
 
 // Uploads the live canvas as this frame's input texture and binds it to
-// texture unit 0. NEAREST/CLAMP since this is a one-shot per-frame upload
-// (no mipmaps needed) sampled at the same resolution it was uploaded at.
+// texture unit 0. LINEAR/CLAMP (WebGL2 supports LINEAR on NPOT textures,
+// unlike WebGL1) rather than NEAREST — a one-shot per-frame upload still
+// only needs one mip level, but bilinear sampling matters for any effect
+// doing continuous sub-pixel remapping (e.g. Fisheye's lens distortion,
+// applyFisheyeGL.ts) instead of landing exactly on a source texel. Liquid
+// and Blur's existing NEAREST-era output looks the same or marginally
+// smoother under LINEAR — nothing in either relies on hard pixel edges.
 export function uploadCanvasTexture(gl: WebGL2RenderingContext, source: HTMLCanvasElement) {
   if (!inputTexture || inputTextureGL !== gl) {
     inputTexture = gl.createTexture();
@@ -82,8 +83,8 @@ export function uploadCanvasTexture(gl: WebGL2RenderingContext, source: HTMLCanv
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
   return inputTexture;
 }

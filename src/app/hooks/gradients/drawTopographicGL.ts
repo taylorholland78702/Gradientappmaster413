@@ -5,6 +5,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -54,22 +55,12 @@ export function detectTopographicGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawTopographicGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     topographicScale, topographicBands, topographicLineWidth, gradientAngle,
     isAudioEnabled, isAudioReactive, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
-
   const topoScaleFactor = topographicScale * 0.001;
   const topoBands = Math.max(2, Math.round(topographicBands));
   const topoAudioActive = isAudioEnabled && isAudioReactive;
@@ -78,21 +69,53 @@ export function drawTopographicGL(P: any): CanvasGradient | undefined {
   const topoSeedX = structuralSeed * 130;
   const topoSeedY = structuralSeed * 90;
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    scale: topoScaleFactor, topoBands, lineWidth: topographicLineWidth, phase: topoPhase,
+    seedX: topoSeedX, seedY: topoSeedY, colorShift: topoColorShift,
+    gradientColors, fieldContrast, paletteMode, paletteBands,
+  };
+}
+
+function renderTopographicStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform1f(gl.getUniformLocation(program, 'uScale'), topoScaleFactor);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTopoBands'), topoBands);
-  gl.uniform1f(gl.getUniformLocation(program, 'uLineWidth'), topographicLineWidth);
-  gl.uniform1f(gl.getUniformLocation(program, 'uPhase'), topoPhase);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), topoSeedX);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), topoSeedY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), topoColorShift);
-  setColorUniforms(gl, program, gradientColors, fieldContrast, paletteMode, paletteBands);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform1f(gl.getUniformLocation(program, 'uScale'), u.scale);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTopoBands'), u.topoBands);
+  gl.uniform1f(gl.getUniformLocation(program, 'uLineWidth'), u.lineWidth);
+  gl.uniform1f(gl.getUniformLocation(program, 'uPhase'), u.phase);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), u.seedX);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), u.seedY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), u.colorShift);
+  setColorUniforms(gl, program, u.gradientColors, u.fieldContrast, u.paletteMode, u.paletteBands);
   drawFieldFullscreen(gl);
+}
+
+export function drawTopographicGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderTopographicStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
+// glEffectPipeline.ts. Background fill skipped here (see Caustics comment).
+export function getTopographicGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'topographic',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderTopographicStage(gl, outputFramebuffer, width, height, u),
+  };
 }

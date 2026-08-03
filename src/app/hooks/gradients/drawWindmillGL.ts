@@ -7,6 +7,7 @@
 // CPU path otherwise. Falls back to the CPU implementation if WebGL2
 // isn't available or this throws.
 import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -54,21 +55,12 @@ export function detectWindmillGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawWindmillHelixGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     gradientColors, helixTightness, helixTurns, gradientAngle, zoom,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight, centerX, centerY,
+    centerX, centerY,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
-
   const conicalAudioActive = isAudioEnabled && isAudioReactive;
   const audioConicalTightness = conicalAudioActive ? audioSubBassLevel * 4 : 0;
   const audioConicalTurns = conicalAudioActive ? audioMidsLevel * 3 : 0;
@@ -86,23 +78,57 @@ export function drawWindmillHelixGL(P: any): CanvasGradient | undefined {
     colorArr[i * 3 + 2] = gradientColors[i].b / 255;
   }
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    centerX, centerY, tightness: helixTightness + audioConicalTightness, turns: helixTurns + audioConicalTurns,
+    zoom: conicalZoom, angleOffset: gradientAngle * DEG_TO_RAD, colorShift: conicalColorShift,
+    bassPulse: conicalBassPulse, maxDist: conicalMaxDist, colorArr, colorCount,
+  };
+}
+
+function renderWindmillHelixStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTightness'), helixTightness + audioConicalTightness);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTurns'), helixTurns + audioConicalTurns);
-  gl.uniform1f(gl.getUniformLocation(program, 'uZoom'), conicalZoom);
-  gl.uniform1f(gl.getUniformLocation(program, 'uAngleOffset'), gradientAngle * DEG_TO_RAD);
-  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), conicalColorShift);
-  gl.uniform1f(gl.getUniformLocation(program, 'uBassPulse'), conicalBassPulse);
-  gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), conicalMaxDist);
-  gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), colorArr);
-  gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), colorCount);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTightness'), u.tightness);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTurns'), u.turns);
+  gl.uniform1f(gl.getUniformLocation(program, 'uZoom'), u.zoom);
+  gl.uniform1f(gl.getUniformLocation(program, 'uAngleOffset'), u.angleOffset);
+  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), u.colorShift);
+  gl.uniform1f(gl.getUniformLocation(program, 'uBassPulse'), u.bassPulse);
+  gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), u.maxDist);
+  gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), u.colorArr);
+  gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), u.colorCount);
   drawFieldFullscreen(gl);
+}
+
+export function drawWindmillHelixGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderWindmillHelixStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — only
+// wired up when windmillMode === 'helix' (see glEffectPipeline.ts for why
+// chaining avoids a per-stage canvas round-trip). Background fill skipped
+// here (see Caustics comment in drawCausticsGL.ts).
+export function getWindmillHelixGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'windmill-helix',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderWindmillHelixStage(gl, outputFramebuffer, width, height, u),
+  };
 }

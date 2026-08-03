@@ -6,6 +6,78 @@ import {
 import { pickRandomEmojiSet, splitGraphemes, EMOJI_PICKER_CATEGORIES } from '../components/InteractiveGradient';
 import { GRADIENT_DRAW_FNS } from './gradients/_registry';
 import { EFFECT_DRAW_FNS } from './effects/_registry';
+import { runGLEffectChain, type GLEffectStage } from './effects/glEffectPipeline';
+import { detectLiquidGLSupport, getLiquidGLStage } from './effects/applyLiquidGL';
+import { detectBlurGLSupport, getBlurZoomGLStage, getBlurRadialGLStage } from './effects/applyBlurGL';
+import { detectPlasmaGLSupport, getPlasmaGLStage } from './gradients/drawPlasmaGL';
+import { detectNoiseGLSupport, getNoiseGLStage } from './gradients/drawNoiseGL';
+import { detectAngleGLSupport, getAngleGLStage } from './gradients/drawAngleGL';
+import { detectCausticsGLSupport, getCausticsGLStage } from './gradients/drawCausticsGL';
+import { detectMarbleGLSupport, getMarbleGLStage } from './gradients/drawMarbleGL';
+import { detectLavaLampGLSupport, getLavaLampGLStage } from './gradients/drawLavaLampGL';
+import { detectJuliaGLSupport, getJuliaGLStage } from './gradients/drawJuliaGL';
+import { detectMetaballsGLSupport, getMetaballsGLStage } from './gradients/drawMetaballsGL';
+import { detectRadialBurstGLSupport, getRadialBurstSweepGLStage } from './gradients/drawRadialBurstGL';
+import { detectTilingGLSupport, getTilingGLStage } from './gradients/drawTilingGL';
+import { detectTopographicGLSupport, getTopographicGLStage } from './gradients/drawTopographicGL';
+import { detectVoronoiGLSupport, getVoronoiGLStage } from './gradients/drawVoronoiGL';
+import { detectWindmillGLSupport, getWindmillHelixGLStage } from './gradients/drawWindmillGL';
+import { getPostGradientOverlayStage } from './gradients/glPostGradientOverlay';
+import { detectFisheyeGLSupport, getFisheyeGLStage } from './effects/applyFisheyeGL';
+import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
+import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL';
+
+// Phase-3 pilot: which gradients (given their live params) can lead a
+// GL-pipeline run. Plasma plus the 12 other field-shader gradients that
+// share glShared.ts's infra — Radial Burst and Windmill are mode-gated
+// (only their 'sweep'/'helix' submodes have a GL renderer at all; their
+// default modes already draw via native canvas ops and aren't part of
+// this). Mirrors each gradient's own Auto-wrapper eligibility check in
+// gradients/_registry.ts.
+function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+  switch (gradientType) {
+    case 'plasma': return detectPlasmaGLSupport() ? getPlasmaGLStage(drawCtx) : null;
+    case 'noise': return detectNoiseGLSupport() ? getNoiseGLStage(drawCtx) : null;
+    case 'angle': return detectAngleGLSupport() ? getAngleGLStage(drawCtx) : null;
+    case 'caustics': return detectCausticsGLSupport() ? getCausticsGLStage(drawCtx) : null;
+    case 'marble': return detectMarbleGLSupport() ? getMarbleGLStage(drawCtx) : null;
+    case 'lava-lamp': return detectLavaLampGLSupport() ? getLavaLampGLStage(drawCtx) : null;
+    case 'julia': return detectJuliaGLSupport() ? getJuliaGLStage(drawCtx) : null;
+    case 'metaballs': return detectMetaballsGLSupport() ? getMetaballsGLStage(drawCtx) : null;
+    case 'radial-burst': return drawCtx.radialBurstMode === 'sweep' && detectRadialBurstGLSupport() ? getRadialBurstSweepGLStage(drawCtx) : null;
+    case 'tiling': return detectTilingGLSupport() ? getTilingGLStage(drawCtx) : null;
+    case 'topographic': return detectTopographicGLSupport() ? getTopographicGLStage(drawCtx) : null;
+    case 'voronoi': return detectVoronoiGLSupport() ? getVoronoiGLStage(drawCtx) : null;
+    case 'windmill': return drawCtx.windmillMode === 'helix' && detectWindmillGLSupport() ? getWindmillHelixGLStage(drawCtx) : null;
+    default: return null;
+  }
+}
+
+// Phase-3 pilot: which effects (given their live params) can be pipelined
+// through glEffectPipeline.ts instead of each independently round-tripping
+// the main 2D canvas. Liquid, Fisheye, Wave, Mirror, and Blur's Zoom/Radial
+// modes have a GL implementation today — same eligibility check each of
+// their standalone Auto wrappers (effectRegistry.ts) already uses, just
+// surfaced here so a *run* of them can be detected before any of them
+// actually draws.
+function getGLStageForEffect(effectType: string, effectCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (effectType === 'liquid' && detectLiquidGLSupport()) {
+    return getLiquidGLStage(effectCtx);
+  }
+  if (effectType === 'fisheye' && detectFisheyeGLSupport()) {
+    return getFisheyeGLStage(effectCtx);
+  }
+  if (effectType === 'wave' && detectWaveGLSupport()) {
+    return getWaveGLStage(effectCtx);
+  }
+  if (effectType === 'mirror' && detectMirrorGLSupport()) {
+    return getMirrorGLStage(effectCtx);
+  }
+  if (effectType === 'blur' && (effectCtx.blurType === 'zoom' || effectCtx.blurType === 'radial') && detectBlurGLSupport()) {
+    return effectCtx.blurType === 'zoom' ? getBlurZoomGLStage(effectCtx) : getBlurRadialGLStage(effectCtx);
+  }
+  return null;
+}
 
 // Cached OffscreenCanvas scratch buffers for the DPR-scaling helpers below —
 // these run on every putScaledImageData/getDisplayImageData call, which
@@ -398,110 +470,37 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       applyAudioBindings(drawCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
     }
 
-    const gradientDrawFn = gradientType ? GRADIENT_DRAW_FNS[gradientType] : undefined;
-    if (gradientDrawFn) {
-      gradient = gradientDrawFn(drawCtx);
-    }
-
-    // For gradients that use the gradient variable (not direct pixel manipulation)
-    const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
-    if (!directRenderTypes.includes(gradientType)) {
-      if (gradient) {
-        addGradientStops(gradient, renderColors);
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
-      }
-    }
-
-    // Vocal shimmer — treble energy scatters bright sparkle pixels. Toned
-    // down from the original (threshold 4->12, max count 400->160, alpha
-    // scaled down ~40%) — it was firing on almost any treble content and
-    // covering large areas of the canvas in dots.
-    if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 12) {
-      const shimmer = Math.min(1, audioTrebleLevel / 90);
-      const count = Math.floor(shimmer * shimmer * 160);
-      ctx.save();
-      for (let i = 0; i < count; i++) {
-        const sx = Math.random() * displayWidth;
-        const sy = Math.random() * displayHeight;
-        const alpha = (0.25 + Math.random() * 0.35) * shimmer;
-        const size = Math.random() < 0.75 ? 1 : 2;
-        const hue = (Math.random() * 60 + audioTrebleLevel * 3) % 360;
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = `hsl(${hue}, 100%, 88%)`;
-        ctx.fillRect(sx, sy, size, size);
-      }
-      ctx.restore();
-    }
-
-    // Depth layer — a second, softer light source offset from center,
-    // screen-blended for an atmosphere/parallax feel. Cheap (one radial
-    // gradient fill, no second draw-function pass, so no risk of colliding
-    // with gradients that keep persistent state in their own buffers, e.g.
-    // Attractor/Flow Field/Reaction-Diffusion). Gated behind audio-active
-    // so the default no-audio look is completely unchanged.
-    if (audioActiveForDrift && depthLayerEnabled !== false && renderColors.length > 0) {
-      const strength = depthLayerStrength ?? 2;
-      const depthOffsetX = Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
-      const depthOffsetY = Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
-      const dx = centerX + depthOffsetX;
-      const dy = centerY + depthOffsetY;
-      const depthColor = renderColors[renderColors.length - 1] || renderColors[0];
-      const depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
-      const depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
-      const depthGrad = ctx.createRadialGradient(dx, dy, 0, dx, dy, depthRadius);
-      depthGrad.addColorStop(0, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},${depthAlpha})`);
-      depthGrad.addColorStop(1, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},0)`);
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = depthGrad;
-      ctx.fillRect(0, 0, displayWidth, displayHeight);
-      ctx.restore();
-    }
-
-    // Apply visual effects after gradient is rendered
-    // Apply each active effect in sequence
-    // Guard against invalid canvas dimensions
-    if (canvas.width === 0 || canvas.height === 0) {
-      return;
-    }
-
     // Computed once per frame, not once per active effect — every binding
     // always reads off the same unmodified `params`, so re-deriving this
     // per effect in a dense Multi-FX stack repeated identical work for no
-    // reason (see computeAudioBoundOverrides above).
+    // reason (see computeAudioBoundOverrides above). Also needed earlier
+    // than before (moved up from just before the effects loop) so the
+    // gradient-pipeline eligibility check below can peek at upcoming
+    // effects' contexts before any of them, or the gradient, actually draws.
     const audioBoundOverrides = (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0)
       ? computeAudioBoundOverrides(params, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 })
       : null;
 
-    activeEffects.forEach((effectType, index) => {
-      // Additional safety check before each effect
-      if (canvas.width === 0 || canvas.height === 0) {
-        return;
-      }
-      ctx.save();
-      
-      // Check if this is the first effect and audio reactivity is enabled
+    // Builds the same per-effect context the old forEach built inline —
+    // pulled into a helper so both the gradient-pipeline check below and
+    // the effects loop further down can peek at an effect's context (to
+    // check GL-pipeline eligibility) without executing it yet.
+    const buildEffectCtx = (effectType: string, index: number): Record<string, any> | null => { // eslint-disable-line @typescript-eslint/no-explicit-any
       const isFirstEffect = index === 0;
-      const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect) 
-        ? audioMidsLevel 
+      const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect)
+        ? audioMidsLevel
         : 0;
-      
-      // Get imageData only for effects that need it
       const needsImageData = ['invert', 'grain', 'posterize', 'halftone', 'shift', 'duotone', 'ascii', 'emoji'].includes(effectType);
       let imageData: ImageData | null = null;
-      
       if (needsImageData) {
         try {
           imageData = getDisplayImageData();
         } catch (e) {
           console.error('Failed to get image data:', e);
-          return;
+          return null;
         }
       }
-      
-      const effectCtx: Record<string, any> = {
+      return {
         ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
         // Same ref-sourced overrides as drawCtx above — effects that read an
         // anim-time value (applyLiquid, applyEmoji) need the live value too,
@@ -518,6 +517,10 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         effectType, index, isFirstEffect, audioModulation, imageData,
         ...audioBoundOverrides,
       };
+    };
+
+    const runSingleEffect = (effectType: string, effectCtx: Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      ctx.save();
       try {
         const effectDrawFn = EFFECT_DRAW_FNS[effectType];
         if (effectDrawFn) {
@@ -528,7 +531,182 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         ctx.restore();
       }
       ctx.restore();
-    });
+    };
+
+    // Gradient-pipeline pilot: if the active gradient has a GL renderer that
+    // can target a framebuffer (Plasma plus the 12 other field-shader
+    // gradients in getGradientGLStage above), chain it as the first stage
+    // of a GL run, with shimmer + depth-layer folded into a single GPU
+    // overlay stage (glPostGradientOverlay.ts) right after it — that
+    // overlay used to be the reason this pipeline required audio-reactive
+    // mode to be off entirely (shimmer/depth-layer were native 2D canvas
+    // ops that would have forced a round-trip mid-chain); it's a no-op
+    // passthrough when audio isn't driving either, so it's always safe to
+    // include. Then peek ahead at the leading effects for a GL-eligible run
+    // and append those too. Same glEffectPipeline.ts used below for
+    // effect-only runs — a gradient stage just happens to ignore the
+    // `inputTexture` parameter every stage receives, since field gradients
+    // generate their own content rather than sampling anything. Falls
+    // through to the normal gradient draw + shimmer + depth-layer +
+    // per-effect path unchanged if ineligible or if the pipeline throws.
+    let effectStartIndex = 0;
+    let gradientHandledByPipeline = false;
+    const gradientStage = gradientType ? getGradientGLStage(gradientType, drawCtx) : null;
+    if (gradientStage) {
+      const shimmerActive = isAudioEnabled && isAudioReactive && audioTrebleLevel > 12;
+      const shimmerLevel = shimmerActive ? Math.min(1, audioTrebleLevel / 90) : 0;
+      const shimmerCount = shimmerActive ? Math.floor(shimmerLevel * shimmerLevel * 160) : 0;
+      const depthActive = audioActiveForDrift && depthLayerEnabled !== false && renderColors.length > 0;
+      let depthCenterX = centerX, depthCenterY = centerY, depthRadius = 1, depthAlpha = 0;
+      let depthColor = { r: 0, g: 0, b: 0 };
+      if (depthActive) {
+        const strength = depthLayerStrength ?? 2;
+        depthCenterX = centerX + Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
+        depthCenterY = centerY + Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
+        depthColor = renderColors[renderColors.length - 1] || renderColors[0];
+        depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
+        depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
+      }
+      const overlayStage = getPostGradientOverlayStage({
+        shimmerFraction: shimmerCount / Math.max(1, displayWidth * displayHeight),
+        shimmerLevel,
+        trebleLevel: audioTrebleLevel || 0,
+        seed: Math.random() * 1000,
+        depthEnabled: depthActive,
+        depthCenterX, depthCenterY, depthRadius, depthAlpha, depthColor,
+      });
+
+      const runStages: GLEffectStage[] = [gradientStage, overlayStage];
+      let lookahead = 0;
+      while (lookahead < activeEffects.length) {
+        const nextType = activeEffects[lookahead];
+        const nextCtx = buildEffectCtx(nextType, lookahead);
+        if (!nextCtx) break;
+        const nextStage = getGLStageForEffect(nextType, nextCtx);
+        if (!nextStage) break;
+        runStages.push(nextStage);
+        lookahead++;
+      }
+      gradientHandledByPipeline = runGLEffectChain(runStages, canvas, ctx, displayWidth, displayHeight);
+      if (gradientHandledByPipeline) effectStartIndex = lookahead;
+    }
+
+    if (!gradientHandledByPipeline) {
+      const gradientDrawFn = gradientType ? GRADIENT_DRAW_FNS[gradientType] : undefined;
+      if (gradientDrawFn) {
+        gradient = gradientDrawFn(drawCtx);
+      }
+
+      // For gradients that use the gradient variable (not direct pixel manipulation)
+      const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
+      if (!directRenderTypes.includes(gradientType)) {
+        if (gradient) {
+          addGradientStops(gradient, renderColors);
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, displayWidth, displayHeight);
+        }
+      }
+
+      // Vocal shimmer — treble energy scatters bright sparkle pixels. Toned
+      // down from the original (threshold 4->12, max count 400->160, alpha
+      // scaled down ~40%) — it was firing on almost any treble content and
+      // covering large areas of the canvas in dots.
+      if (isAudioEnabled && isAudioReactive && audioTrebleLevel > 12) {
+        const shimmer = Math.min(1, audioTrebleLevel / 90);
+        const count = Math.floor(shimmer * shimmer * 160);
+        ctx.save();
+        for (let i = 0; i < count; i++) {
+          const sx = Math.random() * displayWidth;
+          const sy = Math.random() * displayHeight;
+          const alpha = (0.25 + Math.random() * 0.35) * shimmer;
+          const size = Math.random() < 0.75 ? 1 : 2;
+          const hue = (Math.random() * 60 + audioTrebleLevel * 3) % 360;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = `hsl(${hue}, 100%, 88%)`;
+          ctx.fillRect(sx, sy, size, size);
+        }
+        ctx.restore();
+      }
+
+      // Depth layer — a second, softer light source offset from center,
+      // screen-blended for an atmosphere/parallax feel. Cheap (one radial
+      // gradient fill, no second draw-function pass, so no risk of colliding
+      // with gradients that keep persistent state in their own buffers, e.g.
+      // Attractor/Flow Field/Reaction-Diffusion). Gated behind audio-active
+      // so the default no-audio look is completely unchanged.
+      if (audioActiveForDrift && depthLayerEnabled !== false && renderColors.length > 0) {
+        const strength = depthLayerStrength ?? 2;
+        const depthOffsetX = Math.sin(hueDriftRef.current * 0.03) * displayWidth * 0.22;
+        const depthOffsetY = Math.cos(hueDriftRef.current * 0.021) * displayHeight * 0.18;
+        const dx = centerX + depthOffsetX;
+        const dy = centerY + depthOffsetY;
+        const depthColor = renderColors[renderColors.length - 1] || renderColors[0];
+        const depthRadius = Math.max(displayWidth, displayHeight) * 0.55;
+        const depthAlpha = Math.min(0.6, 0.2 * musicIntensity * strength);
+        const depthGrad = ctx.createRadialGradient(dx, dy, 0, dx, dy, depthRadius);
+        depthGrad.addColorStop(0, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},${depthAlpha})`);
+        depthGrad.addColorStop(1, `rgba(${depthColor.r},${depthColor.g},${depthColor.b},0)`);
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = depthGrad;
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        ctx.restore();
+      }
+    }
+
+    // Apply visual effects after gradient is rendered
+    // Apply each active effect in sequence
+    // Guard against invalid canvas dimensions
+    if (canvas.width === 0 || canvas.height === 0) {
+      return;
+    }
+
+    // Sequential walk (not a plain forEach) so that at each index the main
+    // canvas already reflects every prior effect having run — required for
+    // correctness, since a GL-pipeline run's first stage reads the live
+    // canvas exactly once as its input. At each index, peek ahead for a
+    // *contiguous run* of GL-eligible effects (today: Liquid, Blur zoom/
+    // radial) and hand runs of 2+ to glEffectPipeline.ts, which chains them
+    // through ping-ponged framebuffers with a single upload + single blit
+    // instead of one upload/blit per effect. A run of exactly 1 GL-eligible
+    // effect, or a pipeline failure, falls through to the normal per-effect
+    // path unchanged.
+    let effectIndex = effectStartIndex;
+    while (effectIndex < activeEffects.length) {
+      if (canvas.width === 0 || canvas.height === 0) break;
+
+      const effectType = activeEffects[effectIndex];
+      const effectCtx = buildEffectCtx(effectType, effectIndex);
+      if (!effectCtx) { effectIndex++; continue; } // imageData fetch failed — skip, same as the old early-return
+
+      const firstStage = getGLStageForEffect(effectType, effectCtx);
+      if (firstStage) {
+        const runStages: GLEffectStage[] = [firstStage];
+        let lookahead = effectIndex + 1;
+        while (lookahead < activeEffects.length) {
+          const nextType = activeEffects[lookahead];
+          const nextCtx = buildEffectCtx(nextType, lookahead);
+          if (!nextCtx) break;
+          const nextStage = getGLStageForEffect(nextType, nextCtx);
+          if (!nextStage) break;
+          runStages.push(nextStage);
+          lookahead++;
+        }
+        if (runStages.length >= 2) {
+          const pipelined = runGLEffectChain(runStages, canvas, ctx, displayWidth, displayHeight);
+          if (pipelined) {
+            effectIndex = lookahead;
+            continue;
+          }
+          // Pipeline threw — fall through and run this run's effects
+          // individually below, same as if no GL eligibility existed.
+        }
+      }
+
+      runSingleEffect(effectType, effectCtx);
+      effectIndex++;
+    }
 
     // Crossfade: composite the pre-switch snapshot on top with decaying
     // alpha. The new frame above is already fully opaque, so this alone

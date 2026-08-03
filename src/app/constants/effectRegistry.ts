@@ -22,6 +22,7 @@ import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
 import { applyFisheye } from '../hooks/effects/applyFisheye';
+import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
 import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffect } from '../hooks/effects/applyGridEffect';
@@ -29,7 +30,9 @@ import { applyHalftone } from '../hooks/effects/applyHalftone';
 import { applyInvert } from '../hooks/effects/applyInvert';
 import { applyKaleidoscope } from '../hooks/effects/applyKaleidoscope';
 import { applyLiquid } from '../hooks/effects/applyLiquid';
+import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
+import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
@@ -39,6 +42,7 @@ import { applyTriangulate } from '../hooks/effects/applyTriangulate';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
 import { applyWave } from '../hooks/effects/applyWave';
+import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
 
 interface EffectRegistryEntry {
   drawFn: (P: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -76,6 +80,67 @@ function applyBlurAuto(P: any): void {
   applyBlur(P);
 }
 
+// Liquid is single-sample-per-pixel (doesn't meet the multi-sample bar
+// above) but its displacement math is 6 sin/cos calls per pixel — CPU
+// transcendentals are notably slower than basic ALU ops, while GPUs have
+// dedicated fast transcendental hardware, so the CPU/GPU gap here is larger
+// than "1 sample" suggests. See applyLiquidGL.ts.
+function applyLiquidAuto(P: any): void {
+  if (detectLiquidGLSupport()) {
+    try {
+      applyLiquidGL(P);
+      return;
+    } catch (err) {
+      console.error('WebGL Liquid failed, falling back to CPU:', err);
+    }
+  }
+  applyLiquid(P);
+}
+
+// Same reasoning as applyLiquidAuto above — single-sample-per-pixel but
+// transcendental-heavy (atan2 + pow + cos/sin). See applyFisheyeGL.ts.
+function applyFisheyeAuto(P: any): void {
+  if (detectFisheyeGLSupport()) {
+    try {
+      applyFisheyeGL(P);
+      return;
+    } catch (err) {
+      console.error('WebGL Fisheye failed, falling back to CPU:', err);
+    }
+  }
+  applyFisheye(P);
+}
+
+// Same reasoning as applyLiquidAuto/applyFisheyeAuto above. See
+// applyWaveGL.ts.
+function applyWaveAuto(P: any): void {
+  if (detectWaveGLSupport()) {
+    try {
+      applyWaveGL(P);
+      return;
+    } catch (err) {
+      console.error('WebGL Wave failed, falling back to CPU:', err);
+    }
+  }
+  applyWave(P);
+}
+
+// Mirror's CPU path is already native ctx.drawImage calls (not a per-pixel
+// loop), so this isn't closing a CPU bottleneck — it exists so Mirror can
+// participate in a GL-pipeline chain instead of breaking one. See
+// applyMirrorGL.ts.
+function applyMirrorAuto(P: any): void {
+  if (detectMirrorGLSupport()) {
+    try {
+      applyMirrorGL(P);
+      return;
+    } catch (err) {
+      console.error('WebGL Mirror failed, falling back to CPU:', err);
+    }
+  }
+  applyMirror(P);
+}
+
 // Alphabetical by id — this order is what both the Effects-tab button grid
 // and ALL_EFFECTS iterate in, so keep new entries sorted in.
 const EFFECT_REGISTRY = {
@@ -99,7 +164,7 @@ const EFFECT_REGISTRY = {
   // the same class of work as Blur/Chromatic, which cost 2. Under-pricing
   // let Multi-FX/Remix stack it alongside genuinely cheap effects thinking
   // the combined cost was low when it wasn't.
-  fisheye: { drawFn: applyFisheye, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
+  fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
   glitch: { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffect, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
@@ -112,8 +177,8 @@ const EFFECT_REGISTRY = {
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
   // Same under-pricing issue as fisheye above — full-res per-pixel
   // coordinate-distortion math, priced like a cheap single-pass op.
-  liquid: { drawFn: applyLiquid, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
-  mirror: { drawFn: applyMirror, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
+  liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
+  mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: false },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
@@ -122,7 +187,7 @@ const EFFECT_REGISTRY = {
   triangulate: { drawFn: applyTriangulate, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
-  wave: { drawFn: applyWave, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
+  wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 
 // 'none' is a legacy sentinel value (never a real registered effect — no

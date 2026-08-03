@@ -11,6 +11,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
 
@@ -62,22 +63,13 @@ export function detectMarbleGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawMarbleGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     marbleAnimTime, marbleOctaves, marbleVeinFreq, marbleTurbulence, gradientAngle, zoom,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight, centerX, centerY,
+    centerX, centerY,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
-
   const marbleAudio = isAudioEnabled && isAudioReactive;
   const mt = marbleAnimTime + gradientAngle * 0.015;
   const audioBassM = marbleAudio ? audioSubBassLevel / 5 : 0;
@@ -92,27 +84,62 @@ export function drawMarbleGL(P: any): CanvasGradient | undefined {
   const mSeedX = structuralSeed * 1.7;
   const mSeedY = structuralSeed * 2.3;
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    centerX, centerY, scale: mScale, seedX: mSeedX, seedY: mSeedY, time: mt,
+    audioFreq: marbleAudioFreq, octAmpBoost: marbleOctAmpBoost, octaves: mOctaves,
+    veinFreq: marbleVeinFreq, veinBoost: marbleVeinBoost, turbulence: marbleTurbulence,
+    turbBoost: marbleTurbBoost, colorShift: marbleColorShift,
+    gradientColors, fieldContrast, paletteMode, paletteBands,
+  };
+}
+
+function renderMarbleStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uScale'), mScale);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), mSeedX);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), mSeedY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTime'), mt);
-  gl.uniform1f(gl.getUniformLocation(program, 'uAudioFreq'), marbleAudioFreq);
-  gl.uniform1f(gl.getUniformLocation(program, 'uOctAmpBoost'), marbleOctAmpBoost);
-  gl.uniform1i(gl.getUniformLocation(program, 'uOctaves'), mOctaves);
-  gl.uniform1f(gl.getUniformLocation(program, 'uVeinFreq'), marbleVeinFreq);
-  gl.uniform1f(gl.getUniformLocation(program, 'uVeinBoost'), marbleVeinBoost);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTurbulence'), marbleTurbulence);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTurbBoost'), marbleTurbBoost);
-  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), marbleColorShift);
-  setColorUniforms(gl, program, gradientColors, fieldContrast, paletteMode, paletteBands);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uScale'), u.scale);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), u.seedX);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), u.seedY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTime'), u.time);
+  gl.uniform1f(gl.getUniformLocation(program, 'uAudioFreq'), u.audioFreq);
+  gl.uniform1f(gl.getUniformLocation(program, 'uOctAmpBoost'), u.octAmpBoost);
+  gl.uniform1i(gl.getUniformLocation(program, 'uOctaves'), u.octaves);
+  gl.uniform1f(gl.getUniformLocation(program, 'uVeinFreq'), u.veinFreq);
+  gl.uniform1f(gl.getUniformLocation(program, 'uVeinBoost'), u.veinBoost);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTurbulence'), u.turbulence);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTurbBoost'), u.turbBoost);
+  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), u.colorShift);
+  setColorUniforms(gl, program, u.gradientColors, u.fieldContrast, u.paletteMode, u.paletteBands);
   drawFieldFullscreen(gl);
+}
+
+export function drawMarbleGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderMarbleStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
+// glEffectPipeline.ts. The background fill the standalone path does is
+// skipped here since the shader fully overdraws it anyway (see Caustics).
+export function getMarbleGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'marble',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderMarbleStage(gl, outputFramebuffer, width, height, u),
+  };
 }

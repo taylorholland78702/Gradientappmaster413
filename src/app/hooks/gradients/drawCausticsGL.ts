@@ -13,6 +13,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -52,22 +53,13 @@ export function detectCausticsGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawCausticsGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     causticsAnimTime, causticsScale, causticsBrightness, gradientAngle, zoom,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight, centerX, centerY,
+    displayWidth, displayHeight, centerX, centerY,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
-
   const causticsAudio = isAudioEnabled && isAudioReactive;
   const audioBassC = causticsAudio ? audioSubBassLevel / 5 : 0;
   const audioMidsC = causticsAudio ? audioMidsLevel / 5 : 0;
@@ -82,24 +74,60 @@ export function drawCausticsGL(P: any): CanvasGradient | undefined {
   const cSeedX = structuralSeed * 2.1;
   const cSeedY = structuralSeed * 1.4;
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    centerX, centerY, scaleX: uScaleX, scaleY: uScaleY, seedX: cSeedX, seedY: cSeedY,
+    time: ct, freq: causticsFreqBoost, phaseWarp: causticsPhaseWarp, brightnessExp: causticsBrightnessExp,
+    lightFloor: causticsLightFloor, colorShift: causticsColorShift,
+    gradientColors, fieldContrast, paletteMode, paletteBands,
+  };
+}
+
+function renderCausticsStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-  gl.uniform2f(gl.getUniformLocation(program, 'uScale'), uScaleX, uScaleY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), cSeedX);
-  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), cSeedY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uTime'), ct);
-  gl.uniform1f(gl.getUniformLocation(program, 'uFreq'), causticsFreqBoost);
-  gl.uniform1f(gl.getUniformLocation(program, 'uPhaseWarp'), causticsPhaseWarp);
-  gl.uniform1f(gl.getUniformLocation(program, 'uBrightnessExp'), causticsBrightnessExp);
-  gl.uniform1f(gl.getUniformLocation(program, 'uLightFloor'), causticsLightFloor);
-  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), causticsColorShift);
-  setColorUniforms(gl, program, gradientColors, fieldContrast, paletteMode, paletteBands);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
+  gl.uniform2f(gl.getUniformLocation(program, 'uScale'), u.scaleX, u.scaleY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), u.seedX);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeedY'), u.seedY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTime'), u.time);
+  gl.uniform1f(gl.getUniformLocation(program, 'uFreq'), u.freq);
+  gl.uniform1f(gl.getUniformLocation(program, 'uPhaseWarp'), u.phaseWarp);
+  gl.uniform1f(gl.getUniformLocation(program, 'uBrightnessExp'), u.brightnessExp);
+  gl.uniform1f(gl.getUniformLocation(program, 'uLightFloor'), u.lightFloor);
+  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), u.colorShift);
+  setColorUniforms(gl, program, u.gradientColors, u.fieldContrast, u.paletteMode, u.paletteBands);
   drawFieldFullscreen(gl);
+}
+
+export function drawCausticsGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderCausticsStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000814';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
+// glEffectPipeline.ts for why chaining avoids a per-stage canvas round-trip.
+// The '#000814' background fill the standalone path does before blitting
+// is skipped here — the shader is a fullscreen opaque pass, so that fill
+// is fully overdrawn either way; it's dead weight, not a visible layer.
+export function getCausticsGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'caustics',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderCausticsStage(gl, outputFramebuffer, width, height, u),
+  };
 }

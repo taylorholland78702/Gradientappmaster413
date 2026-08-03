@@ -10,6 +10,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_SEEDS = 48;
 
@@ -51,20 +52,12 @@ export function detectVoronoiGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawVoronoiGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     gradientColors, structuralSeed, voronoiCellCount, voronoiAnimTime, voronoiDistortion,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight, centerX, centerY,
+    displayWidth, displayHeight, centerX, centerY,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
 
   const voronoiSeedFn = (x: number) => {
     const s = Math.sin(x * 12.9898 + voronoiCellCount * 78.233 + structuralSeed * 37.719) * 43758.5453;
@@ -101,20 +94,51 @@ export function drawVoronoiGL(P: any): CanvasGradient | undefined {
   const vMaxDist = Math.sqrt(centerX ** 2 + centerY ** 2);
   const voronoiBassPulse = voronoiAudioActive ? audioSubBassLevel : 0;
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    centerX, centerY, distortion: totalVoronoiDistortion, bassPulse: voronoiBassPulse, maxDist: vMaxDist,
+    seedCount: totalVoronoiCells, seedPosArr, seedColorArr,
+  };
+}
+
+function renderVoronoiStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uDistortion'), totalVoronoiDistortion);
-  gl.uniform1f(gl.getUniformLocation(program, 'uBassPulse'), voronoiBassPulse);
-  gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), vMaxDist);
-  gl.uniform1i(gl.getUniformLocation(program, 'uSeedCount'), totalVoronoiCells);
-  gl.uniform2fv(gl.getUniformLocation(program, 'uSeedPos'), seedPosArr);
-  gl.uniform3fv(gl.getUniformLocation(program, 'uSeedColor'), seedColorArr);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uDistortion'), u.distortion);
+  gl.uniform1f(gl.getUniformLocation(program, 'uBassPulse'), u.bassPulse);
+  gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), u.maxDist);
+  gl.uniform1i(gl.getUniformLocation(program, 'uSeedCount'), u.seedCount);
+  gl.uniform2fv(gl.getUniformLocation(program, 'uSeedPos'), u.seedPosArr);
+  gl.uniform3fv(gl.getUniformLocation(program, 'uSeedColor'), u.seedColorArr);
   drawFieldFullscreen(gl);
+}
+
+export function drawVoronoiGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderVoronoiStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
+// glEffectPipeline.ts. Background fill skipped here (see Caustics comment).
+export function getVoronoiGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'voronoi',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderVoronoiStage(gl, outputFramebuffer, width, height, u),
+  };
 }

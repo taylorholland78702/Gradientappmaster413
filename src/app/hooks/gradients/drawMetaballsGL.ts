@@ -8,6 +8,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_BALLS = 14;
 
@@ -46,22 +47,13 @@ export function detectMetaballsGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-export function drawMetaballsGL(P: any): CanvasGradient | undefined {
+function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     metaballAnimTime, metaballCount, metaballSize, gradientAngle, zoom,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
-    canvas, ctx, displayWidth, displayHeight, centerX, centerY,
+    displayWidth, displayHeight, centerX, centerY,
   } = P;
-  const gradient: CanvasGradient | undefined = undefined;
-  if (canvas.width === 0 || canvas.height === 0) return gradient;
-
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  if (!program || programGL !== gl) {
-    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
-    programGL = gl;
-  }
-
   const metaAudio = isAudioEnabled && isAudioReactive;
   const audioBassMb = metaAudio ? audioSubBassLevel / 5 : 0;
   const audioMidsMb = metaAudio ? audioMidsLevel / 5 : 0;
@@ -80,19 +72,50 @@ export function drawMetaballsGL(P: any): CanvasGradient | undefined {
     ballArr[i * 3 + 2] = Math.min(displayWidth, displayHeight) * metaballSize * mbScaleBoost;
   }
 
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  return {
+    centerX, centerY, zoomScale: 1 / zoom, colorShift: mbColorShift, ballCount: numBalls, ballArr,
+    gradientColors, fieldContrast: fieldContrast ?? 1, paletteMode: paletteMode ?? 'linear', paletteBands: paletteBands ?? 4,
+  };
+}
+
+function renderMetaballsStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFramebuffer | null, width: number, height: number, u: ReturnType<typeof deriveUniforms>): void {
+  if (!program || programGL !== gl) {
+    program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
+    programGL = gl;
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
+  gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), displayWidth, displayHeight);
-  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-  gl.uniform1f(gl.getUniformLocation(program, 'uZoomScale'), 1 / zoom);
-  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), mbColorShift);
-  gl.uniform1i(gl.getUniformLocation(program, 'uBallCount'), numBalls);
-  gl.uniform3fv(gl.getUniformLocation(program, 'uBalls'), ballArr);
-  setColorUniforms(gl, program, gradientColors, fieldContrast ?? 1, paletteMode ?? 'linear', paletteBands ?? 4);
+  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uZoomScale'), u.zoomScale);
+  gl.uniform1f(gl.getUniformLocation(program, 'uColorShift'), u.colorShift);
+  gl.uniform1i(gl.getUniformLocation(program, 'uBallCount'), u.ballCount);
+  gl.uniform3fv(gl.getUniformLocation(program, 'uBalls'), u.ballArr);
+  setColorUniforms(gl, program, u.gradientColors, u.fieldContrast, u.paletteMode, u.paletteBands);
   drawFieldFullscreen(gl);
+}
+
+export function drawMetaballsGL(P: any): CanvasGradient | undefined {
+  const { canvas, ctx, displayWidth, displayHeight } = P;
+  const gradient: CanvasGradient | undefined = undefined;
+  if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderMetaballsStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
+}
+
+// Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
+// glEffectPipeline.ts. Background fill skipped here (see Caustics comment).
+export function getMetaballsGLStage(P: any): GLEffectStage {
+  const u = deriveUniforms(P);
+  return {
+    type: 'metaballs',
+    render: (gl, _inputTexture, outputFramebuffer, width, height) => renderMetaballsStage(gl, outputFramebuffer, width, height, u),
+  };
 }
