@@ -8,7 +8,6 @@ export function useHalftoneState() {
   const [halftoneCMYK, setHalftoneCMYK] = useState(false);
   const halftoneTimeRef = useRef<number>(0);
   const halftoneMoveRef = useRef(halftoneMove);
-  const [halftoneAnimTrigger, setHalftoneAnimTrigger] = useState(0);
 
   return {
     halftoneSize,
@@ -23,7 +22,5 @@ export function useHalftoneState() {
     setHalftoneCMYK,
     halftoneTimeRef,
     halftoneMoveRef,
-    halftoneAnimTrigger,
-    setHalftoneAnimTrigger,
   };
 }

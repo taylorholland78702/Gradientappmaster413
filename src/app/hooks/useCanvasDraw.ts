@@ -290,6 +290,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const emojiAnimTime = av.emojiAnimTime;
     const voronoiAnimTime = av.voronoiAnimTime;
     const flowerAnimTime = av.flowerAnimTime;
+    // tilingAnimTime was already in animValuesRef's shape but never actually
+    // read through it here — still fell back to the params-destructured
+    // (state-derived) value above, i.e. never got the redraw/re-render win
+    // the other 12 anim-time clocks did. gridRotation/radarSweepAngle are
+    // the same class of value (a live per-frame accumulator, not a static
+    // slider) but previously had no ref path at all.
+    const tilingAnimTime = av.tilingAnimTime;
+    const gridRotation = av.gridRotation;
+    const radarSweepAngle = av.radarSweepAngle;
 
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;

@@ -305,7 +305,7 @@ export function InteractiveGradient() {
   const { grainIntensity, setGrainIntensity, grainType, setGrainType } = useGrainState();
   const { gridSides, setGridSides, gridRows, setGridRows, gridColumns, setGridColumns, gridRotation, setGridRotation, gridVariation, setGridVariation, gridShapeSize, setGridShapeSize, gridCellAngleStep, setGridCellAngleStep } = useGridState();
   const { gridRotationDirection, setGridRotationDirection, gridRotationDirectionRef } = useGridRotationDirectionState();
-  const { halftoneSize, setHalftoneSize, halftoneVariation, setHalftoneVariation, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, halftoneCMYK, setHalftoneCMYK, halftoneTimeRef, halftoneMoveRef, halftoneAnimTrigger, setHalftoneAnimTrigger } = useHalftoneState();
+  const { halftoneSize, setHalftoneSize, halftoneVariation, setHalftoneVariation, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, halftoneCMYK, setHalftoneCMYK, halftoneTimeRef, halftoneMoveRef } = useHalftoneState();
   const { helixTurns, setHelixTurns, helixTightness, setHelixTightness } = useHelixState();
   const { hexGridSize, setHexGridSize } = useHexGridState();
   const { invertAmount, setInvertAmount } = useInvertState();
@@ -385,7 +385,7 @@ export function InteractiveGradient() {
   const { rippleAmplitude, setRippleAmplitude, rippleFrequency, setRippleFrequency, rippleRingsRef, rippleAutoFrameRef } = useRippleState();
   const { sepiaIntensity, setSepiaIntensity } = useSepiaState();
   const { shapesSides, setShapesSides, shapesCount, setShapesCount } = useShapesState();
-  const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanAnimTrigger, setSlitScanAnimTrigger, slitScanBufferRef } = useSlitScanState();
+  const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanBufferRef } = useSlitScanState();
   const { solarizeThreshold, setSolarizeThreshold } = useSolarizeState();
   const { structuralSeed, setStructuralSeed } = useStructuralSeedState();
   const { topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth } = useTopographicState();
@@ -819,6 +819,20 @@ export function InteractiveGradient() {
   useEffect(() => { targetColorsRef.current = targetColors; }, [targetColors]);
   useEffect(() => { targetAngleRef.current = targetAngle; }, [targetAngle]);
   useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
+  // gridRotation/radarSweepAngle/voronoiAnimTime/flowerAnimTime/tilingAnimTime:
+  // same pattern as targetAngleRef above — the main loop now writes these
+  // directly into animValuesRef every frame instead of calling setState (see
+  // the loop below), so state only changes from EXTERNAL setters (shuffle
+  // randomization, snapshot/undo restore) or the loop's own periodic
+  // ref→state sync (every 15 frames, for UI/snapshot freshness). Either way
+  // this effect only fires a few times a second, not 60x/sec, and syncing
+  // the ref back to a value it may already hold (when triggered by the
+  // loop's own periodic sync) is a harmless no-op, not a feedback loop.
+  useEffect(() => { animValuesRef.current.gridRotation = gridRotation; }, [gridRotation]);
+  useEffect(() => { animValuesRef.current.radarSweepAngle = radarSweepAngle; }, [radarSweepAngle]);
+  useEffect(() => { animValuesRef.current.voronoiAnimTime = voronoiAnimTime; }, [voronoiAnimTime]);
+  useEffect(() => { animValuesRef.current.flowerAnimTime = flowerAnimTime; }, [flowerAnimTime]);
+  useEffect(() => { animValuesRef.current.tilingAnimTime = tilingAnimTime; }, [tilingAnimTime]);
   useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
   useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
   useEffect(() => { rotationDirectionRef.current = rotationDirection; }, [rotationDirection]);
@@ -994,6 +1008,18 @@ export function InteractiveGradient() {
         setGradientColors([...gradientColorsRef.current]);
         setGradientAngle(gradientAngleRef.current);
         setZoom(zoomRef.current);
+        // targetAngle/gridRotation/radarSweepAngle/voronoiAnimTime/
+        // flowerAnimTime/tilingAnimTime: same batched sync, now that the
+        // blocks below write these into their refs directly every frame
+        // instead of calling setState. One frame of staleness here (these
+        // refs update later in this same loop iteration) is negligible at
+        // 15-frame granularity.
+        setTargetAngle(targetAngleRef.current);
+        setGridRotation(animValuesRef.current.gridRotation);
+        setRadarSweepAngle(animValuesRef.current.radarSweepAngle);
+        setVoronoiAnimTime(animValuesRef.current.voronoiAnimTime);
+        setFlowerAnimTime(animValuesRef.current.flowerAnimTime);
+        setTilingAnimTime(animValuesRef.current.tilingAnimTime);
       }
 
       // Halftone Move animation. The trigger still fires on both windows (it's
@@ -1003,21 +1029,25 @@ export function InteractiveGradient() {
       // dot phase instead of two independently-advancing clocks.
       if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
         if (!IS_DISPLAY_MODE) halftoneTimeRef.current += 0.5 * spd * dtScale;
-        setHalftoneAnimTrigger(prev => prev + 1);
+        // Was setHalftoneAnimTrigger(prev => prev + 1) — a setState-every-
+        // frame redraw nudge. drawParamsDirtyRef is the same nudge without
+        // the re-render cost; the main loop already checks it below.
+        drawParamsDirtyRef.current = true;
       }
 
       // Grid rotation animation. Skipped in Display mode; see the Voronoi
       // comment above — that value is pushed from the controller instead.
       if (!IS_DISPLAY_MODE && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
-        setGridRotation(prev => {
-          const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale;
-          return (prev + increment) % 360;
-        });
+        const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale;
+        animValuesRef.current.gridRotation = (animValuesRef.current.gridRotation + increment) % 360;
       }
 
-      // Slit-scan animation
+      // Slit-scan animation — no real per-frame value to advance (the
+      // actual frame buffer lives in slitScanBufferRef), this was purely a
+      // redraw nudge. drawParamsDirtyRef is the same nudge without the
+      // setState-every-frame cost — the main loop already checks it below.
       if (activeEffectsRef.current.includes('slit-scan')) {
-        setSlitScanAnimTrigger(prev => prev + 1);
+        drawParamsDirtyRef.current = true;
       }
 
       const isPlayActive = isAutoModeRef.current || isVCRPlayingRef.current || isMicActiveRef.current;
@@ -1026,7 +1056,7 @@ export function InteractiveGradient() {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * dtScale);
+        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * dtScale;
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
@@ -1059,31 +1089,29 @@ export function InteractiveGradient() {
         const doubleSpeedTypes = ['angle', 'fade', 'radial-burst'];
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
-        setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * dtScale));
+        targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * dtScale;
       }
 
       // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
       // Voronoi comment above — that value is pushed from the controller instead.
       // Folded into Radial Burst as radialBurstMode === 'sweep'.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'radial-burst' && radialBurstModeRef.current === 'sweep' && isPlayActive) {
-        setRadarSweepAngle(prev => {
-          const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
-          const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
-          return (prev + (baseSpeed + audioBoost) * dtScale) % 360;
-        });
+        const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
+        const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
+        animValuesRef.current.radarSweepAngle = (animValuesRef.current.radarSweepAngle + (baseSpeed + audioBoost) * dtScale) % 360;
       }
 
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        setFlowerAnimTime(prev => prev + 0.5 * spd * dtScale);
+        animValuesRef.current.flowerAnimTime += 0.5 * spd * dtScale;
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or
       // Auto mode), same gating as Flower above. Adds on top of the
       // static tilingRotation slider rather than replacing it.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        setTilingAnimTime(prev => prev + 0.3 * spd * dtScale);
+        animValuesRef.current.tilingAnimTime += 0.3 * spd * dtScale;
       }
 
       rafId = requestAnimationFrame(loop);
@@ -1179,14 +1207,32 @@ export function InteractiveGradient() {
   // below can read fresh values every frame without itself needing to be
   // torn down and recreated on every tick (which a dependency array would
   // force, since these change ~60x/sec while playing).
+  //
+  // voronoiAnimTime/flowerAnimTime/tilingAnimTime are intentionally NOT
+  // included here anymore — the main loop now writes those directly into
+  // animValuesRef every frame (see the loop below), so mirroring them from
+  // state here as well would race with that direct write and periodically
+  // stomp the fresh ref value with a stale state-derived one. The other
+  // clocks below still only exist as state (each driven by its own
+  // setInterval elsewhere), so they still need this mirror to reach
+  // animValuesRef at all.
   useEffect(() => {
-    animValuesRef.current = {
-      voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime,
-      lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime,
-      flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, tilingAnimTime,
-      audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
-    };
-  }, [voronoiAnimTime, flowerAnimTime, auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, tilingAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
+    const av = animValuesRef.current;
+    av.auroraAnimTime = auroraAnimTime;
+    av.causticsAnimTime = causticsAnimTime;
+    av.lavaAnimTime = lavaAnimTime;
+    av.marbleAnimTime = marbleAnimTime;
+    av.metaballAnimTime = metaballAnimTime;
+    av.moireAnimTime = moireAnimTime;
+    av.flowAnimTime = flowAnimTime;
+    av.liquidAnimTime = liquidAnimTime;
+    av.emojiAnimTime = emojiAnimTime;
+    av.attractorAnimTime = attractorAnimTime;
+    av.audioSubBassLevel = audioSubBassLevel;
+    av.audioMidsLevel = audioMidsLevel;
+    av.audioTrebleLevel = audioTrebleLevel;
+    av.audioEnergy = audioEnergy;
+  }, [auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, moireAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
 
   // buildSnapshot/applySnapshot extracted to useSnapshot.ts (splitting-plan
   // step 3). The single source of truth for undo/redo AND presets, so it
@@ -1701,31 +1747,42 @@ export function InteractiveGradient() {
     };
   }, [applySnapshot]);
 
-  // Receive the anim-time fields (Display mode only) — applied directly via
-  // their setters since these aren't part of buildSnapshot/applySnapshot.
+  // Receive the anim-time fields (Display mode only) — written straight into
+  // animValuesRef, the same ref draw() actually reads (see useCanvasDraw.ts),
+  // instead of through their React state setters. This used to call a
+  // setState per field per incoming message (~60/sec while the controller is
+  // animating), forcing this whole component to re-render every single
+  // message; a state→ref mirror effect further down used to be what
+  // actually got those state updates into animValuesRef for rendering. Both
+  // sides now write the ref directly — the controller's main loop writes it
+  // every frame locally, this receiver writes it every message here — so
+  // neither needs the state round-trip, and the mirror effect is gone.
   useEffect(() => {
     if (!IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
     const channel = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
     channel.onmessage = (e) => {
       const v = e.data;
       if (!v) return;
-      setVoronoiAnimTime(v.voronoiAnimTime);
-      setFlowerAnimTime(v.flowerAnimTime);
-      setTilingAnimTime(v.tilingAnimTime);
-      setAuroraAnimTime(v.auroraAnimTime);
-      setCausticsAnimTime(v.causticsAnimTime);
-      setLavaAnimTime(v.lavaAnimTime);
-      setMarbleAnimTime(v.marbleAnimTime);
-      setMetaballAnimTime(v.metaballAnimTime);
-      setMoireAnimTime(v.moireAnimTime);
-      setFlowAnimTime(v.flowAnimTime);
-      setLiquidAnimTime(v.liquidAnimTime);
-      setEmojiAnimTime(v.emojiAnimTime);
-      setAttractorAnimTime(v.attractorAnimTime);
-      setAudioSubBassLevel(v.audioSubBassLevel ?? 0);
-      setAudioMidsLevel(v.audioMidsLevel ?? 0);
-      setAudioTrebleLevel(v.audioTrebleLevel ?? 0);
-      setAudioEnergy(v.audioEnergy ?? 0);
+      const av = animValuesRef.current;
+      if (typeof v.voronoiAnimTime === 'number') av.voronoiAnimTime = v.voronoiAnimTime;
+      if (typeof v.flowerAnimTime === 'number') av.flowerAnimTime = v.flowerAnimTime;
+      if (typeof v.tilingAnimTime === 'number') av.tilingAnimTime = v.tilingAnimTime;
+      if (typeof v.auroraAnimTime === 'number') av.auroraAnimTime = v.auroraAnimTime;
+      if (typeof v.causticsAnimTime === 'number') av.causticsAnimTime = v.causticsAnimTime;
+      if (typeof v.lavaAnimTime === 'number') av.lavaAnimTime = v.lavaAnimTime;
+      if (typeof v.marbleAnimTime === 'number') av.marbleAnimTime = v.marbleAnimTime;
+      if (typeof v.metaballAnimTime === 'number') av.metaballAnimTime = v.metaballAnimTime;
+      if (typeof v.moireAnimTime === 'number') av.moireAnimTime = v.moireAnimTime;
+      if (typeof v.flowAnimTime === 'number') av.flowAnimTime = v.flowAnimTime;
+      if (typeof v.liquidAnimTime === 'number') av.liquidAnimTime = v.liquidAnimTime;
+      if (typeof v.emojiAnimTime === 'number') av.emojiAnimTime = v.emojiAnimTime;
+      if (typeof v.attractorAnimTime === 'number') av.attractorAnimTime = v.attractorAnimTime;
+      if (typeof v.gridRotation === 'number') av.gridRotation = v.gridRotation;
+      if (typeof v.radarSweepAngle === 'number') av.radarSweepAngle = v.radarSweepAngle;
+      av.audioSubBassLevel = v.audioSubBassLevel ?? 0;
+      av.audioMidsLevel = v.audioMidsLevel ?? 0;
+      av.audioTrebleLevel = v.audioTrebleLevel ?? 0;
+      av.audioEnergy = v.audioEnergy ?? 0;
       // Write the live, already-eased color straight into the ref the draw
       // loop actually reads (see gradientColorsRef above) — not through
       // setGradientColors/applySnapshot, which only update React state and
@@ -2645,7 +2702,7 @@ export function InteractiveGradient() {
     kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength,
     grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount,
     blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove,
-    halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness,
+    halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness,
     dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength,
     waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold,
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor,
@@ -2663,11 +2720,11 @@ export function InteractiveGradient() {
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     noiseDirection,
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
-    slitScanAnimTrigger, glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
+    glitchIntensity, glitchBlockSize, glitchChromaSplit, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneAnimTrigger, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, slitScanAnimTrigger, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, rippleAmplitude, rippleFrequency, vignetteStrength, colorShiftHue, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame

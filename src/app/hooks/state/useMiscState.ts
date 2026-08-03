@@ -13,6 +13,11 @@ export function useMiscState() {
     lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0, tilingAnimTime: 0,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
+    // gridRotation/radarSweepAngle: same ref-primary treatment as the anim
+    // times above — the main loop writes these directly every frame now
+    // instead of calling setState, so draw() always reads a fresh value
+    // without the state update forcing a full component re-render 60x/sec.
+    gridRotation: 0, radarSweepAngle: 0,
   });
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);
