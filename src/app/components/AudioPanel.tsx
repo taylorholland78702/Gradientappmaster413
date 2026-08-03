@@ -311,6 +311,26 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     if (preset) applyStylePreset(preset);
   };
 
+  // Shuffle Audio Controls previously only randomized each slider/toggle
+  // independently (via onShuffleAudio below), never touching the Style
+  // Preset dropdown at all — so it never actually landed on one of the
+  // curated combos (Bass/EDM, Vocal, Techno, etc.), just noise. Now it
+  // runs the existing shuffle first (which also randomizes Modulation
+  // bindings — the one piece a style preset doesn't cover), then picks a
+  // random preset (built-in + any saved custom ones) and applies it
+  // second, so the preset's curated sensitivity/multiplier/beat-sync
+  // combo wins over onShuffleAudio's own ad-hoc random values for those
+  // same fields instead of being clobbered by them.
+  const handleShuffleAudio = () => {
+    onShuffleAudio();
+    const presetPool: AudioStylePreset[] = [...AUDIO_STYLE_PRESETS, ...customPresets];
+    if (presetPool.length > 0) {
+      const preset = presetPool[Math.floor(Math.random() * presetPool.length)];
+      setSelectedPresetName(preset.name);
+      applyStylePreset(preset);
+    }
+  };
+
   return (
     <>
       {/* Audiovisuals Section — single pill */}
@@ -438,8 +458,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 </button>
               )}
               <button
-                onClick={onShuffleAudio}
-                title="Shuffle Audio Controls — randomizes Intensity, band sliders, BEAT, FX on Beat, and Modulation bindings (scoped to the active gradient/effects)"
+                onClick={handleShuffleAudio}
+                title="Shuffle Audio Controls — picks a random Style Preset and reshuffles Modulation bindings (scoped to the active gradient/effects)"
                 className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
               >
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
