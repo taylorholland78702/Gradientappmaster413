@@ -535,17 +535,21 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // still visibly exposed edges on some of them. Flipping the direction
       // makes edge-safety a property of the math (grow-only) instead of a
       // tuned constant.
-      // Zoom motion reacts at a quarter of the overall Intensity dial — a
+      // Zoom motion reacts at a fraction of the overall Intensity dial — a
       // camera-zoom punch reads as far more intense per unit of "level" than
       // a color or bar-height change does, so it needs its own (much lower)
       // scale rather than riding the same Intensity value Color/Shape use.
-      const zoomMotionScale = 0.25;
+      // Was 0.25/0.4/0.2 (spike coefficients below) — bass hits could punch
+      // the zoom down to 0.6x in beat-sync mode, reading as a jarring camera
+      // lurch rather than a subtle pulse. Cut roughly in half across the
+      // board.
+      const zoomMotionScale = 0.15;
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity * zoomMotionScale) : 0;
       setTargetZoomRef.current(prev => {
         const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
-          const spike = bassRawForZoom * (bassBeatSync ? 0.4 : 0.2);
-          return Math.max(decayed - spike, 1 - (bassBeatSync ? 0.4 : 0.2));
+          const spike = bassRawForZoom * (bassBeatSync ? 0.22 : 0.11);
+          return Math.max(decayed - spike, 1 - (bassBeatSync ? 0.22 : 0.11));
         }
         return decayed;
       });

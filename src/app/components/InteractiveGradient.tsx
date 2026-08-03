@@ -1028,10 +1028,13 @@ export function InteractiveGradient() {
         }
         // audioMidsLevel's natural range depends on the Mids multiplier
         // slider (0-5) and master sensitivity, not a fixed 0-1 — clamping
-        // to 1 here keeps the speed boost within its documented "up to 5x"
+        // to 1 here keeps the speed boost within its documented "up to 3x"
         // intent regardless of how those are set, instead of autonomous
         // rotation occasionally spinning up to 20x+ on loud mids content.
-        const midsBoost = isAudioActiveRef.current ? 1 + Math.min(1, audioMidsLevelRef.current) * 4 : 1;
+        // Was up to 5x — loud mids-heavy passages spun the gradient hard
+        // enough to feel out of control rather than reactive, so this is
+        // capped lower.
+        const midsBoost = isAudioActiveRef.current ? 1 + Math.min(1, audioMidsLevelRef.current) * 2 : 1;
         // These types rotate at 2x across every speed step. (Noise and Radial are
         // intentionally excluded — neither uses the rotation angle at all, so there's
         // no existing motion for them to speed up; see conversation for details.)
