@@ -45,7 +45,9 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 const LIGHT_EFFECT_COST = 4;
 const HEAVY_EFFECT_COST = 15;
 const resolutionForEffectCost = (totalCost: number): number => {
-  const baseline = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  // Capped at 2 — see useMiscState.ts's resolutionMultiplier init for why
+  // full devicePixelRatio isn't used directly.
+  const baseline = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
   if (totalCost <= LIGHT_EFFECT_COST) return baseline;
   const t = Math.min(1, (totalCost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
   return baseline * (1 - t * 0.4);

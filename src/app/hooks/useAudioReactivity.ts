@@ -161,6 +161,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const liveSubBassLevelRef = useRef(0);
   const subBassSmoothedRef = useRef(0);
   const lastSubBeatTimeRef = useRef(0);
+  // Delta-time tracking for the zoom-pulse decay below — this loop runs on
+  // its own rAF cadence (analyzeAudio), separate from the main draw loop in
+  // InteractiveGradient.tsx, so it needs its own dt measurement rather than
+  // sharing that loop's.
+  const lastAnalyzeTimeRef = useRef<number | null>(null);
   // Auto Gain: slowly-decaying recent-peak trackers, one per band
   const subBassPeakRef = useRef(0.05);
   const bassPeakRef = useRef(0.05);
@@ -421,6 +426,14 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       analyser.getByteFrequencyData(dataArray);
 
       const now = performance.now();
+      // Same 60fps-baseline dt conversion as InteractiveGradient.tsx's main
+      // loop (see its dtScale comment) — used below for the zoom-pulse
+      // decay/spike, which was previously a flat per-tick rate regardless
+      // of actual frame timing.
+      const analyzeDtScale = lastAnalyzeTimeRef.current !== null
+        ? Math.min(3, Math.max(0, (now - lastAnalyzeTimeRef.current) / (1000 / 60)))
+        : 1;
+      lastAnalyzeTimeRef.current = now;
 
       // Intensity slider now runs 0-10 for finer low-end control, but the
       // actual reactivity math still only needs up to 3x gain — anything
@@ -545,7 +558,14 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const zoomMotionScale = 0.15;
       const bassRawForZoom = bassAboveThreshold ? Math.min(1, bassNorm * effMasterSensitivity * zoomMotionScale) : 0;
       setTargetZoomRef.current(prev => {
-        const decayed = prev + (1 - prev) * (bassBeatSync ? 0.35 : 0.15);
+        // Decay rate scaled by dt (clamped to 1, same overshoot guard as
+        // InteractiveGradient.tsx's lerps) so the zoom pulse eases back
+        // toward 1 at a consistent real-time rate regardless of this
+        // analysis loop's actual tick rate. The spike/floor below is left
+        // as a flat per-tick offset — it's a response to the current live
+        // bass level, not a time-integrated rate.
+        const decayRate = Math.min(1, (bassBeatSync ? 0.35 : 0.15) * analyzeDtScale);
+        const decayed = prev + (1 - prev) * decayRate;
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
           const spike = bassRawForZoom * (bassBeatSync ? 0.22 : 0.11);
           return Math.max(decayed - spike, 1 - (bassBeatSync ? 0.22 : 0.11));

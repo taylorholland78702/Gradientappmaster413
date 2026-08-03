@@ -232,6 +232,13 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   // active/reactive, so idle/no-audio sessions render the user's exact
   // chosen palette with zero drift, unchanged from before this existed.
   const hueDriftRef = useRef(0);
+  // Tracks wall-clock time between successive draw() calls so hue drift's
+  // rate is delta-time-correct instead of frame-count-based — draw() isn't
+  // guaranteed to run every rAF tick (skipped when idle/converged, see
+  // InteractiveGradient.tsx's loop), so counting frames instead of real
+  // elapsed time would make drift speed depend on how often draw()
+  // happened to fire rather than actual time passed.
+  const lastDrawTimeRef = useRef<number | null>(null);
   // Crossfade on gradient-type switch: snapshot the last fully-rendered
   // frame right before the type changes, then fade it out over the new
   // frames so switching types (Auto Mode cycling, Shuffle, manual pick)
@@ -450,13 +457,22 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // needs-5 squeeze as effMasterSensitivity in useAudioReactivity.ts, so
     // both collapse toward motionless as Intensity approaches 0.
     const audioIntensityFraction = Math.min(1, (masterSensitivity ?? 0) / 5);
+    // Delta-time-correct instead of frame-count-based — see lastDrawTimeRef's
+    // declaration above for why draw()'s own call cadence (not rAF ticks)
+    // is what matters here. First call has no prior timestamp to diff
+    // against, so it contributes zero drift rather than a bogus huge jump.
+    const nowForDrift = performance.now();
+    const driftDtScale = lastDrawTimeRef.current !== null
+      ? Math.min(3, Math.max(0, (nowForDrift - lastDrawTimeRef.current) / (1000 / 60)))
+      : 0;
+    lastDrawTimeRef.current = nowForDrift;
     if (audioActiveForDrift) {
       // audioMidsLevel isn't naturally 0-1 — its ceiling depends on the Mids
       // multiplier slider (0-5) and master sensitivity — so it's clamped to
       // 1 here before scaling. Unclamped, loud mids could add up to 2.5°/frame
       // (150°/sec, 2.5 full hue cycles a second), which read as the whole
       // palette spinning rather than drifting.
-      hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity * audioIntensityFraction;
+      hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity * audioIntensityFraction * driftDtScale;
     }
     const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
 

@@ -905,7 +905,21 @@ export function InteractiveGradient() {
 
   useEffect(() => {
     let rafId: number;
+    let lastFrameTime = performance.now();
     const loop = () => {
+      const now = performance.now();
+      // Every per-frame constant below (0.025, 0.1, 0.5, 2, 0.03125, etc.)
+      // was originally tuned assuming a steady 60fps tick, so motion speed
+      // silently varied with actual frame rate — faster on a 120Hz display,
+      // slower under load. dtScale converts real elapsed time into "how
+      // many 60fps-frame-equivalents this tick represents" so multiplying
+      // any of those constants by it keeps speed constant regardless of
+      // frame rate, while leaving every tuned value unchanged at a steady
+      // 60fps (dtScale ≈ 1 there). Clamped to 3 so a long stall — tab
+      // backgrounded, GC pause — doesn't cause a single catastrophic jump
+      // when the loop resumes; it just catches up over a few frames instead.
+      const dtScale = Math.min(3, Math.max(0, (now - lastFrameTime) / (1000 / 60)));
+      lastFrameTime = now;
       const spd = vcrPlaybackSpeedRef.current;
 
       // Lerp colors directly in ref, track max channel diff for convergence check.
@@ -921,7 +935,10 @@ export function InteractiveGradient() {
       // see isAutoShuffleOnRef above.
       const fadeMultiplier = isAutoShuffleOnRef.current ? 0.25 : 1;
       if (!IS_DISPLAY_MODE) {
-        const colorSpd = 0.025 * spd * fadeMultiplier;
+        // Clamped to 1 — a lerp rate above 1 overshoots past the target
+        // instead of easing toward it, which dtScale could otherwise
+        // produce during a low-frame-rate stretch (dtScale > 1).
+        const colorSpd = Math.min(1, 0.025 * spd * fadeMultiplier * dtScale);
         for (let i = 0; i < colors.length; i++) {
           const c = colors[i];
           const t = targets[i];
@@ -935,9 +952,10 @@ export function InteractiveGradient() {
       }
 
       const angleDiff = Math.abs(targetAngleRef.current - gradientAngleRef.current);
-      gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * (0.1 * spd * fadeMultiplier);
+      const angleSpd = Math.min(1, 0.1 * spd * fadeMultiplier * dtScale);
+      gradientAngleRef.current += (targetAngleRef.current - gradientAngleRef.current) * angleSpd;
 
-      const zoomSpd = (isAutoModeRef.current ? 0.1 : 0.3) * spd * fadeMultiplier;
+      const zoomSpd = Math.min(1, (isAutoModeRef.current ? 0.1 : 0.3) * spd * fadeMultiplier * dtScale);
       const zoomDiff = Math.abs(targetZoomRef.current - zoomRef.current);
       zoomRef.current += (targetZoomRef.current - zoomRef.current) * zoomSpd;
 
@@ -984,7 +1002,7 @@ export function InteractiveGradient() {
       // the anim-sync receiver below instead, so both windows show the same
       // dot phase instead of two independently-advancing clocks.
       if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
-        if (!IS_DISPLAY_MODE) halftoneTimeRef.current += 0.5 * spd;
+        if (!IS_DISPLAY_MODE) halftoneTimeRef.current += 0.5 * spd * dtScale;
         setHalftoneAnimTrigger(prev => prev + 1);
       }
 
@@ -992,7 +1010,7 @@ export function InteractiveGradient() {
       // comment above — that value is pushed from the controller instead.
       if (!IS_DISPLAY_MODE && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
         setGridRotation(prev => {
-          const increment = gridRotationDirectionRef.current === 'clockwise' ? 2 : -2;
+          const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale;
           return (prev + increment) % 360;
         });
       }
@@ -1008,7 +1026,7 @@ export function InteractiveGradient() {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1));
+        setVoronoiAnimTime(prev => prev + 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * dtScale);
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
@@ -1041,7 +1059,7 @@ export function InteractiveGradient() {
         const doubleSpeedTypes = ['angle', 'fade', 'radial-burst'];
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
-        setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost));
+        setTargetAngle(prev => prev + (rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * dtScale));
       }
 
       // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
@@ -1051,21 +1069,21 @@ export function InteractiveGradient() {
         setRadarSweepAngle(prev => {
           const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
           const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
-          return (prev + baseSpeed + audioBoost) % 360;
+          return (prev + (baseSpeed + audioBoost) * dtScale) % 360;
         });
       }
 
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        setFlowerAnimTime(prev => prev + 0.5 * spd);
+        setFlowerAnimTime(prev => prev + 0.5 * spd * dtScale);
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or
       // Auto mode), same gating as Flower above. Adds on top of the
       // static tilingRotation slider rather than replacing it.
       if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        setTilingAnimTime(prev => prev + 0.3 * spd);
+        setTilingAnimTime(prev => prev + 0.3 * spd * dtScale);
       }
 
       rafId = requestAnimationFrame(loop);
@@ -3342,6 +3360,23 @@ export function InteractiveGradient() {
     };
   }, [isMobile]);
 
+  // Load-in reveal — canvas starts invisible and fades in shortly after
+  // mount instead of popping in fully-formed the instant the first frame is
+  // ready. The double-rAF defers flipping to true until after the initial
+  // opacity:0 state has actually painted, so the browser doesn't collapse
+  // the 0→1 change into the very first paint (which would make the CSS
+  // transition invisible — a well-known gotcha with transition-on-mount).
+  const [hasRevealed, setHasRevealed] = useState(false);
+  const revealFrameRef = useRef<number>(0);
+  useEffect(() => {
+    const id1 = requestAnimationFrame(() => {
+      const id2 = requestAnimationFrame(() => setHasRevealed(true));
+      revealFrameRef.current = id2;
+    });
+    revealFrameRef.current = id1;
+    return () => cancelAnimationFrame(revealFrameRef.current);
+  }, []);
+
   // touchAction intentionally NOT set on the root container below (was
   // 'none') — per the CSS touch-action spec, the effective touch-action for
   // a touch gesture is the INTERSECTION of the hit element's value and every
@@ -3365,7 +3400,7 @@ export function InteractiveGradient() {
           onTouchMove={handleTouchMove}
           onWheel={handleWheel}
           className="w-full h-full"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
         />
       </div>
       

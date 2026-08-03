@@ -18,7 +18,14 @@ export function useMiscState() {
   const lastChangeTime = useRef<number>(0);
   const previousPosition = useRef<{ x: number; y: number } | null>(null);
   const [gradientType, setGradientType] = useState<GradientType | null>('angle');
-  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => window.devicePixelRatio || 1);
+  // Capped at 2 — full devicePixelRatio (3 on many phones) quadratically
+  // inflates every per-pixel gradient/effect's fragment cost for sharpness
+  // gains that are barely perceptible on a soft, blurry gradient background.
+  // The MAX_CANVAS_PIXELS budget in useCanvasDraw.ts already catches the
+  // worst cases (large high-DPI external displays) but only kicks in once
+  // total pixel count exceeds its budget — this caps the common case (a
+  // normal-sized high-DPI phone/laptop screen) at the source instead.
+  const [resolutionMultiplier, setResolutionMultiplier] = useState(() => Math.min(window.devicePixelRatio || 1, 2));
   const [zoomBeatEnabled, setZoomBeatEnabled] = useState(true);
   const [shakeBeatEnabled, setShakeBeatEnabled] = useState(false);
   const [contrastBeatEnabled, setContrastBeatEnabled] = useState(true);
