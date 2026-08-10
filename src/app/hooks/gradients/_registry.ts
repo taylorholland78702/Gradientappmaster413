@@ -18,10 +18,6 @@ import { drawMarble } from './drawMarble';
 import { drawMetaballs } from './drawMetaballs';
 import { drawTruchet } from './drawTruchet';
 import { drawMoire } from './drawMoire';
-import { drawFlowField } from './drawFlowField';
-import { drawAttractor } from './drawAttractor';
-import { drawReactionDiffusion } from './drawReactionDiffusion';
-import { drawReactionDiffusionGL, detectRDGLSupport } from './drawReactionDiffusionGL';
 import { drawPlasmaGL, detectPlasmaGLSupport } from './drawPlasmaGL';
 import { drawNoiseGL, detectNoiseGLSupport } from './drawNoiseGL';
 import { drawAngleGL, detectAngleGLSupport } from './drawAngleGL';
@@ -36,30 +32,79 @@ import { drawTopographicGL, detectTopographicGLSupport } from './drawTopographic
 import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
 import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
-import { drawParticles } from './drawParticles';
 import { drawTiling } from './drawTiling';
-import { drawFireworks } from './drawFireworks';
-import { drawLightning } from './drawLightning';
-import { drawFireworksGL, detectFireworksGLSupport } from './drawFireworksGL';
-import { drawLightningGL, detectLightningGLSupport } from './drawLightningGL';
 
-// Dispatches to the WebGL renderer when the browser/GPU can support it
-// (checked once, memoized in detectRDGLSupport), otherwise the untouched,
-// already-working CPU implementation — see drawReactionDiffusionGL.ts for
-// what the capability check covers and why. Wrapped in a try/catch as a
-// last-resort safety net: any unexpected WebGL failure mid-session (e.g. a
-// context loss) falls back to the CPU path for that call rather than
-// leaving the canvas blank.
-function drawReactionDiffusionAuto(P: any): CanvasGradient | undefined {
-  if (detectRDGLSupport()) {
-    try {
-      return drawReactionDiffusionGL(P);
-    } catch (err) {
-      console.error('WebGL Reaction-Diffusion failed, falling back to CPU:', err);
-    }
-  }
-  return drawReactionDiffusion(P);
+// Lazily code-split the heaviest, least-often-selected gradients (large
+// simulation-based implementations that are rarely anyone's first pick —
+// Reaction-Diffusion, Fireworks, and Lightning in particular pull in a
+// second GL variant module each) out of the main bundle instead of
+// statically importing all 28 gradients' code up front. Each dynamic
+// import() kicks off immediately below (not deferred until first actual
+// selection) so the chunk has almost always already arrived by the time a
+// user picks one of these — this is purely about shrinking the critical-
+// path bundle/parse time, not about deferring real work. Until a chunk
+// resolves, its lazy wrapper returns undefined (same as any other gradient
+// draw fn returning nothing for a frame) rather than throwing.
+function lazyGradient<T extends (P: any) => CanvasGradient | undefined>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  load: () => Promise<T>,
+): (P: any) => CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+  let impl: T | null = null;
+  load().then((fn) => { impl = fn; });
+  return (P) => (impl ? impl(P) : undefined);
 }
+
+const drawFlowFieldLazy = lazyGradient(() => import('./drawFlowField').then((m) => m.drawFlowField));
+const drawAttractorLazy = lazyGradient(() => import('./drawAttractor').then((m) => m.drawAttractor));
+const drawParticlesLazy = lazyGradient(() => import('./drawParticles').then((m) => m.drawParticles));
+
+const drawReactionDiffusionLazy = lazyGradient(() =>
+  Promise.all([import('./drawReactionDiffusion'), import('./drawReactionDiffusionGL')]).then(([cpu, gl]) =>
+    // Same dispatch pattern as every other Auto wrapper in this file (see
+    // drawAngleAuto etc. below) — WebGL when supported, CPU fallback on
+    // any failure — just constructed once both chunks have arrived instead
+    // of at module-load time.
+    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (gl.detectRDGLSupport()) {
+        try {
+          return gl.drawReactionDiffusionGL(P);
+        } catch (err) {
+          console.error('WebGL Reaction-Diffusion failed, falling back to CPU:', err);
+        }
+      }
+      return cpu.drawReactionDiffusion(P);
+    },
+  ),
+);
+
+const drawFireworksLazy = lazyGradient(() =>
+  Promise.all([import('./drawFireworks'), import('./drawFireworksGL')]).then(([cpu, gl]) =>
+    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (gl.detectFireworksGLSupport()) {
+        try {
+          return gl.drawFireworksGL(P);
+        } catch (err) {
+          console.error('WebGL Fireworks failed, falling back to CPU:', err);
+        }
+      }
+      return cpu.drawFireworks(P);
+    },
+  ),
+);
+
+const drawLightningLazy = lazyGradient(() =>
+  Promise.all([import('./drawLightning'), import('./drawLightningGL')]).then(([cpu, gl]) =>
+    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (gl.detectLightningGLSupport()) {
+        try {
+          return gl.drawLightningGL(P);
+        } catch (err) {
+          console.error('WebGL Lightning failed, falling back to CPU:', err);
+        }
+      }
+      return cpu.drawLightning(P);
+    },
+  ),
+);
 
 // Same dispatch pattern as Reaction-Diffusion above, gated on the much
 // lighter detectFieldGLSupport check (plain WebGL2, no float-framebuffer
@@ -215,33 +260,6 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
   return drawWindmill(P);
 }
 
-// Persistent-buffer particle/vector gradients — same capability-detect +
-// fallback pattern, but gated on detectParticleGLSupport (plain WebGL2,
-// see glParticleShared.ts) since they use a different rendering technique
-// (point sprites / triangle-quad lines into a preserveDrawingBuffer canvas)
-// than the stateless field shaders above.
-function drawFireworksAuto(P: any): CanvasGradient | undefined {
-  if (detectFireworksGLSupport()) {
-    try {
-      return drawFireworksGL(P);
-    } catch (err) {
-      console.error('WebGL Fireworks failed, falling back to CPU:', err);
-    }
-  }
-  return drawFireworks(P);
-}
-
-function drawLightningAuto(P: any): CanvasGradient | undefined {
-  if (detectLightningGLSupport()) {
-    try {
-      return drawLightningGL(P);
-    } catch (err) {
-      console.error('WebGL Lightning failed, falling back to CPU:', err);
-    }
-  }
-  return drawLightning(P);
-}
-
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngleAuto,
@@ -263,12 +281,12 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'metaballs': drawMetaballsAuto,
   'truchet': drawTruchet,
   'moire': drawMoire,
-  'flow-field': drawFlowField,
-  'attractor': drawAttractor,
-  'reaction-diffusion': drawReactionDiffusionAuto,
+  'flow-field': drawFlowFieldLazy,
+  'attractor': drawAttractorLazy,
+  'reaction-diffusion': drawReactionDiffusionLazy,
   'flower': drawFlower,
-  'particles': drawParticles,
+  'particles': drawParticlesLazy,
   'tiling': drawTilingAuto,
-  'fireworks': drawFireworksAuto,
-  'lightning': drawLightningAuto,
+  'fireworks': drawFireworksLazy,
+  'lightning': drawLightningLazy,
 };
