@@ -617,6 +617,7 @@ export function InteractiveGradient() {
     audioReactiveColors, setAudioReactiveColors,
     audioRef,
     analyserRef,
+    analyzeAudioRef,
     audioContextRef,
     streamRef,
     handleFileUpload,
@@ -934,6 +935,16 @@ export function InteractiveGradient() {
       // when the loop resumes; it just catches up over a few frames instead.
       const dtScale = Math.min(3, Math.max(0, (now - lastFrameTime) / (1000 / 60)));
       lastFrameTime = now;
+
+      // Drive the audio-analysis tick from this same loop instead of it
+      // self-scheduling its own requestAnimationFrame (see analyzeAudioRef's
+      // declaration in useAudioReactivity.ts) — one rAF registration and one
+      // clock for both draw and analysis instead of two independently-timed
+      // ones. Called first so any freshly-analyzed levels this tick (bass,
+      // mids, treble, zoom pulses, etc.) are available to the draw-related
+      // logic below in the same frame rather than lagging by one.
+      analyzeAudioRef.current?.();
+
       const spd = vcrPlaybackSpeedRef.current;
 
       // Lerp colors directly in ref, track max channel diff for convergence check.

@@ -127,6 +127,17 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  // Was previously a fully independent requestAnimationFrame loop, self-
+  // scheduling every tick with its own registration alongside the main
+  // draw loop in InteractiveGradient.tsx. Now the effect below just
+  // reassigns this ref to the current analyzeAudio closure (same pattern
+  // as drawRef in useCanvasDraw.ts) and the main loop calls
+  // analyzeAudioRef.current() once per tick itself, so both share exactly
+  // one rAF registration and one clock instead of two independently-timed
+  // ones that could drift apart or double up on browser scheduling
+  // overhead. Cleared back to null on cleanup so a stale closure (e.g.
+  // from just before audio was disabled) is never callable.
+  const analyzeAudioRef = useRef<(() => void) | null>(null);
   // Bumped every time analyserRef.current is reassigned to a new node
   // (device switch) — the reactivity-loop effect below closes over the
   // analyser at subscribe time and only re-subscribes on a dependency
@@ -676,14 +687,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const energyRatio = energySmoothedRef.current / Math.max(longEnergyRef.current, 0.04);
       const targetIntensity = Math.min(1.8, Math.max(0.5, 0.55 + energyRatio * 0.5));
       musicIntensityRef.current += (targetIntensity - musicIntensityRef.current) * 0.05;
-
-      requestAnimationFrame(analyzeAudio);
     };
 
-    const animId = requestAnimationFrame(analyzeAudio);
+    // No self-scheduling requestAnimationFrame here anymore — see
+    // analyzeAudioRef's declaration above for why. The main loop in
+    // InteractiveGradient.tsx now calls analyzeAudioRef.current() itself,
+    // once per its own tick.
+    analyzeAudioRef.current = analyzeAudio;
 
     return () => {
-      cancelAnimationFrame(animId);
+      analyzeAudioRef.current = null;
     };
     // setTargetZoom intentionally excluded — read via setTargetZoomRef
     // instead (see its declaration above) since the inline wrapper
@@ -820,6 +833,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     audioRef,
     audioContextRef,
     analyserRef,
+    analyzeAudioRef,
     bassSmoothedRef,
     midsSmoothedRef,
     trebleSmoothedRef,
