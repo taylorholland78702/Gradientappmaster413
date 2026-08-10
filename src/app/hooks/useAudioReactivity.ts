@@ -445,6 +445,17 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         ? Math.min(3, Math.max(0, (now - lastAnalyzeTimeRef.current) / (1000 / 60)))
         : 1;
       lastAnalyzeTimeRef.current = now;
+      // Every exponential decay/EMA-smoothing rate below (peak-decay 0.999,
+      // beat-pulse decays 0.85/0.6, band smoothings, energy smoothing) was a
+      // flat per-tick multiplier — same frame-rate-dependence problem as the
+      // zoom-pulse decay above, just not yet converted. Raising the rate to
+      // the analyzeDtScale-th power is the correct generalization of "retain
+      // rate% per 60fps-frame-equivalent" to a fractional/multiple number of
+      // frame-equivalents: applying `rate` dtScale times in a row compounds
+      // to rate^dtScale, and at a steady 60fps (dtScale=1) this reduces to
+      // plain `rate`, so behavior at the frame rate every one of these was
+      // originally tuned against is completely unchanged.
+      const dtDecay = (rate: number) => Math.pow(rate, analyzeDtScale);
 
       // Intensity slider now runs 0-10 for finer low-end control, but the
       // actual reactivity math still only needs up to 3x gain — anything
@@ -469,7 +480,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // ~0.999/frame ≈ 16s to fall to ~37%) so quiet passages still swing the
       // full 0-1 range instead of needing to hit the loudest moment in the
       // whole track to register at all.
-      subBassPeakRef.current = Math.max(subBassAvgRaw, subBassPeakRef.current * 0.999);
+      subBassPeakRef.current = Math.max(subBassAvgRaw, subBassPeakRef.current * dtDecay(0.999));
       const subBassNorm = autoGainEnabled ? Math.min(1, subBassAvgRaw / Math.max(subBassPeakRef.current, 0.05)) : subBassAvgRaw;
       liveSubBassLevelRef.current = subBassNorm;
 
@@ -492,18 +503,19 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let subBassRaw: number;
       if (subBassBeatSync) {
         subBassRaw = subBassBeatPulseRef.current * subBassMultiplier * effMasterSensitivity;
-        subBassBeatPulseRef.current *= 0.6; // snappier decay = cleaner hits
+        subBassBeatPulseRef.current *= dtDecay(0.6); // snappier decay = cleaner hits
       } else {
         subBassRaw = subBassNorm * subBassMultiplier * effMasterSensitivity;
       }
-      subBassSmoothedRef.current = 0.65 * subBassSmoothedRef.current + 0.35 * subBassRaw;
+      const subBassEma = dtDecay(0.65);
+      subBassSmoothedRef.current = subBassEma * subBassSmoothedRef.current + (1 - subBassEma) * subBassRaw;
       const subBassGradientValue = Math.max(bassMin, Math.min(bassMax, subBassSmoothedRef.current));
 
       // ---- BASS (~60-250Hz) ----
       let bassSum = 0;
       for (let i = bassLo; i < bassHi; i++) bassSum += dataArray[i];
       const bassAvgRaw = (bassSum / (bassHi - bassLo)) / 255; // 0-1
-      bassPeakRef.current = Math.max(bassAvgRaw, bassPeakRef.current * 0.999);
+      bassPeakRef.current = Math.max(bassAvgRaw, bassPeakRef.current * dtDecay(0.999));
       const bassNorm = autoGainEnabled ? Math.min(1, bassAvgRaw / Math.max(bassPeakRef.current, 0.05)) : bassAvgRaw;
       liveBaseLevelRef.current = bassNorm;
 
@@ -536,11 +548,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let bassRaw: number;
       if (bassBeatSync) {
         bassRaw = bassBeatPulseRef.current * bassMultiplier * effMasterSensitivity;
-        bassBeatPulseRef.current *= 0.85; // decay
+        bassBeatPulseRef.current *= dtDecay(0.85); // decay
       } else {
         bassRaw = bassAboveThreshold ? bassNorm * bassMultiplier * effMasterSensitivity : 0;
       }
-      bassSmoothedRef.current = bassSmoothing * bassSmoothedRef.current + (1 - bassSmoothing) * bassRaw;
+      const bassEma = dtDecay(bassSmoothing);
+      bassSmoothedRef.current = bassEma * bassSmoothedRef.current + (1 - bassEma) * bassRaw;
       const bassGradientValue = Math.max(bassMin, Math.min(bassMax, bassSmoothedRef.current));
       liveBassSmoothedRef.current = bassGradientValue;
       // Sub-bass drives Shape (audioSubBassLevel); bass drives Pulse/zoom
@@ -588,7 +601,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let midsSum = 0;
       for (let i = midsLo; i < midsHi; i++) midsSum += dataArray[i];
       const midsAvgRaw = (midsSum / (midsHi - midsLo)) / 255;
-      midsPeakRef.current = Math.max(midsAvgRaw, midsPeakRef.current * 0.999);
+      midsPeakRef.current = Math.max(midsAvgRaw, midsPeakRef.current * dtDecay(0.999));
       const midsNorm = autoGainEnabled ? Math.min(1, midsAvgRaw / Math.max(midsPeakRef.current, 0.05)) : midsAvgRaw;
       liveMidsLevelRef.current = midsNorm;
 
@@ -610,11 +623,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let midsRaw: number;
       if (midsBeatSync) {
         midsRaw = midsBeatPulseRef.current * midsMultiplier * effMasterSensitivity;
-        midsBeatPulseRef.current *= 0.85;
+        midsBeatPulseRef.current *= dtDecay(0.85);
       } else {
         midsRaw = midsAboveThreshold ? midsNorm * midsMultiplier * effMasterSensitivity : 0;
       }
-      midsSmoothedRef.current = midsSmoothing * midsSmoothedRef.current + (1 - midsSmoothing) * midsRaw;
+      const midsEma = dtDecay(midsSmoothing);
+      midsSmoothedRef.current = midsEma * midsSmoothedRef.current + (1 - midsEma) * midsRaw;
       const midsEffectValue = Math.max(midsMin, Math.min(midsMax, midsSmoothedRef.current));
       liveMidsSmoothedRef.current = midsEffectValue;
       setAudioMidsLevel(midsEffectValue);
@@ -623,7 +637,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let trebleSum = 0;
       for (let i = trebleLo; i < trebleHi; i++) trebleSum += dataArray[i];
       const trebleAvgRaw = (trebleSum / (trebleHi - trebleLo)) / 255;
-      treblePeakRef.current = Math.max(trebleAvgRaw, treblePeakRef.current * 0.999);
+      treblePeakRef.current = Math.max(trebleAvgRaw, treblePeakRef.current * dtDecay(0.999));
       const trebleNorm = autoGainEnabled ? Math.min(1, trebleAvgRaw / Math.max(treblePeakRef.current, 0.05)) : trebleAvgRaw;
       liveTrebleLevelRef.current = trebleNorm;
 
@@ -645,11 +659,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       let trebleRaw: number;
       if (trebleBeatSync) {
         trebleRaw = trebleBeatPulseRef.current * trebleMultiplier * effMasterSensitivity * 90;
-        trebleBeatPulseRef.current *= 0.85;
+        trebleBeatPulseRef.current *= dtDecay(0.85);
       } else {
         trebleRaw = trebleAboveThreshold ? trebleNorm * trebleMultiplier * effMasterSensitivity * 90 : 0;
       }
-      trebleSmoothedRef.current = trebleSmoothing * trebleSmoothedRef.current + (1 - trebleSmoothing) * trebleRaw;
+      const trebleEma = dtDecay(trebleSmoothing);
+      trebleSmoothedRef.current = trebleEma * trebleSmoothedRef.current + (1 - trebleEma) * trebleRaw;
       const trebleColorValue = Math.max(trebleMin * 90, Math.min(trebleMax * 90, trebleSmoothedRef.current));
       liveTrebleSmoothedRef.current = trebleColorValue;
       setAudioTrebleLevel(trebleColorValue);
@@ -675,7 +690,8 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
 
       // Global energy — average of all bands, drives brightness in renderers
       const rawEnergy = (bassAvgRaw + midsAvgRaw + trebleAvgRaw) / 3;
-      energySmoothedRef.current = 0.25 * energySmoothedRef.current + 0.75 * rawEnergy;
+      const energyEma = dtDecay(0.25);
+      energySmoothedRef.current = energyEma * energySmoothedRef.current + (1 - energyEma) * rawEnergy;
       setAudioEnergy(Math.min(1, energySmoothedRef.current * effMasterSensitivity * 2));
 
       // Music-structure awareness — compare the fast-smoothed energy just
@@ -683,10 +699,12 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       // above 1 means the track just got a lot louder relative to its own
       // recent history (a real "drop"), well below 1 means a quiet
       // stretch — either way this scales down toward 1 for a steady mix.
-      longEnergyRef.current = longEnergyRef.current + (rawEnergy - longEnergyRef.current) * 0.0025;
+      const longEnergyRate = Math.min(1, 0.0025 * analyzeDtScale);
+      longEnergyRef.current = longEnergyRef.current + (rawEnergy - longEnergyRef.current) * longEnergyRate;
       const energyRatio = energySmoothedRef.current / Math.max(longEnergyRef.current, 0.04);
       const targetIntensity = Math.min(1.8, Math.max(0.5, 0.55 + energyRatio * 0.5));
-      musicIntensityRef.current += (targetIntensity - musicIntensityRef.current) * 0.05;
+      const musicIntensityRate = Math.min(1, 0.05 * analyzeDtScale);
+      musicIntensityRef.current += (targetIntensity - musicIntensityRef.current) * musicIntensityRate;
     };
 
     // No self-scheduling requestAnimationFrame here anymore — see
