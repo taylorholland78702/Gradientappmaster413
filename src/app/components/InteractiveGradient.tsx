@@ -1127,8 +1127,31 @@ export function InteractiveGradient() {
 
       rafId = requestAnimationFrame(loop);
     };
+    // Explicitly stop scheduling new frames while the tab is backgrounded
+    // instead of just leaving it to the browser's own rAF throttling —
+    // that throttling still burns some CPU/battery on a hidden tab (and
+    // varies by browser), whereas cancelling here stops it completely.
+    // lastFrameTime is reset on resume so dtScale doesn't have to eat a
+    // multi-second gap on the very next frame — it's already clamped to 3
+    // so this isn't required for correctness, just avoids the pointless
+    // computation.
+    let isPaused = false;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isPaused = true;
+        cancelAnimationFrame(rafId);
+      } else if (isPaused) {
+        isPaused = false;
+        lastFrameTime = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     rafId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Generate random color (memoized as it doesn't depend on state)
