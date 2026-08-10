@@ -136,7 +136,7 @@ function computeAudioBoundOverrides(base: Record<string, any>, bindings: { param
 // Used by the global chromatic-drift effect below — a single insertion
 // point that shifts hue for every gradient/effect at once instead of
 // touching all 28 draw functions individually.
-function rotateHue(colors: { r: number; g: number; b: number }[], degrees: number) {
+export function rotateHue(colors: { r: number; g: number; b: number }[], degrees: number) {
   const deg = ((degrees % 360) + 360) % 360;
   if (deg < 0.05) return colors;
   return colors.map(({ r, g, b }) => {
