@@ -123,6 +123,14 @@ export interface EffectsTabProps {
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
   glitchChromaSplit: number; setGlitchChromaSplit: (v: number) => void;
+  // Pixel Sort
+  pixelSortThreshold: number; setPixelSortThreshold: (v: number) => void;
+  pixelSortIntensity: number; setPixelSortIntensity: (v: number) => void;
+  pixelSortDirection: 'horizontal' | 'vertical'; setPixelSortDirection: (v: 'horizontal' | 'vertical') => void;
+  // Light Trails
+  lightTrailsDecay: number; setLightTrailsDecay: (v: number) => void;
+  lightTrailsThreshold: number; setLightTrailsThreshold: (v: number) => void;
+  lightTrailsIntensity: number; setLightTrailsIntensity: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -163,6 +171,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
+    pixelSortThreshold, setPixelSortThreshold, pixelSortIntensity, setPixelSortIntensity, pixelSortDirection, setPixelSortDirection,
+    lightTrailsDecay, setLightTrailsDecay, lightTrailsThreshold, setLightTrailsThreshold, lightTrailsIntensity, setLightTrailsIntensity,
   } = props;
 
   return (
@@ -1298,6 +1308,73 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('pixel-sort') && (
+                <EffectSection id="pixel-sort" label="Pixel Sort" isMulti={isMulti} expanded={expandedEffects.has('pixel-sort')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setPixelSortDirection('horizontal')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          pixelSortDirection === 'horizontal'
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Horz
+                      </button>
+                      <button
+                        onClick={() => setPixelSortDirection('vertical')}
+                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
+                          pixelSortDirection === 'vertical'
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-black/25 text-white hover:bg-white/15'
+                        }`}
+                      >
+                        Vert
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Threshold:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.05" max="0.95" step="0.05" value={pixelSortThreshold} onChange={(e) => setPixelSortThreshold(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.05" max="0.95" step="0.05" value={pixelSortThreshold} onChange={(e) => setPixelSortThreshold(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={pixelSortIntensity} onChange={(e) => setPixelSortIntensity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={pixelSortIntensity} onChange={(e) => setPixelSortIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('light-trails') && (
+                <EffectSection id="light-trails" label="Light Trails" isMulti={isMulti} expanded={expandedEffects.has('light-trails')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.8" max="0.995" step="0.005" value={lightTrailsDecay} onChange={(e) => setLightTrailsDecay(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.8" max="0.995" step="0.005" value={lightTrailsDecay} onChange={(e) => setLightTrailsDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Threshold:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={lightTrailsThreshold} onChange={(e) => setLightTrailsThreshold(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={lightTrailsThreshold} onChange={(e) => setLightTrailsThreshold(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={lightTrailsIntensity} onChange={(e) => setLightTrailsIntensity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={lightTrailsIntensity} onChange={(e) => setLightTrailsIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
