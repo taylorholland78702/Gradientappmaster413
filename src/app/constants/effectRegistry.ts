@@ -29,13 +29,11 @@ import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorke
 import { applyHalftoneWorkerAuto } from '../hooks/effects/applyHalftoneWorkerAuto';
 import { applyInvert } from '../hooks/effects/applyInvert';
 import { applyKaleidoscope } from '../hooks/effects/applyKaleidoscope';
-import { applyLightTrails } from '../hooks/effects/applyLightTrails';
 import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
-import { applyPixelSort } from '../hooks/effects/applyPixelSort';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
@@ -177,18 +175,11 @@ const EFFECT_REGISTRY = {
   halftone: { drawFn: applyHalftoneWorkerAuto, label: 'Halftone', cost: 4, category: ['Halftone'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
-  // Persistent buffer + 'lighten' compositing, same cost tier as Feedback/
-  // Chroma Trails (a full-frame draw plus a same-size buffer update every
-  // frame, no per-pixel JS loop).
-  'light-trails': { drawFn: applyLightTrails, label: 'Light Trails', cost: 3, category: ['Light Trails'], audio: true },
   // Same under-pricing issue as fisheye above — full-res per-pixel
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: false },
-  // Full-resolution getDisplayImageData + a sort per run above threshold —
-  // pricier than a flat per-pixel pass, same tier as Halftone.
-  'pixel-sort': { drawFn: applyPixelSort, label: 'Pixel Sort', cost: 4, category: ['Pixel Sort'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
