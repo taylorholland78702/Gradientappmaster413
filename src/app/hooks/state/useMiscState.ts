@@ -80,16 +80,6 @@ export function useMiscState() {
       return true;
     }
   });
-  // Quick Start chip row — a handful of curated one-click looks shown to
-  // first-time visitors so "I don't know where to start" isn't the first
-  // thing they hit, before ever finding the full control panel. Same
-  // localStorage-dismiss-once pattern as showWavHint above.
-  const [showQuickStart, setShowQuickStart] = useState(() => {
-    try { return !localStorage.getItem('wavQuickStartSeen'); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to read wavQuickStartSeen:', err);
-      return true;
-    }
-  });
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
@@ -215,8 +205,6 @@ export function useMiscState() {
     setIsExportDropdownOpen,
     showWavHint,
     setShowWavHint,
-    showQuickStart,
-    setShowQuickStart,
     isGradientsOpen,
     setIsGradientsOpen,
     isEffectsOpen,
