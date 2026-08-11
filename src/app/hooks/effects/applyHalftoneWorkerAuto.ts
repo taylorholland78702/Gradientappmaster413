@@ -55,7 +55,7 @@ export function applyHalftoneWorkerAuto(P: any): void { // eslint-disable-line @
     return;
   }
 
-  const { ctx, imageData, displayWidth, displayHeight, centerX, centerY, halftoneSize, halftoneCMYK, halftoneMove, halftoneVariation, halftoneTimeRef } = P;
+  const { imageData, displayWidth, displayHeight, centerX, centerY, halftoneSize, halftoneCMYK, halftoneMove, halftoneVariation, halftoneTimeRef, putScaledImageData } = P;
   if (!imageData) return;
 
   // No completed result yet (first-ever call, or the last one was
@@ -64,7 +64,14 @@ export function applyHalftoneWorkerAuto(P: any): void { // eslint-disable-line @
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyHalftone(P);
   } else {
-    ctx.putImageData(lastResult.imageData, 0, 0);
+    // putScaledImageData (not raw ctx.putImageData) — the canvas's actual
+    // device-pixel backing store can be smaller than displayWidth/
+    // displayHeight (effectiveResolutionMultiplier < 1 on large/high-DPR
+    // screens), with a transform scaling it back up for normal drawing
+    // calls. Raw putImageData ignores that transform and writes literal
+    // device pixels from (0,0), which clips the result to a small
+    // rectangle in the corner instead of filling the canvas.
+    putScaledImageData(lastResult.imageData);
   }
 
   if (!pending) {

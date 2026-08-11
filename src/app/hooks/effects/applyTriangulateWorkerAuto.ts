@@ -43,12 +43,15 @@ export function applyTriangulateWorkerAuto(P: any): void { // eslint-disable-lin
     return;
   }
 
-  const { ctx, canvas, displayWidth, displayHeight, centerX, centerY, triangleSize, triangulateVariation, resolutionMultiplier, isFirstEffect, audioModulation } = P;
+  const { canvas, displayWidth, displayHeight, centerX, centerY, triangleSize, triangulateVariation, resolutionMultiplier, isFirstEffect, audioModulation, putScaledImageData } = P;
 
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyTriangulate(P);
   } else {
-    ctx.putImageData(lastResult.imageData, 0, 0);
+    // putScaledImageData, not raw ctx.putImageData — see
+    // applyHalftoneWorkerAuto.ts for why (effectiveResolutionMultiplier
+    // scaling would otherwise clip this to the canvas's top-left corner).
+    putScaledImageData(lastResult.imageData);
   }
 
   if (!pending) {

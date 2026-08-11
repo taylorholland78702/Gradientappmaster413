@@ -44,13 +44,16 @@ export function applyGridEffectWorkerAuto(P: any): void { // eslint-disable-line
     return;
   }
 
-  const { ctx, canvas, displayWidth, displayHeight, gridRows, gridColumns, gridShapeSize, gridSides, gridRotation, gridVariation } = P;
+  const { canvas, displayWidth, displayHeight, gridRows, gridColumns, gridShapeSize, gridSides, gridRotation, gridVariation, putScaledImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyGridEffect(P);
   } else {
-    ctx.putImageData(lastResult.imageData, 0, 0);
+    // putScaledImageData, not raw ctx.putImageData — see
+    // applyHalftoneWorkerAuto.ts for why (effectiveResolutionMultiplier
+    // scaling would otherwise clip this to the canvas's top-left corner).
+    putScaledImageData(lastResult.imageData);
   }
 
   if (!pending) {
