@@ -15,9 +15,9 @@ import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
-import { applyChromaticTrails } from '../hooks/effects/applyChromaticTrails';
+import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
 import { applyCrt } from '../hooks/effects/applyCrt';
-import { applyDither } from '../hooks/effects/applyDither';
+import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
@@ -25,7 +25,7 @@ import { applyFisheye } from '../hooks/effects/applyFisheye';
 import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
 import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyGrain } from '../hooks/effects/applyGrain';
-import { applyGridEffect } from '../hooks/effects/applyGridEffect';
+import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
 import { applyHalftoneWorkerAuto } from '../hooks/effects/applyHalftoneWorkerAuto';
 import { applyInvert } from '../hooks/effects/applyInvert';
 import { applyKaleidoscope } from '../hooks/effects/applyKaleidoscope';
@@ -38,7 +38,7 @@ import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
-import { applyTriangulate } from '../hooks/effects/applyTriangulate';
+import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
 import { applyWave } from '../hooks/effects/applyWave';
@@ -148,14 +148,14 @@ const EFFECT_REGISTRY = {
   bloom: { drawFn: applyBloom, label: 'Bloom', cost: 1, category: ['Bloom'], audio: true },
   blur: { drawFn: applyBlurAuto, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
-  'chromatic-trails': { drawFn: applyChromaticTrails, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
+  'chromatic-trails': { drawFn: applyChromaticTrailsWorkerAuto, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
   // same cost tier as Blur/Chromatic.
   crt: { drawFn: applyCrt, label: 'Cathode', cost: 2, category: ['Cathode'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid/Fisheye.
-  dither: { drawFn: applyDither, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
+  dither: { drawFn: applyDitherWorkerAuto, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
   duotone: { drawFn: applyDuotone, label: 'Duotone', cost: 2, category: ['Duotone'], audio: true },
   emoji: { drawFn: applyEmoji, label: 'Emoji', cost: 2, category: ['Emoji'], audio: false },
   feedback: { drawFn: applyFeedback, label: 'Feedback', cost: 2, category: ['Feedback'], audio: true },
@@ -167,7 +167,7 @@ const EFFECT_REGISTRY = {
   fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
   glitch: { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
-  'grid-effect': { drawFn: applyGridEffect, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
+  'grid-effect': { drawFn: applyGridEffectWorkerAuto, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
   // CMYK mode (halftoneCMYK, ~40% of shuffles) draws 4 full rotated dot
   // grids with individual ctx.arc()+fill() calls each — even capped (see
   // applyHalftone.ts) that's several times costlier than a single-pass
@@ -184,7 +184,7 @@ const EFFECT_REGISTRY = {
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
-  triangulate: { drawFn: applyTriangulate, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
+  triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },

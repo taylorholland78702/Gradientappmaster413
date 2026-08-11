@@ -1,4 +1,5 @@
 import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { runChromaticTrails } from './chromaticTrailsDraw';
 
 export function applyChromaticTrails(P: any): void {
   const {
@@ -220,62 +221,40 @@ export function applyChromaticTrails(P: any): void {
     audioModulation,
     imageData
   } = P;
-            // Feedback's echo-trail mechanic, plus a per-channel spatial offset
-            // on the decaying trail so echoes separate into RGB fringes as they
-            // fade — distinct from Feedback (no fringing) and from Chromatic
-            // (no trail/decay).
-            if (canvas.width === 0 || canvas.height === 0) return;
-            // Trail buffer runs at half linear resolution (1/4 the pixels) —
-            // the per-pixel fringe/decay loop below scales directly with
-            // buffer area, and a chromatic-trail effect reads as a soft
-            // echo regardless, so the downsample costs nothing visually
-            // while cutting the loop's cost to a quarter. drawImage handles
-            // the upscale back to full size when compositing onto the main
-            // canvas.
-            const ctDownsample = 0.5;
-            const ctW = Math.max(1, Math.round(displayWidth * ctDownsample));
-            const ctH = Math.max(1, Math.round(displayHeight * ctDownsample));
-            if (!chromaticTrailsBufferRef.current || chromaticTrailsBufferRef.current.width !== ctW || chromaticTrailsBufferRef.current.height !== ctH) {
-              chromaticTrailsBufferRef.current = document.createElement('canvas');
-              chromaticTrailsBufferRef.current.width = ctW;
-              chromaticTrailsBufferRef.current.height = ctH;
-            }
-            const ctBuf = chromaticTrailsBufferRef.current;
-            const ctBufCtx = ctBuf.getContext('2d', { willReadFrequently: true })!;
-            const ctBufData = ctBufCtx.getImageData(0, 0, ctW, ctH);
-            const ctBd = ctBufData.data;
-            const ctOff = Math.max(1, Math.round(chromaticTrailsOffset * ctDownsample));
+  // Feedback's echo-trail mechanic, plus a per-channel spatial offset on
+  // the decaying trail so echoes separate into RGB fringes as they fade —
+  // distinct from Feedback (no fringing) and from Chromatic (no
+  // trail/decay).
+  if (canvas.width === 0 || canvas.height === 0) return;
+  // Trail buffer runs at half linear resolution (1/4 the pixels) — the
+  // per-pixel fringe/decay loop scales directly with buffer area, and a
+  // chromatic-trail effect reads as a soft echo regardless, so the
+  // downsample costs nothing visually while cutting the loop's cost to a
+  // quarter. drawImage handles the upscale back to full size when
+  // compositing onto the main canvas.
+  const ctDownsample = 0.5;
+  const ctW = Math.max(1, Math.round(displayWidth * ctDownsample));
+  const ctH = Math.max(1, Math.round(displayHeight * ctDownsample));
+  if (!chromaticTrailsBufferRef.current || chromaticTrailsBufferRef.current.width !== ctW || chromaticTrailsBufferRef.current.height !== ctH) {
+    chromaticTrailsBufferRef.current = document.createElement('canvas');
+    chromaticTrailsBufferRef.current.width = ctW;
+    chromaticTrailsBufferRef.current.height = ctH;
+  }
+  const ctBuf = chromaticTrailsBufferRef.current;
+  const ctBufCtx = ctBuf.getContext('2d', { willReadFrequently: true })!;
 
-            // Fringe + decay the trail: R sampled from the left, B from the
-            // right, G stays put, alpha scaled down by the decay factor.
-            const ctFringed = ctBufCtx.createImageData(ctW, ctH);
-            const ctFd = ctFringed.data;
-            for (let y = 0; y < ctH; y++) {
-              for (let x = 0; x < ctW; x++) {
-                const i = (y * ctW + x) * 4;
-                const rx = Math.max(0, Math.min(ctW - 1, x - ctOff));
-                const bx = Math.max(0, Math.min(ctW - 1, x + ctOff));
-                const ri = (y * ctW + rx) * 4;
-                const bi = (y * ctW + bx) * 4;
-                ctFd[i] = ctBd[ri];
-                ctFd[i + 1] = ctBd[i + 1];
-                ctFd[i + 2] = ctBd[bi + 2];
-                ctFd[i + 3] = Math.round(ctBd[i + 3] * chromaticTrailsDecay);
-              }
-            }
-            ctBufCtx.putImageData(ctFringed, 0, 0);
+  const ctTmp = getScratchCanvas('chromaticTrailsTmp', ctW, ctH);
+  const ctTmpCtx = ctTmp.getContext('2d', { willReadFrequently: true })!;
+  ctTmpCtx.drawImage(canvas, 0, 0, ctW, ctH);
+  const currentFramePixels = ctTmpCtx.getImageData(0, 0, ctW, ctH).data;
 
-            const ctTmp = getScratchCanvas('chromaticTrailsTmp', ctW, ctH);
-            ctTmp.getContext('2d')!.drawImage(canvas, 0, 0, ctW, ctH);
-
-            ctx.clearRect(0, 0, displayWidth, displayHeight);
-            ctx.drawImage(ctBuf, 0, 0, ctW, ctH, 0, 0, displayWidth, displayHeight);
-            ctx.globalCompositeOperation = 'lighten';
-            ctx.drawImage(ctTmp, 0, 0, ctW, ctH, 0, 0, displayWidth, displayHeight);
-            ctx.globalCompositeOperation = 'source-over';
-
-            // Feed the fresh (undecayed) frame back into the trail buffer.
-            ctBufCtx.globalCompositeOperation = 'lighten';
-            ctBufCtx.drawImage(ctTmp, 0, 0);
-            ctBufCtx.globalCompositeOperation = 'source-over';
+  // Drawing/blend logic itself lives in chromaticTrailsDraw.ts, shared
+  // with chromaticTrailsWorker.ts (see applyChromaticTrailsWorkerAuto.ts)
+  // so the exact same code runs whether this executes here on the main
+  // thread or inside a Worker.
+  runChromaticTrails(ctx, ctBufCtx, {
+    displayWidth, displayHeight, ctW, ctH,
+    chromaticTrailsOffset, chromaticTrailsDecay,
+    currentFramePixels, scratchCtx: ctTmpCtx,
+  });
 }

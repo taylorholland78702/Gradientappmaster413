@@ -1,4 +1,5 @@
 import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { drawGridEffectPixels } from './gridEffectDraw';
 
 export function applyGridEffect(P: any): void {
   const {
@@ -220,77 +221,29 @@ export function applyGridEffect(P: any): void {
     audioModulation,
     imageData
   } = P;
-            if (canvas.width === 0 || canvas.height === 0) return;
-            const tempCanvas = getScratchCanvas('gridEffect', displayWidth, displayHeight);
-            // willReadFrequently — read back via getImageData every frame below.
-            const gCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-            if (!gCtx) return;
-            gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, displayWidth, displayHeight);
-            const gridRowsSafeFx = Math.max(2, gridRows);
-            const gridColumnsSafeFx = Math.max(2, gridColumns);
-            const cw = displayWidth / gridColumnsSafeFx, ch = displayHeight / gridRowsSafeFx;
-            // One full-canvas read instead of two getImageData(x,y,1,1) calls
-            // per cell (up to (rows+1)*(cols+1)*2 individual calls/frame at a
-            // dense grid) — sampling out of a single typed array is far
-            // cheaper than repeated getImageData calls, each of which carries
-            // real per-call overhead regardless of the 1x1 region size.
-            let gridPixels: Uint8ClampedArray | null = null;
-            try {
-              gridPixels = gCtx.getImageData(0, 0, displayWidth, displayHeight).data;
-            } catch (e) { gridPixels = null; }
-            const sampleGrid = (px: number, py: number): [number, number, number] => {
-              if (!gridPixels) return [0, 0, 0];
-              const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(px)));
-              const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(py)));
-              const i = (sy * displayWidth + sx) * 4;
-              return [gridPixels[i], gridPixels[i + 1], gridPixels[i + 2]];
-            };
-            for (let r = 0; r < gridRowsSafeFx + 1; r++) {
-              for (let c = 0; c < gridColumnsSafeFx + 1; c++) {
-                const x = c * cw, y = r * ch;
-                const vx = gridVariation > 0 ? (Math.random() - 0.5) * cw * gridVariation : 0;
-                const vy = gridVariation > 0 ? (Math.random() - 0.5) * ch * gridVariation : 0;
-                const cx = x + cw / 2 + vx, cy = y + ch / 2 + vy;
-                const rad = Math.min(cw, ch) / 2 * (gridShapeSize / 25) * (gridVariation > 0 ? 1 + (Math.random() - 0.5) * gridVariation * 0.5 : 1);
-                const scx = Math.min(Math.max(0, cx), displayWidth - 1);
-                const scy = Math.min(Math.max(0, cy), displayHeight - 1);
-                const sex = Math.min(Math.max(0, x), displayWidth - 1);
-                const sey = Math.min(Math.max(0, y), displayHeight - 1);
-                let cc = '#000', ec = '#000';
-                if (gridPixels) {
-                  const cp = sampleGrid(scx, scy);
-                  cc = `rgb(${cp[0]},${cp[1]},${cp[2]})`;
-                  const ep = sampleGrid(sex, sey);
-                  ec = `rgb(${ep[0]},${ep[1]},${ep[2]})`;
-                } else { cc = '#000'; ec = '#333'; }
-                const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-                g.addColorStop(0, cc);
-                g.addColorStop(1, ec);
-                ctx.fillStyle = g;
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate((gridRotation * Math.PI) / 180 + (gridVariation > 0 ? Math.random() * gridVariation * Math.PI : 0));
-                ctx.translate(-cx, -cy);
-                ctx.beginPath();
-                if (gridSides === 1) {
-                  // Dot (circle)
-                  ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-                } else if (gridSides === 2) {
-                  // Line (vertical line with thickness = rad)
-                  ctx.rect(cx - rad, cy - displayHeight * 2, rad * 2, displayHeight * 4);
-                } else if (gridSides > 2) {
-                  // Polygon (3+ sides)
-                  for (let i = 0; i < gridSides; i++) {
-                    const a = (i * 2 * Math.PI / gridSides) - (gridSides % 2 === 1 ? Math.PI / 2 : 0);
-                    const px = cx + rad * Math.cos(a), py = cy + rad * Math.sin(a);
-                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                  }
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-              }
-            }
+  if (canvas.width === 0 || canvas.height === 0) return;
+  const tempCanvas = getScratchCanvas('gridEffect', displayWidth, displayHeight);
+  // willReadFrequently — read back via getImageData every frame below.
+  const gCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+  if (!gCtx) return;
+  gCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, displayWidth, displayHeight);
+  // One full-canvas read instead of two getImageData(x,y,1,1) calls per
+  // cell (up to (rows+1)*(cols+1)*2 individual calls/frame at a dense
+  // grid) — sampling out of a single typed array is far cheaper than
+  // repeated getImageData calls, each of which carries real per-call
+  // overhead regardless of the 1x1 region size.
+  let gridPixels: Uint8ClampedArray | null = null;
+  try {
+    gridPixels = gCtx.getImageData(0, 0, displayWidth, displayHeight).data;
+  } catch (e) { gridPixels = null; }
+  // Drawing logic itself lives in gridEffectDraw.ts, shared with
+  // gridEffectWorker.ts (see applyGridEffectWorkerAuto.ts) so the exact
+  // same code runs whether this executes here on the main thread or
+  // inside a Worker against an OffscreenCanvas.
+  drawGridEffectPixels(ctx, {
+    displayWidth, displayHeight, gridRows, gridColumns, gridShapeSize,
+    gridSides, gridRotation, gridVariation, pixels: gridPixels,
+  });
 }

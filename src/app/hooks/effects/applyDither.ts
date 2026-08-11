@@ -1,3 +1,5 @@
+import { ditherPixels } from './ditherPixels';
+
 export function applyDither(P: any): void {
   const {
     activeEffects,
@@ -218,44 +220,10 @@ export function applyDither(P: any): void {
     audioModulation,
     imageData
   } = P;
-            // Dither effect
-            const ditherImageData = getDisplayImageData();
-            const ditherData = ditherImageData.data;
-          
-            const bayer = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
-            const lv = Math.max(2, ditherLevels);
-            const st = 255 / (lv - 1);
-          
-            if (ditherType === 'bayer') {
-              for (let y = 0; y < displayHeight; y++) {
-                for (let x = 0; x < displayWidth; x++) {
-                  const i = (y * displayWidth + x) * 4;
-                  const t = (bayer[y % 4][x % 4] / 16) * st;
-                  for (let c = 0; c < 3; c++) {
-                    const v = Math.round(ditherData[i+c] / st) * st;
-                    ditherData[i+c] = ditherData[i+c] + t > v + st/2 ? Math.min(255, v+st) : v;
-                  }
-                }
-              }
-            } else {
-              for (let y = 0; y < displayHeight; y++) {
-                for (let x = 0; x < displayWidth; x++) {
-                  const i = (y * displayWidth + x) * 4;
-                  for (let c = 0; c < 3; c++) {
-                    const old = ditherData[i+c];
-                    const nv = Math.round(old / st) * st;
-                    ditherData[i+c] = nv;
-                    const e = old - nv;
-                    if (x+1 < displayWidth) ditherData[i+4+c] += e*.44;
-                    if (y+1 < displayHeight) {
-                      if (x > 0) ditherData[i+displayWidth*4-4+c] += e*.19;
-                      ditherData[i+displayWidth*4+c] += e*.31;
-                      if (x+1 < displayWidth) ditherData[i+displayWidth*4+4+c] += e*.06;
-                    }
-                  }
-                }
-              }
-            }
-          
-            putScaledImageData(ditherImageData);
+  // Dither effect. Pixel math itself lives in ditherPixels.ts, shared with
+  // ditherWorker.ts (see applyDitherWorkerAuto.ts) so the exact same code
+  // runs whether this executes here on the main thread or inside a Worker.
+  const ditherImageData = getDisplayImageData();
+  ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels);
+  putScaledImageData(ditherImageData);
 }

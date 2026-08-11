@@ -1,4 +1,5 @@
 import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { drawTrianglePixels } from './triangulateDraw';
 
 export function applyTriangulate(P: any): void {
   const {
@@ -221,75 +222,27 @@ export function applyTriangulate(P: any): void {
     audioModulation,
     imageData
   } = P;
-            const tCanvas = getScratchCanvas('triangulate', canvas.width, canvas.height);
-            // willReadFrequently — this scratch canvas exists to be read back
-            // via getImageData every frame (see the sampling comment below).
-            const tCtx = tCanvas.getContext('2d', { willReadFrequently: true });
-            if (!tCtx) return;
-            tCtx.drawImage(canvas, 0, 0);
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, displayWidth, displayHeight);
-            const tSz = Math.max(10, triangleSize + (isFirstEffect ? Math.floor(audioModulation * 40) : 0));
-            // Center the grid so pattern emanates from canvas center
-            const tHalfCols = Math.ceil(displayWidth / tSz / 2) + 1;
-            const tHalfRows = Math.ceil(displayHeight / tSz / 2) + 1;
-            // One full-canvas read instead of two getImageData(x,y,1,1) calls
-            // per cell — at a small triangleSize on a large canvas that was
-            // tens of thousands of individual getImageData calls per frame,
-            // each carrying real per-call overhead. Sampling straight out of
-            // a single typed array is orders of magnitude cheaper.
-            const tPixels = tCtx.getImageData(0, 0, tCanvas.width, tCanvas.height).data;
-            const tSampleW = tCanvas.width;
-            const tSampleH = tCanvas.height;
-            const sample = (px: number, py: number) => {
-              const sx = Math.max(0, Math.min(tSampleW - 1, Math.round(px)));
-              const sy = Math.max(0, Math.min(tSampleH - 1, Math.round(py)));
-              const i = (sy * tSampleW + sx) * 4;
-              return [tPixels[i], tPixels[i + 1], tPixels[i + 2]];
-            };
-            // Orientation variation — every cell used to split along the same
-            // fixed diagonal (top-left to bottom-right), giving a uniform
-            // "woven" look regardless of content. A deterministic per-cell
-            // hash (not Math.random(), which would flicker a different split
-            // every frame) flips a fraction of cells to the other diagonal
-            // instead, similar in spirit to Halftone's halftoneVariation.
-            const triVariation = triangulateVariation ?? 0;
-            for (let r = -tHalfRows; r <= tHalfRows; r++) {
-              for (let c = -tHalfCols; c <= tHalfCols; c++) {
-                const x = centerX + c * tSz - tSz / 2;
-                const y = centerY + r * tSz - tSz / 2;
-                const cellHash = Math.abs(Math.sin(r * 12.9898 + c * 78.233)) % 1;
-                const flipped = triVariation > 0 && cellHash < triVariation;
-                const sxA = Math.max(0, Math.min(displayWidth - 1, x + tSz / 2)) * resolutionMultiplier;
-                const syA = Math.max(0, Math.min(displayHeight - 1, y + tSz / 2)) * resolutionMultiplier;
-                const dA = sample(sxA, syA);
-                ctx.fillStyle = `rgb(${dA[0]},${dA[1]},${dA[2]})`;
-                ctx.beginPath();
-                if (flipped) {
-                  ctx.moveTo(x + tSz, y);
-                  ctx.lineTo(x, y);
-                  ctx.lineTo(x, y + tSz);
-                } else {
-                  ctx.moveTo(x, y);
-                  ctx.lineTo(x + tSz, y);
-                  ctx.lineTo(x + tSz, y + tSz);
-                }
-                ctx.fill();
-                const sxB = Math.max(0, Math.min(displayWidth - 1, x + tSz / 3)) * resolutionMultiplier;
-                const syB = Math.max(0, Math.min(displayHeight - 1, y + tSz / 3)) * resolutionMultiplier;
-                const dB = sample(sxB, syB);
-                ctx.fillStyle = `rgb(${dB[0]},${dB[1]},${dB[2]})`;
-                ctx.beginPath();
-                if (flipped) {
-                  ctx.moveTo(x + tSz, y);
-                  ctx.lineTo(x + tSz, y + tSz);
-                  ctx.lineTo(x, y + tSz);
-                } else {
-                  ctx.moveTo(x, y);
-                  ctx.lineTo(x, y + tSz);
-                  ctx.lineTo(x + tSz, y + tSz);
-                }
-                ctx.fill();
-              }
-            }
+  const tCanvas = getScratchCanvas('triangulate', canvas.width, canvas.height);
+  // willReadFrequently — this scratch canvas exists to be read back via
+  // getImageData every frame (see the sampling comment below).
+  const tCtx = tCanvas.getContext('2d', { willReadFrequently: true });
+  if (!tCtx) return;
+  tCtx.drawImage(canvas, 0, 0);
+  const tSz = Math.max(10, triangleSize + (isFirstEffect ? Math.floor(audioModulation * 40) : 0));
+  // One full-canvas read instead of two getImageData(x,y,1,1) calls per
+  // cell — at a small triangleSize on a large canvas that was tens of
+  // thousands of individual getImageData calls per frame, each carrying
+  // real per-call overhead. Sampling straight out of a single typed array
+  // is orders of magnitude cheaper.
+  const tPixels = tCtx.getImageData(0, 0, tCanvas.width, tCanvas.height).data;
+  // Drawing logic itself lives in triangulateDraw.ts, shared with
+  // triangulateWorker.ts (see applyTriangulateWorkerAuto.ts) so the exact
+  // same code runs whether this executes here on the main thread or
+  // inside a Worker.
+  drawTrianglePixels(ctx, {
+    displayWidth, displayHeight, centerX, centerY,
+    triangleSize: tSz, triangulateVariation, resolutionMultiplier,
+    sampleWidth: tCanvas.width, sampleHeight: tCanvas.height,
+    pixels: tPixels,
+  });
 }
