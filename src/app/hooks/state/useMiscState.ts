@@ -12,6 +12,7 @@ export function useMiscState() {
     voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, causticsAnimTime: 0,
     lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0, moireAnimTime: 0,
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0, tilingAnimTime: 0,
+    waveInterferenceAnimTime: 0, meshWireframeAnimTime: 0,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
     // gridRotation/radarSweepAngle: same ref-primary treatment as the anim
     // times above — the main loop writes these directly every frame now

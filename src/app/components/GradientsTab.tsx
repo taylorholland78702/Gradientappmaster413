@@ -92,10 +92,20 @@ export interface GradientsTabProps {
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
   reactionDiffusionSpeed: number; setReactionDiffusionSpeed: (v: number) => void;
 
-  // Shared field mapping (Reaction-Diffusion, Marble, Caustics, Topographic, Julia, Plasma)
+  // Shared field mapping (Reaction-Diffusion, Marble, Caustics, Topographic, Julia, Plasma, Wave Interference, Mesh Wireframe)
   fieldContrast: number; setFieldContrast: (v: number) => void;
   paletteMode: 'linear' | 'banded' | 'cyclic'; setPaletteMode: (v: 'linear' | 'banded' | 'cyclic') => void;
   paletteBands: number; setPaletteBands: (v: number) => void;
+
+  // Wave Interference
+  waveInterferenceSourceCount: number; setWaveInterferenceSourceCount: (v: number) => void;
+  waveInterferenceFrequency: number; setWaveInterferenceFrequency: (v: number) => void;
+  waveInterferenceSpeed: number; setWaveInterferenceSpeed: (v: number) => void;
+
+  // Mesh Wireframe
+  meshWireframeGridSize: number; setMeshWireframeGridSize: (v: number) => void;
+  meshWireframeJitter: number; setMeshWireframeJitter: (v: number) => void;
+  meshWireframeLineWidth: number; setMeshWireframeLineWidth: (v: number) => void;
 
   // Topographic
   topographicScale: number; setTopographicScale: (v: number) => void;
@@ -192,6 +202,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
+    waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
+    meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
@@ -685,6 +697,44 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
               { label: 'Line Width', value: topographicLineWidth, set: setTopographicLineWidth, min: 0.01, max: 0.15, step: 0.005 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'wave-interference' && (
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {renderFieldMappingRows()}
+            {[
+              { label: 'Sources', value: waveInterferenceSourceCount, set: setWaveInterferenceSourceCount, min: 2, max: 8, step: 1 },
+              { label: 'Frequency', value: waveInterferenceFrequency, set: setWaveInterferenceFrequency, min: 1, max: 20, step: 0.5 },
+              { label: 'Speed', value: waveInterferenceSpeed, set: setWaveInterferenceSpeed, min: 0.1, max: 5, step: 0.1 },
+            ].map(({ label, value, set, min, max, step }) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gradientType === 'mesh-wireframe' && (
+          <div className="w-full px-3 py-1 bg-black/25 rounded-lg [&>*:last-child]:mb-0">
+            {renderFieldMappingRows()}
+            {[
+              { label: 'Grid Size', value: meshWireframeGridSize, set: setMeshWireframeGridSize, min: 3, max: 30, step: 1 },
+              { label: 'Jitter', value: meshWireframeJitter, set: setMeshWireframeJitter, min: 0, max: 1, step: 0.05 },
+              { label: 'Line Width', value: meshWireframeLineWidth, set: setMeshWireframeLineWidth, min: 0, max: 4, step: 0.25 },
+            ].map(({ label, value, set, min, max, step }) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">

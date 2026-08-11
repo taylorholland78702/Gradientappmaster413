@@ -33,6 +33,8 @@ import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
 import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
+import { drawWaveInterference } from './drawWaveInterference';
+import { drawMeshWireframe } from './drawMeshWireframe';
 
 // Lazily code-split the heaviest, least-often-selected gradients (large
 // simulation-based implementations that are rarely anyone's first pick —
@@ -289,4 +291,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'tiling': drawTilingAuto,
   'fireworks': drawFireworksLazy,
   'lightning': drawLightningLazy,
+  'wave-interference': drawWaveInterference,
+  'mesh-wireframe': drawMeshWireframe,
 };
