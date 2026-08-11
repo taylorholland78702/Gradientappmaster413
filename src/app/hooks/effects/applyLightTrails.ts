@@ -256,12 +256,7 @@ export function applyLightTrails(P: any): void {
   // Fade the existing trail buffer in place — destination-in with a
   // uniform alpha fill multiplies every existing pixel's alpha by `decay`
   // without a per-pixel JS loop (same idiom used to age a persistent
-  // canvas cheaply elsewhere in this codebase). This multiplies every
-  // frame, so the half-life in frames is ln(0.5)/ln(decay) — at the old
-  // default of 0.92 that's under 9 frames (~0.15s at 60fps), too short for
-  // any accumulation to actually read as a trail before it's forgotten.
-  // The slider's range now defaults well above that so streaks persist
-  // long enough to be visible.
+  // canvas cheaply elsewhere in this codebase).
   bufCtx.globalCompositeOperation = 'destination-in';
   bufCtx.fillStyle = `rgba(0,0,0,${decay})`;
   bufCtx.fillRect(0, 0, displayWidth, displayHeight);
