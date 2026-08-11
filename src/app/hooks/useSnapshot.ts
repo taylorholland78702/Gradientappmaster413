@@ -476,9 +476,9 @@ export function useSnapshot(params: SnapshotParams) {
     setPixelSortThreshold(snapshot.pixelSortThreshold ?? 0.5);
     setPixelSortIntensity(snapshot.pixelSortIntensity ?? 0.6);
     setPixelSortDirection(snapshot.pixelSortDirection ?? 'horizontal');
-    setLightTrailsDecay(snapshot.lightTrailsDecay ?? 0.92);
+    setLightTrailsDecay(snapshot.lightTrailsDecay ?? 0.97);
     setLightTrailsThreshold(snapshot.lightTrailsThreshold ?? 0.6);
-    setLightTrailsIntensity(snapshot.lightTrailsIntensity ?? 0.8);
+    setLightTrailsIntensity(snapshot.lightTrailsIntensity ?? 1);
     setFieldContrast(snapshot.fieldContrast ?? 1);
     setPaletteMode(snapshot.paletteMode ?? 'linear');
     setPaletteBands(snapshot.paletteBands ?? 5);
