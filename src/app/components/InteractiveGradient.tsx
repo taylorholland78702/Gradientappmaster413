@@ -41,6 +41,7 @@ import {
   WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
+import { QUICK_START_PRESETS } from '../constants/quickStart';
 import { useAngleState } from '../hooks/state/useAngleState';
 import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
@@ -322,7 +323,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, showQuickStart, setShowQuickStart, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, videoInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, prevBassForRippleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   const { panelDragRef } = usePanelDragState();
@@ -438,7 +439,37 @@ export function InteractiveGradient() {
       if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
     }
   };
-  
+
+  // Quick Start chip row — same dismiss-once pattern as the gesture hint
+  // above, but its own flag so dismissing one doesn't silently dismiss the
+  // other for a returning user.
+  const dismissQuickStart = () => {
+    setShowQuickStart(false);
+    try { localStorage.setItem('wavQuickStartSeen', '1'); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to persist wavQuickStartSeen:', err);
+    }
+  };
+
+  // Applies a curated one-click look via the same buildSnapshot/
+  // applySnapshot path presets and shared-preset links use (see
+  // applyPresetData below) — a Quick Start chip is just a partial snapshot
+  // (gradient type + colors + a couple effects), with every other field
+  // left at applySnapshot's own defaults. Snaps the refs the draw loop
+  // actually reads straight to the new values (same as applyPresetData)
+  // instead of letting them ease in from whatever was on screen, so the
+  // very first thing a new user does reads as instant, not laggy.
+  const applyQuickStart = (preset: typeof QUICK_START_PRESETS[number]) => {
+    applySnapshot({
+      gradientType: preset.gradientType,
+      gradientColors: preset.gradientColors,
+      activeEffects: preset.activeEffects,
+    });
+    gradientColorsRef.current = preset.gradientColors.map((c) => ({ ...c }));
+    gradientAngleRef.current = 45;
+    zoomRef.current = 1;
+    dismissQuickStart();
+  };
+
   // Effect parameters
   // Dust-scratches was merged into film-grain — only its crackle-lines slider
   // survives as an add-on (the noise portion was identical to grain's own).
@@ -3522,6 +3553,35 @@ export function InteractiveGradient() {
         />
       </div>
       
+      {/* Quick Start chips — first-time-visitor on-ramp, dismissed once
+          (localStorage) or as soon as a chip is picked. Top-center is the
+          one part of the canvas the control panel (top-left/bottom) and
+          the mobile collapsed pill never occupy. */}
+      {showQuickStart && !IS_DISPLAY_MODE && (
+        <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-[92vw] bg-black/25 border border-white/10 rounded-lg px-2 py-1.5">
+            <span className="text-[10px] text-white/70 whitespace-nowrap pl-1">Try a vibe:</span>
+            {QUICK_START_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => applyQuickStart(preset)}
+                className="px-2 py-1 rounded text-[10px] font-medium text-white bg-white/10 hover:bg-white/20 transition-all whitespace-nowrap"
+              >
+                {preset.label}
+              </button>
+            ))}
+            <button
+              onClick={dismissQuickStart}
+              aria-label="Dismiss quick start"
+              title="Dismiss"
+              className="ml-1 px-1.5 py-1 rounded text-[11px] text-white/50 hover:text-white hover:bg-white/10 transition-all"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Upper Right Controls */}
       <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <input
