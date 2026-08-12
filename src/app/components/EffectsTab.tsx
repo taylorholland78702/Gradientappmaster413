@@ -14,7 +14,9 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 // ordinary entries in EFFECT_REGISTRY, still in the same activeEffects
 // array, still in Shuffle's pool — this list only controls where their
 // button renders.
-const GENERATIVE_EFFECT_IDS: EffectType[] = ['triangle-field', 'fluid-field', 'static-field', 'particle-trails'];
+// Alphabetized by label — this is the order the section's button grid
+// renders in, so keep new entries sorted in by their display label.
+const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'fluid-field', 'particle-trails', 'static-field', 'triangle-field', 'wind-streaks'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -151,6 +153,14 @@ export interface EffectsTabProps {
   particleTrailsCount: number; setParticleTrailsCount: (v: number) => void;
   particleTrailsSpeed: number; setParticleTrailsSpeed: (v: number) => void;
   particleTrailsOpacity: number; setParticleTrailsOpacity: (v: number) => void;
+  // Wind Streaks
+  windStreaksCount: number; setWindStreaksCount: (v: number) => void;
+  windStreaksSpeed: number; setWindStreaksSpeed: (v: number) => void;
+  windStreaksOpacity: number; setWindStreaksOpacity: (v: number) => void;
+  // Aura Glow
+  auraGlowCount: number; setAuraGlowCount: (v: number) => void;
+  auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
+  auraGlowOpacity: number; setAuraGlowOpacity: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -195,6 +205,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
     staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
     particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity,
+    windStreaksCount, setWindStreaksCount, windStreaksSpeed, setWindStreaksSpeed, windStreaksOpacity, setWindStreaksOpacity,
+    auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
   } = props;
 
   return (
@@ -1478,6 +1490,52 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('wind-streaks') && (
+                <EffectSection id="wind-streaks" label="Wind Streaks" isMulti={isMulti} expanded={expandedEffects.has('wind-streaks')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
+                    <input type="range" min="15" max="150" step="5" value={windStreaksCount} onChange={(e) => setWindStreaksCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="15" max="150" step="5" value={windStreaksCount} onChange={(e) => setWindStreaksCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.2" max="4" step="0.1" value={windStreaksSpeed} onChange={(e) => setWindStreaksSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.2" max="4" step="0.1" value={windStreaksSpeed} onChange={(e) => setWindStreaksSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={windStreaksOpacity} onChange={(e) => setWindStreaksOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={windStreaksOpacity} onChange={(e) => setWindStreaksOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('aura-glow') && (
+                <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={expandedEffects.has('aura-glow')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Lights:</label>
+                    <input type="range" min="1" max="6" step="1" value={auraGlowCount} onChange={(e) => setAuraGlowCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="1" max="6" step="1" value={auraGlowCount} onChange={(e) => setAuraGlowCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="3" step="0.1" value={auraGlowSpeed} onChange={(e) => setAuraGlowSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="3" step="0.1" value={auraGlowSpeed} onChange={(e) => setAuraGlowSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

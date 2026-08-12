@@ -11,6 +11,7 @@
 // object; only the EffectSection UI block in EffectsTab.tsx (genuinely
 // bespoke JSX per effect, not metadata) still needs a manual touch.
 import { applyAscii } from '../hooks/effects/applyAscii';
+import { applyAuraGlow } from '../hooks/effects/applyAuraGlow';
 import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
@@ -47,6 +48,7 @@ import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
 import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
+import { applyWindStreaks } from '../hooks/effects/applyWindStreaks';
 
 interface EffectRegistryEntry {
   drawFn: (P: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -149,6 +151,11 @@ function applyMirrorAuto(P: any): void {
 // and ALL_EFFECTS iterate in, so keep new entries sorted in.
 const EFFECT_REGISTRY = {
   ascii: { drawFn: applyAscii, label: 'ASCII', cost: 2, category: ['ASCII'], audio: false },
+  // Generative overlay (a few drifting native-radial-gradient light
+  // sources, doesn't sample the frame beneath it) — no per-pixel loop at
+  // all, same technique Aurora/Fade already use, so this sits a tier below
+  // the ImageData-based generative effects.
+  'aura-glow': { drawFn: applyAuraGlow, label: 'Aura Glow', cost: 2, category: ['Aura Glow'], audio: true },
   bloom: { drawFn: applyBloom, label: 'Bloom', cost: 1, category: ['Bloom'], audio: true },
   blur: { drawFn: applyBlurAuto, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
@@ -209,6 +216,10 @@ const EFFECT_REGISTRY = {
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
+  // Generative overlay (owns and moves its own directional streaks,
+  // doesn't sample the frame beneath it) — persistent trail buffer + a
+  // stroke per streak every frame, same cost tier as Particle Trails.
+  'wind-streaks': { drawFn: applyWindStreaks, label: 'Wind Streaks', cost: 3, category: ['Wind Streaks'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 
 // 'none' is a legacy sentinel value (never a real registered effect — no
