@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shuffle } from '@phosphor-icons/react';
+import React, { useState } from 'react';
+import { Shuffle, CaretDown } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
@@ -209,6 +209,33 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
   } = props;
 
+  const [isGenerativeFxOpen, setIsGenerativeFxOpen] = useState(true);
+
+  // Scoped to GENERATIVE_EFFECT_IDS only, unlike the main Shuffle Effects
+  // button (which redraws the entire activeEffects set from all of
+  // ALL_EFFECTS) — this only touches which generative effect(s) are
+  // active, leaving any non-generative effects already on untouched.
+  const shuffleGenerativeEffects = () => {
+    const nonGenerative = activeEffects.filter((e: EffectType) => !GENERATIVE_EFFECT_IDS.includes(e));
+    if (isMultiFxMode) {
+      const shuffled = [...GENERATIVE_EFFECT_IDS].sort(() => Math.random() - 0.5);
+      const numPicks = Math.floor(Math.random() * Math.min(3, shuffled.length)) + 1;
+      const picks: EffectType[] = [];
+      let cost = totalCost(nonGenerative);
+      for (const id of shuffled) {
+        if (picks.length >= numPicks) break;
+        const c = costOf(id);
+        if (cost + c > MULTI_FX_COST_BUDGET) continue;
+        picks.push(id);
+        cost += c;
+      }
+      setActiveEffects([...nonGenerative, ...picks]);
+    } else {
+      const pick = GENERATIVE_EFFECT_IDS[Math.floor(Math.random() * GENERATIVE_EFFECT_IDS.length)];
+      setActiveEffects([pick]);
+    }
+  };
+
   return (
     <>
         <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
@@ -297,13 +324,36 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
         {/* Generative FX — paint their own evolving content instead of
             transforming the frame beneath them (see GENERATIVE_EFFECT_IDS
             above). Same button/toggle behavior as the main grid, just its
-            own labeled section so it reads as a different kind of effect
-            rather than being alphabetically buried among the transform
-            ones. No dedicated shuffle here — Shuffle Effects above already
-            draws from the full pool, generative effects included. */}
+            own labeled, collapsible section so it reads as a different
+            kind of effect rather than being alphabetically buried among
+            the transform ones. MULTI shares the same global isMultiFxMode
+            as the main row (one activeEffects array, one multi-mode);
+            Shuffle and Reset are scoped to just this section's effects. */}
         <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
-          <div className="py-1 border-b border-white/10 text-center leading-none">
-            <span className="text-[10px] font-semibold text-white">GENERATIVE FX</span>
+          <button
+            onClick={() => setIsGenerativeFxOpen(!isGenerativeFxOpen)}
+            className="flex items-center justify-center gap-1 w-full py-1 bg-transparent outline-none hover:bg-white/5 active:bg-transparent focus:outline-none appearance-none border-b border-white/10"
+          >
+            <span className="text-[10px] font-semibold text-white leading-none">GENERATIVE FX</span>
+            <CaretDown weight="regular" className={`w-3 h-3 text-white/40 transition-transform shrink-0 ${isGenerativeFxOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isGenerativeFxOpen && (
+          <>
+          <div className="w-full flex gap-0 border-b border-white/10">
+            <button
+              onClick={() => setIsMultiFxMode(!isMultiFxMode)}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              title="Toggle Multi-FX (M)"
+            >MULTI</button>
+            <button
+              onClick={shuffleGenerativeEffects}
+              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
+              title="Shuffle Generative FX"
+            ><Shuffle weight="regular" className="w-4 h-4" /></button>
+            <button
+              onClick={() => setActiveEffects(activeEffects.filter((e: EffectType) => !GENERATIVE_EFFECT_IDS.includes(e)))}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${!activeEffects.some((e: EffectType) => GENERATIVE_EFFECT_IDS.includes(e)) ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+            >RESET</button>
           </div>
           <div className="grid grid-cols-2 gap-0">
             {GENERATIVE_EFFECT_IDS.map((value, i) => {
@@ -347,6 +397,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               );
             })}
           </div>
+          </>
+          )}
         </div>
 
         {activeEffects.length > 0 && (() => {
