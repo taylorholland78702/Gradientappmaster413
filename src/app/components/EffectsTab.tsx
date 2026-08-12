@@ -280,8 +280,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             ones. No dedicated shuffle here — Shuffle Effects above already
             draws from the full pool, generative effects included. */}
         <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
-          <div className="py-1 border-b border-white/10 text-center">
-            <span className="text-[10px] font-semibold text-white">Generative FX</span>
+          <div className="py-1 border-b border-white/10 text-center leading-none">
+            <span className="text-[10px] font-semibold text-white">GENERATIVE FX</span>
           </div>
           <div className="grid grid-cols-2 gap-0">
             {GENERATIVE_EFFECT_IDS.map((value, i) => {
