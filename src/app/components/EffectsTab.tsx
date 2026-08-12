@@ -3,6 +3,18 @@ import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
+
+// Generative effects paint their own evolving content from scratch each
+// frame (an overlay, composited via their own Opacity slider) instead of
+// reading and transforming whatever's already on the canvas, the way every
+// other effect here does. That's a different enough mental model — they
+// don't need anything else active to look interesting — that they get
+// their own section below the main grid rather than sitting alphabetically
+// interleaved with the transform effects. Purely a UI grouping: still
+// ordinary entries in EFFECT_REGISTRY, still in the same activeEffects
+// array, still in Shuffle's pool — this list only controls where their
+// button renders.
+const GENERATIVE_EFFECT_IDS: EffectType[] = ['triangle-field', 'fluid-field'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -200,7 +212,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             // instead of a hand-maintained list — adding/removing an effect no longer
             // requires touching this array too.
             const effectsList: { value: EffectType; label: string }[] =
-              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }));
+              EFFECTS_UI_LIST.filter((value) => !GENERATIVE_EFFECT_IDS.includes(value))
+                .map((value) => ({ value, label: EFFECT_LABELS[value] }));
             const rows = Math.ceil(effectsList.length / 2);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
@@ -257,6 +270,58 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               </div>
             );
           })()}
+        </div>
+
+        {/* Generative FX — paint their own evolving content instead of
+            transforming the frame beneath them (see GENERATIVE_EFFECT_IDS
+            above). Same button/toggle behavior as the main grid, just its
+            own labeled section so it reads as a different kind of effect
+            rather than being alphabetically buried among the transform
+            ones. No dedicated shuffle here — Shuffle Effects above already
+            draws from the full pool, generative effects included. */}
+        <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
+          <div className="px-2 py-1 border-b border-white/10">
+            <span className="text-[10px] text-white/60 uppercase tracking-wide">Generative FX</span>
+          </div>
+          <div className="grid grid-cols-2 gap-0">
+            {GENERATIVE_EFFECT_IDS.map((value, i) => {
+              const label = EFFECT_LABELS[value];
+              const isActive = activeEffects.includes(value);
+              const wouldExceedBudget = isMultiFxMode && !isActive
+                && totalCost(activeEffects) + costOf(value) > MULTI_FX_COST_BUDGET;
+              return (
+                <button
+                  key={value}
+                  disabled={wouldExceedBudget}
+                  title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
+                  onClick={() => {
+                    if (isMultiFxMode) {
+                      if (isActive) {
+                        setActiveEffects(activeEffects.filter(e => e !== value));
+                      } else if (!wouldExceedBudget) {
+                        setActiveEffects([...activeEffects, value]);
+                      }
+                    } else {
+                      if (isActive && activeEffects.length === 1) {
+                        setActiveEffects([]);
+                      } else {
+                        setActiveEffects([value]);
+                      }
+                    }
+                  }}
+                  className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${i === 0 ? 'border-r border-white/10' : ''} ${
+                    isActive
+                      ? 'bg-white text-black font-bold'
+                      : wouldExceedBudget
+                        ? 'text-white/30 wav-disabled-text cursor-not-allowed'
+                        : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {activeEffects.length > 0 && (() => {
