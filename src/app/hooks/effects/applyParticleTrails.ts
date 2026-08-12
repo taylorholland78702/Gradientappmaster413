@@ -274,10 +274,14 @@ export function applyParticleTrails(P: any): void {
 
   const ptAudioActive = isFirstEffect && isAudioReactive;
   const speedMul = particleTrailsSpeed * (ptAudioActive ? 1 + audioTrebleLevel * 0.6 : 1);
-  // Bass hits let the trail buffer hang on to light a little longer —
-  // reads as trails blooming brighter/longer on a kick rather than a flat
-  // constant decay rate.
-  const decay = ptAudioActive ? Math.min(0.98, 0.9 + audioSubBassLevel * 0.06) : 0.9;
+  // The destination-in fade below multiplies the trail buffer's alpha by
+  // `decay` every single frame, so the half-life in frames is
+  // ln(0.5)/ln(decay) — at 0.9 that's under 7 frames (~0.1s at 60fps), far
+  // too short to read as a trail at all before it's forgotten (same class
+  // of bug the Light Trails effect shipped with initially). 0.97 gives a
+  // ~0.4s half-life; bass hits push it further out so trails visibly
+  // bloom longer on a kick instead of decaying at a flat rate.
+  const decay = ptAudioActive ? Math.min(0.995, 0.97 + audioSubBassLevel * 0.02) : 0.97;
 
   bufCtx.globalCompositeOperation = 'destination-in';
   bufCtx.fillStyle = `rgba(0,0,0,${decay})`;

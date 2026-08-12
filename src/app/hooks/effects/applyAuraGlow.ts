@@ -226,9 +226,16 @@ export function applyAuraGlow(P: any): void {
   // around the canvas on independent Lissajous-style paths, drawn as
   // native radial gradients (no per-pixel loop — cheap, same technique
   // Aurora/Fade already use for the base gradient layer) and blended in
-  // via 'lighten'. Distinct from Duotone/Chromatic/Posterize, which all
+  // via 'screen'. Distinct from Duotone/Chromatic/Posterize, which all
   // remap the existing frame's own colors: this paints its own light
   // instead of recoloring what's there.
+  //
+  // 'screen' (not 'lighten') and a larger radius: 'lighten' only ever
+  // keeps the brighter of source/destination per channel, so a single
+  // light source barely reads as more than a soft tint on top of an
+  // already-bright base gradient. 'screen' — 1-(1-a)(1-b) — actually
+  // brightens the result the way overlapping real light does, which is
+  // what "more intense" here actually means.
   if (canvas.width === 0 || canvas.height === 0) return;
 
   const agAudioActive = isFirstEffect && isAudioReactive;
@@ -236,11 +243,11 @@ export function applyAuraGlow(P: any): void {
 
   const count = Math.max(1, Math.round(auraGlowCount));
   const colorCount = gradientColors?.length || 1;
-  const baseRadius = Math.min(displayWidth, displayHeight) * (0.28 + (agAudioActive ? audioSubBassLevel * 0.15 : 0));
+  const baseRadius = Math.min(displayWidth, displayHeight) * (0.42 + (agAudioActive ? audioSubBassLevel * 0.2 : 0));
   const opacity = Math.max(0, Math.min(1, auraGlowOpacity));
 
   ctx.save();
-  ctx.globalCompositeOperation = 'lighten';
+  ctx.globalCompositeOperation = 'screen';
   ctx.globalAlpha = opacity;
   for (let i = 0; i < count; i++) {
     const phase = i * 2.4;

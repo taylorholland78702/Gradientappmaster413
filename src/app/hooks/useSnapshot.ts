@@ -500,10 +500,10 @@ export function useSnapshot(params: SnapshotParams) {
     setParticleTrailsOpacity(snapshot.particleTrailsOpacity ?? 0.6);
     setWindStreaksCount(snapshot.windStreaksCount ?? 50);
     setWindStreaksSpeed(snapshot.windStreaksSpeed ?? 1.5);
-    setWindStreaksOpacity(snapshot.windStreaksOpacity ?? 0.5);
+    setWindStreaksOpacity(snapshot.windStreaksOpacity ?? 0.8);
     setAuraGlowCount(snapshot.auraGlowCount ?? 3);
     setAuraGlowSpeed(snapshot.auraGlowSpeed ?? 1);
-    setAuraGlowOpacity(snapshot.auraGlowOpacity ?? 0.5);
+    setAuraGlowOpacity(snapshot.auraGlowOpacity ?? 0.8);
     setFluidFieldOpacity(snapshot.fluidFieldOpacity ?? 0.5);
     setGlitchBlockSize(snapshot.glitchBlockSize ?? 24);
     setGlitchChromaSplit(snapshot.glitchChromaSplit ?? 4);

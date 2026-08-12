@@ -280,7 +280,13 @@ export function applyWindStreaks(P: any): void {
   // Wind direction drifts on its own, sped up a little by treble.
   windAngle += 0.002 * (wsAudioActive ? 1 + audioTrebleLevel * 0.5 : 1);
   const speedMul = windStreaksSpeed * (wsAudioActive ? 1 + audioSubBassLevel * 0.5 : 1);
-  const decay = wsAudioActive ? Math.min(0.9, 0.78 + audioSubBassLevel * 0.06) : 0.78;
+  // Same fix as Particle Trails: the previous 0.78 baseline gave a
+  // half-life of under 3 frames — the streak was gone before it read as
+  // more than a flicker. 0.9 keeps it clearly shorter/snappier than
+  // Particle Trails' own 0.97 (these are meant to read as speed lines, not
+  // lingering trails) while still being visible for more than a couple
+  // frames.
+  const decay = wsAudioActive ? Math.min(0.96, 0.9 + audioSubBassLevel * 0.04) : 0.9;
 
   bufCtx.globalCompositeOperation = 'destination-in';
   bufCtx.fillStyle = `rgba(0,0,0,${decay})`;
@@ -288,7 +294,7 @@ export function applyWindStreaks(P: any): void {
   bufCtx.globalCompositeOperation = 'source-over';
 
   const streaks = windStreaksParticlesRef.current;
-  bufCtx.lineWidth = 1.2;
+  bufCtx.lineWidth = 2.5;
   for (let s = 0; s < streaks.length; s++) {
     const streak = streaks[s];
     const prevX = streak.x;
