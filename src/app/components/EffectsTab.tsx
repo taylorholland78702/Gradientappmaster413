@@ -14,7 +14,7 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 // ordinary entries in EFFECT_REGISTRY, still in the same activeEffects
 // array, still in Shuffle's pool — this list only controls where their
 // button renders.
-const GENERATIVE_EFFECT_IDS: EffectType[] = ['triangle-field', 'fluid-field'];
+const GENERATIVE_EFFECT_IDS: EffectType[] = ['triangle-field', 'fluid-field', 'static-field', 'particle-trails'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -143,6 +143,14 @@ export interface EffectsTabProps {
   fluidFieldScale: number; setFluidFieldScale: (v: number) => void;
   fluidFieldSpeed: number; setFluidFieldSpeed: (v: number) => void;
   fluidFieldOpacity: number; setFluidFieldOpacity: (v: number) => void;
+  // Static Field
+  staticFieldIntensity: number; setStaticFieldIntensity: (v: number) => void;
+  staticFieldBarSpeed: number; setStaticFieldBarSpeed: (v: number) => void;
+  staticFieldOpacity: number; setStaticFieldOpacity: (v: number) => void;
+  // Particle Trails
+  particleTrailsCount: number; setParticleTrailsCount: (v: number) => void;
+  particleTrailsSpeed: number; setParticleTrailsSpeed: (v: number) => void;
+  particleTrailsOpacity: number; setParticleTrailsOpacity: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -185,6 +193,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity,
     fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
+    staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
+    particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity,
   } = props;
 
   return (
@@ -289,6 +299,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               const isActive = activeEffects.includes(value);
               const wouldExceedBudget = isMultiFxMode && !isActive
                 && totalCost(activeEffects) + costOf(value) > MULTI_FX_COST_BUDGET;
+              const rows = Math.ceil(GENERATIVE_EFFECT_IDS.length / 2);
+              const isLeftColumn = i % 2 === 0;
+              const isLastRow = Math.floor(i / 2) === rows - 1;
               return (
                 <button
                   key={value}
@@ -309,7 +322,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       }
                     }
                   }}
-                  className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${i === 0 ? 'border-r border-white/10' : ''} ${
+                  className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastRow ? 'border-b border-white/10' : ''} ${
                     isActive
                       ? 'bg-white text-black font-bold'
                       : wouldExceedBudget
@@ -1419,6 +1432,52 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('static-field') && (
+                <EffectSection id="static-field" label="Static Field" isMulti={isMulti} expanded={expandedEffects.has('static-field')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <input type="range" min="0.05" max="1" step="0.05" value={staticFieldIntensity} onChange={(e) => setStaticFieldIntensity(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0.05" max="1" step="0.05" value={staticFieldIntensity} onChange={(e) => setStaticFieldIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Bar Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="3" step="0.1" value={staticFieldBarSpeed} onChange={(e) => setStaticFieldBarSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="3" step="0.1" value={staticFieldBarSpeed} onChange={(e) => setStaticFieldBarSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('particle-trails') && (
+                <EffectSection id="particle-trails" label="Particle Trails" isMulti={isMulti} expanded={expandedEffects.has('particle-trails')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
+                    <input type="range" min="10" max="150" step="5" value={particleTrailsCount} onChange={(e) => setParticleTrailsCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="10" max="150" step="5" value={particleTrailsCount} onChange={(e) => setParticleTrailsCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="3" step="0.1" value={particleTrailsSpeed} onChange={(e) => setParticleTrailsSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="3" step="0.1" value={particleTrailsSpeed} onChange={(e) => setParticleTrailsSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

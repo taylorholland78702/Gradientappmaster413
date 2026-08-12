@@ -34,11 +34,13 @@ import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
+import { applyParticleTrails } from '../hooks/effects/applyParticleTrails';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
+import { applyStaticField } from '../hooks/effects/applyStaticField';
 import { applyTriangleField } from '../hooks/effects/applyTriangleField';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
@@ -186,11 +188,19 @@ const EFFECT_REGISTRY = {
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
+  // Generative overlay (owns and moves its own particles, doesn't sample
+  // the frame beneath it) — persistent trail buffer + per-particle update
+  // every frame, same cost tier as Feedback/Chroma Trails.
+  'particle-trails': { drawFn: applyParticleTrails, label: 'Particle Trails', cost: 3, category: ['Particle Trails'], audio: true },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: false },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
+  // Generative overlay (grayscale noise + drifting sync bars, doesn't
+  // sample the frame beneath it) — half-res-ish downsampled field
+  // recompute plus a composite draw, same cost tier as Fluid Field.
+  'static-field': { drawFn: applyStaticField, label: 'Static Field', cost: 3, category: ['Static Field'], audio: true },
   // Generative overlay (paints its own evolving triangle mesh from the
   // palette, doesn't sample the frame beneath it) — same reasoning and
   // cost tier as Fluid Field above.
