@@ -123,6 +123,14 @@ export interface EffectsTabProps {
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
   glitchChromaSplit: number; setGlitchChromaSplit: (v: number) => void;
+  // Triangle Field
+  triangleFieldGridSize: number; setTriangleFieldGridSize: (v: number) => void;
+  triangleFieldSpeed: number; setTriangleFieldSpeed: (v: number) => void;
+  triangleFieldOpacity: number; setTriangleFieldOpacity: (v: number) => void;
+  // Fluid Field
+  fluidFieldScale: number; setFluidFieldScale: (v: number) => void;
+  fluidFieldSpeed: number; setFluidFieldSpeed: (v: number) => void;
+  fluidFieldOpacity: number; setFluidFieldOpacity: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -163,6 +171,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
+    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity,
+    fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
   } = props;
 
   return (
@@ -1298,6 +1308,52 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('triangle-field') && (
+                <EffectSection id="triangle-field" label="Triangle Field" isMulti={isMulti} expanded={expandedEffects.has('triangle-field')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Density:</label>
+                    <input type="range" min="4" max="24" step="1" value={triangleFieldGridSize} onChange={(e) => setTriangleFieldGridSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="4" max="24" step="1" value={triangleFieldGridSize} onChange={(e) => setTriangleFieldGridSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="3" step="0.1" value={triangleFieldSpeed} onChange={(e) => setTriangleFieldSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="3" step="0.1" value={triangleFieldSpeed} onChange={(e) => setTriangleFieldSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={triangleFieldOpacity} onChange={(e) => setTriangleFieldOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={triangleFieldOpacity} onChange={(e) => setTriangleFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('fluid-field') && (
+                <EffectSection id="fluid-field" label="Fluid Field" isMulti={isMulti} expanded={expandedEffects.has('fluid-field')} onToggle={toggleEffectExpanded}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
+                    <input type="range" min="0.5" max="10" step="0.5" value={fluidFieldScale} onChange={(e) => setFluidFieldScale(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0.5" max="10" step="0.5" value={fluidFieldScale} onChange={(e) => setFluidFieldScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="3" step="0.1" value={fluidFieldSpeed} onChange={(e) => setFluidFieldSpeed(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="3" step="0.1" value={fluidFieldSpeed} onChange={(e) => setFluidFieldSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

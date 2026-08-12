@@ -23,6 +23,7 @@ import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
 import { applyFisheye } from '../hooks/effects/applyFisheye';
 import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
+import { applyFluidField } from '../hooks/effects/applyFluidField';
 import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
@@ -38,6 +39,7 @@ import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
+import { applyTriangleField } from '../hooks/effects/applyTriangleField';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
@@ -165,6 +167,11 @@ const EFFECT_REGISTRY = {
   // let Multi-FX/Remix stack it alongside genuinely cheap effects thinking
   // the combined cost was low when it wasn't.
   fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
+  // Generative overlay (paints its own flowing turbulence field, doesn't
+  // sample the frame beneath it) — same cost tier as Feedback/Chroma
+  // Trails: a full downsampled field recompute plus a composite draw
+  // every frame, not a flat per-pixel pass.
+  'fluid-field': { drawFn: applyFluidField, label: 'Fluid Field', cost: 3, category: ['Fluid Field'], audio: true },
   glitch: { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffectWorkerAuto, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
@@ -184,6 +191,10 @@ const EFFECT_REGISTRY = {
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
+  // Generative overlay (paints its own evolving triangle mesh from the
+  // palette, doesn't sample the frame beneath it) — same reasoning and
+  // cost tier as Fluid Field above.
+  'triangle-field': { drawFn: applyTriangleField, label: 'Triangle Field', cost: 3, category: ['Triangle Field'], audio: true },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
