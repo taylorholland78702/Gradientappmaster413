@@ -335,7 +335,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     <>
       {/* Audiovisuals Section — single pill */}
       <div className="w-full flex">
-        <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg border border-white/10 shadow-sm overflow-hidden">
           {/* Mic toggle, device select, upload, parameters — a flat row of 4
               equal-width segments with matching dividers between all of
               them. Previously the mic+device pair was nested in its own
