@@ -814,14 +814,15 @@ export function InteractiveGradient() {
     const onInput = (e: Event) => { if ((e.target as HTMLElement).matches('input[type="range"]')) update(e.target as HTMLInputElement); };
     document.addEventListener('input', onInput);
 
-    // Watch for new sliders added to the DOM (conditional renders / dropdowns opening)
-    const observer = new MutationObserver(() => initAll());
-    observer.observe(document.body, { childList: true, subtree: true });
-
+    // New sliders appearing (conditional renders / dropdowns opening) are
+    // already covered by the deps-less effect below, which re-syncs every
+    // range input after every render — no need for a separate
+    // document-wide MutationObserver duplicating that on top of it (that
+    // used to fire a full-document querySelectorAll on any DOM mutation
+    // anywhere in the app, not just slider-related ones).
     initAll();
     return () => {
       document.removeEventListener('input', onInput);
-      observer.disconnect();
     };
   }, []);
 
@@ -4566,6 +4567,7 @@ export function InteractiveGradient() {
         {activeTab === 'presets' && (
         <Suspense fallback={null}>
         <PresetsPanel
+          isMobile={isMobile}
           isPresetsDropdownOpen={isPresetsDropdownOpen}
           openNewPresetSignal={openNewPresetSignal}
           savedPresets={savedPresets}
