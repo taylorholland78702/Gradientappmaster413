@@ -263,6 +263,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           <div className="w-full flex gap-0 border-b border-white/10">
             <button
               onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
+              aria-pressed={isMultiFxMode}
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
@@ -270,9 +271,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               onClick={randomizeEffects}
               className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
               title="Shuffle Effects (Shift+F)"
+              aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
+              aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
@@ -305,6 +308,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       key={effect.value}
                       disabled={wouldExceedBudget}
                       title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
+                      aria-pressed={isActive}
                       onClick={() => {
                         if (isMultiFxMode) {
                           // Multi-FX mode: toggle effects on/off
@@ -362,6 +366,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           <div className="w-full flex gap-0 border-b border-white/10">
             <button
               onClick={() => setIsMultiFxMode(!isMultiFxMode)}
+              aria-pressed={isMultiFxMode}
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
@@ -369,9 +374,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               onClick={shuffleGenerativeEffects}
               className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
               title="Shuffle Generative FX"
+              aria-label="Shuffle Generative FX"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => setActiveEffects(activeEffects.filter((e: EffectType) => !GENERATIVE_EFFECT_IDS.includes(e)))}
+              aria-pressed={!activeEffects.some((e: EffectType) => GENERATIVE_EFFECT_IDS.includes(e))}
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${!activeEffects.some((e: EffectType) => GENERATIVE_EFFECT_IDS.includes(e)) ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
@@ -389,6 +396,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   key={value}
                   disabled={wouldExceedBudget}
                   title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
+                  aria-pressed={isActive}
                   onClick={() => {
                     if (isMultiFxMode) {
                       if (isActive) {
@@ -477,6 +485,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
                     <button
                       onClick={() => setAsciiColor(!asciiColor)}
+                      aria-pressed={asciiColor}
                       className={`shrink-0 px-2 py-0.5 text-[10px] rounded transition-all ${
                         asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                       }`}
@@ -554,6 +563,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                                     onClick={() => setEmojiChars(prev => prev + em.char)}
                                     className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-white/15 transition-all"
                                     title={em.name}
+                                    aria-label={em.name}
                                   >{em.char}</button>
                                 ))}
                               </div>
@@ -606,6 +616,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         <button
                           key={mode}
                           onClick={() => setPhotoBlendMode(mode)}
+                          aria-pressed={photoBlendMode === mode}
                           className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
                         >{mode === 'source-over' ? 'Normal' : mode[0].toUpperCase() + mode.slice(1)}</button>
                       ))}
@@ -730,6 +741,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-1 flex-1">
                       {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
                         <button key={mode} onClick={() => setMirrorMode(mode)}
+                          aria-pressed={mirrorMode === mode}
                           className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>
                           {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
                         </button>
@@ -775,6 +787,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setGrainType('fine')}
+                        aria-pressed={grainType === 'fine'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'fine'
                             ? 'bg-white text-black font-bold'
@@ -785,6 +798,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setGrainType('medium')}
+                        aria-pressed={grainType === 'medium'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'medium'
                             ? 'bg-white text-black font-bold'
@@ -795,6 +809,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setGrainType('coarse')}
+                        aria-pressed={grainType === 'coarse'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'coarse'
                             ? 'bg-white text-black font-bold'
@@ -805,6 +820,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setGrainType('film')}
+                        aria-pressed={grainType === 'film'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           grainType === 'film'
                             ? 'bg-white text-black font-bold'
@@ -852,6 +868,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
+                        aria-pressed={blurType === 'gaussian'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'gaussian'
                             ? 'bg-white text-black font-bold'
@@ -862,6 +879,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setBlurType('motion')}
+                        aria-pressed={blurType === 'motion'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'motion'
                             ? 'bg-white text-black font-bold'
@@ -872,6 +890,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setBlurType('radial')}
+                        aria-pressed={blurType === 'radial'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'radial'
                             ? 'bg-white text-black font-bold'
@@ -882,6 +901,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setBlurType('zoom')}
+                        aria-pressed={blurType === 'zoom'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           blurType === 'zoom'
                             ? 'bg-white text-black font-bold'
@@ -1016,6 +1036,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
                       <button
                         onClick={() => setHalftoneMove(!halftoneMove)}
+                        aria-pressed={halftoneMove}
                         className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneMove
                             ? 'bg-white text-black font-bold'
@@ -1029,6 +1050,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
                       <button
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
+                        aria-pressed={halftoneCMYK}
                         className={`px-2 py-0.5 text-[10px] rounded transition-all ${
                           halftoneCMYK
                             ? 'bg-white text-black font-bold'
@@ -1097,6 +1119,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Tritone:</label>
                     <button
                       onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
+                      aria-pressed={duotoneThreeColor}
                       className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                         duotoneThreeColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                       }`}
@@ -1124,6 +1147,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-0.5 flex-1">
                       <button
                         onClick={() => setGridRotationDirection('none')}
+                        aria-pressed={gridRotationDirection === 'none'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'none'
                             ? 'bg-white text-black font-bold'
@@ -1134,6 +1158,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setGridRotationDirection('clockwise')}
+                        aria-pressed={gridRotationDirection === 'clockwise'}
+                        aria-label="Clockwise"
+                        title="Clockwise"
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'clockwise'
                             ? 'bg-white text-black font-bold'
@@ -1144,6 +1171,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setGridRotationDirection('counterclockwise')}
+                        aria-pressed={gridRotationDirection === 'counterclockwise'}
+                        aria-label="Counterclockwise"
+                        title="Counterclockwise"
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           gridRotationDirection === 'counterclockwise'
                             ? 'bg-white text-black font-bold'
@@ -1333,6 +1363,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-1 flex-1 min-w-0">
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
+                        aria-pressed={slitScanDirection === 'horizontal'}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'horizontal'
                             ? 'bg-white text-black font-bold'
@@ -1343,6 +1374,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('vertical')}
+                        aria-pressed={slitScanDirection === 'vertical'}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'vertical'
                             ? 'bg-white text-black font-bold'
@@ -1353,6 +1385,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('radial')}
+                        aria-pressed={slitScanDirection === 'radial'}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'radial'
                             ? 'bg-white text-black font-bold'
@@ -1363,6 +1396,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('circular')}
+                        aria-pressed={slitScanDirection === 'circular'}
                         className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
                           slitScanDirection === 'circular'
                             ? 'bg-white text-black font-bold'
@@ -1406,6 +1440,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setDitherType('bayer')}
+                        aria-pressed={ditherType === 'bayer'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'bayer'
                             ? 'bg-white text-black font-bold'
@@ -1416,6 +1451,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                       <button
                         onClick={() => setDitherType('floyd-steinberg')}
+                        aria-pressed={ditherType === 'floyd-steinberg'}
                         className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                           ditherType === 'floyd-steinberg'
                             ? 'bg-white text-black font-bold'

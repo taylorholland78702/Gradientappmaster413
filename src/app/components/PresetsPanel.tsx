@@ -20,6 +20,7 @@ interface AuthUser {
 const UNCATEGORIZED = 'Uncategorized';
 
 interface PresetsPanelProps {
+  isMobile: boolean;
   isPresetsDropdownOpen: boolean;
   openNewPresetSignal: number;
   savedPresets: Preset[];
@@ -55,6 +56,7 @@ interface PresetsPanelProps {
 }
 
 const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
+  isMobile,
   openNewPresetSignal,
   savedPresets,
   renamingPresetId,
@@ -429,11 +431,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                 )}
                 {!isUncategorized && renamingFolder !== folder && (
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <div className={`flex items-center transition-opacity flex-shrink-0 ${isMobile ? 'opacity-60' : 'opacity-0 group-hover:opacity-100'}`}>
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenamingFolder(folder); setRenamingFolderValue(folder); }}
                       className="px-1.5 py-1 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
                       title="Rename folder"
+                      aria-label="Rename folder"
                     >
                       <PencilSimple weight="regular" className="w-3.5 h-3.5" />
                     </button>
@@ -441,6 +444,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       onClick={(e) => { e.stopPropagation(); deleteFolder(folder); }}
                       className="px-1.5 py-1 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                       title="Delete folder (presets move to Uncategorized)"
+                      aria-label="Delete folder (presets move to Uncategorized)"
                     >
                       <Minus weight="regular" className="w-3.5 h-3.5" />
                     </button>
@@ -477,11 +481,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                       {preset.name}
                     </button>
                   )}
-                  <div className={`flex items-center transition-opacity flex-shrink-0 ${copiedLinkId === preset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`flex items-center transition-opacity flex-shrink-0 ${copiedLinkId === preset.id ? 'opacity-100' : isMobile ? 'opacity-60' : 'opacity-0 group-hover:opacity-100'}`}>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCopyLink(preset); }}
                     className={`px-1.5 py-1 hover:bg-white/15 transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
                     title={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
+                    aria-label={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
                   >
                     {copiedLinkId === preset.id
                       ? <Check weight="bold" className="w-3.5 h-3.5" />
@@ -491,6 +496,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     onClick={(e) => { e.stopPropagation(); handleUpdatePreset(preset.id); }}
                     className={`px-1.5 py-1 hover:bg-white/15 transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-green-400' : 'text-white/50 hover:text-white/80'}`}
                     title={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
+                    aria-label={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
                   >
                     {savedPresetId === preset.id
                       ? <Check weight="bold" className="w-3.5 h-3.5" />
@@ -500,6 +506,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}
                     className="px-1.5 py-1 text-white/50 hover:text-red-400 hover:bg-white/15 transition-colors flex-shrink-0"
                     title="Delete preset"
+                    aria-label="Delete preset"
                   >
                     <Minus weight="regular" className="w-3.5 h-3.5" />
                   </button>

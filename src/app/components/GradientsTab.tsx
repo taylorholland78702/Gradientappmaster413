@@ -243,6 +243,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <button
                 key={mode}
                 onClick={() => setPaletteMode(mode)}
+                aria-pressed={paletteMode === mode}
                 className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${
                   paletteMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                 }`}
@@ -286,6 +287,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   key={type}
                   onClick={() => setGradientType(type)}
+                  aria-pressed={gradientType === type}
                   className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                     gradientType === type
                       ? 'bg-white text-black font-bold'
@@ -914,6 +916,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
                   onClick={() => setWindmillMode('blades')}
+                  aria-pressed={windmillMode === 'blades'}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     windmillMode === 'blades' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
@@ -922,6 +925,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </button>
                 <button
                   onClick={() => setWindmillMode('helix')}
+                  aria-pressed={windmillMode === 'helix'}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     windmillMode === 'helix' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
@@ -1077,7 +1081,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
               <div className="flex gap-1 flex-1">
                 {(['smooth', 'ridged'] as const).map(t => (
-                  <button key={t} onClick={() => setNoiseType(t)} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>{t}</button>
+                  <button key={t} onClick={() => setNoiseType(t)} aria-pressed={noiseType === t} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>{t}</button>
                 ))}
               </div>
             </div>
@@ -1226,6 +1230,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <button
                   onClick={() => setRadialBurstMode('burst')}
+                  aria-pressed={radialBurstMode === 'burst'}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     radialBurstMode === 'burst' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
@@ -1234,6 +1239,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </button>
                 <button
                   onClick={() => setRadialBurstMode('sweep')}
+                  aria-pressed={radialBurstMode === 'sweep'}
                   className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
                     radialBurstMode === 'sweep' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
                   }`}
