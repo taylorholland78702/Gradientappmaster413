@@ -236,6 +236,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
           const response = await fetch(url);
           const arrayBuffer = await response.arrayBuffer();
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          await audioContext.close();
 
           setAudioFileMetadata({
             sampleRate: audioBuffer.sampleRate,
