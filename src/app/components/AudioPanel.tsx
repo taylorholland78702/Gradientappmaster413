@@ -697,7 +697,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full bg-black/20 rounded-lg px-1.5 py-3">
+        <div className="w-full bg-black/20 border border-white/8 rounded-lg px-1.5 py-3">
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-white/20"></div>
