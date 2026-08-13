@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Shuffle, CaretDown } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
@@ -230,6 +230,16 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
   } = props;
 
   const [isGenerativeFxOpen, setIsGenerativeFxOpen] = useState(false);
+
+  // Was recomputed inline on every render this component made (including
+  // ones triggered by unrelated effect state elsewhere in the tab), not
+  // just when the emoji picker's search query actually changed.
+  const emojiPickerCategories = useMemo(() => {
+    const q = emojiPickerSearch.trim().toLowerCase();
+    return q
+      ? EMOJI_PICKER_CATEGORIES.map(cat => ({ ...cat, emojis: cat.emojis.filter(em => em.name.includes(q)) })).filter(cat => cat.emojis.length > 0)
+      : EMOJI_PICKER_CATEGORIES;
+  }, [emojiPickerSearch]);
 
   // Scoped to GENERATIVE_EFFECT_IDS only, unlike the main Shuffle Effects
   // button (which redraws the entire activeEffects set from all of
@@ -546,10 +556,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       />
                       <div className="max-h-40 overflow-y-auto px-1 py-1">
                         {(() => {
-                          const q = emojiPickerSearch.trim().toLowerCase();
-                          const categories = q
-                            ? EMOJI_PICKER_CATEGORIES.map(cat => ({ ...cat, emojis: cat.emojis.filter(em => em.name.includes(q)) })).filter(cat => cat.emojis.length > 0)
-                            : EMOJI_PICKER_CATEGORIES;
+                          const categories = emojiPickerCategories;
                           if (categories.length === 0) {
                             return <div className="text-[10px] text-white/40 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
                           }

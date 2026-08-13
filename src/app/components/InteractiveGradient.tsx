@@ -591,6 +591,7 @@ export function InteractiveGradient() {
     waveformData, setWaveformData,
     isAudioReactive, setIsAudioReactive,
     isMicActive, setIsMicActive,
+    micError, setMicError,
     audioSubBassLevel, setAudioSubBassLevel,
     audioMidsLevel, setAudioMidsLevel,
     audioTrebleLevel, setAudioTrebleLevel,
@@ -4537,7 +4538,7 @@ export function InteractiveGradient() {
         <Suspense fallback={null}>
         <AudioPanel
           state={{
-            isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
+            isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
             masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
             reactionSmoothing: bassSmoothing,
             bassBeatSync, midsBeatSync, trebleBeatSync,
@@ -4548,7 +4549,7 @@ export function InteractiveGradient() {
             audioBindings,
           }}
           actions={{
-            setSelectedAudioDeviceId, setIsAudioControlsOpen,
+            setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
             setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
             setReactionSmoothing,
             setAudioBindings,
