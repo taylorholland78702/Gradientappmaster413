@@ -148,6 +148,7 @@ function saveCustomPresets(presets: CustomAudioStylePreset[]) {
 
 export interface AudioPanelState {
   isMicActive: boolean;
+  micError: string | null;
   audioInputDevices: MediaDeviceInfo[];
   selectedAudioDeviceId: string;
   isAudioControlsOpen: boolean;
@@ -178,6 +179,7 @@ export interface AudioPanelState {
 }
 
 export interface AudioPanelActions {
+  setMicError: (v: string | null) => void;
   setSelectedAudioDeviceId: (id: string) => void;
   setIsAudioControlsOpen: (open: boolean) => void;
   setMasterSensitivity: (v: number) => void;
@@ -210,7 +212,7 @@ interface AudioPanelProps {
 
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
-    isMicActive, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
+    isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
     masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
     bassBeatSync, midsBeatSync, trebleBeatSync,
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
@@ -278,7 +280,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   };
 
   const {
-    setSelectedAudioDeviceId, setIsAudioControlsOpen,
+    setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
     setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
@@ -403,6 +405,23 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
           </button>
         </div>
       </div>
+
+      {/* Mic errors (permission denied, no device, etc.) surfaced inline
+          instead of a native alert() — consistent with every other error
+          surface in the app (e.g. PresetsPanel's authError). */}
+      {micError && (
+        <div className="w-full flex items-start justify-between gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-2 py-1.5">
+          <p className="text-[10px] text-red-300 leading-snug">{micError}</p>
+          <button
+            onClick={() => setMicError(null)}
+            className="text-red-300/70 hover:text-red-300 transition-colors flex-shrink-0"
+            title="Dismiss"
+            aria-label="Dismiss"
+          >
+            <X weight="bold" className="w-3 h-3" />
+          </button>
+        </div>
+      )}
 
       {isAudioControlsOpen && (
         <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">

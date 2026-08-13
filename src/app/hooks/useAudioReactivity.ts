@@ -49,6 +49,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [waveformData, setWaveformData] = useState<number[]>([]);
   const [isAudioReactive, setIsAudioReactive] = useState(false);
   const [isMicActive, setIsMicActive] = useState(false);
+  // Surfaced as an inline banner in AudioPanel instead of a native alert(),
+  // consistent with every other error surface in the app (e.g. PresetsPanel's
+  // authError). Cleared at the start of every mic attempt so a stale error
+  // doesn't linger once the user retries.
+  const [micError, setMicError] = useState<string | null>(null);
   const [audioSubBassLevel, setAudioSubBassLevel] = useState(0);
   const [audioMidsLevel, setAudioMidsLevel] = useState(0);
   const [audioTrebleLevel, setAudioTrebleLevel] = useState(0);
@@ -282,6 +287,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   // new device fails to open, the old stream is left running instead of
   // the mic silently ending up off. Also used for the initial mic-on.
   const startMicVisualization = async (deviceId?: string) => {
+    setMicError(null);
     try {
       const constraints: MediaStreamConstraints = {
         audio: deviceId && deviceId !== 'default' ? { deviceId: { exact: deviceId } } : true,
@@ -320,11 +326,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     } catch (error) {
       console.error('Mic access failed:', error);
       if (error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
-        alert('Microphone access was denied. Allow microphone access for this site in your browser settings, then try again.');
+        setMicError('Microphone access was denied. Allow microphone access for this site in your browser settings, then try again.');
       } else if (error instanceof DOMException && error.name === 'NotFoundError') {
-        alert('No microphone was found on this device.');
+        setMicError('No microphone was found on this device.');
       } else {
-        alert('Could not start the microphone. Check your browser\'s microphone permissions and try again.');
+        setMicError('Could not start the microphone. Check your browser\'s microphone permissions and try again.');
       }
     }
   };
@@ -799,6 +805,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     waveformData, setWaveformData,
     isAudioReactive, setIsAudioReactive,
     isMicActive, setIsMicActive,
+    micError, setMicError,
     audioSubBassLevel, setAudioSubBassLevel,
     audioMidsLevel, setAudioMidsLevel,
     audioTrebleLevel, setAudioTrebleLevel,
