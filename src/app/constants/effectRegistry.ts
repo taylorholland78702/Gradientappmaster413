@@ -17,6 +17,7 @@ import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
+import { applyConfetti } from '../hooks/effects/applyConfetti';
 import { applyCrt } from '../hooks/effects/applyCrt';
 import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
@@ -31,6 +32,7 @@ import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorke
 import { applyHalftoneWorkerAuto } from '../hooks/effects/applyHalftoneWorkerAuto';
 import { applyInvert } from '../hooks/effects/applyInvert';
 import { applyKaleidoscope } from '../hooks/effects/applyKaleidoscope';
+import { applyLightningWeb } from '../hooks/effects/applyLightningWeb';
 import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
@@ -41,11 +43,13 @@ import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
+import { applyStarfield } from '../hooks/effects/applyStarfield';
 import { applyStaticField } from '../hooks/effects/applyStaticField';
 import { applyTriangleField } from '../hooks/effects/applyTriangleField';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
+import { applyVoronoiCells } from '../hooks/effects/applyVoronoiCells';
 import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
 import { applyWindStreaks } from '../hooks/effects/applyWindStreaks';
@@ -160,6 +164,11 @@ const EFFECT_REGISTRY = {
   blur: { drawFn: applyBlurAuto, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrailsWorkerAuto, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
+  // Generative overlay (small rotating shapes falling under gravity with a
+  // spawn/despawn lifecycle, doesn't sample the frame beneath it) — plain
+  // vector fills/strokes per piece, no per-pixel loop, same cost tier as
+  // Aura Glow/Starfield.
+  confetti: { drawFn: applyConfetti, label: 'Confetti', cost: 2, category: ['Confetti'], audio: true },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
   // same cost tier as Blur/Chromatic.
   crt: { drawFn: applyCrt, label: 'Cathode', cost: 2, category: ['Cathode'], audio: false },
@@ -191,6 +200,11 @@ const EFFECT_REGISTRY = {
   halftone: { drawFn: applyHalftoneWorkerAuto, label: 'Halftone', cost: 4, category: ['Halftone'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
+  // Generative overlay (a sparse node graph with jittery, flickering bolt
+  // lines regenerated every frame they're alive, doesn't sample the frame
+  // beneath it) — small node/bolt counts, cheap midpoint-displacement path
+  // math, same cost tier as Confetti/Aura Glow.
+  'lightning-web': { drawFn: applyLightningWeb, label: 'Lightning Web', cost: 2, category: ['Lightning Web'], audio: true },
   // Same under-pricing issue as fisheye above — full-res per-pixel
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
@@ -204,6 +218,11 @@ const EFFECT_REGISTRY = {
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
+  // Generative overlay (points streak outward from center with
+  // accelerating speed, doesn't sample the frame beneath it) — each
+  // frame's own line segment stroke is the "trail," no persistent decay
+  // buffer needed, same cost tier as Confetti/Aura Glow.
+  starfield: { drawFn: applyStarfield, label: 'Starfield', cost: 2, category: ['Starfield'], audio: true },
   // Generative overlay (grayscale noise + drifting sync bars, doesn't
   // sample the frame beneath it) — half-res-ish downsampled field
   // recompute plus a composite draw, same cost tier as Fluid Field.
@@ -215,6 +234,11 @@ const EFFECT_REGISTRY = {
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
+  // Generative overlay (a handful of drifting seed points; recomputes
+  // which downsampled pixels sit on a cell boundary every frame and paints
+  // only those, doesn't sample the frame beneath it) — same cost tier as
+  // Fluid Field/Static Field's downsampled-field recompute.
+  'voronoi-cells': { drawFn: applyVoronoiCells, label: 'Voronoi Cells', cost: 3, category: ['Voronoi Cells'], audio: true },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
   // Generative overlay (owns and moves its own directional streaks,
   // doesn't sample the frame beneath it) — persistent trail buffer + a
