@@ -229,7 +229,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     confettiCount, setConfettiCount, confettiSpeed, setConfettiSpeed, confettiOpacity, setConfettiOpacity,
   } = props;
 
-  const [isGenerativeFxOpen, setIsGenerativeFxOpen] = useState(true);
+  const [isGenerativeFxOpen, setIsGenerativeFxOpen] = useState(false);
 
   // Scoped to GENERATIVE_EFFECT_IDS only, unlike the main Shuffle Effects
   // button (which redraws the entire activeEffects set from all of
