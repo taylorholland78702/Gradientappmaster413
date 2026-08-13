@@ -758,16 +758,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
 
     }; // end drawRef.current assignment
-
-    const handleResize = () => {
-      // Force re-assignment of drawRef on resize so new dimensions are captured
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawParams]);
 }
