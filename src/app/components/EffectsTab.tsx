@@ -425,7 +425,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className={`w-full bg-black/20 px-3 py-1 rounded-lg ${isMulti && !isMobile ? 'max-h-64 overflow-y-auto' : ''}`}>
+          <div className={`w-full bg-black/25 px-3 py-1 rounded-lg border border-white/10 ${isMulti && !isMobile ? 'max-h-64 overflow-y-auto' : ''}`}>
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>

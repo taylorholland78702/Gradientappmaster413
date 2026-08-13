@@ -66,7 +66,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     )}
 
     {/* AI Color Picker */}
-      <div className="w-full bg-black/25 rounded-lg p-2">
+      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2">
         {/* Selected keyword chips */}
         {selectedKeywords.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
