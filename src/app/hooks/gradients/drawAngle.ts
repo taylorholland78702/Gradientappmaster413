@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function drawAngle(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -226,7 +228,7 @@ export function drawAngle(P: any): CanvasGradient | undefined {
           const aRenderW = Math.max(1, Math.round(displayWidth * 0.5));
           const aRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const aInvScale = 2; // 1 / 0.5
-          const angleImageData = ctx.createImageData(aRenderW, aRenderH);
+          const angleImageData = getScratchImageData('angle', ctx, aRenderW, aRenderH);
           const angleData = angleImageData.data;
           const angleNumColors = gradientColors.length;
 
@@ -243,9 +245,16 @@ export function drawAngle(P: any): CanvasGradient | undefined {
               const colorFrac = colorPos - colorIdx;
               const color1 = gradientColors[colorIdx % angleNumColors];
               const color2 = gradientColors[(colorIdx + 1) % angleNumColors];
-              if (!color1 || !color2) continue;
-
               const idx = (ry * aRenderW + rx) * 4;
+              if (!color1 || !color2) {
+                // Explicitly zeroed (not just skipped) since angleData now
+                // comes from a reused scratch buffer, not a fresh
+                // zero-initialized ImageData — a bare `continue` here would
+                // leave a stale pixel from a previous frame behind.
+                angleData[idx] = 0; angleData[idx + 1] = 0; angleData[idx + 2] = 0; angleData[idx + 3] = 0;
+                continue;
+              }
+
               angleData[idx] = color1.r + (color2.r - color1.r) * colorFrac;
               angleData[idx + 1] = color1.g + (color2.g - color1.g) * colorFrac;
               angleData[idx + 2] = color1.b + (color2.b - color1.b) * colorFrac;

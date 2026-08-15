@@ -1,4 +1,5 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 export function drawRadialBurst(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -229,7 +230,7 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
             const rRenderW = Math.max(1, Math.round(displayWidth * 0.5));
             const rRenderH = Math.max(1, Math.round(displayHeight * 0.5));
             const rInvScale = 2; // 1 / 0.5
-            const radarImageData = ctx.createImageData(rRenderW, rRenderH);
+            const radarImageData = getScratchImageData('radialBurst', ctx, rRenderW, rRenderH);
             const radarData = radarImageData.data;
 
             for (let ry = 0; ry < rRenderH; ry++) {
@@ -254,14 +255,20 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
                 const colorFrac = colorPos - colorIdx;
                 const color1 = gradientColors[colorIdx % gradientColors.length];
                 const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-
-                if (!color1 || !color2) continue;
+                const idx = (ry * rRenderW + rx) * 4;
+                if (!color1 || !color2) {
+                  // Explicitly zeroed (not just skipped) since radarData now
+                  // comes from a reused scratch buffer, not a fresh
+                  // zero-initialized ImageData — a bare `continue` here would
+                  // leave a stale pixel from a previous frame behind.
+                  radarData[idx] = 0; radarData[idx + 1] = 0; radarData[idx + 2] = 0; radarData[idx + 3] = 0;
+                  continue;
+                }
 
                 const r = color1.r + (color2.r - color1.r) * colorFrac;
                 const g = color1.g + (color2.g - color1.g) * colorFrac;
                 const b = color1.b + (color2.b - color1.b) * colorFrac;
 
-                const idx = (ry * rRenderW + rx) * 4;
                 radarData[idx] = r * brightness;
                 radarData[idx + 1] = g * brightness;
                 radarData[idx + 2] = b * brightness;

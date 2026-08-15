@@ -1,4 +1,5 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 export function drawWindmill(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -225,7 +226,7 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
             const hRenderW = Math.max(1, Math.round(displayWidth * 0.5));
             const hRenderH = Math.max(1, Math.round(displayHeight * 0.5));
             const hInvScale = 2; // 1 / 0.5
-            const spiralImageData = ctx.createImageData(hRenderW, hRenderH);
+            const spiralImageData = getScratchImageData('windmill', ctx, hRenderW, hRenderH);
             const spiralData = spiralImageData.data;
 
             const conicalAudioActive = isAudioEnabled && isAudioReactive;
@@ -252,10 +253,17 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
                 const colorFrac = colorPos - colorIdx;
                 const color1 = gradientColors[colorIdx % gradientColors.length];
                 const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-                if (!color1 || !color2) continue;
+                const pixelIndex = (sy * hRenderW + sx) * 4;
+                if (!color1 || !color2) {
+                  // Explicitly zeroed (not just skipped) since spiralData now
+                  // comes from a reused scratch buffer, not a fresh
+                  // zero-initialized ImageData — a bare `continue` here
+                  // would leave a stale pixel from a previous frame behind.
+                  spiralData[pixelIndex] = 0; spiralData[pixelIndex + 1] = 0; spiralData[pixelIndex + 2] = 0; spiralData[pixelIndex + 3] = 0;
+                  continue;
+                }
 
                 const radialBoost = 1 + conicalBassPulse * (1 - dist / conicalMaxDist) * 0.8;
-                const pixelIndex = (sy * hRenderW + sx) * 4;
                 spiralData[pixelIndex]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
                 spiralData[pixelIndex + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
                 spiralData[pixelIndex + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));

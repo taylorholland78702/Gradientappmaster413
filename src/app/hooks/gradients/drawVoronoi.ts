@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function drawVoronoi(P: any): CanvasGradient | undefined {
   const {
     structuralSeed,
@@ -222,7 +224,7 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
           const vRenderW = Math.max(1, Math.round(displayWidth * 0.5));
           const vRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const vInvScale = 2; // 1 / 0.5
-          const voronoiImageData = ctx.createImageData(vRenderW, vRenderH);
+          const voronoiImageData = getScratchImageData('voronoi', ctx, vRenderW, vRenderH);
           const voronoiData = voronoiImageData.data;
 
           // Seeded random number generator for animated pattern — structuralSeed
@@ -285,14 +287,21 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
               // Use solid palette colors — shift index on treble for color cycling
               const vColorIdx = (nearestSeed.colorIndex + voronoiColorOffset) % gradientColors.length;
               const color = gradientColors[vColorIdx];
-              if (!color) continue;
+              const idx = (vy * vRenderW + vx) * 4;
+              if (!color) {
+                // Explicitly zeroed (not just skipped) since voronoiData now
+                // comes from a reused scratch buffer, not a fresh
+                // zero-initialized ImageData — a bare `continue` here would
+                // leave a stale pixel from a previous frame behind.
+                voronoiData[idx] = 0; voronoiData[idx + 1] = 0; voronoiData[idx + 2] = 0; voronoiData[idx + 3] = 0;
+                continue;
+              }
 
               const vdx = fx - centerX, vdy = fy - centerY;
               const vDist = Math.sqrt(vdx * vdx + vdy * vdy);
               // Radial pulse + uniform flash on strong bass hits
               const vBoost = 1 + voronoiBassPulse * (1 - vDist / vMaxDist) * 0.9;
 
-              const idx = (vy * vRenderW + vx) * 4;
               voronoiData[idx]     = Math.min(255, Math.round(color.r * vBoost));
               voronoiData[idx + 1] = Math.min(255, Math.round(color.g * vBoost));
               voronoiData[idx + 2] = Math.min(255, Math.round(color.b * vBoost));

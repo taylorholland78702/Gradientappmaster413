@@ -1,3 +1,5 @@
+import { getScratchImageData } from '../../utils/scratchCanvas';
+
 export function drawNoise(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -221,7 +223,7 @@ export function drawNoise(P: any): CanvasGradient | undefined {
           const nRenderW = Math.max(1, Math.round(displayWidth * 0.5));
           const nRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const nInvScale = 2; // 1 / 0.5
-          const noiseImageData = ctx.createImageData(nRenderW, nRenderH);
+          const noiseImageData = getScratchImageData('noise', ctx, nRenderW, nRenderH);
           const noiseData = noiseImageData.data;
 
           const audioActive = isAudioEnabled && isAudioReactive;
@@ -294,15 +296,21 @@ export function drawNoise(P: any): CanvasGradient | undefined {
               const colorFrac = colorPos - colorIdx;
               const color1 = gradientColors[colorIdx % gradientColors.length];
               const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
-
-              if (!color1 || !color2) continue;
+              const idx = (ny * nRenderW + nx) * 4;
+              if (!color1 || !color2) {
+                // Explicitly zeroed (not just skipped) since noiseData now
+                // comes from a reused scratch buffer, not a fresh
+                // zero-initialized ImageData — a bare `continue` here would
+                // leave a stale pixel from a previous frame behind.
+                noiseData[idx] = 0; noiseData[idx + 1] = 0; noiseData[idx + 2] = 0; noiseData[idx + 3] = 0;
+                continue;
+              }
 
               // Radial brightness pulse from center on bass
               const dist = Math.sqrt(ndx * ndx + ndy * ndy);
               const radialPulse = noiseBassBoost * (1 - dist / maxNoiseDist) * 0.8;
               const boost = 1 + radialPulse;
 
-              const idx = (ny * nRenderW + nx) * 4;
               noiseData[idx]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * boost));
               noiseData[idx + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * boost));
               noiseData[idx + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * boost));
