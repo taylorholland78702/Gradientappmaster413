@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 // Wallpaper-group symmetric tiling — distinct from Truchet's random-tile
 // approach: every tile shares one kaleidoscope-folded motif (angle mirrored
@@ -27,7 +28,7 @@ export function drawTiling(P: any): CanvasGradient | undefined {
   const renderW = Math.max(1, Math.round(displayWidth * 0.5));
   const renderH = Math.max(1, Math.round(displayHeight * 0.5));
   const invScale = 2;
-  const imageData = ctx.createImageData(renderW, renderH);
+  const imageData = getScratchImageData('tiling', ctx, renderW, renderH);
   const data = imageData.data;
 
   const tileSize = Math.max(8, tilingSize ?? 120) * 0.5;

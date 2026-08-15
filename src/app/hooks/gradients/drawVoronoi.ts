@@ -145,7 +145,6 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -158,9 +157,6 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -277,13 +273,14 @@ export function drawVoronoi(P: any): CanvasGradient | undefined {
               let minDist = Infinity;
               let nearestSeed = voronoiSeeds[0];
 
-              voronoiSeeds.forEach(seed => {
+              for (let s = 0; s < voronoiSeeds.length; s++) {
+                const seed = voronoiSeeds[s];
                 const dx = fx - seed.x;
                 const dy = fy - seed.y;
                 const distortion = totalVoronoiDistortion * (Math.sin(dx * 0.01) * Math.cos(dy * 0.01)) * 100;
                 const dist = Math.sqrt(dx * dx + dy * dy) + distortion;
                 if (dist < minDist) { minDist = dist; nearestSeed = seed; }
-              });
+              }
 
               // Use solid palette colors — shift index on treble for color cycling
               const vColorIdx = (nearestSeed.colorIndex + voronoiColorOffset) % gradientColors.length;

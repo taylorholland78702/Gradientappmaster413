@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 export function drawMarble(P: any): CanvasGradient | undefined {
   const {
@@ -150,7 +151,6 @@ export function drawMarble(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -163,9 +163,6 @@ export function drawMarble(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -240,7 +237,7 @@ export function drawMarble(P: any): CanvasGradient | undefined {
           const mRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const mCenterX = centerX * 0.5;
           const mCenterY = centerY * 0.5;
-          const imageData3 = ctx.createImageData(mRenderW, mRenderH);
+          const imageData3 = getScratchImageData('marble', ctx, mRenderW, mRenderH);
           const d3 = imageData3.data;
           const mScale = (1 / zoom) * 3;
           const mOctaves = Math.round(marbleOctaves);

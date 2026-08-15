@@ -1,3 +1,5 @@
+import type { FieldBlob } from '../../utils/blobField';
+
 export function drawLavaLamp(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -144,7 +146,6 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -157,9 +158,6 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -236,7 +234,7 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
           const d2 = imageData2.data;
           const lavaTime = lt * lavaSpeed * lavaOrbitBoost;
           const numBlobs = Math.max(2, Math.min(lavaBlobCount, 12));
-          const blobs: Array<{x: number, y: number, r: number}> = [];
+          const blobs: FieldBlob[] = [];
           for (let i = 0; i < numBlobs; i++) {
             const angle = (i / numBlobs) * Math.PI * 2 + lavaTime * (0.3 + i * 0.07);
             const orbitR = 0.25 + 0.15 * Math.sin(lavaTime * 0.4 + i * 1.1);
@@ -253,6 +251,11 @@ export function drawLavaLamp(P: any): CanvasGradient | undefined {
               const py2 = centerY + (y * lInvScale - centerY) * scaleF;
               let field = 0;
               let colorR = 0, colorG = 0, colorB = 0, colorW = 0;
+              // Same r²/(dist²+1) field-sum as Metaballs' sumBlobField
+              // (src/app/utils/blobField.ts), but kept inline here since
+              // this loop also accumulates per-blob color weighting in the
+              // same pass — splitting that into a second loop over blobs
+              // per pixel would double this loop's cost for no benefit.
               for (let b = 0; b < blobs.length; b++) {
                 const dx2 = px2 - blobs[b].x;
                 const dy2 = py2 - blobs[b].y;

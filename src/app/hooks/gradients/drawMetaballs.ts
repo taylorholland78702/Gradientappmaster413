@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { sumBlobField, type FieldBlob } from '../../utils/blobField';
 
 export function drawMetaballs(P: any): CanvasGradient | undefined {
   const {
@@ -150,7 +151,6 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -163,9 +163,6 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -241,7 +238,7 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
           const imageDataMb = ctx.createImageData(mRenderW, mRenderH);
           const dMb = imageDataMb.data;
           const numBalls = Math.max(2, Math.min(metaballCount, 14));
-          const balls: Array<{x: number, y: number, r: number}> = [];
+          const balls: FieldBlob[] = [];
           for (let i = 0; i < numBalls; i++) {
             const seedPhase = structuralSeed * (i + 1) * 0.9;
             const angle = (i / numBalls) * Math.PI * 2 + mbTime * (0.25 + i * 0.05) + seedPhase;
@@ -257,12 +254,7 @@ export function drawMetaballs(P: any): CanvasGradient | undefined {
             for (let x = 0; x < mRenderW; x++) {
               const px = centerX + (x * mInvScale - centerX) * mbZoomScale;
               const py = centerY + (y * mInvScale - centerY) * mbZoomScale;
-              let field = 0;
-              for (let b = 0; b < balls.length; b++) {
-                const dx = px - balls[b].x, dy = py - balls[b].y;
-                const dist2 = dx * dx + dy * dy;
-                field += (balls[b].r * balls[b].r) / (dist2 + 1);
-              }
+              const field = sumBlobField(px, py, balls);
               const tValMb = (1 - 1 / (1 + field * 0.6)) * (1 - mbColorShift) + mbColorShift;
               const mappedMb = getMappedColor(tValMb, gradientColors, fieldContrast ?? 1, paletteMode ?? 'linear', paletteBands ?? 4);
               const brightnessMb = Math.min(1, field * 0.9);

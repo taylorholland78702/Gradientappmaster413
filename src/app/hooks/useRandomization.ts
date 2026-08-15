@@ -90,7 +90,7 @@ export function useRandomization(params: RandomizationParams) {
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
-    setNoiseType, setNoiseWarp, setPlasmaZoomScale, setRadialSizeScale, setRippleFrequency, setVignetteSoftness, setWaveDistortionRotation,
+    setNoiseType, setNoiseWarp, setPlasmaZoomScale, setRadialSizeScale, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
@@ -108,7 +108,7 @@ export function useRandomization(params: RandomizationParams) {
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
-    setRadialBurstSize, setRadialBurstSpread, setRippleAmplitude, setRotationDirection,
+    setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
@@ -220,9 +220,6 @@ export function useRandomization(params: RandomizationParams) {
     setMirrorTileCount(Math.floor(Math.random() * 14) + 2);            // 2–15
     setMirrorMode((['horizontal', 'vertical', 'grid'] as const)[Math.floor(Math.random() * 3)]);
 
-    // Ripple
-    setRippleAmplitude(Math.floor(Math.random() * 45) + 5);            // 5–49
-
     // ASCII
     setAsciiSize(Math.floor(Math.random() * 34) + 6);                  // 6–39
     setAsciiColor(Math.random() < 0.5);
@@ -298,7 +295,6 @@ export function useRandomization(params: RandomizationParams) {
     setGridRotationDirection((['none', 'clockwise', 'counterclockwise'] as const)[Math.floor(Math.random() * 3)]);
     setPlasmaZoomScale(Math.random() * 4.9 + 0.1);                       // 0.1–5
     setRadialSizeScale(Math.random() * 3.75 + 0.25);                     // 0.25–4
-    setRippleFrequency((Math.floor(Math.random() * 100) + 1) / 2000);    // matches UI's 1–100 scaled slider
     setVignetteSoftness(Math.floor(Math.random() * 101));                // 0–100
     setWaveDistortionRotation(Math.floor(Math.random() * 361));          // 0–360
     setAsciiChars(ASCII_CHARSET_POOL[Math.floor(Math.random() * ASCII_CHARSET_POOL.length)]);

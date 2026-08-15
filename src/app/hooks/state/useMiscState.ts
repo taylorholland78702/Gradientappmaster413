@@ -111,7 +111,6 @@ export function useMiscState() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const lastManualZoomTime = useRef<number>(0);
   const kaleidoAngleRef = useRef(0);
-  const prevBassForRippleRef = useRef(0);
   const isAutoColorRef = useRef(true);
   const contrastPulseRef = useRef(0);
   const saturationPulseRef = useRef(0);
@@ -237,7 +236,6 @@ export function useMiscState() {
     setIsFullscreen,
     lastManualZoomTime,
     kaleidoAngleRef,
-    prevBassForRippleRef,
     isAutoColorRef,
     contrastPulseRef,
     saturationPulseRef,

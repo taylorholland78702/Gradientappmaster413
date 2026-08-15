@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 export function drawWaveInterference(P: any): CanvasGradient | undefined {
   const {
@@ -148,7 +149,6 @@ export function drawWaveInterference(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -161,9 +161,6 @@ export function drawWaveInterference(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -233,7 +230,7 @@ export function drawWaveInterference(P: any): CanvasGradient | undefined {
   const wiRenderW = Math.max(1, Math.round(displayWidth * 0.5));
   const wiRenderH = Math.max(1, Math.round(displayHeight * 0.5));
   const wiInvScale = 2; // 1 / 0.5
-  const wiImageData = ctx.createImageData(wiRenderW, wiRenderH);
+  const wiImageData = getScratchImageData('waveInterference', ctx, wiRenderW, wiRenderH);
   const wiData = wiImageData.data;
   const wiCX = displayWidth / 2, wiCY = displayHeight / 2;
 

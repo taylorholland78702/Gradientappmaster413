@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 export function drawCaustics(P: any): CanvasGradient | undefined {
   const {
@@ -150,7 +151,6 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -163,9 +163,6 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -240,7 +237,7 @@ export function drawCaustics(P: any): CanvasGradient | undefined {
           const cRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const cCenterX = centerX * 0.5;
           const cCenterY = centerY * 0.5;
-          const imageData = ctx.createImageData(cRenderW, cRenderH);
+          const imageData = getScratchImageData('caustics', ctx, cRenderW, cRenderH);
           const d = imageData.data;
           const cScaleXY = causticsScale / displayWidth;
           const scaleX = (cScaleXY * 4 / zoom) / 0.5;

@@ -1,5 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 export function drawJulia(P: any): CanvasGradient | undefined {
   const {
     fieldContrast,
@@ -149,7 +150,6 @@ export function drawJulia(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -162,9 +162,6 @@ export function drawJulia(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -234,7 +231,7 @@ export function drawJulia(P: any): CanvasGradient | undefined {
           }
           const juliaCanvas = juliaCanvasRef.current;
           const jctx = juliaCanvas.getContext('2d')!;
-          const jImageData = jctx.createImageData(JULIA_W, JULIA_H);
+          const jImageData = getScratchImageData('julia', jctx, JULIA_W, JULIA_H);
           const jData = jImageData.data;
 
           const jCX = JULIA_W / 2, jCY = JULIA_H / 2;

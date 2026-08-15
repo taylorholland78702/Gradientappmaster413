@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 export function drawTopographic(P: any): CanvasGradient | undefined {
   const {
@@ -150,7 +151,6 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -163,9 +163,6 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -232,7 +229,7 @@ export function drawTopographic(P: any): CanvasGradient | undefined {
           const tRenderW = Math.max(1, Math.round(displayWidth * 0.5));
           const tRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const tInvScale = 2; // 1 / 0.5
-          const topoImageData = ctx.createImageData(tRenderW, tRenderH);
+          const topoImageData = getScratchImageData('topographic', ctx, tRenderW, tRenderH);
           const topoData = topoImageData.data;
           const topoCX = displayWidth / 2, topoCY = displayHeight / 2;
           const topoScaleFactor = topographicScale * 0.001;

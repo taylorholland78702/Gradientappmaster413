@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import { getScratchImageData } from '../../utils/scratchCanvas';
 
 export function drawPlasma(P: any): CanvasGradient | undefined {
   const {
@@ -150,7 +151,6 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
     plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
-    prevBassForRippleRef,
     radarBeamWidth,
     radarFadeLength,
     radarSweepAngle,
@@ -163,9 +163,6 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    rippleAmplitude,
-    rippleAutoFrameRef,
-    rippleRingsRef,
     scanlineIntensity,
     scanlineSpacing,
     scanlineSpeed,
@@ -228,7 +225,7 @@ export function drawPlasma(P: any): CanvasGradient | undefined {
           const pRenderW = Math.max(1, Math.round(displayWidth * 0.5));
           const pRenderH = Math.max(1, Math.round(displayHeight * 0.5));
           const pInvScale = 2; // 1 / 0.5
-          const plasmaImageData = ctx.createImageData(pRenderW, pRenderH);
+          const plasmaImageData = getScratchImageData('plasma', ctx, pRenderW, pRenderH);
           const plasmaData = plasmaImageData.data;
 
           const plasmaAudioActive = isAudioEnabled && isAudioReactive;

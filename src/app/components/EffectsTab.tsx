@@ -31,9 +31,6 @@ export interface EffectsTabProps {
   // Kaleidoscope
   kaleidoscopeSegments: number; setKaleidoscopeSegments: (v: number) => void;
   kaleidoscopeRotateSpeed: number; setKaleidoscopeRotateSpeed: (v: number) => void;
-  // Ripple
-  rippleFrequency: number; setRippleFrequency: (v: number) => void;
-  rippleAmplitude: number; setRippleAmplitude: (v: number) => void;
   // ASCII
   asciiSize: number; setAsciiSize: (v: number) => void;
   asciiChars: string; setAsciiChars: (v: string) => void;
@@ -176,7 +173,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     isMobile,
     activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
     kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
-    rippleFrequency, setRippleFrequency, rippleAmplitude, setRippleAmplitude,
     asciiSize, setAsciiSize, asciiChars, setAsciiChars, asciiColor, setAsciiColor,
     emojiChars, setEmojiChars, emojiSize, setEmojiSize, emojiRotateSpeed, setEmojiRotateSpeed,
     emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
