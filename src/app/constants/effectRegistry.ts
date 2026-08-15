@@ -49,10 +49,8 @@ import { applyTriangleField } from '../hooks/effects/applyTriangleField';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
-import { applyVoronoiCells } from '../hooks/effects/applyVoronoiCells';
 import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
-import { applyWindStreaks } from '../hooks/effects/applyWindStreaks';
 
 interface EffectRegistryEntry {
   drawFn: (P: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -234,16 +232,7 @@ const EFFECT_REGISTRY = {
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
-  // Generative overlay (a handful of drifting seed points; recomputes
-  // which downsampled pixels sit on a cell boundary every frame and paints
-  // only those, doesn't sample the frame beneath it) — same cost tier as
-  // Fluid Field/Static Field's downsampled-field recompute.
-  'voronoi-cells': { drawFn: applyVoronoiCells, label: 'Voronoi Cells', cost: 3, category: ['Voronoi Cells'], audio: true },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
-  // Generative overlay (owns and moves its own directional streaks,
-  // doesn't sample the frame beneath it) — persistent trail buffer + a
-  // stroke per streak every frame, same cost tier as Particle Trails.
-  'wind-streaks': { drawFn: applyWindStreaks, label: 'Wind Streaks', cost: 3, category: ['Wind Streaks'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 
 // 'none' is a legacy sentinel value (never a real registered effect — no

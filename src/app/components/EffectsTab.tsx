@@ -16,7 +16,7 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 // button renders.
 // Alphabetized by label — this is the order the section's button grid
 // renders in, so keep new entries sorted in by their display label.
-const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'confetti', 'fluid-field', 'lightning-web', 'particle-trails', 'starfield', 'static-field', 'triangle-field', 'voronoi-cells', 'wind-streaks'];
+const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'confetti', 'fluid-field', 'lightning-web', 'particle-trails', 'starfield', 'static-field', 'triangle-field'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -153,10 +153,6 @@ export interface EffectsTabProps {
   particleTrailsCount: number; setParticleTrailsCount: (v: number) => void;
   particleTrailsSpeed: number; setParticleTrailsSpeed: (v: number) => void;
   particleTrailsOpacity: number; setParticleTrailsOpacity: (v: number) => void;
-  // Wind Streaks
-  windStreaksCount: number; setWindStreaksCount: (v: number) => void;
-  windStreaksSpeed: number; setWindStreaksSpeed: (v: number) => void;
-  windStreaksOpacity: number; setWindStreaksOpacity: (v: number) => void;
   // Aura Glow
   auraGlowCount: number; setAuraGlowCount: (v: number) => void;
   auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
@@ -169,10 +165,6 @@ export interface EffectsTabProps {
   lightningWebCount: number; setLightningWebCount: (v: number) => void;
   lightningWebSpeed: number; setLightningWebSpeed: (v: number) => void;
   lightningWebOpacity: number; setLightningWebOpacity: (v: number) => void;
-  // Voronoi Cells
-  voronoiCellsCount: number; setVoronoiCellsCount: (v: number) => void;
-  voronoiCellsSpeed: number; setVoronoiCellsSpeed: (v: number) => void;
-  voronoiCellsOpacity: number; setVoronoiCellsOpacity: (v: number) => void;
   // Confetti
   confettiCount: number; setConfettiCount: (v: number) => void;
   confettiSpeed: number; setConfettiSpeed: (v: number) => void;
@@ -221,11 +213,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
     staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
     particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity,
-    windStreaksCount, setWindStreaksCount, windStreaksSpeed, setWindStreaksSpeed, windStreaksOpacity, setWindStreaksOpacity,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity,
     lightningWebCount, setLightningWebCount, lightningWebSpeed, setLightningWebSpeed, lightningWebOpacity, setLightningWebOpacity,
-    voronoiCellsCount, setVoronoiCellsCount, voronoiCellsSpeed, setVoronoiCellsSpeed, voronoiCellsOpacity, setVoronoiCellsOpacity,
     confettiCount, setConfettiCount, confettiSpeed, setConfettiSpeed, confettiOpacity, setConfettiOpacity,
   } = props;
 
@@ -1609,29 +1599,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('wind-streaks') && (
-                <EffectSection id="wind-streaks" label="Wind Streaks" isMulti={isMulti} expanded={expandedEffects.has('wind-streaks')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="15" max="150" step="5" value={windStreaksCount} onChange={(e) => setWindStreaksCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="15" max="150" step="5" value={windStreaksCount} onChange={(e) => setWindStreaksCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.2" max="4" step="0.1" value={windStreaksSpeed} onChange={(e) => setWindStreaksSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.2" max="4" step="0.1" value={windStreaksSpeed} onChange={(e) => setWindStreaksSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={windStreaksOpacity} onChange={(e) => setWindStreaksOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={windStreaksOpacity} onChange={(e) => setWindStreaksOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('aura-glow') && (
                 <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={expandedEffects.has('aura-glow')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
@@ -1659,8 +1626,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="starfield" label="Starfield" isMulti={isMulti} expanded={expandedEffects.has('starfield')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="30" max="250" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="30" max="250" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    <input type="range" min="30" max="500" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="30" max="500" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
@@ -1701,35 +1668,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('voronoi-cells') && (
-                <EffectSection id="voronoi-cells" label="Voronoi Cells" isMulti={isMulti} expanded={expandedEffects.has('voronoi-cells')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Seeds:</label>
-                    <input type="range" min="3" max="14" step="1" value={voronoiCellsCount} onChange={(e) => setVoronoiCellsCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="3" max="14" step="1" value={voronoiCellsCount} onChange={(e) => setVoronoiCellsCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={voronoiCellsSpeed} onChange={(e) => setVoronoiCellsSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={voronoiCellsSpeed} onChange={(e) => setVoronoiCellsSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={voronoiCellsOpacity} onChange={(e) => setVoronoiCellsOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={voronoiCellsOpacity} onChange={(e) => setVoronoiCellsOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('confetti') && (
                 <EffectSection id="confetti" label="Confetti" isMulti={isMulti} expanded={expandedEffects.has('confetti')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="20" max="200" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="20" max="200" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    <input type="range" min="20" max="500" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="20" max="500" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
