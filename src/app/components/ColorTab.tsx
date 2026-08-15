@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { RgbColorPicker } from 'react-colorful';
+import React from 'react';
 import { Shuffle, Play, Pause } from '@phosphor-icons/react';
-import { type ColorRGB } from '../constants/gradientEffects';
-import { rgbToHex, hexToRgb } from '../utils/color';
+import { type ColorRGB, DEFAULT_COLORS } from '../constants/gradientEffects';
+
+const THEME_KEYWORDS = ['autumn','candy','cherry','desert','earth','fire','forest','galaxy','ice','midnight','monochrome','neon','ocean','pastel','rainbow','spring','sunrise','sunset','tropical','winter'];
+const COLOR_KEYWORDS = ['black','blue','brown','coral','cyan','gold','gray','green','indigo','lavender','lime','magenta','maroon','mint','navy','olive','orange','peach','pink','purple','red','rose','salmon','silver','sky','teal','turquoise','violet','white','yellow'];
 
 export interface ColorTabProps {
   isAutoColor: boolean;
@@ -11,31 +12,24 @@ export interface ColorTabProps {
   setTargetColors: (colors: ColorRGB[]) => void;
   gradientColors: ColorRGB[];
   randomColor: () => ColorRGB;
+  submittedAIPrompt: string;
+  setSubmittedAIPrompt: (v: string) => void;
+  setBaseAIColors: (v: ColorRGB[] | null) => void;
   setGradientColors: (colors: ColorRGB[]) => void;
+  aiPrompt: string;
+  setAIPrompt: (updater: string | ((prev: string) => string)) => void;
+  isKeywordHelpOpen: boolean;
+  setIsKeywordHelpOpen: (v: boolean) => void;
+  handleAIPromptSubmit: () => void;
+  setIsAIColorPickerOpen: (v: boolean) => void;
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
   isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
-  setGradientColors,
+  submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors,
+  aiPrompt, setAIPrompt, isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const clampedIndex = Math.min(selectedIndex, Math.max(0, gradientColors.length - 1));
-  const activeColor = gradientColors[clampedIndex] ?? { r: 255, g: 255, b: 255 };
-  const [hexInput, setHexInput] = useState(rgbToHex(activeColor));
-
-  // Keep the hex field in sync when the active pin changes (either by
-  // clicking a different swatch, or when this pin's color changes from
-  // elsewhere — shuffle, canvas drag, auto-color-cycle).
-  const activeHex = rgbToHex(activeColor);
-  if (hexInput.toLowerCase() !== activeHex.toLowerCase() && document.activeElement?.id !== 'color-hex-input') {
-    setHexInput(activeHex);
-  }
-
-  const applyColorAt = (index: number, color: ColorRGB) => {
-    const next = gradientColors.map((c, i) => (i === index ? color : c));
-    setGradientColors(next);
-    setTargetColors(next);
-  };
+  const selectedKeywords = aiPrompt.split(' ').filter(Boolean);
 
   return (
     <>
@@ -52,41 +46,103 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           title="Shuffle Colors"
         ><Shuffle weight="regular" className="w-4 h-4" /></button>
       </div>
-    {/* Color Picker */}
-      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2 wav-color-picker">
-        {/* Pin swatches — one per gradient color stop, click to edit */}
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {gradientColors.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedIndex(i)}
-              title={`Color ${i + 1}: ${rgbToHex(c)}`}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${i === clampedIndex ? 'border-white scale-110' : 'border-white/30 hover:border-white/60'}`}
-              style={{ backgroundColor: rgbToHex(c) }}
-            />
-          ))}
+    {submittedAIPrompt && (
+      <div className="flex items-center gap-1">
+        <div className="flex-1 px-2 py-1 text-xs text-white/70 bg-black/20 rounded text-center truncate">
+          "{submittedAIPrompt}"
+        </div>
+        <button
+          onClick={() => {
+            setSubmittedAIPrompt('');
+            setBaseAIColors(null);
+            setGradientColors(DEFAULT_COLORS);
+            setTargetColors(DEFAULT_COLORS);
+            setAIPrompt('');
+          }}
+          className="w-6 h-6 flex-shrink-0 rounded bg-black/20 hover:bg-red-500/40 text-white/50 hover:text-white text-xs flex items-center justify-center transition-all"
+          title="Clear keywords"
+        >×</button>
+      </div>
+    )}
+
+    {/* AI Color Picker */}
+      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2">
+        {/* Selected keyword chips */}
+        {selectedKeywords.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {selectedKeywords.map((kw, i) => (
+              <span key={i} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white">
+                {kw}
+                <button onClick={() => setAIPrompt(prev => prev.split(' ').filter(Boolean).filter((_, j) => j !== i).join(' '))} className="ml-0.5 text-white/60 hover:text-white leading-none">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="mb-2">
+          <input
+            type="text"
+            value=""
+            readOnly
+            placeholder={selectedKeywords.length >= 8 ? 'Max 8 keywords selected' : 'Palette Picker: Select up to 8'}
+            onFocus={() => setIsKeywordHelpOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAIPromptSubmit();
+              if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
+            }}
+            className="w-full px-2 py-1.5 rounded text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white cursor-pointer"
+          />
         </div>
 
-        <RgbColorPicker
-          color={activeColor}
-          onChange={(color) => applyColorAt(clampedIndex, color)}
-        />
+        {isKeywordHelpOpen && (
+          <div className="mb-2 p-2 rounded bg-black/20 border border-white/8 text-[10px] text-white/70 leading-relaxed max-h-52 overflow-y-auto">
+            <div className="font-bold text-white/90 mb-1">Themes</div>
+            <div className="mb-0.5 flex flex-wrap gap-x-1 gap-y-0.5 leading-none">
+              {THEME_KEYWORDS.map(t => {
+                const selected = selectedKeywords.includes(t);
+                const full = selectedKeywords.length >= 8;
+                return (
+                  <span key={t} onClick={() => {
+                    if (selected) setAIPrompt(selectedKeywords.filter(k => k !== t).join(' '));
+                    else if (!full) setAIPrompt(selectedKeywords.concat(t).join(' '));
+                  }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-white text-black' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</span>
+                );
+              })}
+            </div>
+            <div className="font-bold text-white/90 mb-1">Colors</div>
+            <div className="flex flex-wrap gap-x-1 gap-y-0.5 leading-none">
+              {COLOR_KEYWORDS.map(c => {
+                const selected = selectedKeywords.includes(c);
+                const full = selectedKeywords.length >= 8;
+                return (
+                  <span key={c} onClick={() => {
+                    if (selected) setAIPrompt(selectedKeywords.filter(k => k !== c).join(' '));
+                    else if (!full) setAIPrompt(selectedKeywords.concat(c).join(' '));
+                  }} className={`px-1.5 py-0.5 rounded-full cursor-pointer transition-all ${selected ? 'bg-white text-black' : full ? 'opacity-30 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{c}</span>
+                );
+              })}
+            </div>
+            <div className="mt-1.5 text-white/40 text-right">{selectedKeywords.length}/8 selected</div>
+          </div>
+        )}
 
-        <div className="flex items-center gap-1.5 mt-2">
-          <span className="text-[10px] text-white/50 font-semibold">HEX</span>
-          <input
-            id="color-hex-input"
-            type="text"
-            value={hexInput}
-            onChange={(e) => {
-              const v = e.target.value;
-              setHexInput(v);
-              const parsed = hexToRgb(v);
-              if (parsed) applyColorAt(clampedIndex, parsed);
+        <div className="flex gap-1.5 justify-end">
+          <button
+            onClick={() => {
+              setIsAIColorPickerOpen(false);
+              setAIPrompt('');
+              setIsKeywordHelpOpen(false);
             }}
-            onBlur={() => setHexInput(rgbToHex(activeColor))}
-            className="flex-1 px-2 py-1 rounded text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white font-mono"
-          />
+            className="px-2 py-0.5 rounded text-xs bg-black/25 text-white hover:bg-white/15 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAIPromptSubmit}
+            className="px-2 py-0.5 rounded text-xs bg-white/30 text-white font-semibold shadow-sm hover:bg-white/40 transition-all"
+          >
+            Generate
+          </button>
         </div>
       </div>
     </>
