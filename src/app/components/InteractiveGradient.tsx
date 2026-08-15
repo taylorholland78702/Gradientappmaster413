@@ -4061,16 +4061,7 @@ export function InteractiveGradient() {
             setTargetColors={setTargetColors}
             gradientColors={gradientColors}
             randomColor={randomColor}
-            submittedAIPrompt={submittedAIPrompt}
-            setSubmittedAIPrompt={setSubmittedAIPrompt}
-            setBaseAIColors={setBaseAIColors}
             setGradientColors={setGradientColors}
-            aiPrompt={aiPrompt}
-            setAIPrompt={setAIPrompt}
-            isKeywordHelpOpen={isKeywordHelpOpen}
-            setIsKeywordHelpOpen={setIsKeywordHelpOpen}
-            handleAIPromptSubmit={handleAIPromptSubmit}
-            setIsAIColorPickerOpen={setIsAIColorPickerOpen}
           />
         )}
 
