@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { RgbColorPicker } from 'react-colorful';
-import { Shuffle, Play, Pause } from '@phosphor-icons/react';
+import { Shuffle, Play, Pause, CaretLeft, CaretRight, Eyedropper } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb } from '../utils/color';
+
+// EyeDropper is a browser API (Chrome/Edge only as of writing), not yet in
+// TS lib.dom — declared minimally here rather than pulling in a types pkg.
+interface EyeDropperResult { sRGBHex: string }
+declare class EyeDropperAPI { open(): Promise<EyeDropperResult> }
 
 export interface ColorTabProps {
   isAutoColor: boolean;
@@ -37,6 +42,19 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setTargetColors(next);
   };
 
+  const isEyedropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
+  const handleEyedropper = async () => {
+    if (!isEyedropperSupported) return;
+    try {
+      const dropper = new (window as unknown as { EyeDropper: typeof EyeDropperAPI }).EyeDropper();
+      const result = await dropper.open();
+      const parsed = hexToRgb(result.sRGBHex);
+      if (parsed) applyColorAt(clampedIndex, parsed);
+    } catch {
+      // User cancelled the eyedropper (Escape) — nothing to do.
+    }
+  };
+
   return (
     <>
       <div className="flex gap-2 w-full">
@@ -54,17 +72,19 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
       </div>
     {/* Color Picker */}
       <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2 wav-color-picker">
-        {/* Pin swatches — one per gradient color stop, click to edit */}
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {gradientColors.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedIndex(i)}
-              title={`Color ${i + 1}: ${rgbToHex(c)}`}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${i === clampedIndex ? 'border-white scale-110' : 'border-white/30 hover:border-white/60'}`}
-              style={{ backgroundColor: rgbToHex(c) }}
-            />
-          ))}
+        {/* Pin stepper — cycles which gradient color stop the picker edits */}
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={() => setSelectedIndex((clampedIndex - 1 + gradientColors.length) % gradientColors.length)}
+            title="Previous color"
+            className="w-6 h-6 rounded flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+          ><CaretLeft weight="bold" className="w-3.5 h-3.5" /></button>
+          <span className="text-[10px] text-white/60 font-semibold">Color {clampedIndex + 1} of {gradientColors.length}</span>
+          <button
+            onClick={() => setSelectedIndex((clampedIndex + 1) % gradientColors.length)}
+            title="Next color"
+            className="w-6 h-6 rounded flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+          ><CaretRight weight="bold" className="w-3.5 h-3.5" /></button>
         </div>
 
         <RgbColorPicker
@@ -87,6 +107,13 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
             onBlur={() => setHexInput(rgbToHex(activeColor))}
             className="flex-1 px-2 py-1 rounded text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white font-mono"
           />
+          {isEyedropperSupported && (
+            <button
+              onClick={handleEyedropper}
+              title="Pick color from screen"
+              className="w-6 h-6 flex-shrink-0 rounded bg-black/25 border border-white/20 hover:bg-white/15 text-white flex items-center justify-center transition-all"
+            ><Eyedropper weight="regular" className="w-3.5 h-3.5" /></button>
+          )}
         </div>
       </div>
     </>
