@@ -305,8 +305,16 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       const audioInputs = devices.filter(d => d.kind === 'audioinput');
       setAudioInputDevices(audioInputs);
       const blackhole = audioInputs.find(d => d.label.toLowerCase().includes('blackhole 2ch'));
-      if (blackhole && selectedAudioDeviceId === 'default') {
+      if (blackhole && selectedAudioDeviceId === 'default' && deviceId !== blackhole.deviceId) {
+        // The generic/default-constraint stream we just opened isn't
+        // guaranteed to actually be BlackHole even when it's present and
+        // gets auto-selected in the dropdown — pin to its exact deviceId so
+        // the initial connection really listens to it, instead of silently
+        // holding the OS default stream and needing a manual dropdown
+        // toggle to "kick" the connection onto BlackHole.
+        stream.getTracks().forEach(track => track.stop());
         setSelectedAudioDeviceId(blackhole.deviceId);
+        return startMicVisualization(blackhole.deviceId);
       }
 
       const audioContext = new AudioContext();
