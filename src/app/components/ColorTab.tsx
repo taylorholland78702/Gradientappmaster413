@@ -124,13 +124,13 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                     <button key={t} title={t} onClick={() => {
                       if (selected) setAIPrompt(selectedKeywords.filter(k => k !== t).join(' '));
                       else if (!full) setAIPrompt(selectedKeywords.concat(t).join(' '));
-                    }} className={`px-1.5 py-1 rounded-md text-[10px] truncate transition-all ${selected ? 'bg-white text-black font-semibold' : full ? 'opacity-30 cursor-not-allowed text-white/60' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</button>
+                    }} className={`px-1.5 py-1 rounded-md text-[10px] capitalize truncate transition-all ${selected ? 'bg-white text-black font-semibold' : full ? 'opacity-30 cursor-not-allowed text-white/60' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>{t}</button>
                   );
                 })}
               </div>
 
               <div className="text-[9px] font-bold uppercase tracking-wider text-white/40 mb-1.5">Colors</div>
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 {COLOR_KEYWORDS.map(([c, hex]) => {
                   const selected = selectedKeywords.includes(c);
                   const full = selectedKeywords.length >= 8;
@@ -138,8 +138,8 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                     <button key={c} title={c} onClick={() => {
                       if (selected) setAIPrompt(selectedKeywords.filter(k => k !== c).join(' '));
                       else if (!full) setAIPrompt(selectedKeywords.concat(c).join(' '));
-                    }} className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] truncate transition-all ${selected ? 'bg-white text-black font-semibold' : full ? 'opacity-30 cursor-not-allowed text-white/60' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/30" style={{ backgroundColor: hex }} />
+                    }} className={`flex items-center gap-1.5 px-1.5 py-1 rounded-md text-[10px] capitalize truncate transition-all ${selected ? 'bg-white text-black font-semibold' : full ? 'opacity-30 cursor-not-allowed text-white/60' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>
+                      <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0 ring-1 ring-white/30" style={{ backgroundColor: hex }} />
                       {c}
                     </button>
                   );
