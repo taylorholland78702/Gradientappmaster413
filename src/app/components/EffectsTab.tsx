@@ -120,15 +120,6 @@ export interface EffectsTabProps {
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
   glitchChromaSplit: number; setGlitchChromaSplit: (v: number) => void;
-  // Triangle Field
-  triangleFieldGridSize: number; setTriangleFieldGridSize: (v: number) => void;
-  triangleFieldSpeed: number; setTriangleFieldSpeed: (v: number) => void;
-  triangleFieldOpacity: number; setTriangleFieldOpacity: (v: number) => void;
-  triangleFieldRotation: number; setTriangleFieldRotation: (v: number) => void;
-  // Static Field
-  staticFieldIntensity: number; setStaticFieldIntensity: (v: number) => void;
-  staticFieldBarSpeed: number; setStaticFieldBarSpeed: (v: number) => void;
-  staticFieldOpacity: number; setStaticFieldOpacity: (v: number) => void;
   // Aura Glow
   auraGlowCount: number; setAuraGlowCount: (v: number) => void;
   auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
@@ -137,6 +128,7 @@ export interface EffectsTabProps {
   starfieldCount: number; setStarfieldCount: (v: number) => void;
   starfieldSpeed: number; setStarfieldSpeed: (v: number) => void;
   starfieldOpacity: number; setStarfieldOpacity: (v: number) => void;
+  starfieldSize: number; setStarfieldSize: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -176,10 +168,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
-    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity, triangleFieldRotation, setTriangleFieldRotation,
-    staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
-    starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity,
+    starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
   } = props;
 
   // Was recomputed inline on every render this component made (including
@@ -1358,59 +1348,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('triangle-field') && (
-                <EffectSection id="triangle-field" label="Triangle Field" isMulti={isMulti} expanded={expandedEffects.has('triangle-field')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Density:</label>
-                    <input type="range" min="4" max="24" step="1" value={triangleFieldGridSize} onChange={(e) => setTriangleFieldGridSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="4" max="24" step="1" value={triangleFieldGridSize} onChange={(e) => setTriangleFieldGridSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={triangleFieldSpeed} onChange={(e) => setTriangleFieldSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={triangleFieldSpeed} onChange={(e) => setTriangleFieldSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={triangleFieldOpacity} onChange={(e) => setTriangleFieldOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={triangleFieldOpacity} onChange={(e) => setTriangleFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Rotation:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="-5" max="5" step="0.1" value={triangleFieldRotation} onChange={(e) => setTriangleFieldRotation(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="-5" max="5" step="0.1" value={triangleFieldRotation} onChange={(e) => setTriangleFieldRotation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('static-field') && (
-                <EffectSection id="static-field" label="Static Field" isMulti={isMulti} expanded={expandedEffects.has('static-field')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0.05" max="1" step="0.05" value={staticFieldIntensity} onChange={(e) => setStaticFieldIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.05" max="1" step="0.05" value={staticFieldIntensity} onChange={(e) => setStaticFieldIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Bar Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={staticFieldBarSpeed} onChange={(e) => setStaticFieldBarSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={staticFieldBarSpeed} onChange={(e) => setStaticFieldBarSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('aura-glow') && (
                 <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={expandedEffects.has('aura-glow')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
@@ -1453,6 +1390,13 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0.2" max="4" step="0.1" value={starfieldSize} onChange={(e) => setStarfieldSize(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0.2" max="4" step="0.1" value={starfieldSize} onChange={(e) => setStarfieldSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

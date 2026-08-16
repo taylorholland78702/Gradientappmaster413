@@ -1,5 +1,7 @@
-// Module-level clock — same cosmetic-phase-only tradeoff as the other
-// generative effects (see applyTriangleField.ts).
+// Module-level clock — a plain time accumulator rather than a dedicated
+// ref threaded through useMiscState/animValuesRef/useSnapshot, since this
+// is purely a cosmetic phase with no undo/redo or Display-mode sync value
+// depending on it.
 let agTime = 0;
 
 export function applyAuraGlow(P: any): void {

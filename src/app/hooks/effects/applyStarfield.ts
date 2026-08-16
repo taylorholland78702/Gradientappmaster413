@@ -35,6 +35,7 @@ export function applyStarfield(P: any): void {
     starfieldCount,
     starfieldSpeed,
     starfieldOpacity,
+    starfieldSize,
     starfieldParticlesRef,
     auroraAnimTime,
     auroraBandCount,
@@ -282,7 +283,7 @@ export function applyStarfield(P: any): void {
     const t = star.dist / edgeRadius;
     const color = gradientColors?.[star.colorIndex % colorCount] ?? { r: 255, g: 255, b: 255 };
     ctx.strokeStyle = `rgba(${color.r | 0}, ${color.g | 0}, ${color.b | 0}, ${0.3 + t * 0.7})`;
-    ctx.lineWidth = 0.5 + t * 2.5;
+    ctx.lineWidth = (0.5 + t * 2.5) * Math.max(0.1, starfieldSize ?? 1);
     ctx.beginPath();
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(x, y);

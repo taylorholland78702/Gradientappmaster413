@@ -40,8 +40,6 @@ import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
 import { applyStarfield } from '../hooks/effects/applyStarfield';
-import { applyStaticField } from '../hooks/effects/applyStaticField';
-import { applyTriangleField } from '../hooks/effects/applyTriangleField';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
@@ -198,14 +196,6 @@ const EFFECT_REGISTRY = {
   // frame's own line segment stroke is the "trail," no persistent decay
   // buffer needed, same cost tier as Aura Glow.
   starfield: { drawFn: applyStarfield, label: 'Starfield', cost: 2, category: ['Starfield'], audio: true },
-  // Generative overlay (grayscale noise + drifting sync bars, doesn't
-  // sample the frame beneath it) — half-res-ish downsampled field
-  // recompute plus a composite draw, same cost tier as Fluid Field.
-  'static-field': { drawFn: applyStaticField, label: 'Static Field', cost: 3, category: ['Static Field'], audio: true },
-  // Generative overlay (paints its own evolving triangle mesh from the
-  // palette, doesn't sample the frame beneath it) — same reasoning and
-  // cost tier as Fluid Field above.
-  'triangle-field': { drawFn: applyTriangleField, label: 'Triangle Field', cost: 3, category: ['Triangle Field'], audio: true },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
