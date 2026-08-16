@@ -1547,6 +1547,7 @@ export function InteractiveGradient() {
     setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
+    setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
   });
 
   // Shuffle click handler — single click = full remix, shared by both the

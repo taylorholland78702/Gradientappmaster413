@@ -118,6 +118,12 @@ export function useRandomization(params: RandomizationParams) {
     setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
+    // Passed in from InteractiveGradient.tsx's useRandomization() call but
+    // previously never destructured here — same silent-gap bug as the
+    // Modulation one: sliders exist in the UI and are wired into
+    // save/restore, but no shuffle path ever touched them.
+    setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
+    setCrtIntensity, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
   } = params;
 
   const randomizeUncoveredParams = useCallback(() => {
@@ -298,6 +304,89 @@ export function useRandomization(params: RandomizationParams) {
     setVignetteSoftness(Math.floor(Math.random() * 101));                // 0–100
     setWaveDistortionRotation(Math.floor(Math.random() * 361));          // 0–360
     setAsciiChars(ASCII_CHARSET_POOL[Math.floor(Math.random() * ASCII_CHARSET_POOL.length)]);
+
+    // Formerly lived only inline in feelingLucky, so the two subordinate
+    // shuffle buttons (Shuffle Gradient / Shift+G, Shuffle Effects /
+    // Shift+F) — which both call only randomizeUncoveredParams() — never
+    // touched any of this despite their own comments claiming they
+    // randomize "the new type's/effect's own sliders". Moved here so all
+    // three shuffle entry points share one source of truth.
+    setBlurMotionAmount(Math.floor(Math.random() * 50) + 10);        // 10–59
+    setBlurMotionDirection(Math.floor(Math.random() * 360));           // 0–360
+    setBlurGaussianAmount(randIntInRange(RANGES.blurGaussianAmount));
+    setBlurRadialAmount(Math.floor(Math.random() * 15) + 3);          // 3–17
+    setPosterizeLevels(Math.floor(Math.random() * 10) + 4);           // 4–13
+    setHalftoneSize(Math.floor(Math.random() * 25) + 5);              // 5–29
+    setHalftoneVariation(Math.random() * 0.5);                        // 0–0.5
+    setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
+    setVignetteStrength(randInRange(RANGES.vignetteStrength));
+    setColorShiftHue(randIntInRange(RANGES.colorShiftHue));
+    setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
+    setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
+    setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3
+    setHexGridSize(Math.floor(Math.random() * 80) + 15);              // 15–94
+    setLightLeakIntensity(Math.random() * 0.5 + 0.1);                 // 0.1–0.6
+    setLinesCount(Math.floor(Math.random() * 80) + 10);               // 10–89
+    setLinesAngle(Math.floor(Math.random() * 360));
+    setLinesThickness(Math.floor(Math.random() * 20) + 1);            // 1–20
+    setLiquifyStrength(Math.floor(Math.random() * 60) + 10);          // 10–69
+    setPinchStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
+    setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
+    setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
+    setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
+    setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
+    setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
+    setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
+    setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
+    setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
+
+    // Gradient-shape sliders
+    setWindmillTightness(Math.floor(Math.random() * 19) + 1); // 1-20
+    setWindmillRotations(Math.floor(Math.random() * 9) + 1); // 1-10
+    setWindmillThickness(Math.floor(Math.random() * 95) + 5); // 5-100
+    setWindmillZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
+    setShapesSides(Math.floor(Math.random() * 8) + 3);                // 3–10
+    setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
+    setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
+    setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
+    setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
+    setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
+    setNoiseDirection(Math.floor(Math.random() * 360));
+    setPlasmaSpeed(Math.random() * 3 + 0.5);                          // 0.5–3.5
+    setPlasmaComplexity(Math.floor(Math.random() * 7) + 2);           // 2–8
+    setRadialBurstCount(Math.floor(Math.random() * 14) + 4);          // 4–17
+    setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
+    setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
+    setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
+    setHelixTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
+    setHelixTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
+    setGridRotation(Math.floor(Math.random() * 360));
+    setGridCellAngleStep(Math.floor(Math.random() * 91));             // 0–90
+    setAngleStartOffset(Math.floor(Math.random() * 360));
+    setAngleCenterX(50);
+    setAngleCenterY(50);
+
+    // Duotone colors
+    setDuotoneColor1(randomHexColor());
+    setDuotoneColor2(randomHexColor());
+    setDuotoneColor3(randomHexColor());
+
+    // CRT / Dust Crackle color+length — added after this shuffle pool was
+    // last synced, so they sat frozen at their defaults through every
+    // shuffle path exactly like the Modulation gap.
+    setCrtIntensity(Math.random() * 0.6 + 0.1);                        // 0.1–0.7
+    setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
+    setDustCrackleColor(randomHexColor());
+
+    // Global palette adjust (Color tab). Saturation/brightness/contrast
+    // narrowed from the sliders' full range so a shuffle doesn't regularly
+    // land on a washed-out or near-black result on top of an
+    // already-randomized palette; hue uses the full range since a pure hue
+    // shift never destroys legibility the way extreme sat/contrast can.
+    setPaletteHue(Math.floor(Math.random() * 361) - 180);              // -180–180
+    setPaletteSaturation(Math.floor(Math.random() * 101) + 50);        // 50–150
+    setPaletteBrightness(Math.floor(Math.random() * 61) - 30);         // -30–30
+    setPaletteContrast(Math.floor(Math.random() * 61) - 30);           // -30–30
   }, []);
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();
@@ -631,72 +720,10 @@ export function useRandomization(params: RandomizationParams) {
     
     setBaseAIColors(null);
     setSubmittedAIPrompt('');
-    setBlurMotionAmount(Math.floor(Math.random() * 50) + 10);        // 10–59
-    setBlurMotionDirection(Math.floor(Math.random() * 360));           // 0–360
-    setBlurGaussianAmount(randIntInRange(RANGES.blurGaussianAmount));
-    setBlurRadialAmount(Math.floor(Math.random() * 15) + 3);          // 3–17
-    setPosterizeLevels(Math.floor(Math.random() * 10) + 4);           // 4–13
-    setHalftoneSize(Math.floor(Math.random() * 25) + 5);              // 5–29
-    setHalftoneVariation(Math.random() * 0.5);                        // 0–0.5
-    setHalftoneMove(Math.random() > 0.6);
-    setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
-    setVignetteStrength(randInRange(RANGES.vignetteStrength));
-    setColorShiftHue(randIntInRange(RANGES.colorShiftHue));
-    setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
-    setDuotoneIntensity(Math.random() * 0.5 + 0.3);                   // 0.3–0.8
-    setDustCrackleIntensity(Math.random() * 0.3);                     // 0–0.3
-    setHexGridSize(Math.floor(Math.random() * 80) + 15);              // 15–94
-    setLightLeakIntensity(Math.random() * 0.5 + 0.1);                 // 0.1–0.6
-    setLinesCount(Math.floor(Math.random() * 80) + 10);               // 10–89
-    setLinesAngle(Math.floor(Math.random() * 360));
-    setLinesThickness(Math.floor(Math.random() * 20) + 1);            // 1–20
-    setLiquifyStrength(Math.floor(Math.random() * 60) + 10);          // 10–69
-    setPinchStrength(Math.random() * 0.6 + 0.1);                      // 0.1–0.7
-    setSepiaIntensity(Math.random() * 0.6 + 0.2);                     // 0.2–0.8
-    setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
-    setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
-    setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
-    setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
-    setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
-    setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
-    setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
-
-    // Randomize gradient-specific controls
-    setWindmillTightness(Math.floor(Math.random() * 19) + 1); // 1-20
-    setWindmillRotations(Math.floor(Math.random() * 9) + 1); // 1-10
-    setWindmillThickness(Math.floor(Math.random() * 95) + 5); // 5-100
-    setWindmillZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
-    setShapesSides(Math.floor(Math.random() * 8) + 3);                // 3–10
-    setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
-    setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
-    setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
-    setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
-    setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
-    setNoiseDirection(Math.floor(Math.random() * 360));
-    setPlasmaSpeed(Math.random() * 3 + 0.5);                          // 0.5–3.5
-    setPlasmaComplexity(Math.floor(Math.random() * 7) + 2);           // 2–8
-    setRadialBurstCount(Math.floor(Math.random() * 14) + 4);          // 4–17
-    setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
-    setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
-    setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
-    setHelixTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
-    setHelixTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
-    setGridRotation(Math.floor(Math.random() * 360));
-    setAngleStartOffset(Math.floor(Math.random() * 360));
-    setAngleCenterX(50);
-    setAngleCenterY(50);
-
-    // Randomize duotone colors
-    const randomHexColor = () => {
-      const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      return `#${r}${g}${b}`;
-    };
-    setDuotoneColor1(randomHexColor());
-    setDuotoneColor2(randomHexColor());
-    setDuotoneColor3(randomHexColor());
-
+    // The blur/posterize/halftone/.../duotone-color/palette-adjust block that
+    // used to live here inline now lives in randomizeUncoveredParams (see
+    // that function) so Shuffle Gradient and Shuffle Effects share it too,
+    // instead of only the main Remix button.
     randomizeUncoveredParams();
     // Remix randomizes every gradient/effect slider already — extend that to
     // the Audio panel too, but only when audio is actually engaged, so a
