@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, SignOut, MonitorPlay } from '@phosphor-icons/react';
 import { encodePresetData } from '../utils/presetShare';
 
@@ -257,6 +257,19 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     }));
   }, [savedPresets, folderNames]);
 
+  // Folders start closed on load — collapsedFolders can't just default to
+  // "all of them" up front since folderNames/savedPresets arrive
+  // asynchronously (Firestore/localStorage) and are empty on first render.
+  // Runs once, the first time any folders actually show up, and never
+  // again — so it doesn't fight a folder the user has since expanded, or
+  // re-collapse everything each time a new folder is added later.
+  const hasCollapsedOnLoad = useRef(false);
+  useEffect(() => {
+    if (hasCollapsedOnLoad.current || grouped.length === 0) return;
+    hasCollapsedOnLoad.current = true;
+    setCollapsedFolders(new Set(grouped.map(g => g.folder)));
+  }, [grouped]);
+
   return (
     <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
       {/* Sign-in — anonymous sessions already save presets, but only in
@@ -285,13 +298,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               <div className="flex gap-1 text-[10px]">
                 <button
                   onClick={() => { setEmailMode('signin'); clearAuthError(); }}
-                  className={`px-2 py-0.5 rounded ${emailMode === 'signin' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                  className={`px-2 py-0.5 rounded transition-all ${emailMode === 'signin' ? 'bg-white text-black font-bold' : 'text-white/50 hover:text-white'}`}
                 >
                   Sign in
                 </button>
                 <button
                   onClick={() => { setEmailMode('signup'); clearAuthError(); }}
-                  className={`px-2 py-0.5 rounded ${emailMode === 'signup' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'}`}
+                  className={`px-2 py-0.5 rounded transition-all ${emailMode === 'signup' ? 'bg-white text-black font-bold' : 'text-white/50 hover:text-white'}`}
                 >
                   Sign up
                 </button>
@@ -301,7 +314,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="w-full box-border px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  className="w-full box-border px-2 py-1.5 text-[10px] bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
                 />
                 <input
                   type="password"
@@ -309,12 +322,12 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') submitEmailForm(); }}
                   placeholder="Password"
-                  className="w-full box-border px-2 py-1.5 text-xs bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                  className="w-full box-border px-2 py-1.5 text-[10px] bg-black/30 border border-white/15 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
                 />
                 <button
                   onClick={submitEmailForm}
                   disabled={authBusy || !email.trim() || !password}
-                  className="px-3 py-1.5 text-xs bg-white text-black rounded font-semibold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-[10px] bg-white text-black rounded font-bold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {emailMode === 'signup' ? 'Create account' : 'Sign in'}
                 </button>
