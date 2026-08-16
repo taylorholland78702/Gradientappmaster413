@@ -1,22 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Shuffle, CaretDown } from '@phosphor-icons/react';
+import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
-
-// Generative effects paint their own evolving content from scratch each
-// frame (an overlay, composited via their own Opacity slider) instead of
-// reading and transforming whatever's already on the canvas, the way every
-// other effect here does. That's a different enough mental model — they
-// don't need anything else active to look interesting — that they get
-// their own section below the main grid rather than sitting alphabetically
-// interleaved with the transform effects. Purely a UI grouping: still
-// ordinary entries in EFFECT_REGISTRY, still in the same activeEffects
-// array, still in Shuffle's pool — this list only controls where their
-// button renders.
-// Alphabetized by label — this is the order the section's button grid
-// renders in, so keep new entries sorted in by their display label.
-const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'confetti', 'fluid-field', 'lightning-web', 'particle-trails', 'triangle-field'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
@@ -138,18 +124,11 @@ export interface EffectsTabProps {
   triangleFieldGridSize: number; setTriangleFieldGridSize: (v: number) => void;
   triangleFieldSpeed: number; setTriangleFieldSpeed: (v: number) => void;
   triangleFieldOpacity: number; setTriangleFieldOpacity: (v: number) => void;
-  // Fluid Field
-  fluidFieldScale: number; setFluidFieldScale: (v: number) => void;
-  fluidFieldSpeed: number; setFluidFieldSpeed: (v: number) => void;
-  fluidFieldOpacity: number; setFluidFieldOpacity: (v: number) => void;
+  triangleFieldRotation: number; setTriangleFieldRotation: (v: number) => void;
   // Static Field
   staticFieldIntensity: number; setStaticFieldIntensity: (v: number) => void;
   staticFieldBarSpeed: number; setStaticFieldBarSpeed: (v: number) => void;
   staticFieldOpacity: number; setStaticFieldOpacity: (v: number) => void;
-  // Particle Trails
-  particleTrailsCount: number; setParticleTrailsCount: (v: number) => void;
-  particleTrailsSpeed: number; setParticleTrailsSpeed: (v: number) => void;
-  particleTrailsOpacity: number; setParticleTrailsOpacity: (v: number) => void;
   // Aura Glow
   auraGlowCount: number; setAuraGlowCount: (v: number) => void;
   auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
@@ -158,14 +137,6 @@ export interface EffectsTabProps {
   starfieldCount: number; setStarfieldCount: (v: number) => void;
   starfieldSpeed: number; setStarfieldSpeed: (v: number) => void;
   starfieldOpacity: number; setStarfieldOpacity: (v: number) => void;
-  // Lightning Web
-  lightningWebCount: number; setLightningWebCount: (v: number) => void;
-  lightningWebSpeed: number; setLightningWebSpeed: (v: number) => void;
-  lightningWebOpacity: number; setLightningWebOpacity: (v: number) => void;
-  // Confetti
-  confettiCount: number; setConfettiCount: (v: number) => void;
-  confettiSpeed: number; setConfettiSpeed: (v: number) => void;
-  confettiOpacity: number; setConfettiOpacity: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -205,17 +176,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherType, setDitherType,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
-    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity,
-    fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
+    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity, triangleFieldRotation, setTriangleFieldRotation,
     staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
-    particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity,
-    lightningWebCount, setLightningWebCount, lightningWebSpeed, setLightningWebSpeed, lightningWebOpacity, setLightningWebOpacity,
-    confettiCount, setConfettiCount, confettiSpeed, setConfettiSpeed, confettiOpacity, setConfettiOpacity,
   } = props;
-
-  const [isGenerativeFxOpen, setIsGenerativeFxOpen] = useState(false);
 
   // Was recomputed inline on every render this component made (including
   // ones triggered by unrelated effect state elsewhere in the tab), not
@@ -226,31 +191,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
       ? EMOJI_PICKER_CATEGORIES.map(cat => ({ ...cat, emojis: cat.emojis.filter(em => em.name.includes(q)) })).filter(cat => cat.emojis.length > 0)
       : EMOJI_PICKER_CATEGORIES;
   }, [emojiPickerSearch]);
-
-  // Scoped to GENERATIVE_EFFECT_IDS only, unlike the main Shuffle Effects
-  // button (which redraws the entire activeEffects set from all of
-  // ALL_EFFECTS) — this only touches which generative effect(s) are
-  // active, leaving any non-generative effects already on untouched.
-  const shuffleGenerativeEffects = () => {
-    const nonGenerative = activeEffects.filter((e: EffectType) => !GENERATIVE_EFFECT_IDS.includes(e));
-    if (isMultiFxMode) {
-      const shuffled = [...GENERATIVE_EFFECT_IDS].sort(() => Math.random() - 0.5);
-      const numPicks = Math.floor(Math.random() * Math.min(3, shuffled.length)) + 1;
-      const picks: EffectType[] = [];
-      let cost = totalCost(nonGenerative);
-      for (const id of shuffled) {
-        if (picks.length >= numPicks) break;
-        const c = costOf(id);
-        if (cost + c > MULTI_FX_COST_BUDGET) continue;
-        picks.push(id);
-        cost += c;
-      }
-      setActiveEffects([...nonGenerative, ...picks]);
-    } else {
-      const pick = GENERATIVE_EFFECT_IDS[Math.floor(Math.random() * GENERATIVE_EFFECT_IDS.length)];
-      setActiveEffects([pick]);
-    }
-  };
 
   return (
     <>
@@ -280,8 +220,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             // instead of a hand-maintained list — adding/removing an effect no longer
             // requires touching this array too.
             const effectsList: { value: EffectType; label: string }[] =
-              EFFECTS_UI_LIST.filter((value) => !GENERATIVE_EFFECT_IDS.includes(value))
-                .map((value) => ({ value, label: EFFECT_LABELS[value] }));
+              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }));
             const rows = Math.ceil(effectsList.length / 2);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
@@ -339,90 +278,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               </div>
             );
           })()}
-        </div>
-
-        {/* Generative FX — paint their own evolving content instead of
-            transforming the frame beneath them (see GENERATIVE_EFFECT_IDS
-            above). Same button/toggle behavior as the main grid, just its
-            own labeled, collapsible section so it reads as a different
-            kind of effect rather than being alphabetically buried among
-            the transform ones. MULTI shares the same global isMultiFxMode
-            as the main row (one activeEffects array, one multi-mode);
-            Shuffle and Reset are scoped to just this section's effects. */}
-        <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
-          <button
-            onClick={() => setIsGenerativeFxOpen(!isGenerativeFxOpen)}
-            className="flex items-center justify-center gap-1 w-full py-1 bg-transparent outline-none hover:bg-white/5 active:bg-transparent focus:outline-none appearance-none border-b border-white/10"
-          >
-            <span className="text-[10px] font-semibold text-white leading-none">GENERATIVE FX</span>
-            <CaretDown weight="regular" className={`w-3 h-3 text-white/40 transition-transform shrink-0 ${isGenerativeFxOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {isGenerativeFxOpen && (
-          <>
-          <div className="w-full flex gap-0 border-b border-white/10">
-            <button
-              onClick={() => setIsMultiFxMode(!isMultiFxMode)}
-              aria-pressed={isMultiFxMode}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/10 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
-              title="Toggle Multi-FX (M)"
-            >MULTI</button>
-            <button
-              onClick={shuffleGenerativeEffects}
-              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/10"
-              title="Shuffle Generative FX"
-              aria-label="Shuffle Generative FX"
-            ><Shuffle weight="regular" className="w-4 h-4" /></button>
-            <button
-              onClick={() => setActiveEffects(activeEffects.filter((e: EffectType) => !GENERATIVE_EFFECT_IDS.includes(e)))}
-              aria-pressed={!activeEffects.some((e: EffectType) => GENERATIVE_EFFECT_IDS.includes(e))}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${!activeEffects.some((e: EffectType) => GENERATIVE_EFFECT_IDS.includes(e)) ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
-            >RESET</button>
-          </div>
-          <div className="grid grid-cols-2 gap-0">
-            {GENERATIVE_EFFECT_IDS.map((value, i) => {
-              const label = EFFECT_LABELS[value];
-              const isActive = activeEffects.includes(value);
-              const wouldExceedBudget = isMultiFxMode && !isActive
-                && totalCost(activeEffects) + costOf(value) > MULTI_FX_COST_BUDGET;
-              const rows = Math.ceil(GENERATIVE_EFFECT_IDS.length / 2);
-              const isLeftColumn = i % 2 === 0;
-              const isLastRow = Math.floor(i / 2) === rows - 1;
-              return (
-                <button
-                  key={value}
-                  disabled={wouldExceedBudget}
-                  title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
-                  aria-pressed={isActive}
-                  onClick={() => {
-                    if (isMultiFxMode) {
-                      if (isActive) {
-                        setActiveEffects(activeEffects.filter(e => e !== value));
-                      } else if (!wouldExceedBudget) {
-                        setActiveEffects([...activeEffects, value]);
-                      }
-                    } else {
-                      if (isActive && activeEffects.length === 1) {
-                        setActiveEffects([]);
-                      } else {
-                        setActiveEffects([value]);
-                      }
-                    }
-                  }}
-                  className={`px-1 py-0.5 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastRow ? 'border-b border-white/10' : ''} ${
-                    isActive
-                      ? 'bg-white text-black font-bold'
-                      : wouldExceedBudget
-                        ? 'text-white/30 wav-disabled-text cursor-not-allowed'
-                        : 'text-white hover:bg-white/10'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          </>
-          )}
         </div>
 
         {activeEffects.length > 0 && (() => {
@@ -1524,27 +1379,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <input type="number" min="0.1" max="1" step="0.05" value={triangleFieldOpacity} onChange={(e) => setTriangleFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('fluid-field') && (
-                <EffectSection id="fluid-field" label="Fluid Field" isMulti={isMulti} expanded={expandedEffects.has('fluid-field')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
-                    <input type="range" min="0.5" max="10" step="0.5" value={fluidFieldScale} onChange={(e) => setFluidFieldScale(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.5" max="10" step="0.5" value={fluidFieldScale} onChange={(e) => setFluidFieldScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Rotation:</label>
                     <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={fluidFieldSpeed} onChange={(e) => setFluidFieldSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={fluidFieldSpeed} onChange={(e) => setFluidFieldSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={fluidFieldOpacity} onChange={(e) => setFluidFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                      <input type="range" min="-5" max="5" step="0.1" value={triangleFieldRotation} onChange={(e) => setTriangleFieldRotation(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="-5" max="5" step="0.1" value={triangleFieldRotation} onChange={(e) => setTriangleFieldRotation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
@@ -1568,29 +1407,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={staticFieldOpacity} onChange={(e) => setStaticFieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('particle-trails') && (
-                <EffectSection id="particle-trails" label="Particle Trails" isMulti={isMulti} expanded={expandedEffects.has('particle-trails')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="10" max="150" step="5" value={particleTrailsCount} onChange={(e) => setParticleTrailsCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="10" max="150" step="5" value={particleTrailsCount} onChange={(e) => setParticleTrailsCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={particleTrailsSpeed} onChange={(e) => setParticleTrailsSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={particleTrailsSpeed} onChange={(e) => setParticleTrailsSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={particleTrailsOpacity} onChange={(e) => setParticleTrailsOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
@@ -1637,52 +1453,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('lightning-web') && (
-                <EffectSection id="lightning-web" label="Lightning Web" isMulti={isMulti} expanded={expandedEffects.has('lightning-web')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Nodes:</label>
-                    <input type="range" min="4" max="20" step="1" value={lightningWebCount} onChange={(e) => setLightningWebCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="4" max="20" step="1" value={lightningWebCount} onChange={(e) => setLightningWebCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.2" max="3" step="0.1" value={lightningWebSpeed} onChange={(e) => setLightningWebSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.2" max="3" step="0.1" value={lightningWebSpeed} onChange={(e) => setLightningWebSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={lightningWebOpacity} onChange={(e) => setLightningWebOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={lightningWebOpacity} onChange={(e) => setLightningWebOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('confetti') && (
-                <EffectSection id="confetti" label="Confetti" isMulti={isMulti} expanded={expandedEffects.has('confetti')} onToggle={toggleEffectExpanded}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="20" max="500" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="20" max="500" step="10" value={confettiCount} onChange={(e) => setConfettiCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.2" max="3" step="0.1" value={confettiSpeed} onChange={(e) => setConfettiSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.2" max="3" step="0.1" value={confettiSpeed} onChange={(e) => setConfettiSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={confettiOpacity} onChange={(e) => setConfettiOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={confettiOpacity} onChange={(e) => setConfettiOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

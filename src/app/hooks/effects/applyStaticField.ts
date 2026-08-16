@@ -1,6 +1,6 @@
 import { getScratchCanvas } from '../../utils/scratchCanvas';
 
-// Same module-level clock tradeoff as applyTriangleField.ts/applyFluidField.ts.
+// Same module-level clock tradeoff as applyTriangleField.ts.
 let sfTime = 0;
 
 export function applyStaticField(P: any): void {

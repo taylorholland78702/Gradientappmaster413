@@ -14,6 +14,7 @@ function hash2(ix: number, iy: number, seed: number): number {
 // sync value depends on it), same tradeoff already accepted for e.g.
 // halftoneTimeRef's simpler cousins.
 let tfTime = 0;
+let tfRotation = 0;
 
 export function applyTriangleField(P: any): void {
   const {
@@ -191,6 +192,7 @@ export function applyTriangleField(P: any): void {
     triangleFieldGridSize,
     triangleFieldSpeed,
     triangleFieldOpacity,
+    triangleFieldRotation,
     topographicBands,
     topographicLineWidth,
     topographicScale,
@@ -246,6 +248,10 @@ export function applyTriangleField(P: any): void {
   const tfAudioActive = isFirstEffect && isAudioReactive;
   const speedBoost = tfAudioActive ? 1 + audioTrebleLevel * 0.6 : 1;
   tfTime += 0.006 * triangleFieldSpeed * speedBoost;
+  // Whole-mesh spin, independent of Speed (which only drives per-vertex
+  // jitter phase above) — degrees/frame straight from the slider, 0 by
+  // default so existing looks don't change unless it's turned on.
+  tfRotation = (tfRotation + (triangleFieldRotation ?? 0)) % 360;
 
   const cols = Math.max(3, Math.round(triangleFieldGridSize));
   const rows = Math.max(3, Math.round(triangleFieldGridSize * (displayHeight / displayWidth)));
@@ -269,6 +275,10 @@ export function applyTriangleField(P: any): void {
 
   const opacity = Math.max(0, Math.min(1, triangleFieldOpacity));
   ctx.globalAlpha = opacity;
+  ctx.save();
+  ctx.translate(displayWidth / 2, displayHeight / 2);
+  ctx.rotate((tfRotation * Math.PI) / 180);
+  ctx.translate(-displayWidth / 2, -displayHeight / 2);
   const fillTriangle = (
     p0: { x: number; y: number },
     p1: { x: number; y: number },
@@ -299,5 +309,6 @@ export function applyTriangleField(P: any): void {
       fillTriangle(p10, p11, p01, fieldB);
     }
   }
+  ctx.restore();
   ctx.globalAlpha = 1;
 }

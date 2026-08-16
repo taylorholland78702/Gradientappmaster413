@@ -77,12 +77,8 @@ import { useFlowParticlesState } from '../hooks/state/useFlowParticlesState';
 import { useGlitchState } from '../hooks/state/useGlitchState';
 import { useTriangleFieldState } from '../hooks/state/useTriangleFieldState';
 import { useStaticFieldState } from '../hooks/state/useStaticFieldState';
-import { useParticleTrailsState } from '../hooks/state/useParticleTrailsState';
 import { useAuraGlowState } from '../hooks/state/useAuraGlowState';
-import { useFluidFieldState } from '../hooks/state/useFluidFieldState';
 import { useStarfieldState } from '../hooks/state/useStarfieldState';
-import { useLightningWebState } from '../hooks/state/useLightningWebState';
-import { useConfettiState } from '../hooks/state/useConfettiState';
 import { useGrainState } from '../hooks/state/useGrainState';
 import { useGridState } from '../hooks/state/useGridState';
 import { useGridRotationDirectionState } from '../hooks/state/useGridRotationDirectionState';
@@ -322,14 +318,10 @@ export function InteractiveGradient() {
   const { flowBufferRef } = useFlowBufferState();
   const { flowParticlesRef } = useFlowParticlesState();
   const { glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit } = useGlitchState();
-  const { triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity } = useTriangleFieldState();
+  const { triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity, triangleFieldRotation, setTriangleFieldRotation } = useTriangleFieldState();
   const { staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity } = useStaticFieldState();
-  const { particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity, particleTrailsBufferRef, particleTrailsParticlesRef } = useParticleTrailsState();
   const { auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity } = useAuraGlowState();
-  const { fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity } = useFluidFieldState();
   const { starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldParticlesRef } = useStarfieldState();
-  const { lightningWebCount, setLightningWebCount, lightningWebSpeed, setLightningWebSpeed, lightningWebOpacity, setLightningWebOpacity, lightningWebNodesRef, lightningWebBoltsRef } = useLightningWebState();
-  const { confettiCount, setConfettiCount, confettiSpeed, setConfettiSpeed, confettiOpacity, setConfettiOpacity, confettiParticlesRef } = useConfettiState();
   const { grainIntensity, setGrainIntensity, grainType, setGrainType } = useGrainState();
   const { gridSides, setGridSides, gridRows, setGridRows, gridColumns, setGridColumns, gridRotation, setGridRotation, gridVariation, setGridVariation, gridShapeSize, setGridShapeSize, gridCellAngleStep, setGridCellAngleStep } = useGridState();
   const { gridRotationDirection, setGridRotationDirection, gridRotationDirectionRef } = useGridRotationDirectionState();
@@ -1326,14 +1318,10 @@ export function InteractiveGradient() {
     asciiSize, auroraBandCount, auroraBandHeight, auroraWaveSpeed, autoGainEnabled, baseAIColors,
     depthLayerEnabled, depthLayerStrength, setDepthLayerEnabled, setDepthLayerStrength,
     glitchIntensity, glitchBlockSize, glitchChromaSplit, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
-    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity,
-    fluidFieldScale, setFluidFieldScale, fluidFieldSpeed, setFluidFieldSpeed, fluidFieldOpacity, setFluidFieldOpacity,
+    triangleFieldGridSize, setTriangleFieldGridSize, triangleFieldSpeed, setTriangleFieldSpeed, triangleFieldOpacity, setTriangleFieldOpacity, triangleFieldRotation, setTriangleFieldRotation,
     staticFieldIntensity, setStaticFieldIntensity, staticFieldBarSpeed, setStaticFieldBarSpeed, staticFieldOpacity, setStaticFieldOpacity,
-    particleTrailsCount, setParticleTrailsCount, particleTrailsSpeed, setParticleTrailsSpeed, particleTrailsOpacity, setParticleTrailsOpacity,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity,
-    lightningWebCount, setLightningWebCount, lightningWebSpeed, setLightningWebSpeed, lightningWebOpacity, setLightningWebOpacity,
-    confettiCount, setConfettiCount, confettiSpeed, setConfettiSpeed, confettiOpacity, setConfettiOpacity,
     juliaReal, juliaImaginary, juliaZoom, juliaIterations, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     fieldContrast, paletteMode, paletteBands, setFieldContrast, setPaletteMode, setPaletteBands,
     invertAmount, setInvertAmount,
@@ -2934,21 +2922,17 @@ export function InteractiveGradient() {
     noiseDirection,
     ditherType, ditherLevels, slitScanIntensity, slitScanDirection,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity,
-    fluidFieldScale, fluidFieldSpeed, fluidFieldOpacity,
+    triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity, triangleFieldRotation,
     staticFieldIntensity, staticFieldBarSpeed, staticFieldOpacity,
-    particleTrailsCount, particleTrailsSpeed, particleTrailsOpacity,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
     starfieldCount, starfieldSpeed, starfieldOpacity,
-    lightningWebCount, lightningWebSpeed, lightningWebOpacity,
-    confettiCount, confettiSpeed, confettiOpacity,
     addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity, fluidFieldScale, fluidFieldSpeed, fluidFieldOpacity, staticFieldIntensity, staticFieldBarSpeed, staticFieldOpacity, particleTrailsCount, particleTrailsSpeed, particleTrailsOpacity, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, lightningWebCount, lightningWebSpeed, lightningWebOpacity, confettiCount, confettiSpeed, confettiOpacity, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity, triangleFieldRotation, staticFieldIntensity, staticFieldBarSpeed, staticFieldOpacity, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame
@@ -2997,14 +2981,10 @@ export function InteractiveGradient() {
     paletteHue, paletteSaturation, paletteBrightness, paletteContrast, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
-    triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity,
-    fluidFieldScale, fluidFieldSpeed, fluidFieldOpacity,
+    triangleFieldGridSize, triangleFieldSpeed, triangleFieldOpacity, triangleFieldRotation,
     staticFieldIntensity, staticFieldBarSpeed, staticFieldOpacity,
-    particleTrailsCount, particleTrailsSpeed, particleTrailsOpacity, particleTrailsBufferRef, particleTrailsParticlesRef,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
     starfieldCount, starfieldSpeed, starfieldOpacity, starfieldParticlesRef,
-    lightningWebCount, lightningWebSpeed, lightningWebOpacity, lightningWebNodesRef, lightningWebBoltsRef,
-    confettiCount, confettiSpeed, confettiOpacity, confettiParticlesRef,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
@@ -4601,24 +4581,14 @@ export function InteractiveGradient() {
             setTriangleFieldSpeed={setTriangleFieldSpeed}
             triangleFieldOpacity={triangleFieldOpacity}
             setTriangleFieldOpacity={setTriangleFieldOpacity}
-            fluidFieldScale={fluidFieldScale}
-            setFluidFieldScale={setFluidFieldScale}
-            fluidFieldSpeed={fluidFieldSpeed}
-            setFluidFieldSpeed={setFluidFieldSpeed}
-            fluidFieldOpacity={fluidFieldOpacity}
-            setFluidFieldOpacity={setFluidFieldOpacity}
+            triangleFieldRotation={triangleFieldRotation}
+            setTriangleFieldRotation={setTriangleFieldRotation}
             staticFieldIntensity={staticFieldIntensity}
             setStaticFieldIntensity={setStaticFieldIntensity}
             staticFieldBarSpeed={staticFieldBarSpeed}
             setStaticFieldBarSpeed={setStaticFieldBarSpeed}
             staticFieldOpacity={staticFieldOpacity}
             setStaticFieldOpacity={setStaticFieldOpacity}
-            particleTrailsCount={particleTrailsCount}
-            setParticleTrailsCount={setParticleTrailsCount}
-            particleTrailsSpeed={particleTrailsSpeed}
-            setParticleTrailsSpeed={setParticleTrailsSpeed}
-            particleTrailsOpacity={particleTrailsOpacity}
-            setParticleTrailsOpacity={setParticleTrailsOpacity}
             auraGlowCount={auraGlowCount}
             setAuraGlowCount={setAuraGlowCount}
             auraGlowSpeed={auraGlowSpeed}
@@ -4630,18 +4600,6 @@ export function InteractiveGradient() {
             setStarfieldSpeed={setStarfieldSpeed}
             starfieldOpacity={starfieldOpacity}
             setStarfieldOpacity={setStarfieldOpacity}
-            lightningWebCount={lightningWebCount}
-            setLightningWebCount={setLightningWebCount}
-            lightningWebSpeed={lightningWebSpeed}
-            setLightningWebSpeed={setLightningWebSpeed}
-            lightningWebOpacity={lightningWebOpacity}
-            setLightningWebOpacity={setLightningWebOpacity}
-            confettiCount={confettiCount}
-            setConfettiCount={setConfettiCount}
-            confettiSpeed={confettiSpeed}
-            setConfettiSpeed={setConfettiSpeed}
-            confettiOpacity={confettiOpacity}
-            setConfettiOpacity={setConfettiOpacity}
             setAuraGlowOpacity={setAuraGlowOpacity}
           />
         )}
