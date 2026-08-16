@@ -139,7 +139,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                       if (selected) setAIPrompt(selectedKeywords.filter(k => k !== c).join(' '));
                       else if (!full) setAIPrompt(selectedKeywords.concat(c).join(' '));
                     }} className={`flex items-center gap-1.5 px-1.5 py-1 rounded-md text-[10px] capitalize truncate transition-all ${selected ? 'bg-white text-black font-semibold' : full ? 'opacity-30 cursor-not-allowed text-white/60' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}>
-                      <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0 ring-1 ring-white/30" style={{ backgroundColor: hex }} />
+                      <span className="w-2.5 h-2.5 flex-shrink-0 ring-1 ring-white/30" style={{ backgroundColor: hex }} />
                       {c}
                     </button>
                   );
