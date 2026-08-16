@@ -24,7 +24,7 @@ import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
 import { VCRControls } from './VCRControls';
-import { ColorTab, THEME_KEYWORDS, COLOR_KEYWORDS } from './ColorTab';
+import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
 import { useRandomization } from '../hooks/useRandomization';
@@ -2829,27 +2829,6 @@ export function InteractiveGradient() {
     setAIPrompt('');
   }, [aiPrompt, generateAIColors, setTargetColors, setBaseAIColors, setSubmittedAIPrompt, setIsAIColorPickerOpen, setAIPrompt]);
 
-  // Color tab's Shuffle button — picks 1-3 random keywords from the same
-  // Themes/Colors pool the picker UI shows (THEME_KEYWORDS/COLOR_KEYWORDS,
-  // imported from ColorTab.tsx so the pool can't drift out of sync) and runs
-  // them through the same generateAIColors path as manually picking
-  // keywords and hitting Generate, rather than the old fully-arbitrary
-  // per-stop randomColor() shuffle.
-  const handleShuffleColors = useCallback(() => {
-    saveCurrentState();
-    const pool = [...THEME_KEYWORDS, ...COLOR_KEYWORDS.map(([name]) => name)];
-    const count = Math.floor(Math.random() * 3) + 1; // 1-3 keywords
-    const picked = new Set<string>();
-    while (picked.size < count && picked.size < pool.length) {
-      picked.add(pool[Math.floor(Math.random() * pool.length)]);
-    }
-    const keywordString = Array.from(picked).join(' ');
-    const newColors = generateAIColors(keywordString);
-    setTargetColors(newColors);
-    setBaseAIColors(newColors);
-    setSubmittedAIPrompt(keywordString);
-  }, [saveCurrentState, generateAIColors, setTargetColors, setBaseAIColors, setSubmittedAIPrompt]);
-
   // Color AUTO PLAY — cycles colors independently of gradient AUTO PLAY.
   // Skipped entirely in Display mode: this uses Math.random() every 800ms,
   // so two windows each running their own copy would diverge in color
@@ -4194,8 +4173,10 @@ export function InteractiveGradient() {
           <ColorTab
             isAutoColor={isAutoColor}
             setIsAutoColor={setIsAutoColor}
+            saveCurrentState={saveCurrentState}
             setTargetColors={setTargetColors}
-            shuffleColors={handleShuffleColors}
+            gradientColors={gradientColors}
+            randomColor={randomColor}
             submittedAIPrompt={submittedAIPrompt}
             setSubmittedAIPrompt={setSubmittedAIPrompt}
             setBaseAIColors={setBaseAIColors}

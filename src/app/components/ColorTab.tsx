@@ -2,15 +2,13 @@ import React from 'react';
 import { Shuffle, Play, Pause, MagicWand } from '@phosphor-icons/react';
 import { type ColorRGB, DEFAULT_COLORS } from '../constants/gradientEffects';
 
-// Exported so InteractiveGradient.tsx's Shuffle Colors handler can pick
-// from the same pool the picker UI shows, rather than duplicating this list.
-export const THEME_KEYWORDS = ['aurora','autumn','candy','cherry','cosmic','cyberpunk','desert','dusk','earth','ember','fire','forest','frost','galaxy','ice','jungle','lagoon','lava','midnight','monochrome','nebula','neon','ocean','pastel','rainbow','retro','spring','sunrise','sunset','tropical','vaporwave','winter'];
+const THEME_KEYWORDS = ['aurora','autumn','candy','cherry','cosmic','cyberpunk','desert','dusk','earth','ember','fire','forest','frost','galaxy','ice','jungle','lagoon','lava','midnight','monochrome','nebula','neon','ocean','pastel','rainbow','retro','spring','sunrise','sunset','tropical','vaporwave','winter'];
 
 // Hex values here are decorative only (the little swatch dot next to each
 // chip) — the actual generated palettes come from the colorMap in
 // InteractiveGradient.tsx's generateAIColors, kept in sync by hand since
 // that map isn't exported.
-export const COLOR_KEYWORDS: Array<[name: string, hex: string]> = [
+const COLOR_KEYWORDS: Array<[name: string, hex: string]> = [
   ['amber', '#ffbf00'], ['aqua', '#00dcd2'], ['beige', '#decaad'], ['black', '#1e1e1e'],
   ['blue', '#3278ff'], ['bronze', '#b0723b'], ['brown', '#966432'], ['burgundy', '#801428'],
   ['charcoal', '#464a50'], ['coral', '#ff7f50'], ['crimson', '#dc143c'], ['cyan', '#32e6e6'],
@@ -27,8 +25,10 @@ export const COLOR_KEYWORDS: Array<[name: string, hex: string]> = [
 export interface ColorTabProps {
   isAutoColor: boolean;
   setIsAutoColor: (updater: (prev: boolean) => boolean) => void;
+  saveCurrentState: () => void;
   setTargetColors: (colors: ColorRGB[]) => void;
-  shuffleColors: () => void;
+  gradientColors: ColorRGB[];
+  randomColor: () => ColorRGB;
   submittedAIPrompt: string;
   setSubmittedAIPrompt: (v: string) => void;
   setBaseAIColors: (v: ColorRGB[] | null) => void;
@@ -50,7 +50,7 @@ export interface ColorTabProps {
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
-  isAutoColor, setIsAutoColor, setTargetColors, shuffleColors,
+  isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
   submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors,
   aiPrompt, setAIPrompt, isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
   paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
@@ -69,7 +69,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           aria-label={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
         >{isAutoColor ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}</button>
         <button
-          onClick={shuffleColors}
+          onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
           className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-black/25 text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
           title="Shuffle Colors"
         ><Shuffle weight="regular" className="w-4 h-4" /></button>
