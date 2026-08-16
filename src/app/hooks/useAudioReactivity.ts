@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
 
+// Standalone/mirror Display windows (?display=1) have no UI to show a mic
+// permission prompt or error against, and no reason to request mic access
+// at all — same check InteractiveGradient.tsx uses for IS_DISPLAY_MODE,
+// duplicated locally rather than threading a prop through since it's a
+// one-off, read-once-at-load flag.
+const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
+
 export interface ColorRGB {
   r: number;
   g: number;
@@ -366,6 +373,20 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     };
     navigator.mediaDevices.addEventListener('devicechange', refresh);
     return () => navigator.mediaDevices.removeEventListener('devicechange', refresh);
+  }, []);
+
+  // Audio defaults to ON: attempt mic access once on mount instead of
+  // requiring an explicit click on the mic button first. Skipped in Display
+  // mode (see IS_DISPLAY_MODE above) — a mirror/standalone output window has
+  // no UI to grant permission against or show micError on. A denial here
+  // falls through to startMicVisualization's existing catch block, which
+  // sets micError and leaves isMicActive false exactly as if the user had
+  // clicked the button and declined — the manual toggle still works
+  // afterward with no special-casing needed.
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    startMicVisualization();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleAudio = () => {
