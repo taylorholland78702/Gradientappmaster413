@@ -334,7 +334,16 @@ export function useRandomization(params: RandomizationParams) {
     // identical apart from which effects were on.
     randomizeUncoveredParams();
   }, [saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier]);
-  const shuffleAudiovisuals = useCallback(() => {
+  // Optional overrides let feelingLucky pass the gradient/effects it JUST
+  // picked in this same call — without them, this closes over gradientType/
+  // activeEffects from the render that triggered it, which is the state
+  // from BEFORE feelingLucky's setGradientType/setActiveEffects calls (those
+  // are async, so the new look isn't in props/state yet). Standalone callers
+  // (Shift+A, the Audio tab's own shuffle button) omit the overrides and
+  // correctly scope to whatever look is already on screen.
+  const shuffleAudiovisuals = useCallback((overrideGradientType?: GradientType, overrideEffects?: EffectType[]) => {
+    const effectiveGradientType = overrideGradientType ?? gradientType;
+    const effectiveActiveEffects = overrideEffects ?? activeEffects;
     setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
     setSubBassMultiplier(Math.random() * 5);
     setBassMultiplier(Math.random() * 5);
@@ -350,8 +359,8 @@ export function useRandomization(params: RandomizationParams) {
     setPaletteBeatEnabled(Math.random() < 0.5);
 
     const activeModCategories = new Set<string>();
-    (GRADIENT_MOD_CATEGORY[gradientType] ?? []).forEach((c) => activeModCategories.add(c));
-    (activeEffects as string[]).forEach((effect) => {
+    (GRADIENT_MOD_CATEGORY[effectiveGradientType ?? ''] ?? []).forEach((c) => activeModCategories.add(c));
+    (effectiveActiveEffects as string[]).forEach((effect) => {
       (EFFECT_MOD_CATEGORY[effect] ?? []).forEach((c) => activeModCategories.add(c));
     });
     const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
@@ -408,6 +417,14 @@ export function useRandomization(params: RandomizationParams) {
       currentGradientType = randomGradient;
     }
 
+    // Tracks whatever gradient/effects this call actually ends up choosing
+    // (either branch below) so shuffleAudiovisuals — called at the very end
+    // of this same function — can scope its random Modulation bindings to
+    // the NEW look instead of the stale one still sitting in gradientType/
+    // activeEffects state (those setters are async and haven't landed yet).
+    let finalGradientType: GradientType | null = currentGradientType;
+    let finalEffects: EffectType[] = activeEffects;
+
     // Get high-rated results (7+) to use as preference guidance
     // When audio is active, prefer results that were also rated with audio on
     const allHighRated = ratedResults.filter(r => r.rating >= 7);
@@ -439,7 +456,8 @@ export function useRandomization(params: RandomizationParams) {
         ? baseGradientType
         : currentGradientType || FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(targetGradientType);
-      
+      finalGradientType = targetGradientType;
+
       // Blend colors from base with some random variation
       const blendedColors = baseResult.data.gradientColors.map((baseColor: ColorRGB) => {
         if (Math.random() < blendFactor) {
@@ -475,6 +493,7 @@ export function useRandomization(params: RandomizationParams) {
         }
       }
       setActiveEffects(keptEffects);
+      finalEffects = keptEffects;
       if (keptEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
       
@@ -548,6 +567,7 @@ export function useRandomization(params: RandomizationParams) {
       // Uniform pick — every gradient type in the pool has an equal chance.
       const randomGradient: GradientType = gradientPool[Math.floor(Math.random() * gradientPool.length)];
       setGradientType(randomGradient);
+      finalGradientType = randomGradient;
 
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
       // Heavy shape-changers mask the gradient entirely; only allow them stacked with a light effect.
@@ -586,6 +606,7 @@ export function useRandomization(params: RandomizationParams) {
       }
 
       setActiveEffects(selectedEffects);
+      finalEffects = selectedEffects;
       if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
       setResolutionMultiplier(resolutionForEffectCost(spentCost));
@@ -681,7 +702,7 @@ export function useRandomization(params: RandomizationParams) {
     // the Audio panel too, but only when audio is actually engaged, so a
     // Remix on a silent canvas doesn't reshuffle sensitivity/beat-sync
     // settings that have no visible effect yet.
-    if (audioActive) shuffleAudiovisuals();
+    if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)
   }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier]);
