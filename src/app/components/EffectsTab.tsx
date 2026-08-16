@@ -1621,9 +1621,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('starfield') && (
                 <EffectSection id="starfield" label="Starfield" isMulti={isMulti} expanded={expandedEffects.has('starfield')} onToggle={toggleEffectExpanded}>
                   <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Count:</label>
-                    <input type="range" min="30" max="500" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="30" max="500" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    <label className="text-[10px] text-white whitespace-nowrap">Density:</label>
+                    <input type="range" min="10" max="1000" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="10" max="1000" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
