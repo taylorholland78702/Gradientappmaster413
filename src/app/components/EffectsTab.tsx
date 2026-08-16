@@ -16,7 +16,7 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 // button renders.
 // Alphabetized by label — this is the order the section's button grid
 // renders in, so keep new entries sorted in by their display label.
-const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'confetti', 'fluid-field', 'lightning-web', 'particle-trails', 'starfield', 'static-field', 'triangle-field'];
+const GENERATIVE_EFFECT_IDS: EffectType[] = ['aura-glow', 'confetti', 'fluid-field', 'lightning-web', 'particle-trails', 'triangle-field'];
 import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
 
 export interface EffectsTabProps {
