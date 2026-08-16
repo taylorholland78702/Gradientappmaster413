@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, SignOut } from '@phosphor-icons/react';
+import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, SignOut, MonitorPlay } from '@phosphor-icons/react';
 import { encodePresetData } from '../utils/presetShare';
 
 interface Preset {
@@ -127,6 +127,20 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
     navigator.clipboard?.writeText(url).catch(() => {});
     setCopiedLinkId(preset.id);
     setTimeout(() => setCopiedLinkId(prev => (prev === preset.id ? null : prev)), 2000);
+  };
+
+  // Same encoding as handleCopyLink, plus &display=1 — InteractiveGradient's
+  // ?display=1 path renders with zero UI (see isFullyHidden's initial state),
+  // and now (see IS_STANDALONE_DISPLAY there) self-drives every animated
+  // gradient's clock as if Auto Mode were on, instead of sitting frozen
+  // waiting for a live controller tab to broadcast updates. A real click
+  // handler, not a keyboard shortcut, so window.open isn't popup-blocked
+  // (see toggleDisplayWindow's comment in InteractiveGradient for why the
+  // existing Display Link button avoids window.open entirely).
+  const handleOpenStandalone = (preset: Preset) => {
+    const encoded = encodePresetData(preset.data);
+    const url = `${window.location.origin}${window.location.pathname}?display=1&preset=${encoded}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleUpdatePreset = (id: string) => {
@@ -491,6 +505,14 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     {copiedLinkId === preset.id
                       ? <Check weight="bold" className="w-3.5 h-3.5" />
                       : <LinkSimple weight="regular" className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleOpenStandalone(preset); }}
+                    className="px-1.5 py-1 text-white/50 hover:text-white/80 hover:bg-white/15 transition-colors flex-shrink-0"
+                    title="Open as standalone player (new window, no controls, self-animating)"
+                    aria-label="Open as standalone player"
+                  >
+                    <MonitorPlay weight="regular" className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleUpdatePreset(preset.id); }}

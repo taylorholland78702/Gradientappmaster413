@@ -267,6 +267,13 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
 // filtering is needed. Read once at module load — the URL flag never
 // changes mid-session.
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
+// Standalone playback: a ?display=1&preset=<encoded> link carries its own
+// frozen preset instead of depending on a live controller tab to broadcast
+// state (the mirror behavior IS_DISPLAY_MODE was originally built for).
+// Read once at module load, same as IS_DISPLAY_MODE — the preset-loader
+// effect below strips the `preset` param from the URL after applying it,
+// so re-checking window.location.search later in the session would miss it.
+const IS_STANDALONE_DISPLAY = IS_DISPLAY_MODE && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('preset');
 const DISPLAY_SYNC_KEY = 'wav-display-sync';
 // Separate, higher-frequency channel just for the handful of continuously-
 // ticking "AnimTime" fields (marble swirl, moire, aurora bands, etc.) that
@@ -741,15 +748,17 @@ export function InteractiveGradient() {
   });
 
   // Load a shared preset from ?preset=<encoded> if present (see
-  // PresetsPanel's "Copy shareable link" button). The full snapshot is
-  // embedded directly in the URL rather than looked up from Firestore —
-  // this app doesn't control its own Firestore security rules from the
-  // client, so a new public collection can't be assumed readable by other
-  // users. Runs once on mount; strips the param afterward so a reload
-  // doesn't keep re-applying it (and so undo/redo/edits aren't fighting a
-  // giant URL sitting in the address bar).
+  // PresetsPanel's "Copy shareable link" button, and its "Open Standalone
+  // Player" button which adds &display=1 to the same link). The full
+  // snapshot is embedded directly in the URL rather than looked up from
+  // Firestore — this app doesn't control its own Firestore security rules
+  // from the client, so a new public collection can't be assumed readable
+  // by other users. Runs once on mount; strips the param afterward so a
+  // reload doesn't keep re-applying it (and so undo/redo/edits aren't
+  // fighting a giant URL sitting in the address bar). Used to bail out
+  // entirely in Display mode — now it's exactly how standalone playback
+  // gets its frozen state, so it only skips when there's no preset to load.
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get('preset');
     if (!encoded) return;
@@ -765,6 +774,11 @@ export function InteractiveGradient() {
       gradientColorsRef.current = restoredColors.map((c: ColorRGB) => ({ ...c }));
       gradientAngleRef.current = data.gradientAngle ?? 45;
       zoomRef.current = data.zoom ?? 1;
+      // Standalone playback has no controller to press Play — Auto Mode
+      // is what drives every self-animating gradient's clock (see the
+      // IS_STANDALONE_DISPLAY checks throughout the draw loop and the
+      // per-gradient anim-time effects below), so turn it on here instead.
+      if (IS_DISPLAY_MODE) setIsAutoMode(true);
     } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to load shared preset from URL:', err);
     }
@@ -1064,7 +1078,7 @@ export function InteractiveGradient() {
       // the anim-sync receiver below instead, so both windows show the same
       // dot phase instead of two independently-advancing clocks.
       if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
-        if (!IS_DISPLAY_MODE) halftoneTimeRef.current += 0.5 * spd * dtScale;
+        if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) halftoneTimeRef.current += 0.5 * spd * dtScale;
         // Was setHalftoneAnimTrigger(prev => prev + 1) — a setState-every-
         // frame redraw nudge. drawParamsDirtyRef is the same nudge without
         // the re-render cost; the main loop already checks it below.
@@ -1073,7 +1087,7 @@ export function InteractiveGradient() {
 
       // Grid rotation animation. Skipped in Display mode; see the Voronoi
       // comment above — that value is pushed from the controller instead.
-      if (!IS_DISPLAY_MODE && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
         const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale;
         animValuesRef.current.gridRotation = (animValuesRef.current.gridRotation + increment) % 360;
       }
@@ -1091,7 +1105,7 @@ export function InteractiveGradient() {
       // Voronoi morphing — PLAY or mic active. Skipped in Display mode:
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'voronoi' && isPlayActive) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'voronoi' && isPlayActive) {
         animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * dtScale;
       }
 
@@ -1103,7 +1117,7 @@ export function InteractiveGradient() {
       // from the controller instead, so both windows converge on the same rotation
       // instead of each advancing their own independently and drifting apart (this was
       // the actual cause of the Display tab's angle/pattern slowly falling out of sync).
-      if (!IS_DISPLAY_MODE && isAutoModeRef.current) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && isAutoModeRef.current) {
         let rotationAmountPerFrame;
         if (gradientTypeRef.current === 'fade') {
           rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.0167 : -0.0167;
@@ -1131,7 +1145,7 @@ export function InteractiveGradient() {
       // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
       // Voronoi comment above — that value is pushed from the controller instead.
       // Folded into Radial Burst as radialBurstMode === 'sweep'.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'radial-burst' && radialBurstModeRef.current === 'sweep' && isPlayActive) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'radial-burst' && radialBurstModeRef.current === 'sweep' && isPlayActive) {
         const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
         const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
         animValuesRef.current.radarSweepAngle = (animValuesRef.current.radarSweepAngle + (baseSpeed + audioBoost) * dtScale) % 360;
@@ -1139,25 +1153,25 @@ export function InteractiveGradient() {
 
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         animValuesRef.current.flowerAnimTime += 0.5 * spd * dtScale;
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or
       // Auto mode), same gating as Flower above. Adds on top of the
       // static tilingRotation slider rather than replacing it.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         animValuesRef.current.tilingAnimTime += 0.3 * spd * dtScale;
       }
 
       // Wave Interference source drift — same PLAY/Auto-only gating as
       // Tiling/Flower above.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'wave-interference' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'wave-interference' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         animValuesRef.current.waveInterferenceAnimTime += 0.5 * spd * dtScale;
       }
 
       // Mesh Wireframe point-jitter drift — same gating.
-      if (!IS_DISPLAY_MODE && gradientTypeRef.current === 'mesh-wireframe' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
+      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'mesh-wireframe' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         animValuesRef.current.meshWireframeAnimTime += 0.5 * spd * dtScale;
       }
 
@@ -1203,63 +1217,63 @@ export function InteractiveGradient() {
   // sync effect below), so the two windows stay frame-locked instead of
   // drifting apart.
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'aurora' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setAuroraAnimTime(t => t + 0.016 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'lava-lamp' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setLavaAnimTime(t => t + 0.008 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'metaballs' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * metaballSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, metaballSpeed]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'moire' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setMoireAnimTime(t => t + 0.015 * vcrPlaybackSpeed * moireSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, moireSpeed]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'flow-field' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * flowSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, flowSpeed]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'attractor' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setAttractorAnimTime(t => t + 0.01 * vcrPlaybackSpeed * attractorSpeed), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, attractorSpeed]);
 
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
@@ -1267,7 +1281,7 @@ export function InteractiveGradient() {
 
   // Emoji cells only spin while Play is active — frozen in place otherwise
   useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setEmojiAnimTime(t => t + (emojiRotateSpeed / 60) * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
@@ -1801,7 +1815,11 @@ export function InteractiveGradient() {
   // machinery instead of duplicating its huge dependency surface a third
   // time.
   useEffect(() => {
-    if (!IS_DISPLAY_MODE) return;
+    // Standalone playback has no controller to receive from, and must not
+    // let a stale DISPLAY_SYNC_KEY value from some earlier, unrelated
+    // controller session (or a real one that happens to be open in another
+    // tab) stomp the preset this window was opened to play.
+    if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) return;
     const applyRaw = (raw: string | null | undefined) => {
       if (!raw) return;
       try {
@@ -1841,7 +1859,7 @@ export function InteractiveGradient() {
   // every frame locally, this receiver writes it every message here — so
   // neither needs the state round-trip, and the mirror effect is gone.
   useEffect(() => {
-    if (!IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
+    if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY || typeof BroadcastChannel === 'undefined') return;
     const channel = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
     channel.onmessage = (e) => {
       const v = e.data;
