@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { adjustPalette } from '../utils/color';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -195,7 +196,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
-    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue, concentricRingCount,
+    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue,
+    paletteHue = 0, paletteSaturation = 100, paletteBrightness = 0, paletteContrast = 0, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
@@ -483,7 +485,10 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       // palette spinning rather than drifting.
       hueDriftRef.current += (0.08 + Math.min(1, audioMidsLevel) * 0.15) * musicIntensity * audioIntensityFraction * driftDtScale;
     }
-    const renderColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
+    const driftedColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
+    const renderColors = adjustPalette(driftedColors, {
+      hue: paletteHue, saturation: paletteSaturation, brightness: paletteBrightness, contrast: paletteContrast,
+    });
 
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,

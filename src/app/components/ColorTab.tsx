@@ -39,14 +39,25 @@ export interface ColorTabProps {
   setIsKeywordHelpOpen: (v: boolean) => void;
   handleAIPromptSubmit: () => void;
   setIsAIColorPickerOpen: (v: boolean) => void;
+  paletteHue: number;
+  setPaletteHue: (v: number) => void;
+  paletteSaturation: number;
+  setPaletteSaturation: (v: number) => void;
+  paletteBrightness: number;
+  setPaletteBrightness: (v: number) => void;
+  paletteContrast: number;
+  setPaletteContrast: (v: number) => void;
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
   isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
   submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors,
   aiPrompt, setAIPrompt, isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
+  paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
+  paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
 }) => {
   const selectedKeywords = aiPrompt.split(' ').filter(Boolean);
+  const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
   return (
     <>
@@ -170,6 +181,43 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           >
             Generate
           </button>
+        </div>
+      </div>
+
+      {/* Palette-wide adjustments — applied to the whole gradientColors
+          array at a single point (see adjustPalette in utils/color.ts),
+          so these work the same regardless of whether the palette came
+          from a theme/color keyword, shuffle, or manual pin edits. */}
+      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2.5">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-white/40">Adjustments</span>
+          {isPaletteAdjusted && (
+            <button
+              onClick={() => { setPaletteHue(0); setPaletteSaturation(100); setPaletteBrightness(0); setPaletteContrast(0); }}
+              className="text-[9px] text-white/50 hover:text-white transition-all"
+            >Reset</button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 mb-1">
+          <label className="text-[10px] text-white whitespace-nowrap w-14">Hue</label>
+          <input type="range" min="-180" max="180" value={paletteHue} onChange={(e) => setPaletteHue(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="-180" max="180" value={paletteHue} onChange={(e) => setPaletteHue(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+        </div>
+        <div className="flex items-center gap-1 mb-1">
+          <label className="text-[10px] text-white whitespace-nowrap w-14">Saturation</label>
+          <input type="range" min="0" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="0" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+        </div>
+        <div className="flex items-center gap-1 mb-1">
+          <label className="text-[10px] text-white whitespace-nowrap w-14">Brightness</label>
+          <input type="range" min="-100" max="100" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="-100" max="100" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+        </div>
+        <div className="flex items-center gap-1">
+          <label className="text-[10px] text-white whitespace-nowrap w-14">Contrast</label>
+          <input type="range" min="-100" max="100" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="-100" max="100" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
         </div>
       </div>
     </>

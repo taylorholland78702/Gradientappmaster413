@@ -21,3 +21,41 @@ export const rgbToHsl = (r: number, g: number, b: number): [number, number, numb
   else h = ((r - g) / d + 4) / 6;
   return [h * 360, s * 100, l * 100];
 };
+
+export interface PaletteAdjust {
+  hue: number; // degrees, -180..180, 0 = no shift
+  saturation: number; // percent, 0..200, 100 = unchanged
+  brightness: number; // -100..100, 0 = unchanged
+  contrast: number; // -100..100, 0 = unchanged
+}
+
+// Global palette-level color grading — hue rotation, saturation scale,
+// brightness offset, and contrast, applied to the whole gradientColors
+// array. Mirrors rotateHue in useCanvasDraw.ts: a single transform composed
+// at one choke point rather than a control threaded through every gradient's
+// draw function. Early-returns the same array reference when every value is
+// at its default so idle sliders cost nothing per frame.
+export function adjustPalette(colors: ColorRGB[], adjust: PaletteAdjust): ColorRGB[] {
+  const { hue, saturation, brightness, contrast } = adjust;
+  if (hue === 0 && saturation === 100 && brightness === 0 && contrast === 0) return colors;
+
+  // Standard contrast formula (used by most photo-editing tools): scales
+  // deviation from the midpoint (128) by a factor derived from the -255..255
+  // contrast range — our slider is -100..100, so it's rescaled by 2.55 first.
+  const c = contrast * 2.55;
+  const contrastFactor = (259 * (c + 255)) / (255 * (259 - c));
+  const brightnessOffset = brightness * 2.55;
+
+  return colors.map(({ r, g, b }) => {
+    const [h, s, l] = rgbToHsl(r, g, b);
+    const adjustedHsl = hslToRgb((h + hue + 360) % 360, Math.max(0, Math.min(100, s * (saturation / 100))), l);
+    const nr = contrastFactor * (adjustedHsl.r + brightnessOffset - 128) + 128;
+    const ng = contrastFactor * (adjustedHsl.g + brightnessOffset - 128) + 128;
+    const nb = contrastFactor * (adjustedHsl.b + brightnessOffset - 128) + 128;
+    return {
+      r: Math.round(Math.max(0, Math.min(255, nr))),
+      g: Math.round(Math.max(0, Math.min(255, ng))),
+      b: Math.round(Math.max(0, Math.min(255, nb))),
+    };
+  });
+}
