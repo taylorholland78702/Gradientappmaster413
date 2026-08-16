@@ -378,15 +378,18 @@ export function useRandomization(params: RandomizationParams) {
     setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
     setDustCrackleColor(randomHexColor());
 
-    // Global palette adjust (Color tab). Saturation/brightness/contrast
-    // narrowed from the sliders' full range so a shuffle doesn't regularly
-    // land on a washed-out or near-black result on top of an
-    // already-randomized palette; hue uses the full range since a pure hue
-    // shift never destroys legibility the way extreme sat/contrast can.
+    // Global palette adjust (Color tab). Brightness/Contrast now match the
+    // ColorTab sliders' own ±25 bounds (see adjustPalette's defensive
+    // clamp for why — the two compound and blow a varied palette out to
+    // solid black/white well before either alone reaches its old ±100
+    // range), and Saturation stays off the slider's 30 floor so a shuffle
+    // doesn't regularly land on a near-fully-desaturated result. Hue uses
+    // the full range since a pure hue shift never destroys legibility the
+    // way extreme sat/contrast can.
     setPaletteHue(Math.floor(Math.random() * 361) - 180);              // -180–180
     setPaletteSaturation(Math.floor(Math.random() * 101) + 50);        // 50–150
-    setPaletteBrightness(Math.floor(Math.random() * 61) - 30);         // -30–30
-    setPaletteContrast(Math.floor(Math.random() * 61) - 30);           // -30–30
+    setPaletteBrightness(Math.floor(Math.random() * 41) - 20);         // -20–20
+    setPaletteContrast(Math.floor(Math.random() * 41) - 20);           // -20–20
   }, []);
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();

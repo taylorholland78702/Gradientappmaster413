@@ -206,18 +206,26 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         </div>
         <div className="flex items-center gap-1 mb-1">
           <label className="text-[10px] text-white whitespace-nowrap w-14">Saturation</label>
-          <input type="range" min="0" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="flex-1" />
-          <input type="number" min="0" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+          <input type="range" min="30" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="30" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
         </div>
+        {/* Brightness/Contrast ranges narrowed from ±100 — adjustPalette's
+            math compounds the two (contrast scales the brightness offset
+            too), so pushing both toward the same sign near ±100 blew the
+            whole palette out to solid black/white well before either
+            slider hit its own end. ±25 keeps real range of motion while
+            staying inside the region where a varied palette never fully
+            clips (see adjustPalette's own defensive clamp for the hard
+            floor/ceiling regardless of how a value got set). */}
         <div className="flex items-center gap-1 mb-1">
           <label className="text-[10px] text-white whitespace-nowrap w-14">Brightness</label>
-          <input type="range" min="-100" max="100" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="flex-1" />
-          <input type="number" min="-100" max="100" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+          <input type="range" min="-25" max="25" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="-25" max="25" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
         </div>
         <div className="flex items-center gap-1">
           <label className="text-[10px] text-white whitespace-nowrap w-14">Contrast</label>
-          <input type="range" min="-100" max="100" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="flex-1" />
-          <input type="number" min="-100" max="100" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+          <input type="range" min="-25" max="25" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="flex-1" />
+          <input type="number" min="-25" max="25" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
         </div>
       </div>
     </>

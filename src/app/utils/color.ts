@@ -36,8 +36,18 @@ export interface PaletteAdjust {
 // draw function. Early-returns the same array reference when every value is
 // at its default so idle sliders cost nothing per frame.
 export function adjustPalette(colors: ColorRGB[], adjust: PaletteAdjust): ColorRGB[] {
-  const { hue, saturation, brightness, contrast } = adjust;
-  if (hue === 0 && saturation === 100 && brightness === 0 && contrast === 0) return colors;
+  const { hue } = adjust;
+  const saturation = Math.max(30, adjust.saturation);
+  // Clamped here (not just at the ColorTab slider) so any source of an
+  // out-of-range value — a preset/undo-snapshot saved before the slider
+  // bounds were narrowed, or the adjacent number-input box, which HTML
+  // doesn't hard-clamp the way a range slider does — still can't reach the
+  // combined brightness+contrast region where a varied palette clips to
+  // solid black/white/gray (contrast scales the brightness offset too, so
+  // the two compound well before either alone would).
+  const brightness = Math.max(-25, Math.min(25, adjust.brightness));
+  const contrast = Math.max(-25, Math.min(25, adjust.contrast));
+  if (hue === 0 && adjust.saturation === 100 && adjust.brightness === 0 && adjust.contrast === 0) return colors;
 
   // Standard contrast formula (used by most photo-editing tools): scales
   // deviation from the midpoint (128) by a factor derived from the -255..255
