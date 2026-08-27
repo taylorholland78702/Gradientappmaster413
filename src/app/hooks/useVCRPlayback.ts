@@ -77,6 +77,14 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const vcrPlaybackStartTime = useRef<number>(0);
   const mp4RafRef = useRef<number | null>(null);
   const isRecordingRef = useRef(false);
+  // startRecording is async (it awaits VideoEncoder.isConfigSupported for
+  // each candidate config before either encoder path sets isRecordingRef
+  // true) — a second click on Record before that resolves saw
+  // isRecordingRef.current still false and called startRecording() again,
+  // potentially standing up two encoders/muxers against the same canvas.
+  // This flag closes that window: set synchronously the instant a start is
+  // requested, cleared once startRecording actually settles either way.
+  const isStartingRecordingRef = useRef(false);
 
   // ffmpeg frame capture refs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -584,10 +592,15 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     if (isRecordingRef.current) {
       stopRecording();
       setIsVCRRecording(false);
-    } else {
-      startRecording();
-      setIsVCRRecording(true);
+      return;
     }
+    // Still mid-start from a previous click (isRecordingRef isn't true yet
+    // — see isStartingRecordingRef's declaration) — ignore this one rather
+    // than racing a second startRecording() call against the first.
+    if (isStartingRecordingRef.current) return;
+    isStartingRecordingRef.current = true;
+    setIsVCRRecording(true);
+    startRecording().finally(() => { isStartingRecordingRef.current = false; });
   }, [startRecording, stopRecording]);
 
   const toggleVCRPlayback = useCallback(() => {

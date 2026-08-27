@@ -192,7 +192,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
-    attractorScale, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, masterSensitivity, animValuesRef,
+    attractorScale, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, masterSensitivity, animValuesRef,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
@@ -301,6 +301,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const tilingAnimTime = av.tilingAnimTime;
     const gridRotation = av.gridRotation;
     const radarSweepAngle = av.radarSweepAngle;
+    // Same ref-read treatment as the anim-time clocks above — these come
+    // from the audio-analysis loop at ~60fps and used to be destructured
+    // straight from `params`, which forced this whole closure to be torn
+    // down and rebuilt on every single tick while audio was on (see the
+    // comment on drawParams's dependency array in InteractiveGradient.tsx).
+    const audioSubBassLevel = av.audioSubBassLevel;
+    const audioMidsLevel = av.audioMidsLevel;
+    const audioTrebleLevel = av.audioTrebleLevel;
+    const audioEnergy = av.audioEnergy;
 
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
@@ -495,6 +504,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
       moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
       voronoiAnimTime, flowerAnimTime,
+      audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
       // Overrides params' raw resolutionMultiplier with the pixel-budget-capped

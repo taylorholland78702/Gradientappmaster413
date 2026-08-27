@@ -7,7 +7,7 @@ import { pickRandomEmojiSet } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
-import { costOf } from '../constants/effectCost';
+import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
@@ -29,29 +29,11 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
-// costOf (effect compute-cost weighting) now lives in constants/effectCost.ts,
-// shared with EffectsTab.tsx's manual Multi-FX toggle budget.
-// resolutionMultiplier previously stayed at whatever it already was through
-// every Shuffle — a light single-effect result and a dense 8-effect stack
-// rendered at identical sharpness, so it couldn't act as a release valve for
-// the heaviest combinations. Below a "light" total effect cost, shuffle
-// renders at full device resolution (max quality); above it, resolution
-// scales down gradually toward a 0.6x floor as the stack gets heavier.
-// Tuned more aggressively than the original 6/17/0.75 curve — starts
-// scaling down sooner (cost 4 instead of 6, so a typical 2-3 effect result
-// already gets some relief instead of only the densest stacks) and goes
-// lower at the top end (0.6x instead of 0.75x) — a deliberate trade of
-// sharpness for speed on heavier combos, not a free win.
-const LIGHT_EFFECT_COST = 4;
-const HEAVY_EFFECT_COST = 15;
-const resolutionForEffectCost = (totalCost: number): number => {
-  // Capped at 2 — see useMiscState.ts's resolutionMultiplier init for why
-  // full devicePixelRatio isn't used directly.
-  const baseline = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
-  if (totalCost <= LIGHT_EFFECT_COST) return baseline;
-  const t = Math.min(1, (totalCost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
-  return baseline * (1 - t * 0.4);
-};
+// costOf/resolutionForEffectCost (effect compute-cost weighting and the
+// resolution-scaling curve derived from it) now live in
+// constants/effectCost.ts, shared with EffectsTab.tsx's manual Multi-FX
+// toggle path, which applies the same curve directly now instead of only
+// ever getting resolution relief via a Shuffle.
 // Params whose visual effect is subtle-to-invisible when driven by a fast,
 // noisy audio signal — repositioning a center point or rotating a fade axis
 // a few degrees per beat doesn't read as "reacting to the music" the way a

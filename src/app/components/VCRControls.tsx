@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Play, Pause, FastForward, Rewind, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Circle, Play, Stop, FastForward, Rewind, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { Divider } from './Divider';
 
 interface VCRControlsProps {
@@ -81,10 +81,15 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
         <button
           onClick={toggleVCRPlayback}
           className="flex-1 p-1.5 rounded hover:bg-white/15 text-white transition-all flex items-center justify-center"
-          title={(isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")) + " (Space)"}
-          aria-label={isVCRPlaying || isAutoMode ? "Pause" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
+          // Was labeled "Pause" — this actually resets playback position to 0
+          // and zoom to 1 (see toggleVCRPlayback in useVCRPlayback.ts), with
+          // no resume-from-position, i.e. it's a Stop, not a Pause. Labeled
+          // to match what it actually does rather than implying resumability
+          // that doesn't exist.
+          title={(isVCRPlaying || isAutoMode ? "Stop" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")) + " (Space)"}
+          aria-label={isVCRPlaying || isAutoMode ? "Stop" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
-          {(isVCRPlaying || isAutoMode) ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
+          {(isVCRPlaying || isAutoMode) ? <Stop weight="fill" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
         </button>
       </div>
 

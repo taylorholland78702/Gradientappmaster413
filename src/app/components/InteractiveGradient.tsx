@@ -17,7 +17,7 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Pause, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -41,6 +41,7 @@ import {
   WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
+import { totalCost, resolutionForEffectCost } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
 import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
@@ -441,7 +442,29 @@ export function InteractiveGradient() {
   // sliders open simultaneously — with 4-7 effects active that wall of
   // controls was the main driver of the control panel's excessive height.
   const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => prev.has(id) ? new Set() : new Set([id]));
-  
+
+  // MULTI_FX_COST_BUDGET (effectCost.ts) is set high enough that manually
+  // toggling effects in EffectsTab.tsx never grays a button out — stacking
+  // is an intentional choice there, unlike a random shuffle result, so it's
+  // not that budget's job to protect playback performance. But that also
+  // meant manually stacking several expensive effects got zero resolution
+  // relief: feelingLucky/randomizeEffects (useRandomization.ts) already
+  // call resolutionForEffectCost after picking a shuffled stack, but a
+  // manual EffectsTab toggle never did. Applying the same curve here,
+  // keyed only on activeEffects, covers both paths uniformly — redundant
+  // with (but harmless alongside) the explicit shuffle-path calls, since
+  // it converges on the identical value from the same inputs.
+  // Skipped in Display mode: resolutionMultiplier arrives there via the
+  // synced snapshot (useSnapshot.ts's applySnapshot) so it matches
+  // whatever the controller computed from ITS OWN devicePixelRatio —
+  // recomputing locally here would instead use the display window's own
+  // devicePixelRatio, which can genuinely differ (e.g. mirroring to an
+  // external projector) and silently diverge from the controller's choice.
+  useEffect(() => {
+    if (IS_DISPLAY_MODE) return;
+    setResolutionMultiplier(resolutionForEffectCost(totalCost(activeEffects)));
+  }, [activeEffects]);
+
   // First-run hint explaining the tap/hold/double-tap gesture vocabulary —
   // tooltips (title attrs) never surface on touch devices, which is this
   // app's primary target, so without this the gestures are undiscoverable.
@@ -498,15 +521,44 @@ export function InteractiveGradient() {
   // File input refs for uploads
   const handleAudioFileClick = useCallback(() => fileInputRef.current?.click(), []);
   const handlePhotoFileClick = useCallback(() => photoInputRef.current?.click(), []);
+  // A phone photo commonly runs 4000-8000px on the long edge — used at
+  // native resolution, applyPhoto.ts's ctx.drawImage() call would composite
+  // that many source pixels into the effect stack every single frame
+  // regardless of what's actually visible on screen. Downscaling once here
+  // (rather than leaving it to whatever the browser's drawImage
+  // downsampling does per-frame) caps that cost permanently at upload time.
+  // MAX_DIMENSION is comfortably above typical display resolution (most
+  // screens/canvases stay under ~2560px on their long edge even at 2x DPR)
+  // while still a small fraction of what a modern camera produces.
+  const MAX_PHOTO_DIMENSION = 2048;
   const handlePhotoFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      photoImageRef.current = img;
-      setPhotoVersion(v => v + 1);
       URL.revokeObjectURL(url);
+      if (img.width <= MAX_PHOTO_DIMENSION && img.height <= MAX_PHOTO_DIMENSION) {
+        photoImageRef.current = img;
+        setPhotoVersion(v => v + 1);
+        return;
+      }
+      const scale = MAX_PHOTO_DIMENSION / Math.max(img.width, img.height);
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = Math.max(1, Math.round(img.width * scale));
+      scaledCanvas.height = Math.max(1, Math.round(img.height * scale));
+      const scaledCtx = scaledCanvas.getContext('2d');
+      if (!scaledCtx) {
+        // Fall back to the native-resolution image rather than dropping
+        // the upload entirely — this path should be unreachable in any
+        // real browser, but a slow frame beats a silently-ignored upload.
+        photoImageRef.current = img;
+        setPhotoVersion(v => v + 1);
+        return;
+      }
+      scaledCtx.drawImage(img, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      photoImageRef.current = scaledCanvas;
+      setPhotoVersion(v => v + 1);
     };
     img.src = url;
     setPhotoFileName(file.name);
@@ -2919,13 +2971,23 @@ export function InteractiveGradient() {
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
     starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize,
+    // audioSubBassLevel/audioMidsLevel/audioTrebleLevel/audioEnergy kept here
+    // for shape/type completeness but deliberately dropped from this memo's
+    // dependency array below (same treatment as auroraAnimTime and the other
+    // anim-time clocks above) — they're driven by the audio-analysis loop at
+    // ~60fps, and useCanvasDraw.ts reads the live value straight from
+    // animValuesRef instead (mirrored into it a few lines below this memo),
+    // overriding this stale copy. Including them in the deps used to rebuild
+    // useCanvasDraw's entire ~500-line drawRef closure on every single audio
+    // tick, 60x/sec, whenever audio was on — by far the largest source of
+    // per-frame overhead in the app.
     addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel,
     audioMidsLevel, audioTrebleLevel, audioEnergy, audioBindings,
     fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed,
     depthLayerEnabled, depthLayerStrength,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, addGradientStops, isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, angleStartOffset, angleCenterX, angleCenterY, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, slitScanIntensity, slitScanDirection, addGradientStops, isAudioEnabled, isAudioReactive, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame
@@ -3980,6 +4042,31 @@ export function InteractiveGradient() {
           </svg>
         </div>
 
+        {/* First-run hint — see dismissWavHint's declaration above for why
+            this exists (tooltips/title attrs never surface on touch, this
+            app's primary target). Sits right under the wordmark since
+            that's the first thing anyone looks at, and explains the two
+            interactions the wordmark itself doesn't advertise anywhere
+            else in the UI: tap it for full help, tap Shuffle to get a new
+            look. Dismissed by the explicit close here, OR — already wired
+            up — the first time the user actually clicks Shuffle
+            (handleWavClick calls dismissWavHint()), whichever comes first. */}
+        {showWavHint && (
+          <div className="flex items-start gap-1.5 -mt-1 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80">
+            <span className="text-[10px] leading-snug flex-1">
+              Tap <span className="text-white font-medium">wāv</span> for help · tap <Shuffle weight="regular" className="w-2.5 h-2.5 inline -translate-y-px" /> to shuffle a new look
+            </span>
+            <button
+              onClick={dismissWavHint}
+              className="text-white/50 hover:text-white transition-all flex-shrink-0"
+              title="Dismiss"
+              aria-label="Dismiss hint"
+            >
+              <X weight="bold" className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
         {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
             NOT sticky: ruled out via on-device diagnostic (identical
             measurements before/after removing it).
@@ -4767,7 +4854,7 @@ export function InteractiveGradient() {
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-black">Playback row</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Pause weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / pause — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Stop weight="fill" className="w-4 h-4 shrink-0 -ml-1" /> Play / stop — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</span><Kbd label="D" /></p>
               </div>
