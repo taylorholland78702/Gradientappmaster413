@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 
 export interface GradientsTabProps {
@@ -222,6 +222,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
+  const [gradientSearch, setGradientSearch] = useState('');
+
   // Shared field-mapping controls — appear for any scalar-field gradient
   // (one continuous 0-1 value mapped to the palette per pixel), reusing a
   // single fieldContrast/paletteMode/paletteBands state rather than a
@@ -277,28 +279,50 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     <>
 
         {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
-        <div className="w-full">
-          <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${Math.ceil(FULL_GRADIENT_TYPES.length / 2)}, auto)` }}>
-            {FULL_GRADIENT_TYPES.map((type, i) => {
-              const rows = Math.ceil(FULL_GRADIENT_TYPES.length / 2);
-              const isLastInColumn = i % rows === rows - 1;
-              const isLeftColumn = i < rows;
-              return (
-                <button
-                  key={type}
-                  onClick={() => setGradientType(type)}
-                  aria-pressed={gradientType === type}
-                  className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
-                    gradientType === type
-                      ? 'bg-white text-black font-bold'
-                      : 'text-white hover:bg-white/10'
-                  }`}
-                >
-                  {getGradientDisplayName(type)}
-                </button>
-              );
-            })}
-          </div>
+        <div className="w-full flex flex-col gap-1">
+          {/* ~30 gradient types with no way to jump to one by name — filters
+              the same list the grid below renders, so the border/row math
+              (isLastInColumn/isLeftColumn, both derived from the filtered
+              list's own length) stays correct against however many match. */}
+          <input
+            type="text"
+            value={gradientSearch}
+            onChange={(e) => setGradientSearch(e.target.value)}
+            placeholder="Search gradients…"
+            className="w-full text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1 placeholder-white/40 focus:outline-none focus:border-white/40"
+          />
+          {(() => {
+            const query = gradientSearch.trim().toLowerCase();
+            const filteredTypes = query
+              ? FULL_GRADIENT_TYPES.filter((type) => getGradientDisplayName(type).toLowerCase().includes(query))
+              : FULL_GRADIENT_TYPES;
+            if (filteredTypes.length === 0) {
+              return <div className="px-1.5 py-2 text-[10px] text-white/50 text-center bg-black/25 rounded-lg border border-white/10">No gradients match "{gradientSearch.trim()}"</div>;
+            }
+            const rows = Math.ceil(filteredTypes.length / 2);
+            return (
+              <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-white/10 bg-black/25" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+                {filteredTypes.map((type, i) => {
+                  const isLastInColumn = i % rows === rows - 1;
+                  const isLeftColumn = i < rows;
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => setGradientType(type)}
+                      aria-pressed={gradientType === type}
+                      className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                        gradientType === type
+                          ? 'bg-white text-black font-bold'
+                          : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {getGradientDisplayName(type)}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Gradient-specific Controls */}

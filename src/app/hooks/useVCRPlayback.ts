@@ -63,7 +63,6 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const [isVCRPlaying, setIsVCRPlaying] = useState(false);
   const [vcrRecordedFrames, setVcrRecordedFrames] = useState<RecordingFrame[]>([]);
   const [vcrPlaybackSpeed, setVcrPlaybackSpeed] = useState(1);
-  const [vcrLoop, setVcrLoop] = useState(false);
   const [vcrPlaybackIndex, setVcrPlaybackIndex] = useState(0);
   const [isEncoding, setIsEncoding] = useState(false);
   const [encodingProgress, setEncodingProgress] = useState(0);
@@ -139,15 +138,10 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         return frame.timestamp <= elapsed && (!nextFrame || nextFrame.timestamp > elapsed);
       });
       if (frameIndex === -1) {
-        if (vcrLoop && vcrRecordedFrames.length > 0) {
-          vcrPlaybackStartTime.current = Date.now();
-          frameIndex = 0;
-        } else {
-          setIsVCRPlaying(false);
-          setVcrPlaybackIndex(0);
-          setTargetZoom(() => 1);
-          return;
-        }
+        setIsVCRPlaying(false);
+        setVcrPlaybackIndex(0);
+        setTargetZoom(() => 1);
+        return;
       }
       setVcrPlaybackIndex(frameIndex);
       const frame = vcrRecordedFrames[frameIndex];
@@ -158,7 +152,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       }
     }, 50);
     return () => clearInterval(playbackInterval);
-  }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed, vcrLoop]);
+  }, [isVCRPlaying, vcrRecordedFrames, vcrPlaybackSpeed]);
 
   const loadFFmpeg = useCallback(async () => {
     if (ffmpegRef.current) return ffmpegRef.current;
@@ -641,7 +635,6 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     isVCRPlaying, setIsVCRPlaying,
     vcrRecordedFrames, setVcrRecordedFrames,
     vcrPlaybackSpeed, setVcrPlaybackSpeed,
-    vcrLoop, setVcrLoop,
     vcrPlaybackIndex, setVcrPlaybackIndex,
     isEncoding, encodingProgress,
     // Refs

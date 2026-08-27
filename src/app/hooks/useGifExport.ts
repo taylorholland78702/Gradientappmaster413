@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 
 // Downscale target for the encoded GIF — full-canvas-resolution GIFs (this
 // app's canvas is often 1000px+ wide) would make quantize()/applyPalette()
@@ -29,6 +30,29 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
   // loop would otherwise capture at least one extra frame (or more, if
   // several frames land in the same render tick) after the user stopped it.
   const isRecordingRef = useRef(false);
+  const workerRef = useRef<Worker | null>(null);
+  const workerFailedRef = useRef(false);
+
+  // quantize()/applyPalette() (gifenc) previously ran synchronously in the
+  // capture loop below, on the main thread — CPU-heavy enough per frame
+  // (full downscaled-canvas color quantization) to visibly stutter the
+  // live render, which shares that same thread, for the whole recording.
+  // Moved into gifEncodeWorker.ts; this only falls back to the old
+  // synchronous path if a Worker genuinely isn't available (very old
+  // browser, or the worker script itself failed to load).
+  const getWorker = useCallback((): Worker | null => {
+    if (workerFailedRef.current) return null;
+    if (!workerRef.current) {
+      try {
+        workerRef.current = new Worker(new URL('./gifEncodeWorker.ts', import.meta.url), { type: 'module' });
+      } catch (err) {
+        console.error('GIF encode worker unavailable, falling back to main thread:', err);
+        workerFailedRef.current = true;
+        return null;
+      }
+    }
+    return workerRef.current;
+  }, []);
 
   const toggleGifRecording = useCallback(async () => {
     if (isRecordingRef.current) {
@@ -51,17 +75,43 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       scratch.height = height;
       const scratchCtx = scratch.getContext('2d', { willReadFrequently: true })!;
 
-      const gif = GIFEncoder();
+      const worker = getWorker();
+      // Fallback encoder — only ever touched when `worker` is null.
+      const fallbackGif = worker ? null : GIFEncoder();
       let frameCount = 0;
+
+      if (worker) worker.postMessage({ type: 'start' } as GifWorkerRequest);
+
+      // Sends one frame's raw pixels off to the worker and waits for its
+      // ack before returning — the capture loop below always awaits this,
+      // so at most one frame is ever in flight, the same one-at-a-time
+      // ordering the old synchronous loop had for free. Messages are
+      // strictly request-then-response per call (never overlapping), so a
+      // plain onmessage reassignment per call is enough — no need to
+      // correlate multiple in-flight requests.
+      const encodeFrame = (data: Uint8ClampedArray): Promise<void> => {
+        if (!worker) {
+          const palette = quantize(data, 256);
+          const index = applyPalette(data, palette);
+          fallbackGif!.writeFrame(index, width, height, { palette, delay: FRAME_DELAY });
+          return Promise.resolve();
+        }
+        return new Promise((resolve, reject) => {
+          worker.onmessage = (e: MessageEvent<GifWorkerResponse>) => {
+            if (e.data.type === 'frameDone') resolve();
+            else if (e.data.type === 'error') reject(new Error(e.data.message));
+          };
+          const buffer = data.buffer as ArrayBuffer;
+          worker.postMessage({ type: 'frame', buffer, width, height, delay: FRAME_DELAY } as GifWorkerRequest, [buffer]);
+        });
+      };
 
       while (isRecordingRef.current) {
         await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY));
         if (!isRecordingRef.current) break;
         scratchCtx.drawImage(canvas, 0, 0, width, height);
         const { data } = scratchCtx.getImageData(0, 0, width, height);
-        const palette = quantize(data, 256);
-        const index = applyPalette(data, palette);
-        gif.writeFrame(index, width, height, { palette, delay: FRAME_DELAY });
+        await encodeFrame(data);
         frameCount++;
       }
 
@@ -69,8 +119,20 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       setIsFinalizingGif(true);
 
       if (frameCount > 0) {
-        gif.finish();
-        const blob = new Blob([gif.bytes() as BlobPart], { type: 'image/gif' });
+        let bytes: Uint8Array;
+        if (worker) {
+          bytes = await new Promise<Uint8Array>((resolve, reject) => {
+            worker.onmessage = (e: MessageEvent<GifWorkerResponse>) => {
+              if (e.data.type === 'finished') resolve(e.data.bytes);
+              else if (e.data.type === 'error') reject(new Error(e.data.message));
+            };
+            worker.postMessage({ type: 'finish' } as GifWorkerRequest);
+          });
+        } else {
+          fallbackGif!.finish();
+          bytes = fallbackGif!.bytes();
+        }
+        const blob = new Blob([bytes as BlobPart], { type: 'image/gif' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -85,7 +147,7 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       setIsRecordingGif(false);
       setIsFinalizingGif(false);
     }
-  }, [canvasRef]);
+  }, [canvasRef, getWorker]);
 
   return { isRecordingGif, isFinalizingGif, toggleGifRecording };
 }

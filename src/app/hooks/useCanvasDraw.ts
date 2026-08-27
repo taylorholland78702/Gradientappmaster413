@@ -190,6 +190,7 @@ export type CanvasDrawParams = Record<string, any>;
 // than reconstructing a ~150-item dependency array by hand).
 export function useCanvasDraw(params: CanvasDrawParams) {
   const {
+    isMobile,
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, asciiChars,
     asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
     attractorScale, audioBindings, musicIntensityRef, depthLayerEnabled, depthLayerStrength, masterSensitivity, animValuesRef,
@@ -322,7 +323,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // keeps per-frame cost roughly constant across monitor setups instead
     // of silently ballooning on a bigger/higher-DPR external display. Floor
     // of 0.75 keeps it from going soft on an unreasonably tiny viewport.
-    const MAX_CANVAS_PIXELS = 2_500_000;
+    // Lower budget on mobile (same isMobile signal as everywhere else in
+    // the app, see resolutionForEffectCost's comment in effectCost.ts) —
+    // this budget previously only ever protected against an oversized
+    // external-display canvas, never a phone, even though phone hardware
+    // has meaningfully less headroom for the same per-pixel effect cost.
+    const MAX_CANVAS_PIXELS = isMobile ? 1_500_000 : 2_500_000;
     const rawPixels = displayWidth * displayHeight * resolutionMultiplier * resolutionMultiplier;
     const effectiveResolutionMultiplier = rawPixels > MAX_CANVAS_PIXELS
       ? Math.max(0.75, resolutionMultiplier * Math.sqrt(MAX_CANVAS_PIXELS / rawPixels))
@@ -380,15 +386,21 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // after putScaledImageData upscales it. This helper downsamples the full physical
     // canvas to CSS-pixel resolution so effects always capture the complete image.
     const getDisplayImageData = (): ImageData => {
-      if (effectiveResolutionMultiplier === 1) {
-        return ctx.getImageData(0, 0, displayWidth, displayHeight);
-      }
+      // Always routes through the willReadFrequently-flagged scratch canvas
+      // now, even at 1x — previously effectiveResolutionMultiplier===1 read
+      // straight off the main `ctx` (deliberately left GPU-accelerated,
+      // since most gradients never read it back), but every needsImageData
+      // effect (invert/grain/posterize/halftone/shift/duotone/ascii/emoji —
+      // see buildEffectCtx below) calls this once each, every frame, when
+      // active. A Multi-FX stack combining a few of those meant several
+      // full-canvas getImageData reads a frame straight off the
+      // GPU-accelerated context — exactly the "Canvas2D: Multiple readback
+      // operations..." pattern Chrome's own DevTools warns is faster with
+      // willReadFrequently. Routing every read through the same
+      // software-backed scratch context this file already uses for the
+      // downsampled case makes each of those reads cheaper, regardless of
+      // how many needsImageData effects are stacked.
       const tmp = getScratchOffscreen('display', displayWidth, displayHeight);
-      // willReadFrequently: this scratch canvas exists purely so effects can
-      // read pixels back out of it every frame (getImageData right below) —
-      // unlike the main `ctx` above, which stays GPU-accelerated since most
-      // gradients never read it back, this one should skip straight to the
-      // software path instead of paying a GPU->CPU sync on every read.
       const tmpCtx = tmp.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
       tmpCtx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
       return tmpCtx.getImageData(0, 0, displayWidth, displayHeight);
@@ -773,6 +785,13 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
 
     }; // end drawRef.current assignment
+  // isMobile isn't part of drawParams (InteractiveGradient.tsx's big memo) —
+  // it's passed as a separate field on this hook's own params object, which
+  // is a fresh object every render, so it can't itself be a meaningful dep.
+  // Listed explicitly here instead: it rarely changes (only across the
+  // layout breakpoint), but MAX_CANVAS_PIXELS below reads it directly from
+  // this closure, so a real value change still needs to force a rebuild —
+  // same reasoning as any other non-drawParams closure input.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drawParams]);
+  }, [drawParams, isMobile]);
 }

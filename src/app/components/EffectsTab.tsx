@@ -172,6 +172,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
   } = props;
 
+  // Local rather than lifted to parent state (unlike emojiPickerSearch) —
+  // nothing outside this component needs it, and it doesn't need to survive
+  // a tab switch/remount.
+  const [effectSearch, setEffectSearch] = useState('');
+
   // Was recomputed inline on every render this component made (including
   // ones triggered by unrelated effect state elsewhere in the tab), not
   // just when the emoji picker's search query actually changed.
@@ -205,12 +210,30 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
+          {/* ~30 effects in a flat grid with no way to jump to one by name —
+              filters the same effectsList the grid below renders, so the
+              border/row math (isLastInColumn/isLeftColumn, both derived from
+              effectsList.length) stays correct against however many match. */}
+          <div className="px-1.5 py-1 border-b border-white/10">
+            <input
+              type="text"
+              value={effectSearch}
+              onChange={(e) => setEffectSearch(e.target.value)}
+              placeholder="Search effects…"
+              className="w-full text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1 placeholder-white/40 focus:outline-none focus:border-white/40"
+            />
+          </div>
           {(() => {
             // Derived from the single per-effect registry (constants/effectRegistry.ts)
             // instead of a hand-maintained list — adding/removing an effect no longer
             // requires touching this array too.
+            const query = effectSearch.trim().toLowerCase();
             const effectsList: { value: EffectType; label: string }[] =
-              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }));
+              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }))
+                .filter((effect) => !query || effect.label.toLowerCase().includes(query));
+            if (effectsList.length === 0) {
+              return <div className="px-1.5 py-2 text-[10px] text-white/50 text-center">No effects match "{effectSearch.trim()}"</div>;
+            }
             const rows = Math.ceil(effectsList.length / 2);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>

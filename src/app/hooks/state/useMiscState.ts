@@ -107,7 +107,6 @@ export function useMiscState() {
   });
   const [pendingRatingState, setPendingRatingState] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const lastManualZoomTime = useRef<number>(0);
   const kaleidoAngleRef = useRef(0);
@@ -231,7 +230,6 @@ export function useMiscState() {
     pendingRatingState,
     setPendingRatingState,
     fileInputRef,
-    videoInputRef,
     isFullscreen,
     setIsFullscreen,
     lastManualZoomTime,

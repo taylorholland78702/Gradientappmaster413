@@ -56,7 +56,7 @@ export type RandomizationParams = Record<string, any>;
 
 export function useRandomization(params: RandomizationParams) {
   const {
-    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive,
+    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
@@ -401,7 +401,7 @@ export function useRandomization(params: RandomizationParams) {
     if (selectedEffects.length > 1) {
       setIsMultiFxMode(true);
     }
-    setResolutionMultiplier(resolutionForEffectCost(selectedEffects.reduce((sum, e) => sum + costOf(e), 0)));
+    setResolutionMultiplier(resolutionForEffectCost(selectedEffects.reduce((sum, e) => sum + costOf(e), 0), isMobile));
     // Previously this button only ever picked WHICH effects were active —
     // every effect's own sliders (bloom radius, mirror tiles, emoji size,
     // etc.) stayed wherever they last were, so repeated shuffles looked
@@ -683,7 +683,7 @@ export function useRandomization(params: RandomizationParams) {
       finalEffects = selectedEffects;
       if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
-      setResolutionMultiplier(resolutionForEffectCost(spentCost));
+      setResolutionMultiplier(resolutionForEffectCost(spentCost, isMobile));
 
       setTargetAngle(Math.random() * 360);
       setTargetZoom(1);

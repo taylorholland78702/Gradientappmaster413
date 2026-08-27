@@ -30,10 +30,22 @@ export const totalCost = (effects: EffectType[]): number =>
 // whenever activeEffects changes at all, regardless of how it changed.
 const LIGHT_EFFECT_COST = 4;
 const HEAVY_EFFECT_COST = 15;
-export const resolutionForEffectCost = (cost: number): number => {
-  // Capped at 2 — see useMiscState.ts's resolutionMultiplier init for why
-  // full devicePixelRatio isn't used directly.
-  const baseline = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+// isMobile here is the same narrow-viewport signal InteractiveGradient.tsx's
+// useIsMobile(1024) already computes for layout — not a true low-power-
+// device detector (a resized narrow desktop window reads as "mobile" too,
+// a wide tablet doesn't), but it's the only device signal this app already
+// has, and it's a reasonable proxy: phones are overwhelmingly the case that
+// actually needs the lower cap.
+export const resolutionForEffectCost = (cost: number, isMobile = false): number => {
+  // Capped at 2 on desktop — see useMiscState.ts's resolutionMultiplier
+  // init for why full devicePixelRatio isn't used directly. Capped lower on
+  // mobile (1.5): every per-pixel gradient/effect's fragment cost scales
+  // quadratically with this, and phone GPUs/CPUs run the identical
+  // pipeline desktop does with meaningfully less headroom — this was
+  // previously the one place in the app where isMobile had zero effect on
+  // actual render cost, only on layout.
+  const dprCap = isMobile ? 1.5 : 2;
+  const baseline = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, dprCap);
   if (cost <= LIGHT_EFFECT_COST) return baseline;
   const t = Math.min(1, (cost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
   return baseline * (1 - t * 0.4);
