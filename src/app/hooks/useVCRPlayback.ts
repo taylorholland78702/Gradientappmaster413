@@ -36,6 +36,13 @@ export interface UseVCRPlaybackParams {
 
 const CAPTURE_FPS = 30;
 const FRAME_INTERVAL_MS = 1000 / CAPTURE_FPS;
+// Recording had no duration cap at all — vcrRecordedFrames (metadata,
+// growing 20x/sec), ffmpeg's frameDataRef (raw JPEGs, one per captured
+// frame), and WebCodecs' in-memory ArrayBufferTarget all grow unbounded for
+// as long as Record stays on, risking OOM/a crashed tab on a long session.
+// 10 minutes is generous for what this feature is actually for (a
+// shareable clip), while bounding the worst case.
+const MAX_RECORDING_MS = 10 * 60 * 1000;
 
 export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const {
@@ -628,6 +635,36 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       setIsAudioEnabled(false);
     }
   }, [stopRecording, audioRef, setIsAudioEnabled]);
+
+  // Auto-stops a recording at MAX_RECORDING_MS instead of letting it run
+  // indefinitely — see that constant's declaration for why. isVCRRecording
+  // and the actual video/GIF encoder are always started/stopped together
+  // (toggleVCRRecording), so gating on isVCRRecording here covers both;
+  // handleStop tears down whichever encoder is actually running.
+  useEffect(() => {
+    if (!isVCRRecording) return;
+    const timer = window.setTimeout(() => {
+      console.warn(`Recording auto-stopped after reaching the ${MAX_RECORDING_MS / 60000}-minute cap.`);
+      handleStop();
+    }, MAX_RECORDING_MS);
+    return () => window.clearTimeout(timer);
+  }, [isVCRRecording, handleStop]);
+
+  // No warning existed at all before closing/reloading the tab mid-recording
+  // — every captured video frame was silently discarded. Standard
+  // beforeunload confirmation; browsers ignore custom returnValue text and
+  // show their own generic prompt, but the tab-close IS interceptable now.
+  // GIF export has its own equivalent guard in useGifExport.ts, since its
+  // recording state (isRecordingGif) lives in that separate hook.
+  useEffect(() => {
+    if (!isVCRRecording) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isVCRRecording]);
 
   return {
     // State

@@ -10,6 +10,12 @@ import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 const MAX_GIF_WIDTH = 480;
 const GIF_FPS = 10;
 const FRAME_DELAY = 1000 / GIF_FPS;
+// No duration cap existed at all — a long recording just kept quantizing
+// and appending frames to the in-memory GIF encoder indefinitely. Shorter
+// than video's 10-minute cap (useVCRPlayback.ts): a GIF is meant to be a
+// quick shareable clip, and at GIF_FPS/MAX_GIF_WIDTH this still bounds the
+// file to a size that's actually shareable.
+const MAX_GIF_RECORDING_MS = 2 * 60 * 1000;
 
 export interface UseGifExportParams {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -65,7 +71,15 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
     isRecordingRef.current = true;
     setIsRecordingGif(true);
 
+    // No warning existed before closing/reloading the tab mid-recording —
+    // every captured frame was silently discarded. Browsers ignore custom
+    // returnValue text and show their own generic prompt, but the
+    // tab-close IS interceptable now.
+    const onBeforeUnload = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', onBeforeUnload);
+
     try {
+      const recordingStart = performance.now();
       const scale = Math.min(1, MAX_GIF_WIDTH / canvas.width);
       const width = Math.max(1, Math.round(canvas.width * scale));
       const height = Math.max(1, Math.round(canvas.height * scale));
@@ -107,6 +121,10 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       };
 
       while (isRecordingRef.current) {
+        if (performance.now() - recordingStart >= MAX_GIF_RECORDING_MS) {
+          console.warn(`GIF recording auto-stopped after reaching the ${MAX_GIF_RECORDING_MS / 60000}-minute cap.`);
+          break;
+        }
         await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY));
         if (!isRecordingRef.current) break;
         scratchCtx.drawImage(canvas, 0, 0, width, height);
@@ -143,6 +161,7 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
     } catch (err) {
       console.error('GIF export failed:', err);
     } finally {
+      window.removeEventListener('beforeunload', onBeforeUnload);
       isRecordingRef.current = false;
       setIsRecordingGif(false);
       setIsFinalizingGif(false);

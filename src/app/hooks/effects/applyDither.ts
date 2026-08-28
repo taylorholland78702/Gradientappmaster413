@@ -48,6 +48,7 @@ export function applyDither(P: any): void {
     helixTurns,
     ditherLevels,
     ditherType,
+    ditherScale,
     drawParams,
     glitchIntensity,
     glitchBlockSize,
@@ -220,6 +221,6 @@ export function applyDither(P: any): void {
   // ditherWorker.ts (see applyDitherWorkerAuto.ts) so the exact same code
   // runs whether this executes here on the main thread or inside a Worker.
   const ditherImageData = getDisplayImageData();
-  ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels);
+  ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale);
   putScaledImageData(ditherImageData);
 }

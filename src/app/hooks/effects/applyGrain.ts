@@ -90,6 +90,7 @@ export function applyGrain(P: any): void {
     gradientColorsRef,
     gradientType,
     grainIntensity,
+    grainSize,
     grainType,
     gridColumns,
     gridRotation,
@@ -225,9 +226,31 @@ export function applyGrain(P: any): void {
             const d = imageData.data;
             const int = grainIntensity + (isFirstEffect ? audioModulation * 0.3 : 0);
             const sz = { 'fine': 0.5, 'medium': 1, 'coarse': 2, 'film': 1.5 }[grainType];
-            for (let i = 0; i < d.length; i += 4) {
-              const n = (Math.random() - 0.5) * int * 255 * sz;
-              d[i] += n; d[i + 1] += n; d[i + 2] += n;
+            // Block size in screen pixels each noise sample covers — was
+            // always exactly 1 (a fresh Math.random() per pixel, every
+            // frame). blockSize<=1 keeps that identical original loop
+            // untouched rather than routing the common/default case through
+            // the block-lookup path below for no reason.
+            const blockSize = Math.max(1, Math.round(grainSize ?? 1));
+            if (blockSize <= 1) {
+              for (let i = 0; i < d.length; i += 4) {
+                const n = (Math.random() - 0.5) * int * 255 * sz;
+                d[i] += n; d[i + 1] += n; d[i + 2] += n;
+              }
+            } else {
+              const blocksX = Math.ceil(displayWidth / blockSize);
+              const blocksY = Math.ceil(displayHeight / blockSize);
+              const blockNoise = new Float32Array(blocksX * blocksY);
+              for (let b = 0; b < blockNoise.length; b++) blockNoise[b] = (Math.random() - 0.5) * int * 255 * sz;
+              for (let i = 0; i < d.length; i += 4) {
+                const p = i / 4;
+                const x = p % displayWidth;
+                const y = (p - x) / displayWidth;
+                const bx = (x / blockSize) | 0;
+                const by = (y / blockSize) | 0;
+                const n = blockNoise[by * blocksX + bx];
+                d[i] += n; d[i + 1] += n; d[i + 2] += n;
+              }
             }
             putScaledImageData(imageData);
 

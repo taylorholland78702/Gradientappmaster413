@@ -35,6 +35,7 @@ export interface EffectsTabProps {
   // Displace
   // CRT
   crtIntensity: number; setCrtIntensity: (v: number) => void;
+  crtScanlineSpacing: number; setCrtScanlineSpacing: (v: number) => void;
   // Photo
   handlePhotoFileClick: () => void;
   photoFileName: string;
@@ -73,6 +74,7 @@ export interface EffectsTabProps {
   colorShiftHue: number; setColorShiftHue: (v: number) => void;
   // Grain
   grainIntensity: number; setGrainIntensity: (v: number) => void;
+  grainSize: number; setGrainSize: (v: number) => void;
   grainType: 'fine' | 'medium' | 'coarse' | 'film'; setGrainType: (v: 'fine' | 'medium' | 'coarse' | 'film') => void;
   // Blur
   blurType: 'gaussian' | 'motion' | 'radial' | 'zoom'; setBlurType: (v: 'gaussian' | 'motion' | 'radial' | 'zoom') => void;
@@ -104,6 +106,7 @@ export interface EffectsTabProps {
   gridRotationDirection: 'none' | 'clockwise' | 'counterclockwise'; setGridRotationDirection: (v: 'none' | 'clockwise' | 'counterclockwise') => void;
   // VHS
   vhsGlitchIntensity: number; setVhsGlitchIntensity: (v: number) => void;
+  vhsJitterAmount: number; setVhsJitterAmount: (v: number) => void;
   dustCrackleIntensity: number; setDustCrackleIntensity: (v: number) => void;
   dustCrackleLength: number; setDustCrackleLength: (v: number) => void;
   dustCrackleColor: string; setDustCrackleColor: (v: string) => void;
@@ -112,9 +115,11 @@ export interface EffectsTabProps {
   waveDistortionRotation: number; setWaveDistortionRotation: (v: number) => void;
   // Slit-Scan
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
+  slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanDirection: 'horizontal' | 'vertical' | 'radial' | 'circular'; setSlitScanDirection: (v: 'horizontal' | 'vertical' | 'radial' | 'circular') => void;
   // Dither
   ditherLevels: number; setDitherLevels: (v: number) => void;
+  ditherScale: number; setDitherScale: (v: number) => void;
   ditherType: 'bayer' | 'floyd-steinberg'; setDitherType: (v: 'bayer' | 'floyd-steinberg') => void;
   // Glitch
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
@@ -141,7 +146,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
     isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
     liquidStrength, setLiquidStrength, liquidScale, setLiquidScale,
-    crtIntensity, setCrtIntensity,
+    crtIntensity, setCrtIntensity, crtScanlineSpacing, setCrtScanlineSpacing,
     handlePhotoFileClick, photoFileName, photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
     pixelSize, setPixelSize, triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation,
@@ -152,7 +157,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount,
     vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness,
     colorShiftHue, setColorShiftHue,
-    grainIntensity, setGrainIntensity, grainType, setGrainType,
+    grainIntensity, setGrainIntensity, grainSize, setGrainSize, grainType, setGrainType,
     blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
@@ -162,11 +167,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
     gridShapeSize, setGridShapeSize, gridVariation, setGridVariation, gridRotationDirection, setGridRotationDirection,
-    vhsGlitchIntensity, setVhsGlitchIntensity, dustCrackleIntensity, setDustCrackleIntensity,
+    vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection,
-    ditherLevels, setDitherLevels, ditherType, setDitherType,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
+    ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
@@ -459,6 +464,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <input type="range" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Scanlines:</label>
+                    <input type="range" min="1" max="6" step="1" value={crtScanlineSpacing} onChange={(e) => setCrtScanlineSpacing(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="1" max="6" step="1" value={crtScanlineSpacing} onChange={(e) => setCrtScanlineSpacing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('photo') && (
@@ -696,6 +706,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
+                    <input type="range" min="1" max="6" step="1" value={grainSize} onChange={(e) => setGrainSize(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="1" max="6" step="1" value={grainSize} onChange={(e) => setGrainSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
@@ -1186,6 +1201,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       />
                     </div>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Jitter:</label>
+                    <input type="range" min="50" max="400" step="10" value={vhsJitterAmount} onChange={(e) => setVhsJitterAmount(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="50" max="400" step="10" value={vhsJitterAmount} onChange={(e) => setVhsJitterAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (
@@ -1291,6 +1311,13 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       />
                     </div>
                   </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">History:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="12" max="120" step="1" value={slitScanHistory} onChange={(e) => setSlitScanHistory(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="12" max="120" step="1" value={slitScanHistory} onChange={(e) => setSlitScanHistory(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('dither') && (
@@ -1346,6 +1373,15 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       />
                     </div>
                   </div>
+                  {ditherType === 'bayer' && (
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
+                      <div className="flex items-center gap-1 flex-1">
+                        <input type="range" min="1" max="8" step="1" value={ditherScale} onChange={(e) => setDitherScale(Number(e.target.value))} className="flex-1" />
+                        <input type="number" min="1" max="8" step="1" value={ditherScale} onChange={(e) => setDitherScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                      </div>
+                    </div>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('glitch') && (

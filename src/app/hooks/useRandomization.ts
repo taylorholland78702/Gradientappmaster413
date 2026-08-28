@@ -22,11 +22,12 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // pools since it's a no-op with no uploaded image.
 const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
-  'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
-  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'], metaballs: ['Metaballs'], moire: ['Moire'],
-  noise: ['Noise'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
-  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], topographic: ['Topographic'], truchet: ['Truchet'],
-  voronoi: ['Voronoi'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
+  fireworks: ['Fireworks'], 'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
+  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
+  'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
+  noise: ['Noise'], particles: ['Particles'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
+  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
+  voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
@@ -60,6 +61,8 @@ export function useRandomization(params: RandomizationParams) {
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
+    setMeshWireframeGridSize, setMeshWireframeJitter, setMeshWireframeLineWidth,
+    setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed,
     setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides,
     setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
@@ -67,7 +70,7 @@ export function useRandomization(params: RandomizationParams) {
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
-    setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType,
+    setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
@@ -79,8 +82,8 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
     setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
-    setSlitScanIntensity, setSlitScanDirection,
-    setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGridColumns,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
+    setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
@@ -96,7 +99,7 @@ export function useRandomization(params: RandomizationParams) {
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
-    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVignetteStrength,
+    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
@@ -105,7 +108,7 @@ export function useRandomization(params: RandomizationParams) {
     // Modulation one: sliders exist in the UI and are wired into
     // save/restore, but no shuffle path ever touched them.
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
-    setCrtIntensity, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
+    setCrtIntensity, setCrtScanlineSpacing, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
   } = params;
 
   const randomizeUncoveredParams = useCallback(() => {
@@ -138,6 +141,17 @@ export function useRandomization(params: RandomizationParams) {
     setTilingComplexity(Math.floor(Math.random() * 20) * 0.5 + 0.5);   // 0.5–10
     setTilingRotation(Math.floor(Math.random() * 360));                // 0–359
     setTilingRowOffset(Math.floor(Math.random() * 301) - 150);         // -150–150
+
+    // Mesh Wireframe — never touched by any randomize/shuffle path before,
+    // same gap Fireworks/Lightning/Particles/Tiling above used to have.
+    setMeshWireframeGridSize(Math.floor(Math.random() * 28) + 3);       // 3–30
+    setMeshWireframeJitter(Math.random());                              // 0–1
+    setMeshWireframeLineWidth(Math.random() * 4);                       // 0–4
+
+    // Wave Interference — same gap as Mesh Wireframe above.
+    setWaveInterferenceSourceCount(Math.floor(Math.random() * 7) + 2);  // 2–8
+    setWaveInterferenceFrequency(Math.random() * 19 + 1);               // 1–20
+    setWaveInterferenceSpeed(Math.random() * 4.9 + 0.1);                // 0.1–5
 
     // Aurora
     setAuroraBandCount(Math.floor(Math.random() * 10) + 2);            // 2–11
@@ -198,6 +212,7 @@ export function useRandomization(params: RandomizationParams) {
     // Dither
     setDitherLevels(Math.floor(Math.random() * 14) + 2);               // 2–15
     setDitherType(Math.random() < 0.5 ? 'bayer' : 'floyd-steinberg');
+    setDitherScale(Math.floor(Math.random() * 8) + 1);                 // 1–8
 
     // Feedback
     setFeedbackDecay(Math.random() * 0.47 + 0.5);                      // 0.5–0.97
@@ -266,6 +281,7 @@ export function useRandomization(params: RandomizationParams) {
     // Slit-Scan effect
     setSlitScanIntensity(Math.random());                                 // 0–1
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
+    setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).
@@ -317,6 +333,7 @@ export function useRandomization(params: RandomizationParams) {
     setSolarizeThreshold(Math.floor(Math.random() * 180) + 50);       // 50–229
     setGridSides(Math.floor(Math.random() * 6) + 3);                  // 3–8
     setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
+    setVhsJitterAmount(Math.floor(Math.random() * 351) + 50);        // 50–400
     setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
     setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
@@ -357,6 +374,7 @@ export function useRandomization(params: RandomizationParams) {
     // last synced, so they sat frozen at their defaults through every
     // shuffle path exactly like the Modulation gap.
     setCrtIntensity(Math.random() * 0.6 + 0.1);                        // 0.1–0.7
+    setCrtScanlineSpacing(Math.floor(Math.random() * 6) + 1);          // 1–6
     setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
     setDustCrackleColor(randomHexColor());
 
@@ -602,6 +620,7 @@ export function useRandomization(params: RandomizationParams) {
       setFisheyeStrength(Math.random());
 
       setGrainIntensity(Math.random() * 0.5);
+      setGrainSize(Math.floor(Math.random() * 6) + 1);
     } else {
       // Full random generation — curated ranges for better results
 
@@ -701,6 +720,7 @@ export function useRandomization(params: RandomizationParams) {
       setChromaticOffset(randIntInRange(RANGES.chromaticOffset));
       setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
+      setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
     }
     
     setBaseAIColors(null);
@@ -782,7 +802,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'triangulate') setTriangleSize(Math.round(rng(...RANGES.triangleSize)));
       else if (eff === 'bloom') { setBloomIntensity(rng(0, 2)); setBloomRadius(Math.round(rng(2, 40))); }
       else if (eff === 'chromatic-trails') { setChromaticTrailsDecay(rng(0.5, 0.99)); setChromaticTrailsOffset(Math.round(rng(1, 30))); }
-      else if (eff === 'dither') setDitherLevels(Math.round(rng(2, 16)));
+      else if (eff === 'dither') { setDitherLevels(Math.round(rng(2, 16))); setDitherScale(Math.round(rng(1, 8))); }
       else if (eff === 'feedback') { setFeedbackDecay(rng(0.5, 0.97)); setFeedbackZoom(rng(0, 5)); }
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
       else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));

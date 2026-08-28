@@ -166,6 +166,7 @@ export function applySlitScan(P: any): void {
     slitScanBufferRef,
     slitScanDirection,
     slitScanIntensity,
+    slitScanHistory,
     windmillRotations,
     windmillThickness,
     windmillTightness,
@@ -230,8 +231,9 @@ export function applySlitScan(P: any): void {
             const ssCaptureCtx = ssCapture.getContext('2d')!;
             ssCaptureCtx.drawImage(canvas, 0, 0, ssBufW, ssBufH);
             const ssImg = ssCaptureCtx.getImageData(0, 0, ssBufW, ssBufH);
+            const maxHistory = Math.max(12, Math.round(slitScanHistory ?? 60));
             slitScanBufferRef.current.push(ssImg);
-            if (slitScanBufferRef.current.length > 60) slitScanBufferRef.current.shift();
+            if (slitScanBufferRef.current.length > maxHistory) slitScanBufferRef.current.shift();
 
             // With only 1-2 frames buffered (e.g. right after switching
             // direction, before playback has run long enough to fill the

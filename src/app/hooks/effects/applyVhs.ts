@@ -183,6 +183,7 @@ export function applyVhs(P: any): void {
     truchetThickness,
     truchetVariation,
     vhsGlitchIntensity,
+    vhsJitterAmount,
     vignetteSoftness,
     vignetteStrength,
     voronoiAnimTime,
@@ -243,7 +244,7 @@ export function applyVhs(P: any): void {
             for (let i = 0; i < numGlitches; i++) {
               const y = Math.random() * displayHeight;
               const h = Math.max(2, Math.min(60, Math.random() * 60 * effectiveVhsIntensity));
-              const offset = (Math.random() - 0.5) * 300 * effectiveVhsIntensity;
+              const offset = (Math.random() - 0.5) * (vhsJitterAmount ?? 300) * effectiveVhsIntensity;
               const yInt = Math.floor(y);
               const hInt = Math.max(2, Math.ceil(h));
               if (yInt >= 0 && yInt + hInt <= displayHeight && displayWidth > 0) {

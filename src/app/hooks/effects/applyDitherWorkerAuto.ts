@@ -43,7 +43,7 @@ export function applyDitherWorkerAuto(P: any): void { // eslint-disable-line @ty
     return;
   }
 
-  const { displayWidth, displayHeight, ditherType, ditherLevels, putScaledImageData, getDisplayImageData } = P;
+  const { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, putScaledImageData, getDisplayImageData } = P;
 
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyDither(P);
@@ -60,7 +60,7 @@ export function applyDitherWorkerAuto(P: any): void { // eslint-disable-line @ty
       const w = getWorker();
       const request: DitherWorkerRequest = {
         buffer: snapshot.data.buffer,
-        displayWidth, displayHeight, ditherType, ditherLevels,
+        displayWidth, displayHeight, ditherType, ditherLevels, ditherScale,
       };
       w.postMessage(request, [request.buffer]);
     } catch (err) {

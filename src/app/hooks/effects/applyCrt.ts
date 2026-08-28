@@ -9,6 +9,7 @@ export function applyCrt(P: any): void {
     putScaledImageData,
     getDisplayImageData,
     crtIntensity,
+    crtScanlineSpacing,
   } = P;
   // RGB-subpixel/scanline mask only — no barrel curvature, corner vignette,
   // or black bezel, so the effect reads as a cathode-ray pixel grid over
@@ -16,6 +17,7 @@ export function applyCrt(P: any): void {
   if (canvas.width === 0 || canvas.height === 0) return;
   const amt = Math.max(0, Math.min(1, crtIntensity ?? 0.6));
   if (amt <= 0) return;
+  const spacing = Math.max(1, Math.round(crtScanlineSpacing ?? 2));
   const src = getDisplayImageData();
   const dst = getScratchImageData('crt', ctx, displayWidth, displayHeight);
   for (let y = 0; y < displayHeight; y++) {
@@ -23,9 +25,9 @@ export function applyCrt(P: any): void {
       const i = (y * displayWidth + x) * 4;
 
       // RGB subpixel triad mask — every 3rd column tints toward one
-      // channel, faint scanline darkening every 2nd row.
+      // channel, faint scanline darkening every `spacing`th row.
       const col = x % 3;
-      const rowDark = (y % 2 === 0) ? 1 : (1 - 0.35 * amt);
+      const rowDark = (y % spacing === 0) ? 1 : (1 - 0.35 * amt);
       const subR = col === 0 ? 1 : (1 - 0.5 * amt);
       const subG = col === 1 ? 1 : (1 - 0.5 * amt);
       const subB = col === 2 ? 1 : (1 - 0.5 * amt);
