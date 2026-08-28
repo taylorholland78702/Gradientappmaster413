@@ -199,7 +199,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <label className="text-[10px] text-white w-20 shrink-0">Hue:</label>
             <div className="flex items-center gap-1 flex-1 ml-2">

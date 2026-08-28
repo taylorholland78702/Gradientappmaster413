@@ -438,7 +438,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {isAudioControlsOpen && (
         <div className="w-full px-1.5 py-2 border-t border-white/10">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
 
             {/* Style presets — one-click starting points for common audio/
                 music styles; sets sensitivity/band multipliers/beat-sync/FX

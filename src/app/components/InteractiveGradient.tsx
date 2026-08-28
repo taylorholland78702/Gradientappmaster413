@@ -238,7 +238,7 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
         <span className="text-[10px] text-white/80 font-medium">{label}</span>
         <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
-      {expanded && <div className="flex flex-col gap-1 pb-1">{children}</div>}
+      {expanded && <div className="flex flex-col gap-2 pb-1">{children}</div>}
     </div>
   );
 }

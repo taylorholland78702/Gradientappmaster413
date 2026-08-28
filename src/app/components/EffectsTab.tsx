@@ -284,7 +284,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
 
           return (
           <div className="w-full px-1.5 py-1 border-t border-white/10">
-            <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
+            <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-2'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
