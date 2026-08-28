@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import {
   Eye, Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
-  ArrowUUpLeft, ArrowUUpRight, Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
+  Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
 import { VCRControls } from './VCRControls';
 
@@ -43,9 +43,7 @@ export interface ControlRailProps {
   isFinalizingGif: boolean;
   isRecordingGif: boolean;
 
-  // Undo / Redo — previously only reachable via the collapsed pill (now
-  // removed) or the ⌘Z/⌘⇧Z shortcuts; kept as rail buttons so that
-  // discoverable affordance isn't lost in the pill→rail merge.
+  // Undo / Redo — reachable via ⌘Z/⌘⇧Z only, not a rail button.
   undoLastChange: () => void;
   redoLastChange: () => void;
   undoDepth: number;
@@ -70,20 +68,22 @@ export interface ControlRailProps {
   rotationDirection: 'clockwise' | 'counter';
   isEncoding: boolean;
   encodingProgress: number;
-  setVcrPlaybackSpeed: (speed: number) => void;
   setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
   handleStop: () => void;
   toggleVCRPlayback: () => void;
+  isSpeedPopoverOpen: boolean;
+  onToggleSpeedPopover: (triggerEl: HTMLElement) => void;
 }
 
-// Short centered hairline between rail groups — a compact line rather than
-// the full-stretch <Divider>, which was sized for the old full-width rows.
-const RailSep: React.FC = () => (
-  <div className="w-6 h-px bg-white/15 my-0.5 flex-shrink-0" />
+// Short centered hairline between rail groups — a vertical pipe on mobile's
+// horizontal wrapped bar, a horizontal line on desktop's vertical column
+// (each orthogonal to the axis the buttons are stacked along).
+const RailSep: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
+  <div className={isMobile ? 'w-px h-5 bg-white/15 mx-0.5 flex-shrink-0' : 'w-5 h-px bg-white/15 my-0.5 flex-shrink-0'} />
 );
 
-const railBtnBase = 'w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-shrink-0 transition-all';
+const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -93,19 +93,42 @@ const railBtnBase = 'w-[34px] h-[34px] rounded-[10px] flex items-center justify-
  * the isMobile-driven classes below) rather than needing two components,
  * since it's the same set of buttons either way.
  */
-export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function ControlRail(props, ref) {
+export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function ControlRail(props, ref) {
   const {
     isMobile, style, onWordmarkMouseDown, onWordmarkClick,
     isControlsVisible, setIsControlsVisible,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
-    undoLastChange, redoLastChange, undoDepth, redoDepth,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
   } = props;
 
   const tabBtnClass = (tab: TabId) =>
     `${railBtnBase} ${activeTab === tab ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`;
+
+  // Collapsed state: rather than vanishing entirely, the rail shrinks down
+  // to a single narrow pill (still vertical on desktop — a thin sliver of
+  // the full column, not a horizontal bar) that re-expands the full rail
+  // on click. Replaces the old "fully hidden, no way back except H" state.
+  if (!isControlsVisible) {
+    return (
+      <button
+        ref={ref as React.Ref<HTMLButtonElement>}
+        data-role="panel"
+        onClick={() => setIsControlsVisible(true)}
+        style={{ touchAction: 'none', ...style }}
+        className={
+          isMobile
+            ? 'fixed inset-x-3 bottom-3 z-50 pointer-events-auto flex items-center justify-center w-10 h-7 mx-auto bg-black rounded-full shadow-sm text-white/70 hover:text-white transition-colors'
+            : 'absolute pointer-events-auto flex items-center justify-center w-7 h-10 bg-black rounded-full shadow-sm text-white/70 hover:text-white transition-colors'
+        }
+        title="Show Controls (H)"
+        aria-label="Show Controls"
+      >
+        <Eye weight="regular" className="w-3.5 h-3.5" />
+      </button>
+    );
+  }
 
   return (
     <nav
@@ -115,18 +138,18 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
       style={{ touchAction: 'none', ...style }}
       className={
         isMobile
-          ? `fixed inset-x-3 bottom-3 z-50 pointer-events-auto flex flex-row flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 bg-black/25 rounded-2xl shadow-sm px-2.5 py-2 transition-transform duration-300 ${isControlsVisible ? '' : 'translate-y-[calc(100%+24px)]'}`
+          ? 'fixed inset-x-3 bottom-3 z-50 pointer-events-auto flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 bg-black rounded-2xl shadow-sm px-2 py-1.5'
           // max-h-[calc(100vh-32px)] + overflow-y-auto: the rail is
           // draggable, so unlike a fixed-position bar it can end up
           // anchored somewhere that doesn't leave room for its full
           // height below it (dragged low, or a short viewport) — without
-          // a scroll fallback, whatever falls past the bottom edge (e.g.
-          // Undo/Redo) becomes permanently unreachable rather than just
-          // needing a scroll. Hidden scrollbar (scrollbar-none isn't a
-          // default Tailwind utility here, so this relies on the same
-          // thin-scrollbar treatment already used elsewhere) keeps the
-          // slim rail look when it does need to scroll.
-          : `absolute pointer-events-auto flex flex-col items-center gap-1 bg-black/25 rounded-2xl shadow-sm px-1.5 py-2.5 transition-opacity duration-300 max-h-[calc(100vh-32px)] overflow-y-auto ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`
+          // a scroll fallback, whatever falls past the bottom edge would
+          // become permanently unreachable rather than just needing a
+          // scroll. Hidden scrollbar (scrollbar-none isn't a default
+          // Tailwind utility here, so this relies on the same thin-
+          // scrollbar treatment already used elsewhere) keeps the slim
+          // rail look when it does need to scroll.
+          : 'absolute pointer-events-auto flex flex-col items-center gap-0.5 bg-black rounded-2xl shadow-sm px-1 py-2 max-h-[calc(100vh-32px)] overflow-y-auto'
       }
     >
       {/* Wordmark — click opens About; hold-and-drag also repositions the
@@ -141,8 +164,8 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
       <button
         onMouseDown={isMobile ? undefined : onWordmarkMouseDown}
         onClick={onWordmarkClick}
-        className={`w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-shrink-0 text-white font-black select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing mb-0.5'}`}
-        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15 }}
+        className={`w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 text-white font-black select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing mb-0.5'}`}
+        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14 }}
         title={isMobile ? 'About wāv' : 'Click: About · Hold: drag rail'}
         aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the rail'}
       >
@@ -158,7 +181,7 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
         <Eye weight="regular" className="w-4 h-4" />
       </button>
 
-      <RailSep />
+      <RailSep isMobile={isMobile} />
 
       <button
         onClick={handleWavClick}
@@ -179,7 +202,7 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
         <InfinityIcon weight="regular" className="w-4 h-4" />
       </button>
 
-      <RailSep />
+      <RailSep isMobile={isMobile} />
 
       <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={tabBtnClass('gradients')}>
         <Gradient weight="regular" className="w-4 h-4" />
@@ -202,7 +225,7 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
         <FloppyDisk weight="regular" className="w-4 h-4" />
       </button>
 
-      <RailSep />
+      <RailSep isMobile={isMobile} />
 
       <button
         onClick={exportAsPNG}
@@ -240,34 +263,14 @@ export const ControlRail = forwardRef<HTMLDivElement, ControlRailProps>(function
         rotationDirection={props.rotationDirection}
         isEncoding={props.isEncoding}
         encodingProgress={props.encodingProgress}
-        setVcrPlaybackSpeed={props.setVcrPlaybackSpeed}
         setRotationDirection={props.setRotationDirection}
         toggleVCRRecording={props.toggleVCRRecording}
         handleStop={props.handleStop}
         toggleVCRPlayback={props.toggleVCRPlayback}
         isMobile={isMobile}
+        isSpeedPopoverOpen={props.isSpeedPopoverOpen}
+        onToggleSpeedPopover={props.onToggleSpeedPopover}
       />
-
-      <RailSep />
-
-      <button
-        onClick={undoLastChange}
-        disabled={undoDepth < 0}
-        className={`${railBtnBase} text-white hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent`}
-        title="Undo (⌘Z)"
-        aria-label="Undo"
-      >
-        <ArrowUUpLeft weight="regular" className="w-4 h-4" />
-      </button>
-      <button
-        onClick={redoLastChange}
-        disabled={redoDepth <= 0}
-        className={`${railBtnBase} text-white hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent`}
-        title="Redo (⌘⇧Z)"
-        aria-label="Redo"
-      >
-        <ArrowUUpRight weight="regular" className="w-4 h-4" />
-      </button>
 
       {!isMobile && <div className="flex-1 min-h-1" />}
     </nav>

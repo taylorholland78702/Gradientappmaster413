@@ -347,7 +347,7 @@ export function InteractiveGradient() {
   // — it used to be the draggable 3-row card, but the rail replaced that
   // card and inherited the same drag mechanism, so this is the same ref
   // doing the same job against a different element.
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   // The drawer's own scrollable root (ControlDrawer's forwarded ref) — used
   // below by the manual touch-drag-scroll workaround, now that tab content
   // scrolls inside the drawer rather than inside the old shared panel.
@@ -1828,6 +1828,72 @@ export function InteractiveGradient() {
           />
         </div>
         <p className="text-[10px] text-black/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+      </div>,
+      document.body,
+    );
+  };
+  // Speed popover — same anchor/portal/outside-click pattern as Auto
+  // Shuffle above, replacing the always-visible ‹ 1x › step buttons that
+  // used to live inline in VCRControls.
+  const [speedPopoverAnchor, setSpeedPopoverAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
+  const speedPopoverRef = useRef<HTMLDivElement>(null);
+  const speedTriggerElRef = useRef<HTMLElement | null>(null);
+  const openSpeedPopover = (triggerEl?: HTMLElement | null) => {
+    speedTriggerElRef.current = triggerEl ?? null;
+    const anchorEl = triggerEl || panelRef.current;
+    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 240 } as DOMRect;
+    const width = 160;
+    const left = Math.min(rect.left, window.innerWidth - width - 8);
+    const top = rect.bottom + 6;
+    setSpeedPopoverAnchor({ top, left: Math.max(8, left), width });
+  };
+  const toggleSpeedPopover = (triggerEl: HTMLElement) => {
+    if (speedPopoverAnchor) {
+      setSpeedPopoverAnchor(null);
+    } else {
+      openSpeedPopover(triggerEl);
+    }
+  };
+  useEffect(() => {
+    if (!speedPopoverAnchor) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (speedPopoverRef.current && !speedPopoverRef.current.contains(target)
+        && !(speedTriggerElRef.current && speedTriggerElRef.current.contains(target))) {
+        setSpeedPopoverAnchor(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [speedPopoverAnchor]);
+  const SPEED_STEPS = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const renderSpeedPopover = () => {
+    if (!speedPopoverAnchor) return null;
+    return createPortal(
+      <div
+        ref={speedPopoverRef}
+        className="fixed z-50 shadow-sm p-2 flex flex-col gap-1 rounded-lg"
+        style={{
+          top: speedPopoverAnchor.top,
+          left: speedPopoverAnchor.left,
+          width: speedPopoverAnchor.width,
+          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <span className="text-xs text-black px-1">Playback Speed</span>
+        <div className="grid grid-cols-4 gap-1">
+          {SPEED_STEPS.map((speed) => (
+            <button
+              key={speed}
+              onClick={() => setVcrPlaybackSpeed(speed)}
+              className="text-[10px] font-mono tabular-nums rounded px-1 py-1 text-black transition-colors"
+              style={{ backgroundColor: vcrPlaybackSpeed === speed ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.05)' }}
+            >
+              {speed}x
+            </button>
+          ))}
+        </div>
       </div>,
       document.body,
     );
@@ -3475,6 +3541,7 @@ export function InteractiveGradient() {
         case 'Escape':
           if (isAboutOpen) { e.preventDefault(); setIsAboutOpen(false); }
           else if (autoShufflePopoverAnchor) { e.preventDefault(); setAutoShufflePopoverAnchor(null); }
+          else if (speedPopoverAnchor) { e.preventDefault(); setSpeedPopoverAnchor(null); }
           else if (activeTab) { e.preventDefault(); setActiveTab(null); }
           break;
         default:
@@ -3491,6 +3558,7 @@ export function InteractiveGradient() {
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
     isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
     autoShufflePopoverAnchor, setAutoShufflePopoverAnchor,
+    speedPopoverAnchor, setSpeedPopoverAnchor,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -3846,11 +3914,12 @@ export function InteractiveGradient() {
         rotationDirection={rotationDirection}
         isEncoding={isEncoding}
         encodingProgress={encodingProgress}
-        setVcrPlaybackSpeed={setVcrPlaybackSpeed}
         setRotationDirection={setRotationDirection}
         toggleVCRRecording={toggleVCRRecording}
         handleStop={handleStop}
         toggleVCRPlayback={toggleVCRPlayback}
+        isSpeedPopoverOpen={!!speedPopoverAnchor}
+        onToggleSpeedPopover={toggleSpeedPopover}
       />
 
       <ControlDrawer
@@ -3904,6 +3973,7 @@ export function InteractiveGradient() {
           only one of which is ever mounted+clickable at a time) never
           produces two portaled copies. */}
       {renderAutoShufflePopover()}
+      {renderSpeedPopover()}
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (

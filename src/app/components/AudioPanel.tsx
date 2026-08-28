@@ -347,7 +347,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     <>
       {/* Audiovisuals Section — single pill */}
       <div className="w-full flex">
-        <div className="flex items-center justify-between flex-1 bg-black/25 rounded-lg border border-white/10 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between flex-1 overflow-hidden">
           {/* Mic toggle, device select, upload, parameters — a flat row of 4
               equal-width segments with matching dividers between all of
               them. Previously the mic+device pair was nested in its own
@@ -434,7 +434,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       )}
 
       {isAudioControlsOpen && (
-        <div className="w-full bg-black/20 border border-white/8 px-3 py-2 rounded-lg overflow-hidden">
+        <div className="w-full px-1.5 py-2 border-t border-white/10">
           <div className="flex flex-col gap-1.5">
 
             {/* Style presets — one-click starting points for common audio/
@@ -755,7 +755,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full bg-black/20 border border-white/8 rounded-lg px-1.5 py-3">
+        <div className="w-full px-1.5 pt-2 border-t border-white/10">
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-white/20"></div>

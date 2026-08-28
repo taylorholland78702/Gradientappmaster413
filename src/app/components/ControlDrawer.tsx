@@ -1,5 +1,4 @@
 import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useRef } from 'react';
-import { X } from '@phosphor-icons/react';
 import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
@@ -109,19 +108,15 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       style={style}
       className={
         isMobile
-          ? 'fixed inset-x-3 z-40 pointer-events-auto bg-black/25 rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden'
-          : 'fixed z-40 pointer-events-auto bg-black/25 rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden w-[215px] scale-[1.15] origin-top-left'
+          ? 'fixed inset-x-3 z-40 pointer-events-auto bg-black rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden'
+          : 'fixed z-40 pointer-events-auto bg-black rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden w-[215px] scale-[1.15] origin-top-left'
       }
     >
-      <div className="flex items-center justify-between px-3 py-2 sticky top-0 bg-black/40 backdrop-blur-sm z-10">
+      {/* No close button — repressing the tab's own rail icon (a toggle,
+          see ControlRail's tab buttons) is the only way to close a drawer
+          now, so there's nothing here needing its own dismiss control. */}
+      <div className="flex items-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10">
         <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
-        <button
-          onClick={onClose}
-          className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all"
-          aria-label={`Close ${TAB_LABELS[activeTab]} panel`}
-        >
-          <X weight="bold" className="w-3 h-3" />
-        </button>
       </div>
 
       <div className="flex flex-col gap-[6px] px-1.5 pb-2">

@@ -94,7 +94,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     )}
 
     {/* AI Color Picker */}
-      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2.5 wav-palette-picker">
+      <div className="w-full pt-2 border-t border-white/10 wav-palette-picker">
         {/* Selected keyword chips */}
         {selectedKeywords.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -188,7 +188,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           array at a single point (see adjustPalette in utils/color.ts),
           so these work the same regardless of whether the palette came
           from a theme/color keyword, shuffle, or manual pin edits. */}
-      <div className="w-full bg-black/25 rounded-lg border border-white/10 p-2.5">
+      <div className="w-full pt-2 border-t border-white/10">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] text-white/80 font-medium">Adjustments</span>
           {isPaletteAdjusted && (
