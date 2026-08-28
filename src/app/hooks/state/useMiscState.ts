@@ -65,7 +65,11 @@ export function useMiscState() {
   const [rotationDirection, setRotationDirection] = useState<'clockwise' | 'counter'>('clockwise');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMultiFxMode, setIsMultiFxMode] = useState(false);
-  const [expandedEffects, setExpandedEffects] = useState<Set<string>>(new Set());
+  // Tracks which Multi-FX effect sections the user has manually collapsed
+  // (inverted from the old "expanded" set) — empty by default means every
+  // active effect's section starts open, since there's now enough vertical
+  // room in the docked drawer to not need them collapsed by default.
+  const [collapsedEffects, setCollapsedEffects] = useState<Set<string>>(new Set());
   const [wavRandomGradient, setWavRandomGradient] = useState('linear-gradient(to top, #7c3aed, #ec4899, #eab308)');
   const [isAIPromptOpen, setIsAIPromptOpen] = useState(false);
   const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
@@ -184,8 +188,8 @@ export function useMiscState() {
     setIsDropdownOpen,
     isMultiFxMode,
     setIsMultiFxMode,
-    expandedEffects,
-    setExpandedEffects,
+    collapsedEffects,
+    setCollapsedEffects,
     wavRandomGradient,
     setWavRandomGradient,
     isAIPromptOpen,

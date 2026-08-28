@@ -10,8 +10,8 @@ export interface EffectsTabProps {
   activeEffects: EffectType[];
   setActiveEffects: (v: EffectType[]) => void;
   isMultiFxMode: boolean; setIsMultiFxMode: (v: boolean) => void;
-  expandedEffects: Set<string>;
-  toggleEffectExpanded: (id: string) => void;
+  collapsedEffects: Set<string>;
+  toggleEffectCollapsed: (id: string) => void;
   randomizeEffects: () => void;
 
   // Kaleidoscope
@@ -139,7 +139,7 @@ export interface EffectsTabProps {
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
   const {
     isMobile,
-    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
+    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, collapsedEffects, toggleEffectCollapsed, randomizeEffects,
     kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
     asciiSize, setAsciiSize, asciiChars, setAsciiChars, asciiColor, setAsciiColor,
     emojiChars, setEmojiChars, emojiSize, setEmojiSize, emojiRotateSpeed, setEmojiRotateSpeed,
@@ -283,10 +283,10 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className={`w-full px-1.5 py-1 border-t border-white/10 ${isMulti && !isMobile ? 'max-h-64 overflow-y-auto' : ''}`}>
+          <div className="w-full px-1.5 py-1 border-t border-white/10">
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-1'}`}>
               {activeEffects.includes('kaleidoscope') && (
-                <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={expandedEffects.has('kaleidoscope')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Segments:</label>
                     <div className="flex items-center gap-1 flex-1">
@@ -316,7 +316,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('ascii') && (
-                <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={expandedEffects.has('ascii')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={!collapsedEffects.has('ascii')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
                     <input type="range" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="flex-1" />
@@ -346,7 +346,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('emoji') && (
-                <EffectSection id="emoji" label="Emoji" isMulti={isMulti} expanded={expandedEffects.has('emoji')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="emoji" label="Emoji" isMulti={isMulti} expanded={!collapsedEffects.has('emoji')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
                     <input type="range" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="flex-1" />
@@ -423,7 +423,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('liquid') && (
-                <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={expandedEffects.has('liquid')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={!collapsedEffects.has('liquid')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="flex-1" />
@@ -439,7 +439,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('crt') && (
-                <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={expandedEffects.has('crt')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="flex-1" />
@@ -453,7 +453,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('photo') && (
-                <EffectSection id="photo" label="Photo" isMulti={isMulti} expanded={expandedEffects.has('photo')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="photo" label="Photo" isMulti={isMulti} expanded={!collapsedEffects.has('photo')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handlePhotoFileClick}
@@ -482,7 +482,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic-trails') && (
-                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={expandedEffects.has('chromatic-trails')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
                     <input type="range" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="flex-1" />
@@ -498,7 +498,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('pixelate') && (
-                <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={expandedEffects.has('pixelate')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={!collapsedEffects.has('pixelate')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
@@ -507,7 +507,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
-                <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={expandedEffects.has('triangulate')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={!collapsedEffects.has('triangulate')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
                   <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
@@ -521,7 +521,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic') && (
-                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={expandedEffects.has('chromatic')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
                   <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
@@ -535,7 +535,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('fisheye') && (
-                <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={expandedEffects.has('fisheye')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={!collapsedEffects.has('fisheye')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
@@ -554,7 +554,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('bloom') && (
-                <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={expandedEffects.has('bloom')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={!collapsedEffects.has('bloom')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
@@ -568,7 +568,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('feedback') && (
-                <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={expandedEffects.has('feedback')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={!collapsedEffects.has('feedback')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
                     <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
@@ -587,7 +587,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('mirror') && (
-                <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={expandedEffects.has('mirror')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="mirror" label="Mirror" isMulti={isMulti} expanded={!collapsedEffects.has('mirror')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Mode:</label>
                     <div className="flex gap-1 flex-1">
@@ -610,7 +610,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
-                <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={expandedEffects.has('vignette')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={!collapsedEffects.has('vignette')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
@@ -624,7 +624,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (
-                <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={expandedEffects.has('shift')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={!collapsedEffects.has('shift')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
                   <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
@@ -633,7 +633,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
-                <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={expandedEffects.has('grain')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={!collapsedEffects.has('grain')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
@@ -719,7 +719,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('blur') && (
-                <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={expandedEffects.has('blur')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={!collapsedEffects.has('blur')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
                     <div className="flex gap-0.5 flex-1">
@@ -850,7 +850,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('posterize') && (
-                <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={expandedEffects.has('posterize')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
                   <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
@@ -859,7 +859,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('halftone') && (
-                <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={expandedEffects.has('halftone')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={!collapsedEffects.has('halftone')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Dot Size:</label>
                     <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
@@ -921,7 +921,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('invert') && (
-                <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={expandedEffects.has('invert')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={!collapsedEffects.has('invert')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                   <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
                   <input type="range" min="0" max="1" step="0.05" value={invertAmount} onChange={(e) => setInvertAmount(Number(e.target.value))} className="flex-1" />
@@ -930,7 +930,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('duotone') && (
-                <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={expandedEffects.has('duotone')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={!collapsedEffects.has('duotone')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
@@ -998,7 +998,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('grid-effect') && (
-                <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={expandedEffects.has('grid-effect')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={!collapsedEffects.has('grid-effect')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
                     <div className="flex gap-0.5 flex-1">
@@ -1158,7 +1158,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               
               
               {activeEffects.includes('vhs') && (
-                <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={expandedEffects.has('vhs')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={!collapsedEffects.has('vhs')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
@@ -1190,7 +1190,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (
-                <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={expandedEffects.has('wave')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={!collapsedEffects.has('wave')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
@@ -1220,7 +1220,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('slit-scan') && (
-                <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={expandedEffects.has('slit-scan')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="slit-scan" label="Slit-Scan" isMulti={isMulti} expanded={!collapsedEffects.has('slit-scan')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <div className="flex gap-1 flex-1 min-w-0">
                       <button
@@ -1302,7 +1302,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('dither') && (
-                <EffectSection id="dither" label="Dither" isMulti={isMulti} expanded={expandedEffects.has('dither')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="dither" label="Dither" isMulti={isMulti} expanded={!collapsedEffects.has('dither')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
@@ -1366,7 +1366,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('glitch') && (
-                <EffectSection id="glitch" label="Glitch" isMulti={isMulti} expanded={expandedEffects.has('glitch')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="glitch" label="Glitch" isMulti={isMulti} expanded={!collapsedEffects.has('glitch')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <input type="range" min="0.05" max="1" step="0.05" value={glitchIntensity} onChange={(e) => setGlitchIntensity(Number(e.target.value))} className="flex-1" />
@@ -1389,7 +1389,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('aura-glow') && (
-                <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={expandedEffects.has('aura-glow')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={!collapsedEffects.has('aura-glow')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Lights:</label>
                     <input type="range" min="1" max="6" step="1" value={auraGlowCount} onChange={(e) => setAuraGlowCount(Number(e.target.value))} className="flex-1" />
@@ -1412,7 +1412,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
               {activeEffects.includes('starfield') && (
-                <EffectSection id="starfield" label="Starfield" isMulti={isMulti} expanded={expandedEffects.has('starfield')} onToggle={toggleEffectExpanded}>
+                <EffectSection id="starfield" label="Starfield" isMulti={isMulti} expanded={!collapsedEffects.has('starfield')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Density:</label>
                     <input type="range" min="10" max="1000" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />

@@ -330,7 +330,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   // 1024 rather than the hook's 768 default -- covers tablets too, not
@@ -425,11 +425,16 @@ export function InteractiveGradient() {
   // visible -> mini strip -> fully hidden -> mini strip -> ...
   // A ?display=1 tab starts (and stays) in this tier permanently — see the
   // 'h' key handler below, which is a no-op in display mode.
-  // Single-open accordion: expanding one effect's controls collapses whichever
-  // other one was open, instead of letting all active effects stack their
-  // sliders open simultaneously — with 4-7 effects active that wall of
-  // controls was the main driver of the control panel's excessive height.
-  const toggleEffectExpanded = (id: string) => setExpandedEffects(prev => prev.has(id) ? new Set() : new Set([id]));
+  // Every active effect's section starts open (collapsedEffects starts
+  // empty) and each toggles independently — now that the drawer is a full-
+  // height docked sidebar rather than a floating card, there's no longer a
+  // strong reason to force only one open at a time the way the old
+  // single-open accordion did.
+  const toggleEffectCollapsed = (id: string) => setCollapsedEffects(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   // MULTI_FX_COST_BUDGET (effectCost.ts) is set high enough that manually
   // toggling effects in EffectsTab.tsx never grays a button out — stacking
@@ -1710,40 +1715,38 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    // Styled to match the panel's other dropdowns (e.g. GradientsTab's type
-    // picker: rounded-lg border border-white/10 bg-black/25, black text) —
-    // this popover is portaled to document.body, outside the .control-panel
-    // DOM subtree, so it doesn't get that theme CSS applied automatically;
-    // the colors below are that same theme's resolved light-on-dark values
-    // written out directly instead.
+    // Styled to match the panel's other popouts (solid black, white text —
+    // same bg-black the rail/drawer use) — this popover is portaled to
+    // document.body, outside the dock's own DOM subtree, so it doesn't get
+    // that theme CSS applied automatically; the colors below are written
+    // out directly instead.
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
         // Always fully rounded now — it floats freely near the rail's Auto
         // Shuffle button rather than mounting flush under a wide card's top
         // edge, so there's no adjacent edge to square a corner against.
-        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 rounded-lg"
+        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 rounded-lg bg-black"
         style={{
           top: autoShufflePopoverAnchor.top,
           left: autoShufflePopoverAnchor.left,
           width: autoShufflePopoverAnchor.width,
           height: autoShufflePopoverAnchor.height,
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs flex items-center gap-2 text-black"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
+          <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
           <button
             onClick={() => setIsAutoShuffleOn(prev => !prev)}
             aria-pressed={isAutoShuffleOn}
             aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
             className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
-            style={{ backgroundColor: isAutoShuffleOn ? '#000000' : 'rgba(0, 0, 0, 0.15)' }}
+            style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.15)' }}
           >
             <span
-              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform bg-white"
-              style={{ transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
+              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
+              style={{ backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff', transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
             />
           </button>
         </div>
@@ -1763,12 +1766,12 @@ export function InteractiveGradient() {
             max={AUTO_SHUFFLE_MAX_SEC}
             value={autoShuffleIntervalSec}
             onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-            className="text-[10px] w-12 text-right rounded px-1 text-black"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.06)', border: '1px solid rgba(0, 0, 0, 0.2)' }}
+            className="text-[10px] w-12 text-right rounded px-1 text-white"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
             aria-label="Auto Shuffle interval in seconds"
           />
         </div>
-        <p className="text-[10px] text-black/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+        <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
       </div>,
       document.body,
     );
@@ -1813,23 +1816,22 @@ export function InteractiveGradient() {
     return createPortal(
       <div
         ref={speedPopoverRef}
-        className="fixed z-50 shadow-sm p-2 flex flex-col gap-1 rounded-lg"
+        className="fixed z-50 shadow-sm p-2 flex flex-col gap-1 rounded-lg bg-black"
         style={{
           top: speedPopoverAnchor.top,
           left: speedPopoverAnchor.left,
           width: speedPopoverAnchor.width,
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <span className="text-xs text-black px-1">Playback Speed</span>
+        <span className="text-xs text-white px-1">Playback Speed</span>
         <div className="grid grid-cols-4 gap-1">
           {SPEED_STEPS.map((speed) => (
             <button
               key={speed}
               onClick={() => setVcrPlaybackSpeed(speed)}
-              className="text-[10px] font-mono tabular-nums rounded px-1 py-1 text-black transition-colors"
-              style={{ backgroundColor: vcrPlaybackSpeed === speed ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.05)' }}
+              className="text-[10px] font-mono tabular-nums rounded px-1 py-1 text-white transition-colors"
+              style={{ backgroundColor: vcrPlaybackSpeed === speed ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.08)' }}
             >
               {speed}x
             </button>
@@ -3664,7 +3666,7 @@ export function InteractiveGradient() {
     flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity, helixTurns, setHelixTurns, helixTightness, setHelixTightness,
     // Effects (isMobile, gridRows/gridColumns, crtIntensity/crtScanlineSpacing
     // etc. overlap with names above — same variables, harmless to repeat)
-    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
+    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, collapsedEffects, toggleEffectCollapsed, randomizeEffects,
     kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
     asciiSize, setAsciiSize, asciiChars, setAsciiChars, asciiColor, setAsciiColor,
     emojiChars, setEmojiChars, emojiSize, setEmojiSize, emojiRotateSpeed, setEmojiRotateSpeed,

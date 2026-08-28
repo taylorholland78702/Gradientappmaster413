@@ -203,8 +203,13 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" className={tabBtnClass('audio')}>
         <SpeakerHigh
           weight="regular"
+          // Was `wav-audio-signal-ok`/`-none` — those classes only ever
+          // applied color via a `.control-panel` ancestor selector, and no
+          // element in the tree carries that class any more (dropped along
+          // with the old light-theme panel this component replaced), so
+          // this silently did nothing. Plain Tailwind classes here instead.
           className={`w-4 h-4 transition-colors ${isMicActive
-            ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'wav-audio-signal-ok' : 'wav-audio-signal-none')
+            ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'text-green-500' : 'text-red-500')
             : ''}`}
         />
       </button>

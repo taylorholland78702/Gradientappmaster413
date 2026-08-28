@@ -364,7 +364,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             aria-label={isMicActive ? 'Turn Mic Off' : 'Turn Mic On'}
           >
             {isMicActive
-              ? <Microphone weight="regular" className="w-4 h-4" />
+              // Green while actual signal is coming through, so the mic
+              // button doubles as a live "is it working" indicator instead
+              // of only showing on/off state.
+              ? <Microphone weight="regular" className={`w-4 h-4 transition-colors ${Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? 'text-green-500' : ''}`} />
               : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
           </button>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
