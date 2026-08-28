@@ -276,21 +276,23 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   return (
     <>
 
-        {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
+        {/* Gradient Type Buttons - one rounded rectangle, 3 columns, thin dividing lines */}
         <div className="w-full flex flex-col gap-2">
           {(() => {
-            const rows = Math.ceil(FULL_GRADIENT_TYPES.length / 2);
+            const COLS = 3;
+            const rows = Math.ceil(FULL_GRADIENT_TYPES.length / COLS);
             return (
-              <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+              <div className="grid grid-cols-3 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {FULL_GRADIENT_TYPES.map((type, i) => {
                   const isLastInColumn = i % rows === rows - 1;
-                  const isLeftColumn = i < rows;
+                  const columnIndex = Math.floor(i / rows);
+                  const isLastColumn = columnIndex === COLS - 1;
                   return (
                     <button
                       key={type}
                       onClick={() => setGradientType(type)}
                       aria-pressed={gradientType === type}
-                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap ${!isLastColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                         gradientType === type
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'

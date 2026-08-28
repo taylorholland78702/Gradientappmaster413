@@ -1776,71 +1776,6 @@ export function InteractiveGradient() {
       document.body,
     );
   };
-  // Speed popover — same anchor/portal/outside-click pattern as Auto
-  // Shuffle above, replacing the always-visible ‹ 1x › step buttons that
-  // used to live inline in VCRControls.
-  const [speedPopoverAnchor, setSpeedPopoverAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
-  const speedPopoverRef = useRef<HTMLDivElement>(null);
-  const speedTriggerElRef = useRef<HTMLElement | null>(null);
-  const openSpeedPopover = (triggerEl?: HTMLElement | null) => {
-    speedTriggerElRef.current = triggerEl ?? null;
-    const anchorEl = triggerEl || panelRef.current;
-    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 240 } as DOMRect;
-    const width = 160;
-    const left = Math.min(rect.left, window.innerWidth - width - 8);
-    const top = rect.bottom + 6;
-    setSpeedPopoverAnchor({ top, left: Math.max(8, left), width });
-  };
-  const toggleSpeedPopover = (triggerEl: HTMLElement) => {
-    if (speedPopoverAnchor) {
-      setSpeedPopoverAnchor(null);
-    } else {
-      openSpeedPopover(triggerEl);
-    }
-  };
-  useEffect(() => {
-    if (!speedPopoverAnchor) return;
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (speedPopoverRef.current && !speedPopoverRef.current.contains(target)
-        && !(speedTriggerElRef.current && speedTriggerElRef.current.contains(target))) {
-        setSpeedPopoverAnchor(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [speedPopoverAnchor]);
-  const SPEED_STEPS = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const renderSpeedPopover = () => {
-    if (!speedPopoverAnchor) return null;
-    return createPortal(
-      <div
-        ref={speedPopoverRef}
-        className="fixed z-50 shadow-sm p-2 flex flex-col gap-1 rounded-lg bg-black"
-        style={{
-          top: speedPopoverAnchor.top,
-          left: speedPopoverAnchor.left,
-          width: speedPopoverAnchor.width,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        <span className="text-xs text-white px-1">Playback Speed</span>
-        <div className="grid grid-cols-4 gap-1">
-          {SPEED_STEPS.map((speed) => (
-            <button
-              key={speed}
-              onClick={() => setVcrPlaybackSpeed(speed)}
-              className="text-[10px] font-mono tabular-nums rounded px-1 py-1 text-white transition-colors"
-              style={{ backgroundColor: vcrPlaybackSpeed === speed ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.08)' }}
-            >
-              {speed}x
-            </button>
-          ))}
-        </div>
-      </div>,
-      document.body,
-    );
-  };
   // Read through a ref rather than depending on evolveWithFactor directly —
   // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
   // frames, and that's one of its deps), which was tearing down and
@@ -3487,7 +3422,6 @@ export function InteractiveGradient() {
         case 'Escape':
           if (isAboutOpen) { e.preventDefault(); setIsAboutOpen(false); }
           else if (autoShufflePopoverAnchor) { e.preventDefault(); setAutoShufflePopoverAnchor(null); }
-          else if (speedPopoverAnchor) { e.preventDefault(); setSpeedPopoverAnchor(null); }
           else if (activeTab) { e.preventDefault(); setActiveTab(null); }
           break;
         default:
@@ -3504,7 +3438,6 @@ export function InteractiveGradient() {
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
     isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
     autoShufflePopoverAnchor, setAutoShufflePopoverAnchor,
-    speedPopoverAnchor, setSpeedPopoverAnchor,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -3776,17 +3709,9 @@ export function InteractiveGradient() {
           liveTrebleLevel={liveTrebleLevel}
           audioEnergy={audioEnergy}
           isRecording={isRecording}
-          isVCRPlaying={isVCRPlaying}
-          isAutoMode={isAutoMode}
-          vcrRecordedFrames={vcrRecordedFrames}
-          vcrPlaybackSpeed={vcrPlaybackSpeed}
           isEncoding={isEncoding}
           encodingProgress={encodingProgress}
           toggleVCRRecording={toggleVCRRecording}
-          handleStop={handleStop}
-          toggleVCRPlayback={toggleVCRPlayback}
-          isSpeedPopoverOpen={!!speedPopoverAnchor}
-          onToggleSpeedPopover={toggleSpeedPopover}
         />
       )}
 
@@ -3831,17 +3756,9 @@ export function InteractiveGradient() {
           liveTrebleLevel={liveTrebleLevel}
           audioEnergy={audioEnergy}
           isRecording={isRecording}
-          isVCRPlaying={isVCRPlaying}
-          isAutoMode={isAutoMode}
-          vcrRecordedFrames={vcrRecordedFrames}
-          vcrPlaybackSpeed={vcrPlaybackSpeed}
           isEncoding={isEncoding}
           encodingProgress={encodingProgress}
           toggleVCRRecording={toggleVCRRecording}
-          handleStop={handleStop}
-          toggleVCRPlayback={toggleVCRPlayback}
-          isSpeedPopoverOpen={!!speedPopoverAnchor}
-          onToggleSpeedPopover={toggleSpeedPopover}
         />
       )}
     </div>
@@ -3978,7 +3895,6 @@ export function InteractiveGradient() {
           only one of which is ever mounted+clickable at a time) never
           produces two portaled copies. */}
       {renderAutoShufflePopover()}
-      {renderSpeedPopover()}
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (
@@ -3987,9 +3903,13 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel — attached to the control panel's upper-left, flush
-          against the rail (same railRect-anchored positioning the first-run
-          hint above uses), rather than centered over the canvas. The
+      {/* About panel. Mobile: a centered floating card, same as any other
+          modal — the rail there is a bottom bar, not a side column, so
+          there's no "attached to the panel" edge to dock against. Desktop:
+          fastened flush against the rail's right edge (no gap), square
+          corners (a docked extension of the rail rather than a floating
+          card), and stretches from the rail's own top down to the bottom
+          of the viewport — same footprint the canvas itself has. The
           click-catcher behind it stays unblurred so the gradient result
           underneath isn't blurred out; only the card itself keeps its own
           surface. */}
@@ -4000,12 +3920,14 @@ export function InteractiveGradient() {
             role="dialog"
             aria-modal="true"
             aria-label="About wāv"
-            className={`absolute bg-black rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'w-[calc(100%-3rem)]' : ''}`}
-            style={railRect
-              ? (isMobile
-                  ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
-                  : { left: railRect.right + 12, top: railRect.top })
-              : { top: 16, left: 16 }}
+            className={
+              isMobile
+                ? 'absolute bg-black rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
+                : 'absolute bg-black rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl'
+            }
+            style={isMobile ? undefined : (railRect
+              ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }
+              : { top: 16, left: 16 })}
           >
             <button
               ref={aboutCloseButtonRef}

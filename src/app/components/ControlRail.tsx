@@ -3,7 +3,6 @@ import {
   Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
   Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
-import { VCRControls } from './VCRControls';
 
 type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
 
@@ -48,19 +47,11 @@ export interface ControlRailProps {
   liveTrebleLevel: number;
   audioEnergy: number;
 
-  // VCR controls (passed straight through to VCRControls)
+  // Video recording
   isRecording: boolean;
-  isVCRPlaying: boolean;
-  isAutoMode: boolean;
-  vcrRecordedFrames: unknown[];
-  vcrPlaybackSpeed: number;
   isEncoding: boolean;
   encodingProgress: number;
   toggleVCRRecording: () => void;
-  handleStop: () => void;
-  toggleVCRPlayback: () => void;
-  isSpeedPopoverOpen: boolean;
-  onToggleSpeedPopover: (triggerEl: HTMLElement) => void;
 }
 
 // Short centered hairline between rail groups — a vertical pipe on mobile's
@@ -75,8 +66,8 @@ const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-c
 // Desktop rail is rendered at its normal (mobile-matching) size, then
 // visually scaled up 30% as a whole via CSS transform — a single knob
 // that enlarges every button/icon/gap uniformly without needing to hand-
-// tune a second set of size classes throughout this file and
-// VCRControls.tsx. The transform doesn't affect layout sizing on its own
+// tune a second set of size classes throughout this file. The transform
+// doesn't affect layout sizing on its own
 // (a scaled element keeps contributing its original box to its parent's
 // layout), so the outer <nav> gets an explicit width equal to the scaled
 // footprint instead of relying on auto-sizing — that's what makes the
@@ -104,6 +95,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
+    isRecording, isEncoding, encodingProgress, toggleVCRRecording,
   } = props;
 
   const tabBtnClass = (tab: TabId) =>
@@ -161,17 +153,21 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`w-[30px] rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px]' : 'mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 14 : 9,
+          fontSize: isMobile ? 14 : 13,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
         aria-label="About wāv"
       >
         {isMobile ? 'w' : (
+          // Explicit lineHeight on each line (rather than relying on the
+          // font's own metrics) — "ā"'s macron gives it a taller natural
+          // glyph box than the plain "w"/"v", which without this made the
+          // 3-line stack's spacing visibly uneven between rows.
           <>
-            <span>w</span>
-            <span>ā</span>
-            <span>v</span>
+            <span style={{ display: 'block', lineHeight: '15px' }}>w</span>
+            <span style={{ display: 'block', lineHeight: '15px' }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '15px' }}>v</span>
           </>
         )}
         </button>
@@ -227,6 +223,34 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
 
       <RailSep isMobile={isMobile} />
 
+      {/* Record Video — moved ahead of Save PNG/Record GIF (was in a
+          separate VCRControls sub-component alongside the now-removed
+          Play/Stop and Playback Speed buttons; with just this one button
+          left there, it's simpler inlined here directly). */}
+      <button
+        onClick={toggleVCRRecording}
+        disabled={isEncoding}
+        className={`${railBtnBase} text-white hover:bg-white/15 relative`}
+        title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video (V)'}
+        aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
+      >
+        {isEncoding ? (
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+            <circle
+              cx="8" cy="8" r="6"
+              fill="none"
+              stroke="#facc15"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray={`${(encodingProgress / 100) * 37.7} 37.7`}
+              transform="rotate(-90 8 8)"
+            />
+          </svg>
+        ) : (
+          <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-4 h-4 ${isRecording ? 'text-red-500' : ''}`} />
+        )}
+      </button>
       <button
         onClick={exportAsPNG}
         className={`${railBtnBase} text-white hover:bg-white/15`}
@@ -253,22 +277,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           <Gif weight="regular" className="w-4 h-4" />
         )}
       </button>
-
-      <VCRControls
-        isRecording={props.isRecording}
-        isVCRPlaying={props.isVCRPlaying}
-        isAutoMode={props.isAutoMode}
-        vcrRecordedFrames={props.vcrRecordedFrames}
-        vcrPlaybackSpeed={props.vcrPlaybackSpeed}
-        isEncoding={props.isEncoding}
-        encodingProgress={props.encodingProgress}
-        toggleVCRRecording={props.toggleVCRRecording}
-        handleStop={props.handleStop}
-        toggleVCRPlayback={props.toggleVCRPlayback}
-        isMobile={isMobile}
-        isSpeedPopoverOpen={props.isSpeedPopoverOpen}
-        onToggleSpeedPopover={props.onToggleSpeedPopover}
-      />
     </div>
     </nav>
   );
