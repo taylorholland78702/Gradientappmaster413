@@ -18,7 +18,6 @@ const TAB_LABELS: Record<TabId, string> = {
 
 export interface ControlDrawerProps {
   activeTab: TabId | null;
-  onClose: () => void;
   isMobile: boolean;
   railRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null;
   // Visible-viewport-aware height budget for the mobile sheet — see its
@@ -42,14 +41,14 @@ export interface ControlDrawerProps {
 
 /**
  * The slide-out drawer replacing the old panel's tab content, which used to
- * render inline below the 3-row card and push it taller. Floats over the
- * canvas next to wherever the rail currently is (it's draggable), and
- * closes on Escape (handled globally, unchanged) or an outside click —
- * that "closes to give the canvas back" behavior is the Overlay drawer
- * design this replaces the old always-visible-when-open panel with.
+ * render inline below the 3-row card and push it taller. Pinned flush
+ * against wherever the rail currently is (it's draggable) rather than an
+ * Overlay that dismisses on an outside click — it only closes via Escape
+ * (handled globally, unchanged) or repressing its own tab's rail icon,
+ * same as the mockup's "Pinned" drawer behavior.
  */
 export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(function ControlDrawer(
-  { activeTab, onClose, isMobile, railRect, mobileMaxHeight, tabProps, audioState, audioActions },
+  { activeTab, isMobile, railRect, mobileMaxHeight, tabProps, audioState, audioActions },
   forwardedRef
 ) {
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -67,35 +66,20 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
     drawerRef.current?.scrollTo({ top: 0 });
   }, [activeTab]);
 
-  // Outside click closes the drawer (the Overlay behavior) — excludes the
-  // rail itself (data-role="panel", same attribute the drag handler already
-  // keys off) so clicking a different tab icon just switches tabs instead
-  // of closing then needing a second click to reopen.
-  useEffect(() => {
-    if (!activeTab) return;
-    const handle = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (drawerRef.current?.contains(target)) return;
-      if ((target as HTMLElement).closest?.('[data-role="panel"]')) return;
-      onClose();
-    };
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [activeTab, onClose]);
-
   if (!activeTab) return null;
 
   // Positioned off the rail's own live, measured rect (railRect) rather
   // than a guessed constant — the rail is draggable on desktop, and on
   // mobile its height varies with how many buttons wrap onto a second row,
-  // so neither edge is a fixed number.
+  // so neither edge is a fixed number. Flush against the rail (no gap) so
+  // the two read as one pinned unit rather than a floating card.
   const style: React.CSSProperties = isMobile
     ? {
-        bottom: railRect ? window.innerHeight - railRect.top + 8 : 92,
+        bottom: railRect ? window.innerHeight - railRect.top + 4 : 92,
         maxHeight: mobileMaxHeight,
       }
     : {
-        left: railRect ? railRect.right + 12 : 90,
+        left: railRect ? railRect.right : 90,
         top: railRect ? Math.max(16, railRect.top) : 16,
         maxHeight: railRect ? `calc(100vh - ${Math.max(16, railRect.top)}px - 16px)` : 'calc(100vh - 2rem)',
       };

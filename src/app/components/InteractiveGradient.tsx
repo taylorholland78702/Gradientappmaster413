@@ -3925,7 +3925,6 @@ export function InteractiveGradient() {
       <ControlDrawer
         ref={drawerRef}
         activeTab={activeTab}
-        onClose={() => setActiveTab(null)}
         isMobile={isMobile}
         railRect={railRect}
         mobileMaxHeight={mobilePanelMaxHeight}
