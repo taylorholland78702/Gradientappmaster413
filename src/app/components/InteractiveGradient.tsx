@@ -15,25 +15,20 @@
  * 
  * - Mouse wheel scroll zoom
  */
-import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, Shuffle, Plus, ArrowsClockwise, Palette, Gradient, MagicWand, SpeakerHigh, Bookmark, Camera, Gif, FloppyDisk, X, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
-import { VCRControls } from './VCRControls';
-import { ColorTab } from './ColorTab';
-import { GradientsTab } from './GradientsTab';
-import { EffectsTab } from './EffectsTab';
+import { ControlRail } from './ControlRail';
+import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
-import { Divider } from './Divider';
 import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
-const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
-const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
 import {
   type ColorRGB, type GradientType, type EffectType,
   DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
@@ -337,7 +332,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isFullyHidden, setIsFullyHidden, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
   const { panelDragRef } = usePanelDragState();
@@ -348,43 +343,31 @@ export function InteractiveGradient() {
   // the About button's position together so none of them can disagree
   // about which layout mode is active at a given width.
   const isMobile = useIsMobile(1024);
+  // panelRef now points at the rail (ControlRail's root, data-role="panel")
+  // — it used to be the draggable 3-row card, but the rail replaced that
+  // card and inherited the same drag mechanism, so this is the same ref
+  // doing the same job against a different element.
   const panelRef = useRef<HTMLDivElement>(null);
-  // The first icon row (Eye/Shuffle/Infinity/Camera/GIF) — the "control
-  // panel" the wordmark sits above. Measured on open so the About popup's
-  // top edge can align with it instead of the wordmark itself.
-  const topIconRowRef = useRef<HTMLDivElement>(null);
-  // Bottom edge of just the icon row + VCR controls + tab bar card (not the
-  // whole variable-height panel below it) — used to cap the Auto Shuffle
-  // popover's height so it doesn't stretch down to cover whatever tab
-  // content/sliders happen to be open underneath.
-  const threeRowPanelRef = useRef<HTMLDivElement>(null);
-  // The collapsed (isControlsVisible === false) pill row — a completely
-  // separate DOM element from the full panel above. topIconRowRef/
-  // threeRowPanelRef still point at the full panel's (hidden but present,
-  // opacity-0) nodes even while collapsed, so the Auto Shuffle popover needs
-  // its own anchor for the collapsed state or it positions itself against
-  // the full panel's offscreen/hidden geometry instead of the visible pill.
-  const collapsedPillRef = useRef<HTMLDivElement>(null);
-  const [aboutPopupOffsetY, setAboutPopupOffsetY] = useState(0);
-  // Closing (or switching) a tab shrinks the panel's content height, but
-  // the browser doesn't reset scroll position on its own -- on the mobile
-  // sheet (capped at 70dvh with its own overflow-y-auto) this could leave
-  // the sheet scrolled to where the now-collapsed tab content used to be,
-  // showing empty space with the tab bar scrolled out of reach and no
-  // obvious way back. Reset to the top on every activeTab change so
-  // toggling a tab open or closed always lands on a sensible view.
+  // The drawer's own scrollable root (ControlDrawer's forwarded ref) — used
+  // below by the manual touch-drag-scroll workaround, now that tab content
+  // scrolls inside the drawer rather than inside the old shared panel.
+  const drawerRef = useRef<HTMLDivElement>(null);
+  // The rail's live position/size, re-measured whenever it could have
+  // moved (dragged, mobile toggle, or its own content wrapping to a
+  // different number of rows) — ControlDrawer positions itself off this
+  // instead of a guessed constant, and openAutoShufflePopover/the About
+  // popup anchor off it too.
+  const [railRect, setRailRect] = useState<{ top: number; left: number; right: number; bottom: number; width: number; height: number } | null>(null);
   useEffect(() => {
-    panelRef.current?.scrollTo({ top: 0 });
-  }, [activeTab]);
-  // Measure the top icon row's offset from the panel's own top edge (the
-  // wordmark sits above it) so the About popup can align its top edge with
-  // the icon row's top-left corner instead of the wordmark's.
-  useEffect(() => {
-    if (!isAboutOpen || isMobile) return;
-    const panelTop = panelRef.current?.getBoundingClientRect().top ?? 0;
-    const rowTop = topIconRowRef.current?.getBoundingClientRect().top ?? panelTop;
-    setAboutPopupOffsetY(rowTop - panelTop);
-  }, [isAboutOpen, isMobile]);
+    const measure = () => {
+      const rect = panelRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setRailRect({ top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [panelPos, isMobile, isControlsVisible, activeTab]);
   // Nothing moved focus into the About panel when it opened (via the "?"
   // key or a click) — a keyboard/screen-reader user got no indication a
   // dialog had appeared, since focus just stayed wherever it was on the
@@ -944,7 +927,6 @@ export function InteractiveGradient() {
   const audioMidsLevelRef = useRef(audioMidsLevel);
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
-  const innerPanelScrollRef = useRef<HTMLDivElement>(null);
   // Real bug found via the (now-removed) debug overlay: the mobile panel's height
   // cap used CSS `70dvh`, but this app never triggers a native document
   // scroll (everything scrolls inside this one fixed internal panel), which
@@ -975,16 +957,15 @@ export function InteractiveGradient() {
       vv.removeEventListener('scroll', onResize);
     };
   }, [isMobile]);
-  // The outer panel div scales this inner div by 1.15x (scale-[1.15]/
-  // scale(1.15) below) — the layout-box max-height has to target the
-  // CURRENTLY visible height divided by that same 1.15x, so the resulting
-  // on-screen (scaled) size is what actually fits. Dropped from 0.7 to 0.55
-  // of visible height for a much bigger safety margin — on-device testing
-  // kept showing content visually crowding the bottom edge even when
-  // scrollHeight didn't (yet) exceed clientHeight, so this trades some
-  // panel size for headroom rather than continuing to chase the exact
-  // pixel-perfect budget on a device this can't directly inspect.
-  const mobilePanelMaxHeight = Math.floor((visualViewportHeight * 0.55) / 1.15);
+  // The mobile drawer isn't scaled (unlike its desktop counterpart's
+  // scale-[1.15]), so this targets the visible height directly with no
+  // divisor. Dropped from 0.7 to 0.55 of visible height for a much bigger
+  // safety margin — on-device testing kept showing content visually
+  // crowding the bottom edge even when scrollHeight didn't (yet) exceed
+  // clientHeight, so this trades some drawer size for headroom rather than
+  // continuing to chase the exact pixel-perfect budget on a device this
+  // can't directly inspect.
+  const mobilePanelMaxHeight = Math.floor(visualViewportHeight * 0.55);
 
   // Refs for contrast/saturation pulse and canvas shake
 
@@ -1626,6 +1607,60 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
+  // Rail drag handle (desktop only — ControlRail doesn't render the
+  // wordmark button on mobile, so this never gets wired there). Distinct
+  // from a plain click via the same hold-vs-movement race the old
+  // draggable panel used: a real drag motion, or a hold timer elapsing
+  // while still held (whichever comes first) commits to drag mode;
+  // releasing before either fires opens About instead of repositioning the
+  // rail. Reuses panelPos/setPanelPos and the same localStorage key the
+  // panel used, so a position saved before this change still applies.
+  const onWordmarkMouseDown = (e: React.MouseEvent) => {
+    const rail = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
+    const rect = rail.getBoundingClientRect();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const origX = rect.left;
+    const origY = rect.top;
+    let dragStarted = false;
+    // Clamp to the viewport, leaving at least this much of the rail
+    // on-screen — otherwise a user can drag it fully off the edge and lose
+    // access to every control (no way to recover short of clearing
+    // localStorage).
+    const MIN_VISIBLE = 40;
+    const clamp = (x: number, y: number) => ({
+      x: Math.min(Math.max(x, MIN_VISIBLE - rect.width), window.innerWidth - MIN_VISIBLE),
+      y: Math.min(Math.max(y, 0), window.innerHeight - MIN_VISIBLE),
+    });
+    const MOVE_THRESHOLD = 4;
+    const HOLD_MS = 350;
+    const holdTimer = window.setTimeout(() => { dragStarted = true; }, HOLD_MS);
+    const onMove = (ev: MouseEvent) => {
+      if (!dragStarted) {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        if (Math.hypot(dx, dy) < MOVE_THRESHOLD) return;
+        dragStarted = true;
+      }
+      setPanelPos(clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY)));
+    };
+    const onUp = (ev: MouseEvent) => {
+      window.clearTimeout(holdTimer);
+      if (dragStarted) {
+        const pos = clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY));
+        try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch (err) {
+          if (import.meta.env.DEV) console.warn('Failed to persist panelPos:', err);
+        }
+      } else {
+        setIsAboutOpen(true);
+      }
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
   // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
   // wordmark) on a timer, so the artwork keeps evolving
   // hands-free. evolveWithFactor(1) sets new target values that the master
@@ -1698,46 +1733,20 @@ export function InteractiveGradient() {
   // The button that opened the popover — excluded from the outside-click
   // dismiss check below (see that handler for why).
   const autoShuffleTriggerElRef = useRef<HTMLElement | null>(null);
-  // Anchored to the trigger button, not the whole panel — floats as an
-  // overlay just below the icon row, on top of the icon row + VCR controls
-  // + tab bar card only. Capped to threeRowPanelRef's own bottom (not
-  // panelRef's, which spans the panel's full variable-height content below
-  // the tab bar — using that stretched the popover down to cover whatever
-  // tab/slider content happened to be open underneath it). panelRef is
-  // still used as a width/position fallback for keyboard-triggered opens
-  // (⌥⇧W) where there's no click event.
+  // Anchored to the trigger button (the rail's Auto Shuffle icon), falling
+  // back to the rail's own rect for the keyboard-triggered open (⌥⇧W, no
+  // click event to read a trigger element from). No height cap anymore —
+  // the rail is a slim strip, not a wide card with tab content stacked
+  // below it that the popover needs to avoid covering, so it just floats
+  // near the trigger and sizes to its own content.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
     autoShuffleTriggerElRef.current = triggerEl ?? null;
-    // Collapsed pill is a separate DOM element from the full panel — anchor
-    // directly to its own geometry instead of topIconRowRef/threeRowPanelRef/
-    // panelRef, which still measure the full panel's (hidden, opacity-0)
-    // position while collapsed and would otherwise float the popover under
-    // wherever the full panel would be, not under the visible pill.
-    if (!isControlsVisible && collapsedPillRef.current) {
-      const pillRect = collapsedPillRef.current.getBoundingClientRect();
-      const width = Math.max(200, pillRect.width);
-      const left = Math.min(pillRect.left, window.innerWidth - width - 8);
-      const top = pillRect.bottom;
-      // No height — the collapsed pill has no wide panel content below it
-      // that the popover needs to avoid covering, so let it size to its own
-      // content instead of guessing a fixed pixel height.
-      setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width });
-      return;
-    }
     const anchorEl = triggerEl || panelRef.current;
-    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 247 } as DOMRect;
-    const panelRect = panelRef.current ? panelRef.current.getBoundingClientRect() : rect;
-    // Top edge flush against the icon row's own bottom line (no gap), and
-    // bottom edge flush against the three-row card's own bottom — the
-    // popover fills exactly the space below the first row within that card,
-    // not the whole panel.
-    const iconRowRect = topIconRowRef.current ? topIconRowRef.current.getBoundingClientRect() : rect;
-    const threeRowRect = threeRowPanelRef.current ? threeRowPanelRef.current.getBoundingClientRect() : panelRect;
-    const width = Math.max(200, panelRect.width);
-    const left = Math.min(panelRect.left, window.innerWidth - width - 8);
-    const top = iconRowRect.bottom;
-    const height = Math.max(80, threeRowRect.bottom - top);
-    setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width, height });
+    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 240 } as DOMRect;
+    const width = Math.max(200, 240);
+    const left = Math.min(rect.left, window.innerWidth - width - 8);
+    const top = rect.bottom + 6;
+    setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width });
   };
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
@@ -1769,12 +1778,10 @@ export function InteractiveGradient() {
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
-        // Squared top corners when flush against the full panel's icon row
-        // (rounding there would leave a visible gap/mismatch) — but the
-        // collapsed pill is itself fully rounded (rounded-full), so squared
-        // top corners there read as a mismatched notch; round all four
-        // corners in that state instead.
-        className={`fixed z-50 shadow-sm p-3 flex flex-col gap-2 ${isControlsVisible ? 'rounded-b-lg' : 'rounded-lg'}`}
+        // Always fully rounded now — it floats freely near the rail's Auto
+        // Shuffle button rather than mounting flush under a wide card's top
+        // edge, so there's no adjacent edge to square a corner against.
+        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 rounded-lg"
         style={{
           top: autoShufflePopoverAnchor.top,
           left: autoShufflePopoverAnchor.left,
@@ -3405,13 +3412,10 @@ export function InteractiveGradient() {
         case 'h': case 'H':
           e.preventDefault();
           if (IS_DISPLAY_MODE) break;
-          if (isFullyHidden) {
-            setIsFullyHidden(false);
-          } else if (isControlsVisible) {
-            setIsControlsVisible(false);
-          } else {
-            setIsFullyHidden(true);
-          }
+          // Simple 2-state toggle now — the rail's icon-only look already
+          // serves the role the old separate "collapsed pill" state used
+          // to (previously a 3-state cycle: full panel -> pill -> hidden).
+          setIsControlsVisible(v => !v);
           break;
         case 's': case 'S':
           e.preventDefault();
@@ -3485,7 +3489,7 @@ export function InteractiveGradient() {
     setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults,
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
-    isControlsVisible, isFullyHidden, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
+    isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
     autoShufflePopoverAnchor, setAutoShufflePopoverAnchor,
   ]);
 
@@ -3513,7 +3517,7 @@ export function InteractiveGradient() {
   // drag is left alone so the slider's own native dragging still works.
   useEffect(() => {
     if (!isMobile) return;
-    const el = innerPanelScrollRef.current;
+    const el = drawerRef.current;
     if (!el) return;
     const DIRECTION_THRESHOLD = 6; // px of movement before committing to scroll vs. slider-drag
     let startX = 0;
@@ -3563,7 +3567,11 @@ export function InteractiveGradient() {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
     };
-  }, [isMobile]);
+    // activeTab included: the drawer only exists in the DOM while a tab is
+    // open, so drawerRef.current is a different (or null) node each time
+    // one opens/closes — this needs to re-run and re-attach listeners to
+    // whatever the current node actually is, not just once per isMobile.
+  }, [isMobile, activeTab]);
 
   // Load-in reveal — canvas starts invisible and fades in shortly after
   // mount instead of popping in fully-formed the instant the first frame is
@@ -3591,6 +3599,128 @@ export function InteractiveGradient() {
   // never actually restored scrolling. The canvas below already sets its own
   // touchAction:'none' independently, which is the one that actually needs
   // to block gestures for drag-to-rotate, so removing it here loses nothing.
+
+  // The union of every prop ColorTab/GradientsTab/EffectsTab/PresetsPanel
+  // need, merged into one object and handed to ControlDrawer, which passes
+  // it through to whichever tab is actually open. Safe to merge flat like
+  // this — every key here is a local variable/function from this
+  // component's own scope, so two tabs referencing the same name (e.g.
+  // gridRows, used by both Gradients and Effects) are always the same
+  // value, never a collision. Same loosely-typed blob convention
+  // useSnapshot.ts/useRandomization.ts already use for this exact problem.
+  const controlDrawerTabProps = {
+    // Color
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
+    submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, aiPrompt, setAIPrompt,
+    isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
+    paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
+    paletteContrast, setPaletteContrast,
+    // Gradients
+    gradientType, setGradientType, getGradientDisplayName, gridRows, setGridRows, gridColumns, setGridColumns,
+    gridCellAngleStep, setGridCellAngleStep, polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
+    auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
+    causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale, lavaBlobCount, setLavaBlobCount,
+    lavaBlobSize, setLavaBlobSize, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence,
+    marbleOctaves, setMarbleOctaves, metaballCount, setMetaballCount, metaballSize, setMetaballSize,
+    metaballSpeed, setMetaballSpeed, truchetSize, setTruchetSize, truchetVariation, setTruchetVariation,
+    truchetThickness, setTruchetThickness, moireScale, setMoireScale, moireOffset, setMoireOffset,
+    moireSpeed, setMoireSpeed, flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed,
+    flowScale, setFlowScale, flowThickness, setFlowThickness, attractorPointCount, setAttractorPointCount,
+    attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
+    attractorTrailFade, setAttractorTrailFade, particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed,
+    particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity,
+    particlesSides, setParticlesSides, tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry,
+    tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingRowOffset, setTilingRowOffset,
+    fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
+    lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
+    reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
+    fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
+    topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
+    waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
+    meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
+    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
+    angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY,
+    radialSizeScale, setRadialSizeScale, concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides,
+    shapesCount, setShapesCount, windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations,
+    windmillThickness, setWindmillThickness, windmillZoomResponse, windmillMode, setWindmillMode, setWindmillZoomResponse,
+    drawParamsDirtyRef, noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection,
+    noiseWarp, setNoiseWarp, noiseType, setNoiseType, plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,
+    radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
+    radialBurstMode, setRadialBurstMode, voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
+    fadeDirection, setFadeDirection, radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth,
+    flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
+    flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity, helixTurns, setHelixTurns, helixTightness, setHelixTightness,
+    // Effects (isMobile, gridRows/gridColumns, crtIntensity/crtScanlineSpacing
+    // etc. overlap with names above — same variables, harmless to repeat)
+    activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, expandedEffects, toggleEffectExpanded, randomizeEffects,
+    kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed,
+    asciiSize, setAsciiSize, asciiChars, setAsciiChars, asciiColor, setAsciiColor,
+    emojiChars, setEmojiChars, emojiSize, setEmojiSize, emojiRotateSpeed, setEmojiRotateSpeed,
+    emojiSizeVariation, setEmojiSizeVariation, emojiOffsetX, setEmojiOffsetX,
+    isEmojiPickerOpen, setIsEmojiPickerOpen, emojiPickerSearch, setEmojiPickerSearch,
+    liquidStrength, crtIntensity, setCrtIntensity, crtScanlineSpacing, setCrtScanlineSpacing,
+    setLiquidStrength, liquidScale, setLiquidScale, handlePhotoFileClick, photoFileName,
+    photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity,
+    chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
+    pixelSize, setPixelSize, triangleSize, triangulateVariation, setTriangulateVariation, setTriangleSize,
+    chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle,
+    fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY,
+    bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius,
+    feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation,
+    mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount,
+    vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness,
+    colorShiftHue, setColorShiftHue, grainIntensity, setGrainIntensity, grainSize, setGrainSize, grainType, setGrainType,
+    blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
+    blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
+    posterizeLevels, setPosterizeLevels, halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK,
+    halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
+    invertAmount, setInvertAmount, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2,
+    duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
+    gridSides, setGridSides, gridShapeSize, setGridShapeSize, gridVariation, setGridVariation,
+    gridRotationDirection, setGridRotationDirection, vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount,
+    dustCrackleIntensity, setDustCrackleIntensity, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
+    waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
+    ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
+    glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
+    auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
+    starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity,
+    starfieldSize, setStarfieldSize,
+    isMobile,
+    // Presets
+    isPresetsDropdownOpen, openNewPresetSignal, savedPresets, renamingPresetId, renamingPresetValue, folderNames,
+    setIsPresetsDropdownOpen, setRenamingPresetId, setRenamingPresetValue, loadPreset, deletePreset, renamePreset,
+    updatePreset, savePresetWithName, onAddingPresetChange: setIsNewPresetPending, movePresetToFolder, addFolder,
+    renameFolder, deleteFolder,
+    authUser: authState.user, isAnonymous: authState.isAnonymous, authBusy: authState.authBusy, authError: authState.authError,
+    clearAuthError: authState.clearAuthError, signInWithEmail: authState.signInWithEmail, signUpWithEmail: authState.signUpWithEmail,
+    signOutUser: authState.signOutUser,
+  };
+
+  const audioPanelState = {
+    isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
+    masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
+    reactionSmoothing: bassSmoothing,
+    bassBeatSync, midsBeatSync, trebleBeatSync,
+    liveBassLevel, liveMidsLevel, liveTrebleLevel,
+    audioFileName, waveformData, audioFileMetadata,
+    subBassMultiplier, subBassBeatSync, liveSubBassLevel,
+    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+    audioBindings,
+  };
+  const audioPanelActions = {
+    setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
+    setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setReactionSmoothing,
+    setAudioBindings,
+    setSubBassMultiplier, setSubBassBeatSync,
+    setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
+    startMicVisualization, stopMicVisualization,
+    onAudioFileClick: handleAudioFileClick,
+    setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+    onShuffleAudio: shuffleAudiovisuals,
+  };
+
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef}>
       <div ref={shakeWrapperRef} className="w-full h-full">
@@ -3675,954 +3805,92 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* Collapsed cluster — only rendered while the panel is hidden but not
-          fully hidden. Single pill (all 4 corners rounded, hairline
-          Dividers between icons) matching the expanded panel's top icon
-          row, rather than separate individually-rounded buttons — same
-          visual language, just condensed to a standalone bar since there's
-          no panel body stacked underneath it here. */}
-      {!isControlsVisible && !isFullyHidden && (
+      <ControlRail
+        ref={panelRef}
+        isMobile={isMobile}
+        style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+        onWordmarkMouseDown={onWordmarkMouseDown}
+        onWordmarkClick={() => setIsAboutOpen(true)}
+        isControlsVisible={isControlsVisible}
+        setIsControlsVisible={setIsControlsVisible}
+        handleWavClick={handleWavClick}
+        isWavPressed={isWavPressed}
+        isAutoShuffleOn={isAutoShuffleOn}
+        isNewPresetPending={isNewPresetPending}
+        autoShuffleIntervalSec={autoShuffleIntervalSec}
+        formatAutoShuffleInterval={formatAutoShuffleInterval}
+        autoShufflePopoverAnchor={autoShufflePopoverAnchor}
+        setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
+        openAutoShufflePopover={openAutoShufflePopover}
+        exportAsPNG={exportAsPNG}
+        toggleGifRecording={toggleGifRecording}
+        isFinalizingGif={isFinalizingGif}
+        isRecordingGif={isRecordingGif}
+        undoLastChange={undoLastChange}
+        redoLastChange={redoLastChange}
+        undoDepth={undoDepth}
+        redoDepth={redoDepth}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isMicActive={isMicActive}
+        liveSubBassLevel={liveSubBassLevel}
+        liveBassLevel={liveBassLevel}
+        liveMidsLevel={liveMidsLevel}
+        liveTrebleLevel={liveTrebleLevel}
+        audioEnergy={audioEnergy}
+        isRecording={isRecording}
+        isVCRPlaying={isVCRPlaying}
+        isAutoMode={isAutoMode}
+        vcrRecordedFrames={vcrRecordedFrames}
+        vcrPlaybackSpeed={vcrPlaybackSpeed}
+        rotationDirection={rotationDirection}
+        isEncoding={isEncoding}
+        encodingProgress={encodingProgress}
+        setVcrPlaybackSpeed={setVcrPlaybackSpeed}
+        setRotationDirection={setRotationDirection}
+        toggleVCRRecording={toggleVCRRecording}
+        handleStop={handleStop}
+        toggleVCRPlayback={toggleVCRPlayback}
+      />
+
+      <ControlDrawer
+        ref={drawerRef}
+        activeTab={activeTab}
+        onClose={() => setActiveTab(null)}
+        isMobile={isMobile}
+        railRect={railRect}
+        mobileMaxHeight={mobilePanelMaxHeight}
+        tabProps={controlDrawerTabProps}
+        audioState={audioPanelState}
+        audioActions={audioPanelActions}
+      />
+
+      {/* First-run hint — floats near wherever the rail currently is
+          (railRect), same content/dismiss logic as before, just
+          repositioned now that it can't sit inline under the wordmark
+          inside a card anymore (the rail is a slim strip with no room for
+          it). Hidden while a drawer is open so it can't overlap one. */}
+      {showWavHint && !activeTab && railRect && (
         <div
-          ref={collapsedPillRef}
-          className={`pointer-events-auto flex items-stretch bg-black/25 rounded-full shadow-sm origin-top-left ${isMobile ? 'fixed bottom-4 left-1/2 -translate-x-1/2' : 'absolute scale-[1.15]'}`}
-          style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + 20 } : { top: 52, left: 16 })}
+          className="fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px]"
+          style={isMobile
+            ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
+            : { left: railRect.right + 12, top: railRect.top }}
         >
+          <span className="text-[10px] leading-snug flex-1">
+            Tap <span className="text-white font-medium">wāv</span> for help · tap <Shuffle weight="regular" className="w-2.5 h-2.5 inline -translate-y-px" /> to shuffle a new look
+          </span>
           <button
-            onClick={() => setIsControlsVisible(true)}
-            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-l-full"
-            title="Show Controls (H)"
-            aria-label="Show Controls"
+            onClick={dismissWavHint}
+            className="text-white/50 hover:text-white transition-all flex-shrink-0"
+            title="Dismiss"
+            aria-label="Dismiss hint"
           >
-            <EyeSlash weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={handleWavClick}
-            className={`w-[35px] py-1.5 transition-all flex items-center justify-center select-none ${isWavPressed ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
-            title="Shuffle (Shift+W)"
-            aria-label="Shuffle to a new look"
-          >
-            <Shuffle weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          {/* Auto Shuffle toggle — click opens a popover (on/off + interval
-              slider) rather than toggling directly; ⌥⇧W still toggles on/off
-              immediately. Active state shown via a filled background instead
-              of a border/color swap now that it lives in the flat pill. */}
-          <button
-            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
-            className={`w-[35px] py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
-            title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-            aria-label="Auto Shuffle settings"
-            aria-pressed={isAutoShuffleOn}
-            disabled={isNewPresetPending}
-          >
-            <InfinityIcon weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={undoLastChange}
-            disabled={undoDepth < 0}
-            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center disabled:opacity-30 disabled:hover:bg-transparent"
-            title="Undo (⌘Z)"
-            aria-label="Undo"
-          >
-            <ArrowUUpLeft weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={redoLastChange}
-            disabled={redoDepth <= 0}
-            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center disabled:opacity-30 disabled:hover:bg-transparent"
-            title="Redo (⌘⇧Z)"
-            aria-label="Redo"
-          >
-            <ArrowUUpRight weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={() => { setIsControlsVisible(true); setActiveTab('presets'); setIsPresetsDropdownOpen(true); setOpenNewPresetSignal(s => s + 1); }}
-            className="w-[35px] py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-r-full"
-            title="Presets (P)"
-            aria-label="Presets"
-          >
-            <Plus weight="regular" className="w-4 h-4" />
+            <X weight="bold" className="w-3 h-3" />
           </button>
         </div>
       )}
 
-      {/* Main controls */}
-      <div
-        ref={panelRef}
-        data-role="panel"
-        // transform lives on this OUTER div, overflow-y:auto lives on the
-        // INNER wrapper below — never both on the same element. iOS Safari
-        // has a long-standing bug where an element with both a CSS
-        // transform (translate or scale) and overflow-y:auto/
-        // -webkit-overflow-scrolling:touch fails to respond to touch-scroll
-        // gestures at all. This panel used scale(1.15) + translateY (for
-        // the mobile show/hide slide) on the very element that also needed
-        // to scroll, which is exactly that bug pattern — touchAction:
-        // 'pan-y' alone (added earlier, still needed to override the root
-        // container's touchAction:'none' for canvas drag-to-rotate) wasn't
-        // enough on a real device because the transform blocked native
-        // scroll before touch-action was even consulted.
-        // Reverted the `top` positioning experiment — on-device data showed
-        // winInnerH === vvHeight exactly (no layout/visual viewport
-        // divergence to compensate for), so that theory didn't hold, and it
-        // introduced a real regression (panel floating mid-screen instead
-        // of bottom-anchored). Back to plain, static bottom:12 — simpler,
-        // and nothing here actually needed the dynamic top math.
-        style={isMobile
-          ? { transform: `scale(1.15) translateY(${isControlsVisible ? '0' : 'calc(100% + 24px)'})`, transformOrigin: 'bottom' }
-          : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
-        className={isMobile
-          ? `control-panel fixed inset-x-0 mx-auto bottom-3 z-50 pointer-events-auto transition-transform duration-300 w-[215px] max-w-full ${!isControlsVisible ? 'pointer-events-none' : ''}`
-          : `control-panel absolute pointer-events-auto transition-opacity duration-300 w-[215px] scale-[1.15] origin-top-left ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      >
-      <div
-        ref={innerPanelScrollRef}
-        className={isMobile
-          ? 'flex flex-col gap-[6px] rounded-2xl overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] [&>*]:flex-shrink-0'
-          : 'flex flex-col gap-[6px] max-h-[calc(100vh-2rem)] overflow-x-hidden overflow-y-auto'}
-        style={isMobile ? { WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', maxHeight: mobilePanelMaxHeight } : undefined}
-      >
-        {/* wāv wordmark — single click opens the About/Info panel; press
-            and hold (or start dragging) turns it into the panel's drag
-            handle instead. On mobile there's no drag capability (the sheet
-            is pinned, not freely positioned) so it's just a plain About
-            button there. Desktop tells click and hold-to-drag apart by
-            racing a hold timer against pointer movement — whichever
-            happens first (a real drag motion, or the timer elapsing while
-            still held) commits to drag mode; releasing before either fires
-            treats it as a tap and opens About instead of repositioning the
-            panel. */}
-        <div
-          onMouseDown={isMobile ? undefined : (e) => {
-            const panel = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
-            const rect = panel.getBoundingClientRect();
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const origX = rect.left;
-            const origY = rect.top;
-            let dragStarted = false;
-            // Clamp to the viewport, leaving at least this much of the panel
-            // on-screen — otherwise a user can drag the panel fully off the
-            // edge and lose access to every control (no way to recover short
-            // of clearing localStorage).
-            const MIN_VISIBLE = 40;
-            const clamp = (x: number, y: number) => ({
-              x: Math.min(Math.max(x, MIN_VISIBLE - rect.width), window.innerWidth - MIN_VISIBLE),
-              y: Math.min(Math.max(y, 0), window.innerHeight - MIN_VISIBLE),
-            });
-            const MOVE_THRESHOLD = 4;
-            const HOLD_MS = 350;
-            const holdTimer = window.setTimeout(() => { dragStarted = true; }, HOLD_MS);
-            const onMove = (ev: MouseEvent) => {
-              if (!dragStarted) {
-                const dx = ev.clientX - startX;
-                const dy = ev.clientY - startY;
-                if (Math.hypot(dx, dy) < MOVE_THRESHOLD) return;
-                dragStarted = true;
-              }
-              setPanelPos(clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY)));
-            };
-            const onUp = (ev: MouseEvent) => {
-              window.clearTimeout(holdTimer);
-              if (dragStarted) {
-                const pos = clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY));
-                try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch (err) {
-                  if (import.meta.env.DEV) console.warn('Failed to persist panelPos:', err);
-                }
-              } else {
-                setIsAboutOpen(true);
-              }
-              window.removeEventListener('mousemove', onMove);
-              window.removeEventListener('mouseup', onUp);
-            };
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('mouseup', onUp);
-          }}
-          onClick={isMobile ? () => setIsAboutOpen(true) : undefined}
-          className={`w-full flex justify-center select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'}`}
-          title={isMobile ? 'About wāv' : 'Click: About · Hold: drag panel'}
-          aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the panel'}
-        >
-          {/* Liquid Glass wordmark — replaced the flat white-fill/grey-stroke
-              span with an SVG so the "glass" read (translucent body, bright
-              uneven rim instead of a flat stroke, soft highlight sweep, thin
-              spectrum fringe along the bottom edge) has no color of its own
-              and works over any gradient behind the panel. One shared <text>
-              per layer means the macron over the "a" always gets the same
-              treatment as the rest of the glyphs — it's part of the same
-              glyph run, not a separate element. */}
-          <svg
-            viewBox="0 0 240 74"
-            style={{ height: '78px', width: 'auto', display: 'inline-block', overflow: 'visible' }}
-            role="img"
-            aria-label="wāv"
-          >
-            <defs>
-              <linearGradient id="wavGlassBody" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.62" />
-                <stop offset="14%" stopColor="#ffffff" stopOpacity="0.55" />
-                <stop offset="42%" stopColor="#ffffff" stopOpacity="0.26" />
-                <stop offset="72%" stopColor="#ffffff" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.58" />
-              </linearGradient>
-              <linearGradient id="wavGlassRim" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#eef1f6" stopOpacity="1" />
-                <stop offset="55%" stopColor="#d7dce6" stopOpacity="0.75" />
-                <stop offset="100%" stopColor="#eef1f6" stopOpacity="0.98" />
-              </linearGradient>
-              <clipPath id="wavGlassClip">
-                <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5">wāv</text>
-              </clipPath>
-              <filter id="wavGlassBlur" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="1.6" />
-              </filter>
-              {/* Ambient lift so the mark still separates from flat/light
-                  backgrounds (white especially) where a translucent-on-
-                  translucent read alone has almost nothing to grab onto —
-                  dark or busy backgrounds don't need it but aren't hurt by
-                  it either since it's a soft, low-opacity shadow. */}
-              <filter id="wavGlassDropShadow" x="-30%" y="-40%" width="160%" height="200%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.28" />
-              </filter>
-            </defs>
-
-            <g filter="url(#wavGlassDropShadow)">
-              <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="url(#wavGlassBody)">wāv</text>
-
-              {/* Highlight layers are clipped to the full "wāv" glyph run
-                  (including the macron) so the diacritic gets the same sweep
-                  treatment as the letterforms below it — the top band is
-                  intentionally low-opacity (was washing the thin macron out
-                  to a flat opaque bar instead of glass). No color anywhere —
-                  a colored fringe along the bottom edge read as an unwanted
-                  purple/yellow tint rather than a glass cue. */}
-              <g clipPath="url(#wavGlassClip)">
-                <rect x="0" y="0" width="240" height="20" fill="#ffffff" opacity="0.22" filter="url(#wavGlassBlur)" />
-                <rect x="-15" y="4" width="34" height="80" fill="#ffffff" opacity="0.3" transform="rotate(18 120 40)" filter="url(#wavGlassBlur)" />
-              </g>
-
-              {/* Rim stroke nudged toward a cool light grey (was pure
-                  white) and thickened slightly — on a colorful/dark
-                  background it still reads as a bright glass edge, but on
-                  white it now gives the letterforms a visible boundary
-                  instead of nearly vanishing into the page. */}
-              <text x="120" y="64" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif" fontWeight="900" fontSize="72" letterSpacing="-2.5" fill="none" stroke="url(#wavGlassRim)" strokeWidth="1.6">wāv</text>
-            </g>
-          </svg>
-        </div>
-
-        {/* First-run hint — see dismissWavHint's declaration above for why
-            this exists (tooltips/title attrs never surface on touch, this
-            app's primary target). Sits right under the wordmark since
-            that's the first thing anyone looks at, and explains the two
-            interactions the wordmark itself doesn't advertise anywhere
-            else in the UI: tap it for full help, tap Shuffle to get a new
-            look. Dismissed by the explicit close here, OR — already wired
-            up — the first time the user actually clicks Shuffle
-            (handleWavClick calls dismissWavHint()), whichever comes first. */}
-        {showWavHint && (
-          <div className="flex items-start gap-1.5 -mt-1 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80">
-            <span className="text-[10px] leading-snug flex-1">
-              Tap <span className="text-white font-medium">wāv</span> for help · tap <Shuffle weight="regular" className="w-2.5 h-2.5 inline -translate-y-px" /> to shuffle a new look
-            </span>
-            <button
-              onClick={dismissWavHint}
-              className="text-white/50 hover:text-white transition-all flex-shrink-0"
-              title="Dismiss"
-              aria-label="Dismiss hint"
-            >
-              <X weight="bold" className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-
-        {/* Icon row + VCR controls + Tab bar — one rounded rectangle, thin horizontal dividers between the three rows.
-            NOT sticky: ruled out via on-device diagnostic (identical
-            measurements before/after removing it).
-            NOT overflow-hidden: `document.elementFromPoint()` on a real
-            device (iOS 17+ Safari) at the tab bar row's own reported
-            center coordinates hit a BUTTON from GradientsTab's type-picker
-            grid (the next sibling below this card), not this row's own
-            button — while this row's own getBoundingClientRect measured
-            completely normal (correct size/position/visible/opacity).
-            getBoundingClientRect doesn't account for ancestor clipping, so
-            a child can measure "normal" while still being invisible if an
-            ancestor's `overflow: hidden` clips it — and under this card's
-            `scale-[1.15]` ancestor, WebKit can round the card's own
-            computed height short by about one row, silently clipping the
-            last row (this tab bar) while the next sibling (GradientsTab)
-            starts early enough to visually occupy the same space. Removing
-            overflow-hidden here trades a purely defensive rounded-corner
-            clip (no child here has its own background that could actually
-            overflow the rounded box in the working case) for not silently
-            eating a row when that rounding happens. */}
-        <div ref={threeRowPanelRef} className="flex flex-col w-full bg-black/25 rounded-lg shadow-sm">
-          <div ref={topIconRowRef} className="flex items-stretch">
-          <button
-            onClick={() => setIsControlsVisible(false)}
-            // rounded-tl-lg matches the container's own rounded-lg corner —
-            // the container lost overflow-hidden (see the comment above this
-            // row) to fix a real-device clipping bug, so nothing clips this
-            // button's own hover background to the container's rounded
-            // corner anymore; without an explicit radius here it hovers as a
-            // visible square poking past the top-left corner.
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center rounded-tl-lg"
-            title="Hide Controls (H)"
-            aria-label="Hide Controls"
-          >
-            <Eye weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={handleWavClick}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isWavPressed ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
-            title="Shuffle (Shift+W)"
-            aria-label="Shuffle to a new look"
-          >
-            <Shuffle weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
-            className={`flex-1 py-1.5 transition-all flex items-center justify-center ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
-            title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-            aria-label="Auto Shuffle settings"
-            aria-pressed={isAutoShuffleOn}
-            disabled={isNewPresetPending}
-          >
-            <InfinityIcon weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={exportAsPNG}
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center"
-            title="Save PNG (S)"
-            aria-label="Save PNG"
-          >
-            <Camera weight="regular" className="w-4 h-4" />
-          </button>
-          <Divider />
-          <button
-            onClick={toggleGifRecording}
-            disabled={isFinalizingGif}
-            // rounded-tr-lg — see the matching comment on the Hide Controls
-            // button above (top-left corner of the same row).
-            className="flex-1 py-1.5 transition-all text-white hover:bg-white/15 flex items-center justify-center relative rounded-tr-lg"
-            title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF (Shift+S)'}
-            aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
-          >
-            {isFinalizingGif ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" className="animate-spin">
-                <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-                <path d="M8 2 A6 6 0 0 1 14 8" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            ) : isRecordingGif ? (
-              <Circle weight="fill" className="w-4 h-4 text-red-500 animate-pulse" />
-            ) : (
-              <Gif weight="regular" className="w-4 h-4" />
-            )}
-          </button>
-          </div>{/* end icon row */}
-
-          <Divider orientation="horizontal" />
-
-          {/* VCR Controls */}
-          <VCRControls
-            isRecording={isRecording}
-            isVCRPlaying={isVCRPlaying}
-            isAutoMode={isAutoMode}
-            vcrRecordedFrames={vcrRecordedFrames}
-            vcrPlaybackSpeed={vcrPlaybackSpeed}
-            rotationDirection={rotationDirection}
-            isEncoding={isEncoding}
-            encodingProgress={encodingProgress}
-            setVcrPlaybackSpeed={setVcrPlaybackSpeed}
-            setRotationDirection={setRotationDirection}
-            toggleVCRRecording={toggleVCRRecording}
-            handleStop={handleStop}
-            toggleVCRPlayback={toggleVCRPlayback}
-          />
-
-          <Divider orientation="horizontal" />
-
-          {/* Tab Bar — 5 equal columns (Gradient/Effects/Audio/Color/Presets;
-              Shuffle + Auto Shuffle moved up to the top icon row) via the
-              same inline flex-basis pattern as VCRControls' colStyle
-              (flexBasis: calc((100% - Npx)/5), flexGrow/Shrink: 0) instead of
-              plain `flex-1`.
-              `translateZ(0)` forces this row onto its own GPU compositing
-              layer: on a real device (iOS 17+ Safari) this row was
-              confirmed via elementFromPoint to be correctly hit-tested
-              (functionally clickable, isDesc=true) yet never actually
-              painted to screen after removing overflow-hidden from the
-              parent — a stuck-paint symptom under a `scale-[1.15]`
-              ancestor that promoting this row to its own layer resolves
-              in WebKit. */}
-          <div style={{ transform: 'translateZ(0)' }} className="flex items-stretch w-full">
-            {/* rounded-bl-lg — same fix as the Hide Controls button's
-                rounded-tl-lg above: this card has no overflow-hidden (see
-                the comment on the card's own div), so this row's leftmost
-                button's hover background needs its own matching corner
-                radius or it hovers as a visible square past the card's
-                bottom-left corner. */}
-            <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-bl-lg ${activeTab === 'gradients' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <Gradient weight="regular" className="w-4 h-4" />
-            </button>
-            <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'effects' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <MagicWand weight="regular" className="w-4 h-4" />
-            </button>
-            <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'audio' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              {/* Icon itself carries the live-signal state now (was a
-                  separate dot overlay) — mic being "on" doesn't mean sound is
-                  actually arriving (wrong device, muted input, etc), so green
-                  vs red on the icon makes that visible at a glance instead of
-                  only inside the Parameters level bars. Default (inherited)
-                  color when the mic is off. Uses dedicated classes (see
-                  index.css) rather than an inline color style — the panel's
-                  theme CSS has a blanket `.control-panel * { color: #000
-                  !important }` rule, and an !important stylesheet rule always
-                  wins over inline style regardless of specificity, so the
-                  inline color this used before was silently never applied.
-                  Also checks audioEnergy (the fully gain/multiplier-adjusted
-                  value that actually drives the reactive visuals), not just
-                  the raw/auto-gain-normalized live*Level meters — a quieter
-                  absolute input (e.g. a BlackHole/loopback device feeding in
-                  well below a physical mic's level, or auto-gain still
-                  warming up its decaying-peak reference) could stay under
-                  the live-meter threshold while genuinely driving visible
-                  reactivity, leaving the icon red despite audio clearly
-                  working. */}
-              <SpeakerHigh
-                weight="regular"
-                className={`w-4 h-4 transition-colors ${isMicActive
-                  ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'wav-audio-signal-ok' : 'wav-audio-signal-none')
-                  : ''}`}
-              />
-            </button>
-            <Divider />
-            <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all ${activeTab === 'color' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <Palette weight="regular" className="w-4 h-4" />
-            </button>
-            <Divider />
-            {/* rounded-br-lg — see the matching comment on the Gradient tab button. */}
-            <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" style={{ flexBasis: 'calc((100% - 4px) / 5)', flexGrow: 0, flexShrink: 0 }} className={`flex items-center justify-center py-1.5 transition-all rounded-br-lg ${activeTab === 'presets' ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`}>
-              <FloppyDisk weight="regular" className="w-4 h-4" />
-            </button>
-          </div>
-        </div>{/* end merged card */}
-
-        {/* ── Color Tab ── */}
-        {activeTab === 'color' && (
-          <ColorTab
-            isAutoColor={isAutoColor}
-            setIsAutoColor={setIsAutoColor}
-            saveCurrentState={saveCurrentState}
-            setTargetColors={setTargetColors}
-            gradientColors={gradientColors}
-            randomColor={randomColor}
-            submittedAIPrompt={submittedAIPrompt}
-            setSubmittedAIPrompt={setSubmittedAIPrompt}
-            setBaseAIColors={setBaseAIColors}
-            setGradientColors={setGradientColors}
-            aiPrompt={aiPrompt}
-            setAIPrompt={setAIPrompt}
-            isKeywordHelpOpen={isKeywordHelpOpen}
-            setIsKeywordHelpOpen={setIsKeywordHelpOpen}
-            handleAIPromptSubmit={handleAIPromptSubmit}
-            setIsAIColorPickerOpen={setIsAIColorPickerOpen}
-            paletteHue={paletteHue}
-            setPaletteHue={setPaletteHue}
-            paletteSaturation={paletteSaturation}
-            setPaletteSaturation={setPaletteSaturation}
-            paletteBrightness={paletteBrightness}
-            setPaletteBrightness={setPaletteBrightness}
-            paletteContrast={paletteContrast}
-            setPaletteContrast={setPaletteContrast}
-          />
-        )}
-
-        {/* ── Gradients Tab ── */}
-        {activeTab === 'gradients' && (
-          <GradientsTab
-            gradientType={gradientType}
-            setGradientType={setGradientType}
-            getGradientDisplayName={getGradientDisplayName}
-            gridRows={gridRows}
-            setGridRows={setGridRows}
-            gridColumns={gridColumns}
-            setGridColumns={setGridColumns}
-            gridCellAngleStep={gridCellAngleStep}
-            setGridCellAngleStep={setGridCellAngleStep}
-            polygon2Sides={polygon2Sides}
-            setPolygon2Sides={setPolygon2Sides}
-            concentricRingCount={concentricRingCount}
-            setConcentricRingCount={setConcentricRingCount}
-            auroraBandCount={auroraBandCount}
-            setAuroraBandCount={setAuroraBandCount}
-            auroraBandHeight={auroraBandHeight}
-            setAuroraBandHeight={setAuroraBandHeight}
-            auroraWaveSpeed={auroraWaveSpeed}
-            setAuroraWaveSpeed={setAuroraWaveSpeed}
-            causticsBrightness={causticsBrightness}
-            setCausticsBrightness={setCausticsBrightness}
-            causticsScale={causticsScale}
-            setCausticsScale={setCausticsScale}
-            lavaBlobCount={lavaBlobCount}
-            setLavaBlobCount={setLavaBlobCount}
-            lavaBlobSize={lavaBlobSize}
-            setLavaBlobSize={setLavaBlobSize}
-            marbleVeinFreq={marbleVeinFreq}
-            setMarbleVeinFreq={setMarbleVeinFreq}
-            marbleTurbulence={marbleTurbulence}
-            setMarbleTurbulence={setMarbleTurbulence}
-            marbleOctaves={marbleOctaves}
-            setMarbleOctaves={setMarbleOctaves}
-            metaballCount={metaballCount}
-            setMetaballCount={setMetaballCount}
-            metaballSize={metaballSize}
-            setMetaballSize={setMetaballSize}
-            metaballSpeed={metaballSpeed}
-            setMetaballSpeed={setMetaballSpeed}
-            truchetSize={truchetSize}
-            setTruchetSize={setTruchetSize}
-            truchetVariation={truchetVariation}
-            setTruchetVariation={setTruchetVariation}
-            truchetThickness={truchetThickness}
-            setTruchetThickness={setTruchetThickness}
-            moireScale={moireScale}
-            setMoireScale={setMoireScale}
-            moireOffset={moireOffset}
-            setMoireOffset={setMoireOffset}
-            moireSpeed={moireSpeed}
-            setMoireSpeed={setMoireSpeed}
-            flowParticleCount={flowParticleCount}
-            setFlowParticleCount={setFlowParticleCount}
-            flowSpeed={flowSpeed}
-            setFlowSpeed={setFlowSpeed}
-            flowScale={flowScale}
-            setFlowScale={setFlowScale}
-            flowThickness={flowThickness}
-            setFlowThickness={setFlowThickness}
-            attractorPointCount={attractorPointCount}
-            setAttractorPointCount={setAttractorPointCount}
-            attractorSpeed={attractorSpeed}
-            setAttractorSpeed={setAttractorSpeed}
-            attractorScale={attractorScale}
-            setAttractorScale={setAttractorScale}
-            attractorDotSize={attractorDotSize}
-            setAttractorDotSize={setAttractorDotSize}
-            attractorTrailFade={attractorTrailFade}
-            setAttractorTrailFade={setAttractorTrailFade}
-            particlesCount={particlesCount}
-            setParticlesCount={setParticlesCount}
-            particlesSpeed={particlesSpeed}
-            setParticlesSpeed={setParticlesSpeed}
-            particlesSize={particlesSize}
-            setParticlesSize={setParticlesSize}
-            particlesTrail={particlesTrail}
-            setParticlesTrail={setParticlesTrail}
-            particlesGravity={particlesGravity}
-            setParticlesGravity={setParticlesGravity}
-            particlesSides={particlesSides}
-            setParticlesSides={setParticlesSides}
-            tilingSize={tilingSize}
-            setTilingSize={setTilingSize}
-            tilingSymmetry={tilingSymmetry}
-            setTilingSymmetry={setTilingSymmetry}
-            tilingComplexity={tilingComplexity}
-            setTilingComplexity={setTilingComplexity}
-            tilingRotation={tilingRotation}
-            setTilingRotation={setTilingRotation}
-            tilingRowOffset={tilingRowOffset}
-            setTilingRowOffset={setTilingRowOffset}
-            fireworksCount={fireworksCount}
-            setFireworksCount={setFireworksCount}
-            fireworksParticleCount={fireworksParticleCount}
-            setFireworksParticleCount={setFireworksParticleCount}
-            fireworksTrailFade={fireworksTrailFade}
-            setFireworksTrailFade={setFireworksTrailFade}
-            lightningBoltCount={lightningBoltCount}
-            setLightningBoltCount={setLightningBoltCount}
-            lightningJitter={lightningJitter}
-            setLightningJitter={setLightningJitter}
-            lightningBranchiness={lightningBranchiness}
-            setLightningBranchiness={setLightningBranchiness}
-            reactionDiffusionFeed={reactionDiffusionFeed}
-            setReactionDiffusionFeed={setReactionDiffusionFeed}
-            reactionDiffusionKill={reactionDiffusionKill}
-            setReactionDiffusionKill={setReactionDiffusionKill}
-            reactionDiffusionSpeed={reactionDiffusionSpeed}
-            setReactionDiffusionSpeed={setReactionDiffusionSpeed}
-            fieldContrast={fieldContrast}
-            setFieldContrast={setFieldContrast}
-            paletteMode={paletteMode}
-            setPaletteMode={setPaletteMode}
-            paletteBands={paletteBands}
-            setPaletteBands={setPaletteBands}
-            topographicScale={topographicScale}
-            setTopographicScale={setTopographicScale}
-            topographicBands={topographicBands}
-            setTopographicBands={setTopographicBands}
-            topographicLineWidth={topographicLineWidth}
-            setTopographicLineWidth={setTopographicLineWidth}
-            waveInterferenceSourceCount={waveInterferenceSourceCount}
-            setWaveInterferenceSourceCount={setWaveInterferenceSourceCount}
-            waveInterferenceFrequency={waveInterferenceFrequency}
-            setWaveInterferenceFrequency={setWaveInterferenceFrequency}
-            waveInterferenceSpeed={waveInterferenceSpeed}
-            setWaveInterferenceSpeed={setWaveInterferenceSpeed}
-            meshWireframeGridSize={meshWireframeGridSize}
-            setMeshWireframeGridSize={setMeshWireframeGridSize}
-            meshWireframeJitter={meshWireframeJitter}
-            setMeshWireframeJitter={setMeshWireframeJitter}
-            meshWireframeLineWidth={meshWireframeLineWidth}
-            setMeshWireframeLineWidth={setMeshWireframeLineWidth}
-            juliaReal={juliaReal}
-            setJuliaReal={setJuliaReal}
-            juliaImaginary={juliaImaginary}
-            setJuliaImaginary={setJuliaImaginary}
-            juliaZoom={juliaZoom}
-            setJuliaZoom={setJuliaZoom}
-            juliaIterations={juliaIterations}
-            setJuliaIterations={setJuliaIterations}
-            angleStartOffset={angleStartOffset}
-            setAngleStartOffset={setAngleStartOffset}
-            angleCenterX={angleCenterX}
-            setAngleCenterX={setAngleCenterX}
-            angleCenterY={angleCenterY}
-            setAngleCenterY={setAngleCenterY}
-            radialSizeScale={radialSizeScale}
-            setRadialSizeScale={setRadialSizeScale}
-            concentricRingWidth={concentricRingWidth}
-            setConcentricRingWidth={setConcentricRingWidth}
-            shapesSides={shapesSides}
-            setShapesSides={setShapesSides}
-            shapesCount={shapesCount}
-            setShapesCount={setShapesCount}
-            windmillTightness={windmillTightness}
-            setWindmillTightness={setWindmillTightness}
-            windmillRotations={windmillRotations}
-            setWindmillRotations={setWindmillRotations}
-            windmillThickness={windmillThickness}
-            setWindmillThickness={setWindmillThickness}
-            windmillZoomResponse={windmillZoomResponse}
-            windmillMode={windmillMode}
-            setWindmillMode={setWindmillMode}
-            setWindmillZoomResponse={setWindmillZoomResponse}
-            drawParamsDirtyRef={drawParamsDirtyRef}
-            noiseScale={noiseScale}
-            setNoiseScale={setNoiseScale}
-            noiseOctaves={noiseOctaves}
-            setNoiseOctaves={setNoiseOctaves}
-            noiseDirection={noiseDirection}
-            setNoiseDirection={setNoiseDirection}
-            noiseWarp={noiseWarp}
-            setNoiseWarp={setNoiseWarp}
-            noiseType={noiseType}
-            setNoiseType={setNoiseType}
-            plasmaComplexity={plasmaComplexity}
-            setPlasmaComplexity={setPlasmaComplexity}
-            plasmaZoomScale={plasmaZoomScale}
-            setPlasmaZoomScale={setPlasmaZoomScale}
-            radialBurstCount={radialBurstCount}
-            setRadialBurstCount={setRadialBurstCount}
-            radialBurstSpread={radialBurstSpread}
-            setRadialBurstSpread={setRadialBurstSpread}
-            radialBurstSize={radialBurstSize}
-            setRadialBurstSize={setRadialBurstSize}
-            radialBurstMode={radialBurstMode}
-            setRadialBurstMode={setRadialBurstMode}
-            voronoiCellCount={voronoiCellCount}
-            setVoronoiCellCount={setVoronoiCellCount}
-            voronoiDistortion={voronoiDistortion}
-            setVoronoiDistortion={setVoronoiDistortion}
-            fadeDirection={fadeDirection}
-            setFadeDirection={setFadeDirection}
-            radarFadeLength={radarFadeLength}
-            setRadarFadeLength={setRadarFadeLength}
-            radarBeamWidth={radarBeamWidth}
-            setRadarBeamWidth={setRadarBeamWidth}
-            flowerCircles={flowerCircles}
-            setFlowerCircles={setFlowerCircles}
-            flowerScale={flowerScale}
-            setFlowerScale={setFlowerScale}
-            flowerSpread={flowerSpread}
-            setFlowerSpread={setFlowerSpread}
-            flowerSymmetry={flowerSymmetry}
-            setFlowerSymmetry={setFlowerSymmetry}
-            flowerOpacity={flowerOpacity}
-            setFlowerOpacity={setFlowerOpacity}
-            helixTurns={helixTurns}
-            setHelixTurns={setHelixTurns}
-            helixTightness={helixTightness}
-            setHelixTightness={setHelixTightness}
-          />
-        )}
-
-        {/* ── Effects Tab ── */}
-        {activeTab === 'effects' && (
-          <EffectsTab
-            isMobile={isMobile}
-            activeEffects={activeEffects}
-            setActiveEffects={setActiveEffects}
-            isMultiFxMode={isMultiFxMode}
-            setIsMultiFxMode={setIsMultiFxMode}
-            expandedEffects={expandedEffects}
-            toggleEffectExpanded={toggleEffectExpanded}
-            randomizeEffects={randomizeEffects}
-            kaleidoscopeSegments={kaleidoscopeSegments}
-            setKaleidoscopeSegments={setKaleidoscopeSegments}
-            kaleidoscopeRotateSpeed={kaleidoscopeRotateSpeed}
-            setKaleidoscopeRotateSpeed={setKaleidoscopeRotateSpeed}
-            asciiSize={asciiSize}
-            setAsciiSize={setAsciiSize}
-            asciiChars={asciiChars}
-            setAsciiChars={setAsciiChars}
-            asciiColor={asciiColor}
-            setAsciiColor={setAsciiColor}
-            emojiChars={emojiChars}
-            setEmojiChars={setEmojiChars}
-            emojiSize={emojiSize}
-            setEmojiSize={setEmojiSize}
-            emojiRotateSpeed={emojiRotateSpeed}
-            setEmojiRotateSpeed={setEmojiRotateSpeed}
-            emojiSizeVariation={emojiSizeVariation}
-            setEmojiSizeVariation={setEmojiSizeVariation}
-            emojiOffsetX={emojiOffsetX}
-            setEmojiOffsetX={setEmojiOffsetX}
-            isEmojiPickerOpen={isEmojiPickerOpen}
-            setIsEmojiPickerOpen={setIsEmojiPickerOpen}
-            emojiPickerSearch={emojiPickerSearch}
-            setEmojiPickerSearch={setEmojiPickerSearch}
-            liquidStrength={liquidStrength}
-            crtIntensity={crtIntensity}
-            setCrtIntensity={setCrtIntensity}
-            crtScanlineSpacing={crtScanlineSpacing}
-            setCrtScanlineSpacing={setCrtScanlineSpacing}
-            setLiquidStrength={setLiquidStrength}
-            liquidScale={liquidScale}
-            setLiquidScale={setLiquidScale}
-            handlePhotoFileClick={handlePhotoFileClick}
-            photoFileName={photoFileName}
-            photoBlendMode={photoBlendMode}
-            setPhotoBlendMode={setPhotoBlendMode}
-            photoOpacity={photoOpacity}
-            setPhotoOpacity={setPhotoOpacity}
-            chromaticTrailsDecay={chromaticTrailsDecay}
-            setChromaticTrailsDecay={setChromaticTrailsDecay}
-            chromaticTrailsOffset={chromaticTrailsOffset}
-            setChromaticTrailsOffset={setChromaticTrailsOffset}
-            pixelSize={pixelSize}
-            setPixelSize={setPixelSize}
-            triangleSize={triangleSize}
-            triangulateVariation={triangulateVariation}
-            setTriangulateVariation={setTriangulateVariation}
-            setTriangleSize={setTriangleSize}
-            chromaticOffset={chromaticOffset}
-            setChromaticOffset={setChromaticOffset}
-            chromaticAngle={chromaticAngle}
-            setChromaticAngle={setChromaticAngle}
-            fisheyeStrength={fisheyeStrength}
-            setFisheyeStrength={setFisheyeStrength}
-            fisheyeCenterX={fisheyeCenterX}
-            setFisheyeCenterX={setFisheyeCenterX}
-            fisheyeCenterY={fisheyeCenterY}
-            setFisheyeCenterY={setFisheyeCenterY}
-            bloomIntensity={bloomIntensity}
-            setBloomIntensity={setBloomIntensity}
-            bloomRadius={bloomRadius}
-            setBloomRadius={setBloomRadius}
-            feedbackDecay={feedbackDecay}
-            setFeedbackDecay={setFeedbackDecay}
-            feedbackZoom={feedbackZoom}
-            setFeedbackZoom={setFeedbackZoom}
-            feedbackRotation={feedbackRotation}
-            setFeedbackRotation={setFeedbackRotation}
-            mirrorMode={mirrorMode}
-            setMirrorMode={setMirrorMode}
-            mirrorTileCount={mirrorTileCount}
-            setMirrorTileCount={setMirrorTileCount}
-            vignetteStrength={vignetteStrength}
-            setVignetteStrength={setVignetteStrength}
-            vignetteSoftness={vignetteSoftness}
-            setVignetteSoftness={setVignetteSoftness}
-            colorShiftHue={colorShiftHue}
-            setColorShiftHue={setColorShiftHue}
-            grainIntensity={grainIntensity}
-            setGrainIntensity={setGrainIntensity}
-            grainSize={grainSize}
-            setGrainSize={setGrainSize}
-            grainType={grainType}
-            setGrainType={setGrainType}
-            blurType={blurType}
-            setBlurType={setBlurType}
-            blurGaussianAmount={blurGaussianAmount}
-            setBlurGaussianAmount={setBlurGaussianAmount}
-            blurMotionAmount={blurMotionAmount}
-            setBlurMotionAmount={setBlurMotionAmount}
-            blurMotionDirection={blurMotionDirection}
-            setBlurMotionDirection={setBlurMotionDirection}
-            blurRadialAmount={blurRadialAmount}
-            setBlurRadialAmount={setBlurRadialAmount}
-            posterizeLevels={posterizeLevels}
-            setPosterizeLevels={setPosterizeLevels}
-            halftoneSize={halftoneSize}
-            setHalftoneSize={setHalftoneSize}
-            halftoneCMYK={halftoneCMYK}
-            setHalftoneCMYK={setHalftoneCMYK}
-            halftoneMove={halftoneMove}
-            setHalftoneMove={setHalftoneMove}
-            halftoneVariation={halftoneVariation}
-            setHalftoneVariation={setHalftoneVariation}
-            invertAmount={invertAmount}
-            setInvertAmount={setInvertAmount}
-            duotoneColor1={duotoneColor1}
-            setDuotoneColor1={setDuotoneColor1}
-            duotoneColor2={duotoneColor2}
-            setDuotoneColor2={setDuotoneColor2}
-            duotoneColor3={duotoneColor3}
-            setDuotoneColor3={setDuotoneColor3}
-            duotoneThreeColor={duotoneThreeColor}
-            setDuotoneThreeColor={setDuotoneThreeColor}
-            duotoneIntensity={duotoneIntensity}
-            setDuotoneIntensity={setDuotoneIntensity}
-            gridRows={gridRows}
-            setGridRows={setGridRows}
-            gridColumns={gridColumns}
-            setGridColumns={setGridColumns}
-            gridSides={gridSides}
-            setGridSides={setGridSides}
-            gridShapeSize={gridShapeSize}
-            setGridShapeSize={setGridShapeSize}
-            gridVariation={gridVariation}
-            setGridVariation={setGridVariation}
-            gridRotationDirection={gridRotationDirection}
-            setGridRotationDirection={setGridRotationDirection}
-            vhsGlitchIntensity={vhsGlitchIntensity}
-            setVhsGlitchIntensity={setVhsGlitchIntensity}
-            vhsJitterAmount={vhsJitterAmount}
-            setVhsJitterAmount={setVhsJitterAmount}
-            dustCrackleIntensity={dustCrackleIntensity}
-            setDustCrackleIntensity={setDustCrackleIntensity}
-            dustCrackleLength={dustCrackleLength}
-            setDustCrackleLength={setDustCrackleLength}
-            dustCrackleColor={dustCrackleColor}
-            setDustCrackleColor={setDustCrackleColor}
-            waveDistortionStrength={waveDistortionStrength}
-            setWaveDistortionStrength={setWaveDistortionStrength}
-            waveDistortionRotation={waveDistortionRotation}
-            setWaveDistortionRotation={setWaveDistortionRotation}
-            slitScanIntensity={slitScanIntensity}
-            setSlitScanIntensity={setSlitScanIntensity}
-            slitScanHistory={slitScanHistory}
-            setSlitScanHistory={setSlitScanHistory}
-            slitScanDirection={slitScanDirection}
-            setSlitScanDirection={setSlitScanDirection}
-            ditherLevels={ditherLevels}
-            setDitherLevels={setDitherLevels}
-            ditherScale={ditherScale}
-            setDitherScale={setDitherScale}
-            ditherType={ditherType}
-            setDitherType={setDitherType}
-            glitchIntensity={glitchIntensity}
-            setGlitchIntensity={setGlitchIntensity}
-            glitchBlockSize={glitchBlockSize}
-            setGlitchBlockSize={setGlitchBlockSize}
-            glitchChromaSplit={glitchChromaSplit}
-            setGlitchChromaSplit={setGlitchChromaSplit}
-            auraGlowCount={auraGlowCount}
-            setAuraGlowCount={setAuraGlowCount}
-            auraGlowSpeed={auraGlowSpeed}
-            setAuraGlowSpeed={setAuraGlowSpeed}
-            auraGlowOpacity={auraGlowOpacity}
-            starfieldCount={starfieldCount}
-            setStarfieldCount={setStarfieldCount}
-            starfieldSpeed={starfieldSpeed}
-            setStarfieldSpeed={setStarfieldSpeed}
-            starfieldOpacity={starfieldOpacity}
-            setStarfieldOpacity={setStarfieldOpacity}
-            starfieldSize={starfieldSize}
-            setStarfieldSize={setStarfieldSize}
-            setAuraGlowOpacity={setAuraGlowOpacity}
-          />
-        )}
-
-        {/* ── Audio Tab ── */}
-        {activeTab === 'audio' && (
-        <Suspense fallback={null}>
-        <AudioPanel
-          state={{
-            isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
-            masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
-            reactionSmoothing: bassSmoothing,
-            bassBeatSync, midsBeatSync, trebleBeatSync,
-            liveBassLevel, liveMidsLevel, liveTrebleLevel,
-            audioFileName, waveformData, audioFileMetadata,
-            subBassMultiplier, subBassBeatSync, liveSubBassLevel,
-            zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
-            audioBindings,
-          }}
-          actions={{
-            setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
-            setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
-            setReactionSmoothing,
-            setAudioBindings,
-            setSubBassMultiplier, setSubBassBeatSync,
-            setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
-            startMicVisualization, stopMicVisualization,
-            onAudioFileClick: handleAudioFileClick,
-            setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
-            onShuffleAudio: shuffleAudiovisuals,
-          }}
-        />
-        </Suspense>
-        )}
-
-        {/* ── Presets Tab ── */}
-        {activeTab === 'presets' && (
-        <Suspense fallback={null}>
-        <PresetsPanel
-          isMobile={isMobile}
-          isPresetsDropdownOpen={isPresetsDropdownOpen}
-          openNewPresetSignal={openNewPresetSignal}
-          savedPresets={savedPresets}
-          renamingPresetId={renamingPresetId}
-          renamingPresetValue={renamingPresetValue}
-          folderNames={folderNames}
-          setIsPresetsDropdownOpen={setIsPresetsDropdownOpen}
-          setRenamingPresetId={setRenamingPresetId}
-          setRenamingPresetValue={setRenamingPresetValue}
-          loadPreset={loadPreset}
-          deletePreset={deletePreset}
-          renamePreset={renamePreset}
-          updatePreset={updatePreset}
-          savePresetWithName={savePresetWithName}
-          onAddingPresetChange={setIsNewPresetPending}
-          movePresetToFolder={movePresetToFolder}
-          addFolder={addFolder}
-          renameFolder={renameFolder}
-          deleteFolder={deleteFolder}
-          authUser={authState.user}
-          isAnonymous={authState.isAnonymous}
-          authBusy={authState.authBusy}
-          authError={authState.authError}
-          clearAuthError={authState.clearAuthError}
-          signInWithEmail={authState.signInWithEmail}
-          signUpWithEmail={authState.signUpWithEmail}
-          signOutUser={authState.signOutUser}
-        />
-        </Suspense>
-        )}
-
-      </div>
-      </div>
       {audioFile && (
         <audio
           ref={audioRef}
@@ -4644,12 +3912,11 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel — top edge anchored to the top icon row's top-left
-          corner (the "control panel below the WAV button"), not the
-          wordmark above it, using the offset measured into
-          aboutPopupOffsetY. The click-catcher behind it stays unblurred so
-          the gradient result underneath isn't blurred out; only the card
-          itself keeps its own frosted-glass surface. */}
+      {/* About panel — top edge anchored to the rail's own top-left corner
+          (panelPos), since the wordmark now lives inside the rail itself
+          rather than above a separate card. The click-catcher behind it
+          stays unblurred so the gradient result underneath isn't blurred
+          out; only the card itself keeps its own frosted-glass surface. */}
       {isAboutOpen && (
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
@@ -4664,7 +3931,7 @@ export function InteractiveGradient() {
             // w-[calc(100%-3rem)] gives the same edge clearance without
             // touching the centering transform.
             className={`absolute bg-white rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-black shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-3rem)]' : ''}`}
-            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + aboutPopupOffsetY } : { top: 16 + aboutPopupOffsetY, left: 16 })}
+            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
           >
             <button
               ref={aboutCloseButtonRef}
@@ -4684,13 +3951,13 @@ export function InteractiveGradient() {
 
             <div className="flex flex-col gap-8 text-sm text-black/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Panel</p>
-                <p>Click the <strong>wāv</strong> wordmark above the panel for this About screen — press and hold it to drag the panel anywhere on screen instead (desktop only).</p>
+                <p className="font-semibold text-black">Rail</p>
+                <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen — press and hold it to drag the rail anywhere on screen instead (desktop only).</p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Top icon row</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — collapse the control panel</span><Kbd label="H" /></p>
+                <p className="font-semibold text-black">Rail icons</p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — hide the control rail</span><Kbd label="H" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
                 <button
