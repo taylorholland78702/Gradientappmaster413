@@ -194,7 +194,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
 
   return (
     <>
-        <div className="w-full rounded-lg overflow-hidden border border-white/10 bg-black/25">
+        {/* No own card chrome (bg/border/rounded/overflow-hidden) here —
+            this renders inside ControlDrawer's own card now, which already
+            provides that surface. Used to double up into a visible
+            card-in-a-card when the drawer wrapped this component. */}
+        <div className="w-full">
           {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
           <div className="w-full flex gap-0 border-b border-white/10">
             <button

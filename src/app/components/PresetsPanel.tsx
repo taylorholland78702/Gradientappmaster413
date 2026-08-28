@@ -271,7 +271,11 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   }, [grouped]);
 
   return (
-    <div className="w-full bg-black/20 border border-white/8 rounded-lg overflow-hidden">
+    // No own card chrome (bg/border/rounded/overflow-hidden) here — this
+    // renders inside ControlDrawer's own card now, which already provides
+    // that surface. Used to double up into a visible card-in-a-card when
+    // the drawer wrapped this component.
+    <div className="w-full">
       {/* Sign-in — anonymous sessions already save presets, but only in
           this browser; signing in with email lets the same presets follow
           you across devices. */}
