@@ -272,11 +272,26 @@ export function applyVhs(P: any): void {
               }
             }
 
-            // Add strong RGB channel shift for VHS chromatic aberration
-            if (imageData) {
+            // Add strong RGB channel shift for VHS chromatic aberration.
+            // Deliberately NOT using P.imageData (the ctx-level snapshot
+            // buildEffectCtx takes before this effect runs) — this block
+            // runs after the blur + glitch-slice drawing above has already
+            // mutated the live canvas, so that snapshot is stale by this
+            // point; writing it back via putScaledImageData would silently
+            // erase everything just drawn (this effect wasn't in
+            // useCanvasDraw's needsImageData list historically, and adding
+            // it there to get P.imageData populated reproduced exactly that
+            // — a blanked-black canvas). Fetching fresh here reads the
+            // canvas as it actually looks right now.
+            const vhsShiftImg = getDisplayImageData();
+            if (vhsShiftImg) {
               const shiftAmount = Math.floor(effectiveVhsIntensity * 8);
-              const data = imageData.data;
-              const tempData = new Uint8ClampedArray(data);
+              const data = vhsShiftImg.data;
+              // Reused backing buffer instead of a fresh full-canvas
+              // Uint8ClampedArray copy every frame (~8MB at 1080p) — same
+              // pattern as the vhs-slice buffer above.
+              const tempData = getScratchPixelBuffer('vhs-shift', data.length);
+              tempData.set(data);
             
               // Shift red and blue channels
               for (let y = 0; y < displayHeight; y++) {
@@ -294,6 +309,6 @@ export function applyVhs(P: any): void {
                   data[i + 2] = tempData[blueSourceI + 2];
                 }
               }
-              putScaledImageData(imageData);
+              putScaledImageData(vhsShiftImg);
             }
 }

@@ -1,3 +1,8 @@
+// Reused backing store for the block-noise path below instead of a fresh
+// Float32Array(blocksX * blocksY) every frame (~2MB/frame at blockSize 2 on
+// a 1080p canvas) — resized only when the block grid actually changes size.
+let blockNoiseBuf: Float32Array = new Float32Array(0);
+
 export function applyGrain(P: any): void {
   const {
     activeEffects,
@@ -240,7 +245,9 @@ export function applyGrain(P: any): void {
             } else {
               const blocksX = Math.ceil(displayWidth / blockSize);
               const blocksY = Math.ceil(displayHeight / blockSize);
-              const blockNoise = new Float32Array(blocksX * blocksY);
+              const neededLen = blocksX * blocksY;
+              if (blockNoiseBuf.length !== neededLen) blockNoiseBuf = new Float32Array(neededLen);
+              const blockNoise = blockNoiseBuf;
               for (let b = 0; b < blockNoise.length; b++) blockNoise[b] = (Math.random() - 0.5) * int * 255 * sz;
               for (let i = 0; i < d.length; i += 4) {
                 const p = i / 4;

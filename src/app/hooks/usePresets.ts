@@ -125,7 +125,17 @@ export function usePresets(params: UsePresetsParams) {
         setSavedPresets(parsed);
         safeSetLocalStorage('gradientPresets', JSON.stringify(parsed));
       } catch (err) {
-        if (import.meta.env.DEV) console.warn('Failed to parse stored gradientPresets:', err);
+        // Was dev-only console.warn — in production, a corrupted
+        // gradientPresets entry (partial write, manual localStorage edit,
+        // an extension) made every saved preset vanish with zero
+        // indication anything went wrong. Surfacing it doesn't recover the
+        // data, but at least tells the user what happened instead of just
+        // "my presets are all gone" with no explanation.
+        console.error('Failed to parse stored gradientPresets:', err);
+        alert(
+          "Couldn't load your saved presets — the saved data looks corrupted. " +
+          "They haven't been deleted, but can't be read right now."
+        );
       }
     }
     const localFolders = localStorage.getItem('gradientPresetFolders');
@@ -217,9 +227,21 @@ export function usePresets(params: UsePresetsParams) {
     }
   };
 
-  // Load preset
+  // Load preset. applyPresetData had no error handling — a malformed
+  // preset.data (corrupted localStorage, a preset saved before a field was
+  // removed/renamed) could throw synchronously and fall through to the
+  // top-level ErrorBoundary, which silently remounts for 300ms with no
+  // message; if the offending preset was still selected after remounting,
+  // that could repeat indefinitely with no way for the user to know what's
+  // wrong. Catching it here means a bad preset just fails to load instead.
   const loadPreset = (preset: SavedPreset) => {
-    applyPresetData(preset.data);
+    try {
+      applyPresetData(preset.data);
+    } catch (err) {
+      console.error('Failed to load preset:', err);
+      alert(`Couldn't load "${preset.name}" — this preset's data looks corrupted.`);
+      return;
+    }
     setIsPresetModalOpen(false);
   };
 

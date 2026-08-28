@@ -385,6 +385,15 @@ export function InteractiveGradient() {
     const rowTop = topIconRowRef.current?.getBoundingClientRect().top ?? panelTop;
     setAboutPopupOffsetY(rowTop - panelTop);
   }, [isAboutOpen, isMobile]);
+  // Nothing moved focus into the About panel when it opened (via the "?"
+  // key or a click) — a keyboard/screen-reader user got no indication a
+  // dialog had appeared, since focus just stayed wherever it was on the
+  // page behind it. Escape already closed it (see the keydown handler
+  // below); this only adds the open-time focus move.
+  const aboutCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (isAboutOpen) aboutCloseButtonRef.current?.focus();
+  }, [isAboutOpen]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
   const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
@@ -1601,6 +1610,8 @@ export function InteractiveGradient() {
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
+    setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
+    setStarfieldCount, setStarfieldSpeed, setStarfieldOpacity, setStarfieldSize,
   });
 
   // Shuffle click handler — single click = full remix, shared by both the
@@ -4643,6 +4654,9 @@ export function InteractiveGradient() {
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="About wāv"
             // mx-6 previously sat alongside the left-1/2 + -translate-x-1/2
             // centering — margin on a translate-centered absolute element
             // shifts it off-axis instead of adding equal breathing room, so
@@ -4653,7 +4667,9 @@ export function InteractiveGradient() {
             style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y + aboutPopupOffsetY } : { top: 16 + aboutPopupOffsetY, left: 16 })}
           >
             <button
+              ref={aboutCloseButtonRef}
               onClick={() => setIsAboutOpen(false)}
+              aria-label="Close about panel"
               className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/5 flex items-center justify-center text-black/60 hover:text-black hover:bg-black/10 transition-all"
             >
               <X weight="regular" className="w-4 h-4" />

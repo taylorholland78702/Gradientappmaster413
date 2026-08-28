@@ -142,7 +142,15 @@ function saveCustomPresets(presets: CustomAudioStylePreset[]) {
   try {
     localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(presets));
   } catch (err) {
-    if (import.meta.env.DEV) console.warn('Failed to persist custom audio style presets:', err);
+    // Was dev-only console.warn — unlike usePresets.ts's safeSetLocalStorage,
+    // a user hitting a full localStorage quota here got no indication their
+    // custom audio preset silently failed to save and would vanish on
+    // reload. Same alert() pattern as that sibling save path.
+    console.error('Failed to persist custom audio style presets:', err);
+    alert(
+      "Couldn't save — your browser's local storage is full. " +
+      'Try deleting a few old presets and saving again.'
+    );
   }
 }
 
@@ -571,9 +579,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
+                    <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
+                <input type="number" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
                 <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} aria-pressed={subBassBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${subBassBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -584,9 +593,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
+                    <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
+                <input type="number" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
                 <button onClick={() => setBassBeatSync(!bassBeatSync)} aria-pressed={bassBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${bassBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -597,9 +607,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
+                    <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
+                <input type="number" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
                 <button onClick={() => setMidsBeatSync(!midsBeatSync)} aria-pressed={midsBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${midsBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
 
@@ -610,9 +621,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
+                    <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
+                <input type="number" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
                 <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} aria-pressed={trebleBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${trebleBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
               </div>
             </div>

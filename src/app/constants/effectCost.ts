@@ -29,7 +29,25 @@ export const totalCost = (effects: EffectType[]): number =>
 // useRandomization.ts) so InteractiveGradient.tsx can apply the same curve
 // whenever activeEffects changes at all, regardless of how it changed.
 const LIGHT_EFFECT_COST = 4;
-const HEAVY_EFFECT_COST = 15;
+// The curve below used to flatten out at a cost-15 ("HEAVY_EFFECT_COST")
+// 40% cut and
+// stay there — a manual stack of ~5 effects (cost 15) got the same
+// resolution relief as every effect stacked at once (cost ~58, the sum of
+// every EFFECT_COST entry), which is the actual case most likely to drop
+// frames. Extending the taper out to that real ceiling, and raising how far
+// it's allowed to cut, gives the heaviest stacks more relief without
+// changing anything for the common light/moderate case (still starts at
+// LIGHT_EFFECT_COST, same initial slope).
+// Computed lazily (not at module top-level) — this file and effectRegistry.ts
+// import from each other, and EFFECT_COST isn't necessarily populated yet at
+// the moment this module's top-level code runs depending on which side of
+// the cycle loads first (observed in Vitest: Object.values(EFFECT_COST) saw
+// undefined). Reading it inside the function guarantees both modules have
+// finished initializing by the time it's actually used, and it's cheap
+// enough (summing ~30 numbers) to not bother caching.
+const getExtremeEffectCost = (): number =>
+  Object.values(EFFECT_COST).reduce((a: number, b: number) => a + b, 0);
+const MAX_RESOLUTION_CUT = 0.65;
 // isMobile here is the same narrow-viewport signal InteractiveGradient.tsx's
 // useIsMobile(1024) already computes for layout — not a true low-power-
 // device detector (a resized narrow desktop window reads as "mobile" too,
@@ -47,6 +65,6 @@ export const resolutionForEffectCost = (cost: number, isMobile = false): number 
   const dprCap = isMobile ? 1.5 : 2;
   const baseline = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, dprCap);
   if (cost <= LIGHT_EFFECT_COST) return baseline;
-  const t = Math.min(1, (cost - LIGHT_EFFECT_COST) / (HEAVY_EFFECT_COST - LIGHT_EFFECT_COST));
-  return baseline * (1 - t * 0.4);
+  const t = Math.min(1, (cost - LIGHT_EFFECT_COST) / (getExtremeEffectCost() - LIGHT_EFFECT_COST));
+  return baseline * (1 - t * MAX_RESOLUTION_CUT);
 };

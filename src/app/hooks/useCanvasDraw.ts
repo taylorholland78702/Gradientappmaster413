@@ -545,7 +545,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // pulled into a helper so both the gradient-pipeline check below and
     // the effects loop further down can peek at an effect's context (to
     // check GL-pipeline eligibility) without executing it yet.
+    // GL-eligibility lookahead peeks at an index's context before the main
+    // loop reaches it, then the main loop builds the same index again — this
+    // cache makes the second call a lookup instead of a second full ~180-key
+    // spread + (for imageData-needing effects) a second getImageData() call.
+    // Safe because every effect draws synchronously within this same frame
+    // before the cache is discarded, and everything the context is built
+    // from (params, renderColors, audioBoundOverrides) is frame-constant.
+    const effectCtxCache = new Map<number, Record<string, any> | null>();
     const buildEffectCtx = (effectType: string, index: number): Record<string, any> | null => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (effectCtxCache.has(index)) return effectCtxCache.get(index)!;
       const isFirstEffect = index === 0;
       const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect)
         ? audioMidsLevel
@@ -557,10 +566,11 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           imageData = getDisplayImageData();
         } catch (e) {
           console.error('Failed to get image data:', e);
+          effectCtxCache.set(index, null);
           return null;
         }
       }
-      return {
+      const built = {
         ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
         // Same ref-sourced overrides as drawCtx above — effects that read an
         // anim-time value (applyLiquid, applyEmoji) need the live value too,
@@ -577,6 +587,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         effectType, index, isFirstEffect, audioModulation, imageData,
         ...audioBoundOverrides,
       };
+      effectCtxCache.set(index, built);
+      return built;
     };
 
     const runSingleEffect = (effectType: string, effectCtx: Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any

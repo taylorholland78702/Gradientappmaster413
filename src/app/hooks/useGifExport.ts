@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 
@@ -58,6 +58,18 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       }
     }
     return workerRef.current;
+  }, []);
+
+  // The worker was created lazily on first use but never torn down — it
+  // stayed alive as a dedicated thread for the component's entire lifetime
+  // even if GIF export was only ever used once. Terminate it on unmount.
+  useEffect(() => {
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
+    };
   }, []);
 
   const toggleGifRecording = useCallback(async () => {

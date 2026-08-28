@@ -109,6 +109,8 @@ export function useRandomization(params: RandomizationParams) {
     // save/restore, but no shuffle path ever touched them.
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
     setCrtIntensity, setCrtScanlineSpacing, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
+    setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
+    setStarfieldCount, setStarfieldSpeed, setStarfieldOpacity, setStarfieldSize,
   } = params;
 
   const randomizeUncoveredParams = useCallback(() => {
@@ -377,6 +379,18 @@ export function useRandomization(params: RandomizationParams) {
     setCrtScanlineSpacing(Math.floor(Math.random() * 6) + 1);          // 1–6
     setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
     setDustCrackleColor(randomHexColor());
+
+    // Aura Glow / Starfield — same gap Mesh Wireframe/Wave Interference
+    // above used to have: fully wired everywhere else (sliders, modulation,
+    // snapshot) but never touched by any shuffle/remix path, so activating
+    // either via Shuffle always showed the same look every time.
+    setAuraGlowCount(Math.floor(Math.random() * 6) + 1);                // 1–6
+    setAuraGlowSpeed(Math.random() * 2.9 + 0.1);                        // 0.1–3
+    setAuraGlowOpacity(Math.random() * 0.9 + 0.1);                      // 0.1–1
+    setStarfieldCount(Math.floor(Math.random() * 471) + 30);            // 30–500
+    setStarfieldSpeed(Math.random() * 3.8 + 0.2);                       // 0.2–4
+    setStarfieldOpacity(Math.random() * 0.9 + 0.1);                     // 0.1–1
+    setStarfieldSize(Math.random() * 3.8 + 0.2);                        // 0.2–4
 
     // Global palette adjust (Color tab). Brightness/Contrast now match the
     // ColorTab sliders' own ±25 bounds (see adjustPalette's defensive
@@ -816,7 +830,10 @@ export function useRandomization(params: RandomizationParams) {
     // Gradient-specific params — scale range with factor. Was always the
     // same 7 params regardless of the current gradient type; now gated to
     // only nudge the params the active type actually uses, and extended to
-    // cover the 10 types that previously had none here at all.
+    // cover the 14 types that previously had none here at all (angle, fade,
+    // radial, polar-grid, julia, attractor, reaction-diffusion, topographic,
+    // particles, tiling, wave-interference, mesh-wireframe, fireworks,
+    // lightning).
     if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
@@ -833,6 +850,20 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flow-field') { setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
+    else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
+    else if (gradientType === 'fade') setFadeDirection(Math.round(rng(0, 360)));
+    else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
+    else if (gradientType === 'polar-grid') setPolygon2Sides(Math.round(rng(1, 24)));
+    else if (gradientType === 'julia') setJuliaZoom(rng(0.3, 3));
+    else if (gradientType === 'attractor') setAttractorSpeed(rng(0.1, 5));
+    else if (gradientType === 'reaction-diffusion') setReactionDiffusionSpeed(rng(0.2, 3));
+    else if (gradientType === 'topographic') setTopographicScale(Math.round(rng(10, 99)));
+    else if (gradientType === 'particles') setParticlesSpeed(rng(0.1, 5));
+    else if (gradientType === 'tiling') setTilingComplexity(rng(0.5, 10));
+    else if (gradientType === 'wave-interference') setWaveInterferenceSpeed(rng(0.1, 5));
+    else if (gradientType === 'mesh-wireframe') setMeshWireframeJitter(rng(0, 1));
+    else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
+    else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.

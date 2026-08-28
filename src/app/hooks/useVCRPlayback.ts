@@ -344,8 +344,14 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       setIsEncoding(true);
       setEncodingProgress(0);
       try {
-        await encoder.flush();
-        encoder.close();
+        try {
+          await encoder.flush();
+        } finally {
+          // close() is safe to call regardless of whether flush() succeeded
+          // — leaving it out on a thrown flush() leaked the codec resource,
+          // accumulating across repeated failed recordings.
+          encoder.close();
+        }
 
         const hasAudio = audioBlob && audioBlob.size > 1000;
         if (hasAudio) {
@@ -452,6 +458,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
       setIsEncoding(true);
       setEncodingProgress(0);
 
+      const hasAudio = !!(audioBlob && audioBlob.size > 1000);
       try {
         const ffmpeg = await loadFFmpeg();
 
@@ -459,52 +466,59 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           setEncodingProgress(Math.round(progress * 100));
         });
 
-        // Write video frames — parallelized since each goes to a distinct file in
-        // ffmpeg's virtual FS, so there's no need to wait on them one at a time.
-        await Promise.all(frames.map((frame, i) =>
-          ffmpeg.writeFile(`f${String(i).padStart(5, '0')}.jpg`, frame)
-        ));
+        try {
+          // Write video frames — parallelized since each goes to a distinct file in
+          // ffmpeg's virtual FS, so there's no need to wait on them one at a time.
+          await Promise.all(frames.map((frame, i) =>
+            ffmpeg.writeFile(`f${String(i).padStart(5, '0')}.jpg`, frame)
+          ));
 
-        const hasAudio = audioBlob && audioBlob.size > 1000;
-        if (hasAudio) {
-          const audioBuf = new Uint8Array(await audioBlob!.arrayBuffer());
-          await ffmpeg.writeFile('audio.webm', audioBuf);
+          if (hasAudio) {
+            const audioBuf = new Uint8Array(await audioBlob!.arrayBuffer());
+            await ffmpeg.writeFile('audio.webm', audioBuf);
+          }
+
+          const outputArgs = [
+            '-framerate', String(CAPTURE_FPS),
+            '-i', 'f%05d.jpg',
+            ...(hasAudio ? ['-i', 'audio.webm'] : []),
+            '-c:v', 'libx264',
+            '-crf', '20',
+            '-preset', 'ultrafast',
+            '-threads', '0',
+            '-pix_fmt', 'yuv420p',
+            ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []),
+            '-movflags', '+faststart',
+            'out.mp4',
+          ];
+
+          await ffmpeg.exec(outputArgs);
+
+          const data = await ffmpeg.readFile('out.mp4') as Uint8Array;
+          const blob = new Blob([data], { type: 'video/mp4' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `wav-${Date.now()}.mp4`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } finally {
+          // Clean up ffmpeg FS regardless of success or failure — this used
+          // to only run after a full success, so any failure partway
+          // through (a bad writeFile, a failed exec) left that recording's
+          // JPEG frames orphaned in the ffmpeg instance's virtual FS, which
+          // is cached and reused across recordings (loadFFmpeg above) —
+          // repeated failures accumulated indefinitely for the tab's life.
+          // deleteFile on a file that was never written just rejects, which
+          // each inner try/catch already swallows.
+          for (let i = 0; i < frames.length; i++) {
+            try { await ffmpeg.deleteFile(`f${String(i).padStart(5, '0')}.jpg`); } catch { /* ok */ }
+          }
+          try { await ffmpeg.deleteFile('out.mp4'); } catch { /* ok */ }
+          if (hasAudio) { try { await ffmpeg.deleteFile('audio.webm'); } catch { /* ok */ } }
         }
-
-        const outputArgs = [
-          '-framerate', String(CAPTURE_FPS),
-          '-i', 'f%05d.jpg',
-          ...(hasAudio ? ['-i', 'audio.webm'] : []),
-          '-c:v', 'libx264',
-          '-crf', '20',
-          '-preset', 'ultrafast',
-          '-threads', '0',
-          '-pix_fmt', 'yuv420p',
-          ...(hasAudio ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : []),
-          '-movflags', '+faststart',
-          'out.mp4',
-        ];
-
-        await ffmpeg.exec(outputArgs);
-
-        const data = await ffmpeg.readFile('out.mp4') as Uint8Array;
-        const blob = new Blob([data], { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `wav-${Date.now()}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        // Clean up ffmpeg FS
-        for (let i = 0; i < frames.length; i++) {
-          try { await ffmpeg.deleteFile(`f${String(i).padStart(5, '0')}.jpg`); } catch { /* ok */ }
-        }
-        try { await ffmpeg.deleteFile('out.mp4'); } catch { /* ok */ }
-        if (hasAudio) { try { await ffmpeg.deleteFile('audio.webm'); } catch { /* ok */ } }
-
       } catch (err) {
         console.error('FFmpeg encoding failed:', err);
       } finally {
@@ -656,15 +670,49 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // show their own generic prompt, but the tab-close IS interceptable now.
   // GIF export has its own equivalent guard in useGifExport.ts, since its
   // recording state (isRecordingGif) lives in that separate hook.
+  //
+  // Also covers isEncoding, not just isVCRRecording: stopRecording flips
+  // isVCRRecording off immediately, but the actual export (ffmpeg encode, or
+  // WebCodecs flush+mux) keeps running for several more seconds — closing
+  // the tab in that window used to lose the whole export silently, right
+  // after the user had just finished waiting for the recording itself.
   useEffect(() => {
-    if (!isVCRRecording) return;
+    if (!isVCRRecording && !isEncoding) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isVCRRecording]);
+  }, [isVCRRecording, isEncoding]);
+
+  // Unmount safety net — nothing previously cancelled the capture rAF loop
+  // or closed an in-progress VideoEncoder if this component unmounted mid-
+  // recording (a route change, or a remount from an error boundary above
+  // it). Left running, the rAF loop keeps firing against a stale canvasRef
+  // and the encoder never releases its codec resource. This only fires on
+  // actual unmount (empty dep array, cleanup-only effect) — it does not
+  // interrupt a normal stop-then-encode flow, which already tears down
+  // captureRafRef itself in stopRecordingWebCodecs/stopRecordingFFmpeg.
+  useEffect(() => {
+    return () => {
+      if (captureRafRef.current) {
+        cancelAnimationFrame(captureRafRef.current);
+        captureRafRef.current = null;
+      }
+      isCapturingRef.current = false;
+      if (videoEncoderRef.current) {
+        try {
+          if (videoEncoderRef.current.state !== 'closed') videoEncoderRef.current.close();
+        } catch { /* already closed/closing */ }
+        videoEncoderRef.current = null;
+      }
+      if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') {
+        try { audioRecorderRef.current.stop(); } catch { /* already stopped */ }
+        audioRecorderRef.current = null;
+      }
+    };
+  }, []);
 
   return {
     // State
