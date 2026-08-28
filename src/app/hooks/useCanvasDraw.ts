@@ -312,8 +312,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const audioTrebleLevel = av.audioTrebleLevel;
     const audioEnergy = av.audioEnergy;
 
-    const displayWidth = window.innerWidth;
-    const displayHeight = window.innerHeight;
+    // The canvas's own display box, not the window — the rail/drawer are
+    // now a real docked sidebar (flex layout) that the canvas area reflows
+    // around, rather than a floating overlay on top of a full-window
+    // canvas, so its visible size is whatever's left after that layout.
+    const displayWidth = canvas.parentElement?.clientWidth || window.innerWidth;
+    const displayHeight = canvas.parentElement?.clientHeight || window.innerHeight;
     // Cap total canvas pixel count regardless of window size/DPR — a large
     // external display (esp. a 5K/6K monitor run at DPR 2, maximized) can
     // put the canvas at 3-4x the pixel count of a laptop's own screen, and

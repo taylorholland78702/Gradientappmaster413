@@ -9,17 +9,10 @@ type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
 
 export interface ControlRailProps {
   isMobile: boolean;
-  // Desktop position (from panelPos, same mechanism the old draggable
-  // panel used) — undefined on mobile, where the rail is fixed via
-  // className instead (inset-x-3 bottom-3).
-  style?: React.CSSProperties;
 
-  // Wordmark / drag handle — press-and-hold drags the rail (desktop only,
-  // reusing the same panelPos/localStorage mechanism the old draggable
-  // panel used), a plain click opens About. Drag logic itself stays in
-  // InteractiveGradient.tsx (onWordmarkMouseDown) since it needs panelPos/
-  // setPanelPos from scope; this component just wires the handler up.
-  onWordmarkMouseDown?: (e: React.MouseEvent) => void;
+  // Wordmark — click opens About. No drag handle any more: the rail is a
+  // fixed docked sidebar (left edge on desktop, bottom edge on mobile),
+  // not a repositionable floating panel.
   onWordmarkClick?: () => void;
 
   // Visibility
@@ -95,7 +88,7 @@ const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-c
  */
 export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function ControlRail(props, ref) {
   const {
-    isMobile, style, onWordmarkMouseDown, onWordmarkClick,
+    isMobile, onWordmarkClick,
     isControlsVisible, setIsControlsVisible,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
@@ -107,20 +100,20 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
     `${railBtnBase} ${activeTab === tab ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`;
 
   // Collapsed state: rather than vanishing entirely, the rail shrinks down
-  // to a single narrow pill (still vertical on desktop — a thin sliver of
-  // the full column, not a horizontal bar) that re-expands the full rail
-  // on click. Replaces the old "fully hidden, no way back except H" state.
+  // to a single narrow pill (still docked to the same edge) that
+  // re-expands the full rail on click. In-flow like the full rail below —
+  // collapsing it hands that width/height back to the canvas area instead
+  // of just fading out over it.
   if (!isControlsVisible) {
     return (
       <button
         ref={ref as React.Ref<HTMLButtonElement>}
         data-role="panel"
         onClick={() => setIsControlsVisible(true)}
-        style={{ touchAction: 'none', ...style }}
         className={
           isMobile
-            ? 'fixed inset-x-3 bottom-3 z-50 pointer-events-auto flex items-center justify-center w-10 h-7 mx-auto bg-black rounded-full shadow-sm text-white/70 hover:text-white transition-colors'
-            : 'absolute pointer-events-auto flex items-center justify-center w-7 h-10 bg-black rounded-full shadow-sm text-white/70 hover:text-white transition-colors'
+            ? 'flex-shrink-0 w-full pointer-events-auto flex items-center justify-center h-7 bg-black text-white/70 hover:text-white transition-colors'
+            : 'flex-shrink-0 h-full pointer-events-auto flex items-center justify-center w-7 bg-black text-white/70 hover:text-white transition-colors'
         }
         title="Show Controls (H)"
         aria-label="Show Controls"
@@ -135,39 +128,28 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       ref={ref}
       data-role="panel"
       aria-label="wāv controls"
-      style={{ touchAction: 'none', ...style }}
       className={
         isMobile
-          ? 'fixed inset-x-3 bottom-3 z-50 pointer-events-auto flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 bg-black rounded-2xl shadow-sm px-2 py-1.5'
-          // max-h-[calc(100vh-32px)] + overflow-y-auto: the rail is
-          // draggable, so unlike a fixed-position bar it can end up
-          // anchored somewhere that doesn't leave room for its full
-          // height below it (dragged low, or a short viewport) — without
-          // a scroll fallback, whatever falls past the bottom edge would
-          // become permanently unreachable rather than just needing a
-          // scroll. Hidden scrollbar (scrollbar-none isn't a default
-          // Tailwind utility here, so this relies on the same thin-
-          // scrollbar treatment already used elsewhere) keeps the slim
-          // rail look when it does need to scroll.
-          : 'absolute pointer-events-auto flex flex-col items-center gap-0.5 bg-black rounded-2xl shadow-sm px-1 py-2 max-h-[calc(100vh-32px)] overflow-y-auto'
+          // Docked flush to the bottom edge — square corners (it's the
+          // screen edge, not a floating card), full width, wraps to
+          // however many rows its content needs.
+          ? 'flex-shrink-0 w-full pointer-events-auto flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 bg-black px-2 py-1.5'
+          // Docked flush to the left edge — full height, scrolls
+          // internally if content ever exceeds the viewport height rather
+          // than overflowing off-screen with no way to reach it.
+          : 'flex-shrink-0 h-full pointer-events-auto flex flex-col items-center gap-0.5 bg-black px-1 py-2 overflow-y-auto'
       }
     >
-      {/* Wordmark — click opens About; hold-and-drag also repositions the
-          rail on desktop (mobile has no drag capability, same as the old
-          panel — the bottom bar is pinned, not freely positioned, so this
-          is just a plain About button there). Kept a plain mark here (not
-          the full liquid-glass wordmark SVG) since the rail is a slim
-          strip, not a card with room for a full lockup — the SVG wordmark
-          still appears once, inside the About panel itself. Always
-          rendered (not desktop-only) — it's the only way to reach About on
-          mobile, where there's no separate trigger for it. */}
+      {/* Wordmark — click opens About. Kept a plain mark here (not the
+          full liquid-glass wordmark SVG) since the rail is a slim strip,
+          not a card with room for a full lockup — the SVG wordmark still
+          appears once, inside the About panel itself. */}
       <button
-        onMouseDown={isMobile ? undefined : onWordmarkMouseDown}
         onClick={onWordmarkClick}
-        className={`w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 text-white font-black select-none ${isMobile ? '' : 'cursor-grab active:cursor-grabbing mb-0.5'}`}
+        className={`w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 text-white font-black select-none ${isMobile ? '' : 'mb-0.5'}`}
         style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14 }}
-        title={isMobile ? 'About wāv' : 'Click: About · Hold: drag rail'}
-        aria-label={isMobile ? 'About wāv' : 'Click for About, hold to drag the rail'}
+        title="About wāv"
+        aria-label="About wāv"
       >
           w
         </button>

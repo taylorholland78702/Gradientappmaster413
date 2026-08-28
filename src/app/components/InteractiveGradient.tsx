@@ -94,8 +94,6 @@ import { useMirrorState } from '../hooks/state/useMirrorState';
 import { useMiscState } from '../hooks/state/useMiscState';
 import { useMoireState } from '../hooks/state/useMoireState';
 import { useNoiseState } from '../hooks/state/useNoiseState';
-import { usePanelDragState } from '../hooks/state/usePanelDragState';
-import { usePanelPosState } from '../hooks/state/usePanelPosState';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { usePhotoState } from '../hooks/state/usePhotoState';
 import { usePinchState } from '../hooks/state/usePinchState';
@@ -335,8 +333,6 @@ export function InteractiveGradient() {
   const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, expandedEffects, setExpandedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   const { moireAnimTime, setMoireAnimTime, moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed } = useMoireState();
   const { noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType } = useNoiseState();
-  const { panelDragRef } = usePanelDragState();
-  const { panelPos, setPanelPos } = usePanelPosState();
   // 1024 rather than the hook's 768 default -- covers tablets too, not
   // just phones, per explicit request ("only on mobile/tablet"). One
   // breakpoint drives the bottom-sheet panel, the collapsed cluster, and
@@ -367,7 +363,7 @@ export function InteractiveGradient() {
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [panelPos, isMobile, isControlsVisible, activeTab]);
+  }, [isMobile, isControlsVisible, activeTab]);
   // Nothing moved focus into the About panel when it opened (via the "?"
   // key or a click) — a keyboard/screen-reader user got no indication a
   // dialog had appeared, since focus just stayed wherever it was on the
@@ -1607,60 +1603,6 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
-  // Rail drag handle (desktop only — ControlRail doesn't render the
-  // wordmark button on mobile, so this never gets wired there). Distinct
-  // from a plain click via the same hold-vs-movement race the old
-  // draggable panel used: a real drag motion, or a hold timer elapsing
-  // while still held (whichever comes first) commits to drag mode;
-  // releasing before either fires opens About instead of repositioning the
-  // rail. Reuses panelPos/setPanelPos and the same localStorage key the
-  // panel used, so a position saved before this change still applies.
-  const onWordmarkMouseDown = (e: React.MouseEvent) => {
-    const rail = e.currentTarget.closest('[data-role="panel"]') as HTMLElement;
-    const rect = rail.getBoundingClientRect();
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const origX = rect.left;
-    const origY = rect.top;
-    let dragStarted = false;
-    // Clamp to the viewport, leaving at least this much of the rail
-    // on-screen — otherwise a user can drag it fully off the edge and lose
-    // access to every control (no way to recover short of clearing
-    // localStorage).
-    const MIN_VISIBLE = 40;
-    const clamp = (x: number, y: number) => ({
-      x: Math.min(Math.max(x, MIN_VISIBLE - rect.width), window.innerWidth - MIN_VISIBLE),
-      y: Math.min(Math.max(y, 0), window.innerHeight - MIN_VISIBLE),
-    });
-    const MOVE_THRESHOLD = 4;
-    const HOLD_MS = 350;
-    const holdTimer = window.setTimeout(() => { dragStarted = true; }, HOLD_MS);
-    const onMove = (ev: MouseEvent) => {
-      if (!dragStarted) {
-        const dx = ev.clientX - startX;
-        const dy = ev.clientY - startY;
-        if (Math.hypot(dx, dy) < MOVE_THRESHOLD) return;
-        dragStarted = true;
-      }
-      setPanelPos(clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY)));
-    };
-    const onUp = (ev: MouseEvent) => {
-      window.clearTimeout(holdTimer);
-      if (dragStarted) {
-        const pos = clamp(origX + (ev.clientX - startX), origY + (ev.clientY - startY));
-        try { localStorage.setItem('panelPos', JSON.stringify(pos)); } catch (err) {
-          if (import.meta.env.DEV) console.warn('Failed to persist panelPos:', err);
-        }
-      } else {
-        setIsAboutOpen(true);
-      }
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
-
   // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
   // wordmark) on a timer, so the artwork keeps evolving
   // hands-free. evolveWithFactor(1) sets new target values that the master
@@ -1672,8 +1614,7 @@ export function InteractiveGradient() {
   // randomize the very state the user is trying to save out from under them.
   const [isNewPresetPending, setIsNewPresetPending] = useState(false);
   // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
-  // slider in the Info panel. Persisted so it survives a reload, same
-  // pattern as panelPos.
+  // slider in the Info panel. Persisted so it survives a reload.
   const AUTO_SHUFFLE_MIN_SEC = 1;
   const AUTO_SHUFFLE_MAX_SEC = 3600;
   const [autoShuffleIntervalSec, setAutoShuffleIntervalSecState] = useState(() => {
@@ -3026,9 +2967,12 @@ export function InteractiveGradient() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Calculate angle from center of screen
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
+    // Calculate angle from the center of the canvas's own display box, not
+    // the window — the canvas no longer spans the full viewport now that
+    // the rail is a docked sidebar the canvas area reflows around.
+    const canvasRect = canvas.getBoundingClientRect();
+    const centerX = canvasRect.left + canvasRect.width / 2;
+    const centerY = canvasRect.top + canvasRect.height / 2;
     const deltaX = clientX - centerX;
     const deltaY = clientY - centerY;
 
@@ -3052,8 +2996,8 @@ export function InteractiveGradient() {
     const currentTime = Date.now();
     if (currentTime - lastChangeTime.current < CHANGE_INTERVAL) return;
 
-    // Calculate which part of the screen was touched to determine which color to change
-    const relativeX = clientX / window.innerWidth;
+    // Calculate which part of the canvas was touched to determine which color to change
+    const relativeX = (clientX - canvasRect.left) / canvasRect.width;
     
     // Determine which color index to change based on horizontal position
     const colorIndex = Math.floor(relativeX * gradientColors.length);
@@ -3789,8 +3733,134 @@ export function InteractiveGradient() {
     onShuffleAudio: shuffleAudiovisuals,
   };
 
+  // The rail (+ its drawer, when a tab is open) is a real docked sidebar
+  // now, not a floating overlay — it's a flex sibling of the canvas area
+  // below, so the canvas area actually shrinks to share the frame with it
+  // instead of being covered. Built once here and placed on whichever side
+  // matches the layout (left of canvas on desktop, below it on mobile).
+  const dock = (
+    <div
+      data-role="dock"
+      className={isMobile ? 'flex-shrink-0 w-full flex flex-col' : 'flex-shrink-0 h-full flex flex-row'}
+    >
+      {!isMobile && (
+        <ControlRail
+          ref={panelRef}
+          isMobile={isMobile}
+          onWordmarkClick={() => setIsAboutOpen(true)}
+          isControlsVisible={isControlsVisible}
+          setIsControlsVisible={setIsControlsVisible}
+          handleWavClick={handleWavClick}
+          isWavPressed={isWavPressed}
+          isAutoShuffleOn={isAutoShuffleOn}
+          isNewPresetPending={isNewPresetPending}
+          autoShuffleIntervalSec={autoShuffleIntervalSec}
+          formatAutoShuffleInterval={formatAutoShuffleInterval}
+          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
+          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
+          openAutoShufflePopover={openAutoShufflePopover}
+          exportAsPNG={exportAsPNG}
+          toggleGifRecording={toggleGifRecording}
+          isFinalizingGif={isFinalizingGif}
+          isRecordingGif={isRecordingGif}
+          undoLastChange={undoLastChange}
+          redoLastChange={redoLastChange}
+          undoDepth={undoDepth}
+          redoDepth={redoDepth}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isMicActive={isMicActive}
+          liveSubBassLevel={liveSubBassLevel}
+          liveBassLevel={liveBassLevel}
+          liveMidsLevel={liveMidsLevel}
+          liveTrebleLevel={liveTrebleLevel}
+          audioEnergy={audioEnergy}
+          isRecording={isRecording}
+          isVCRPlaying={isVCRPlaying}
+          isAutoMode={isAutoMode}
+          vcrRecordedFrames={vcrRecordedFrames}
+          vcrPlaybackSpeed={vcrPlaybackSpeed}
+          rotationDirection={rotationDirection}
+          isEncoding={isEncoding}
+          encodingProgress={encodingProgress}
+          setRotationDirection={setRotationDirection}
+          toggleVCRRecording={toggleVCRRecording}
+          handleStop={handleStop}
+          toggleVCRPlayback={toggleVCRPlayback}
+          isSpeedPopoverOpen={!!speedPopoverAnchor}
+          onToggleSpeedPopover={toggleSpeedPopover}
+        />
+      )}
+
+      <ControlDrawer
+        ref={drawerRef}
+        activeTab={activeTab}
+        isMobile={isMobile}
+        mobileMaxHeight={mobilePanelMaxHeight}
+        tabProps={controlDrawerTabProps}
+        audioState={audioPanelState}
+        audioActions={audioPanelActions}
+      />
+
+      {isMobile && (
+        <ControlRail
+          ref={panelRef}
+          isMobile={isMobile}
+          onWordmarkClick={() => setIsAboutOpen(true)}
+          isControlsVisible={isControlsVisible}
+          setIsControlsVisible={setIsControlsVisible}
+          handleWavClick={handleWavClick}
+          isWavPressed={isWavPressed}
+          isAutoShuffleOn={isAutoShuffleOn}
+          isNewPresetPending={isNewPresetPending}
+          autoShuffleIntervalSec={autoShuffleIntervalSec}
+          formatAutoShuffleInterval={formatAutoShuffleInterval}
+          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
+          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
+          openAutoShufflePopover={openAutoShufflePopover}
+          exportAsPNG={exportAsPNG}
+          toggleGifRecording={toggleGifRecording}
+          isFinalizingGif={isFinalizingGif}
+          isRecordingGif={isRecordingGif}
+          undoLastChange={undoLastChange}
+          redoLastChange={redoLastChange}
+          undoDepth={undoDepth}
+          redoDepth={redoDepth}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isMicActive={isMicActive}
+          liveSubBassLevel={liveSubBassLevel}
+          liveBassLevel={liveBassLevel}
+          liveMidsLevel={liveMidsLevel}
+          liveTrebleLevel={liveTrebleLevel}
+          audioEnergy={audioEnergy}
+          isRecording={isRecording}
+          isVCRPlaying={isVCRPlaying}
+          isAutoMode={isAutoMode}
+          vcrRecordedFrames={vcrRecordedFrames}
+          vcrPlaybackSpeed={vcrPlaybackSpeed}
+          rotationDirection={rotationDirection}
+          isEncoding={isEncoding}
+          encodingProgress={encodingProgress}
+          setRotationDirection={setRotationDirection}
+          toggleVCRRecording={toggleVCRRecording}
+          handleStop={handleStop}
+          toggleVCRPlayback={toggleVCRPlayback}
+          isSpeedPopoverOpen={!!speedPopoverAnchor}
+          onToggleSpeedPopover={toggleSpeedPopover}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black" ref={containerRef}>
+    <div
+      className="fixed inset-0 overflow-hidden bg-black flex"
+      style={{ flexDirection: isMobile ? 'column' : 'row' }}
+      ref={containerRef}
+    >
+      {!isMobile && dock}
+      <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
       <div ref={shakeWrapperRef} className="w-full h-full">
         <canvas
           ref={canvasRef}
@@ -3806,7 +3876,9 @@ export function InteractiveGradient() {
           style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
         />
       </div>
-      
+      </div>
+      {isMobile && dock}
+
       {/* Upper Right Controls */}
       <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <input
@@ -3830,7 +3902,7 @@ export function InteractiveGradient() {
       {false && showRatingUI && (
         <div
           className="absolute pointer-events-auto z-[9999]"
-          style={panelPos ? { left: panelPos.x + 215, top: panelPos.y } : { left: 231, top: 16 }}
+          style={{ left: 231, top: 16 }}
         >
           <div
             className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl shadow-sm"
@@ -3872,66 +3944,6 @@ export function InteractiveGradient() {
           </div>
         </div>
       )}
-
-      <ControlRail
-        ref={panelRef}
-        isMobile={isMobile}
-        style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
-        onWordmarkMouseDown={onWordmarkMouseDown}
-        onWordmarkClick={() => setIsAboutOpen(true)}
-        isControlsVisible={isControlsVisible}
-        setIsControlsVisible={setIsControlsVisible}
-        handleWavClick={handleWavClick}
-        isWavPressed={isWavPressed}
-        isAutoShuffleOn={isAutoShuffleOn}
-        isNewPresetPending={isNewPresetPending}
-        autoShuffleIntervalSec={autoShuffleIntervalSec}
-        formatAutoShuffleInterval={formatAutoShuffleInterval}
-        autoShufflePopoverAnchor={autoShufflePopoverAnchor}
-        setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
-        openAutoShufflePopover={openAutoShufflePopover}
-        exportAsPNG={exportAsPNG}
-        toggleGifRecording={toggleGifRecording}
-        isFinalizingGif={isFinalizingGif}
-        isRecordingGif={isRecordingGif}
-        undoLastChange={undoLastChange}
-        redoLastChange={redoLastChange}
-        undoDepth={undoDepth}
-        redoDepth={redoDepth}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isMicActive={isMicActive}
-        liveSubBassLevel={liveSubBassLevel}
-        liveBassLevel={liveBassLevel}
-        liveMidsLevel={liveMidsLevel}
-        liveTrebleLevel={liveTrebleLevel}
-        audioEnergy={audioEnergy}
-        isRecording={isRecording}
-        isVCRPlaying={isVCRPlaying}
-        isAutoMode={isAutoMode}
-        vcrRecordedFrames={vcrRecordedFrames}
-        vcrPlaybackSpeed={vcrPlaybackSpeed}
-        rotationDirection={rotationDirection}
-        isEncoding={isEncoding}
-        encodingProgress={encodingProgress}
-        setRotationDirection={setRotationDirection}
-        toggleVCRRecording={toggleVCRRecording}
-        handleStop={handleStop}
-        toggleVCRPlayback={toggleVCRPlayback}
-        isSpeedPopoverOpen={!!speedPopoverAnchor}
-        onToggleSpeedPopover={toggleSpeedPopover}
-      />
-
-      <ControlDrawer
-        ref={drawerRef}
-        activeTab={activeTab}
-        isMobile={isMobile}
-        railRect={railRect}
-        mobileMaxHeight={mobilePanelMaxHeight}
-        tabProps={controlDrawerTabProps}
-        audioState={audioPanelState}
-        audioActions={audioPanelActions}
-      />
 
       {/* First-run hint — floats near wherever the rail currently is
           (railRect), same content/dismiss logic as before, just
@@ -3981,11 +3993,9 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel — top edge anchored to the rail's own top-left corner
-          (panelPos), since the wordmark now lives inside the rail itself
-          rather than above a separate card. The click-catcher behind it
-          stays unblurred so the gradient result underneath isn't blurred
-          out; only the card itself keeps its own frosted-glass surface. */}
+      {/* About panel — centered over the canvas. The click-catcher behind
+          it stays unblurred so the gradient result underneath isn't
+          blurred out; only the card itself keeps its own surface. */}
       {isAboutOpen && (
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
@@ -3998,9 +4008,10 @@ export function InteractiveGradient() {
             // shifts it off-axis instead of adding equal breathing room, so
             // this pushed the popup ~24px right of true center on mobile.
             // w-[calc(100%-3rem)] gives the same edge clearance without
-            // touching the centering transform.
-            className={`absolute bg-white rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-black shadow-2xl ${isMobile ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-3rem)]' : ''}`}
-            style={isMobile ? undefined : (panelPos ? { left: panelPos.x, top: panelPos.y } : { top: 16, left: 16 })}
+            // touching the centering transform. Centered on both layouts now
+            // — the rail is a fixed docked sidebar (no drag position to
+            // anchor next to) rather than a floating, repositionable panel.
+            className={`absolute bg-white rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-black shadow-2xl left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${isMobile ? 'w-[calc(100%-3rem)]' : ''}`}
           >
             <button
               ref={aboutCloseButtonRef}
@@ -4021,7 +4032,7 @@ export function InteractiveGradient() {
             <div className="flex flex-col gap-8 text-sm text-black/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
                 <p className="font-semibold text-black">Rail</p>
-                <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen — press and hold it to drag the rail anywhere on screen instead (desktop only).</p>
+                <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen.</p>
               </div>
 
               <div className="flex flex-col gap-3">

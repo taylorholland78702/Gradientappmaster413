@@ -19,7 +19,6 @@ const TAB_LABELS: Record<TabId, string> = {
 export interface ControlDrawerProps {
   activeTab: TabId | null;
   isMobile: boolean;
-  railRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null;
   // Visible-viewport-aware height budget for the mobile sheet — see its
   // computation in InteractiveGradient.tsx (mobilePanelMaxHeight) for why
   // this isn't just a CSS vh unit (a dvh-staleness bug on iOS Safari).
@@ -41,14 +40,16 @@ export interface ControlDrawerProps {
 
 /**
  * The slide-out drawer replacing the old panel's tab content, which used to
- * render inline below the 3-row card and push it taller. Pinned flush
- * against wherever the rail currently is (it's draggable) rather than an
- * Overlay that dismisses on an outside click — it only closes via Escape
- * (handled globally, unchanged) or repressing its own tab's rail icon,
- * same as the mockup's "Pinned" drawer behavior.
+ * render inline below the 3-row card and push it taller. A real docked
+ * sidebar now (a flex sibling of the rail, both inside InteractiveGradient's
+ * "dock" wrapper) rather than a floating overlay — opening it shrinks the
+ * canvas area to share the frame instead of covering it, matching the
+ * mockup's "Pinned" drawer behavior. Only closes via Escape (handled
+ * globally, unchanged) or repressing its own tab's rail icon — no outside-
+ * click dismiss and no close button.
  */
 export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(function ControlDrawer(
-  { activeTab, isMobile, railRect, mobileMaxHeight, tabProps, audioState, audioActions },
+  { activeTab, isMobile, mobileMaxHeight, tabProps, audioState, audioActions },
   forwardedRef
 ) {
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -68,32 +69,21 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
 
   if (!activeTab) return null;
 
-  // Positioned off the rail's own live, measured rect (railRect) rather
-  // than a guessed constant — the rail is draggable on desktop, and on
-  // mobile its height varies with how many buttons wrap onto a second row,
-  // so neither edge is a fixed number. Flush against the rail (no gap) so
-  // the two read as one pinned unit rather than a floating card.
-  const style: React.CSSProperties = isMobile
-    ? {
-        bottom: railRect ? window.innerHeight - railRect.top + 4 : 92,
-        maxHeight: mobileMaxHeight,
-      }
-    : {
-        left: railRect ? railRect.right : 90,
-        top: railRect ? Math.max(16, railRect.top) : 16,
-        maxHeight: railRect ? `calc(100vh - ${Math.max(16, railRect.top)}px - 16px)` : 'calc(100vh - 2rem)',
-      };
-
+  // In-flow now (a flex child of the dock wrapper, next to the rail) rather
+  // than a floating card positioned off the rail's measured rect. Corners
+  // are only rounded on the edge that's actually exposed to the canvas —
+  // the edge touching the rail stays square so the two read as one
+  // continuous docked unit, not two stacked cards.
   return (
     <div
       ref={drawerRef}
       role="dialog"
       aria-label={`${TAB_LABELS[activeTab]} panel`}
-      style={style}
+      style={isMobile ? { maxHeight: mobileMaxHeight } : undefined}
       className={
         isMobile
-          ? 'fixed inset-x-3 z-40 pointer-events-auto bg-black rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden'
-          : 'fixed z-40 pointer-events-auto bg-black rounded-2xl shadow-sm overflow-y-auto overflow-x-hidden w-[215px] scale-[1.15] origin-top-left'
+          ? 'flex-shrink-0 w-full pointer-events-auto bg-black rounded-t-2xl overflow-y-auto overflow-x-hidden'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-black rounded-r-2xl overflow-y-auto overflow-x-hidden w-[248px]'
       }
     >
       {/* No close button — repressing the tab's own rail icon (a toggle,
