@@ -2094,104 +2094,16 @@ export function InteractiveGradient() {
 
   // ─── Unified evolve: factor 0 = subtle nudge, 1 = full random ───────────────
 
-  // Capture current state for rating
+  // Capture current state for rating. Rides on buildSnapshot (the same
+  // comprehensive, actively-maintained source of truth used by undo/redo)
+  // rather than a hand-picked field list, which used to drift out of sync
+  // with new sliders (e.g. every effect added this session was missing here).
   const captureCurrentStateForRating = useCallback(() => {
     setPendingRatingState({
-      gradientColors,
-      gradientType,
-      activeEffects,
+      ...buildSnapshot(),
       audioWasActive: isAudioEnabled && isAudioReactive,
-      gradientAngle,
-      zoom,
-      vcrPlaybackSpeed,
-      rotationDirection,
-      kaleidoscopeSegments,
-      twistAmount,
-      pixelSize,
-      triangleSize,
-      triangulateVariation,
-      chromaticOffset,
-      fisheyeStrength,
-      grainIntensity,
-      blurMotionAmount,
-      blurMotionDirection,
-      blurGaussianAmount,
-      blurRadialAmount,
-      posterizeLevels,
-      halftoneSize,
-      halftoneVariation,
-      halftoneMove,
-      halftoneMoveSpeed,
-      vignetteStrength,
-      colorShiftHue,
-      digitalNoiseIntensity,
-      duotoneIntensity,
-      duotoneColor1,
-      duotoneColor2,
-      dustCrackleColor,
-      dustCrackleIntensity,
-      dustCrackleLength,
-      hexGridSize,
-      lightLeakIntensity,
-      linesCount,
-      linesAngle,
-      linesThickness,
-      liquifyStrength,
-      pinchStrength,
-      sepiaIntensity,
-      solarizeThreshold,
-      gridSides,
-      duotoneColor3,
-      duotoneThreeColor,
-      vhsGlitchIntensity,
-      gridRows,
-      gridColumns,
-      polygon2Sides,
-      waveDistortionStrength,
-      windmillTightness,
-      windmillRotations,
-      windmillThickness,
-      windmillZoom,
-      windmillZoomResponse,
-      windmillMode,
-      shapesSides,
-      shapesCount,
-      concentricRingWidth,
-      concentricRingCount,
-      noiseScale,
-      noiseOctaves,
-      noiseDirection,
-      plasmaSpeed,
-      plasmaComplexity,
-      radialBurstCount,
-      radialBurstMode,
-      radialBurstSpread,
-      radialBurstSize,
-      voronoiCellCount,
-      voronoiDistortion,
-      helixTurns,
-      helixTightness,
-            gridRotation,
-      angleStartOffset,
-      angleCenterX,
-      angleCenterY,
     });
-  }, [
-    gradientColors, gradientType, activeEffects, gradientAngle, zoom, vcrPlaybackSpeed, rotationDirection,
-    kaleidoscopeSegments, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength,
-    grainIntensity, blurMotionAmount, blurMotionDirection, blurGaussianAmount, blurRadialAmount,
-    posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, vignetteStrength,
-    colorShiftHue, digitalNoiseIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, dustCrackleColor, dustCrackleIntensity, dustCrackleLength,
-    hexGridSize, lightLeakIntensity, linesCount, linesAngle, linesThickness, liquifyStrength, pinchStrength,
-    sepiaIntensity, solarizeThreshold,
-    gridSides, duotoneColor3, duotoneThreeColor,
-    vhsGlitchIntensity, gridRows, gridColumns, polygon2Sides, waveDistortionStrength,
-    windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount,
-    concentricRingWidth, concentricRingCount,
-    noiseScale, noiseOctaves, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread,
-    voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, gridRotation, angleStartOffset, angleCenterX, angleCenterY,
-    isAudioEnabled, isAudioReactive,
-  ]);
+  }, [buildSnapshot, isAudioEnabled, isAudioReactive]);
   
   // Submit rating for current result
   const submitRating = useCallback((rating: number) => {
@@ -2232,66 +2144,6 @@ export function InteractiveGradient() {
     setActiveTab('presets');
     setIsPresetsDropdownOpen(true);
   }, [submitRating, setIsPresetsDropdownOpen]);
-
-  // Shuffle Effects - randomize only effects and their settings (1-15 effects)
-  const shuffleEffects = useCallback(() => {
-    // Pick 1-10 random effects with a mean of 5 using triangular distribution
-    const numEffects = Math.min(10, Math.max(1, Math.round((Math.random() + Math.random()) * 5)));
-    const selectedEffects: EffectType[] = [];
-    
-    for (let i = 0; i < numEffects; i++) {
-      const randomEffect = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
-      if (!selectedEffects.includes(randomEffect)) {
-        selectedEffects.push(randomEffect);
-      }
-    }
-    
-    setActiveEffects(selectedEffects);
-    if (selectedEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
-
-    // Randomize all FX slider variables
-    setKaleidoscopeSegments(Math.floor(Math.random() * 20) + 3); // 3-22
-    setTwistAmount(Math.random() * 5); // 0-5
-    setPixelSize(Math.floor(Math.random() * 50) + 5); // 5-54
-    setTriangleSize(Math.floor(Math.random() * 80) + 20); // 20-99
-    setChromaticOffset(Math.floor(Math.random() * 20) + 1); // 1-20
-    setFisheyeStrength(Math.random()); // 0-1
-    setGrainIntensity(Math.random() * 0.5); // 0-0.5
-    setBlurMotionAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setBlurMotionDirection(Math.floor(Math.random() * 360)); // 0-360
-    setBlurGaussianAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setBlurRadialAmount(Math.floor(Math.random() * 20) + 1); // 1-20
-    setPosterizeLevels(Math.floor(Math.random() * 14) + 2); // 2-15
-    setHalftoneSize(Math.floor(Math.random() * 198) + 2); // 2-200
-    setHalftoneVariation(Math.random()); // 0-1
-    setHalftoneMove(Math.random() > 0.5); // random true/false
-    setHalftoneMoveSpeed(Math.random() * 9 + 1); // 1-10
-    setVignetteStrength(Math.random()); // 0-1
-    setColorShiftHue(Math.floor(Math.random() * 360)); // 0-360
-    setDigitalNoiseIntensity(Math.random()); // 0-1
-    setDuotoneIntensity(Math.random()); // 0-1
-    setDustCrackleIntensity(Math.random()); // 0-1
-    setHexGridSize(Math.floor(Math.random() * 190) + 10); // 10-200
-    setLightLeakIntensity(Math.random()); // 0-1
-    setLinesCount(Math.floor(Math.random() * 150) + 10); // 10-159
-    setLinesAngle(Math.floor(Math.random() * 360)); // 0-360
-    setLinesThickness(Math.floor(Math.random() * 49) + 1); // 1-50
-    setLiquifyStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-    setPinchStrength(Math.random()); // 0-1
-    setSepiaIntensity(Math.random()); // 0-1
-    setSolarizeThreshold(Math.floor(Math.random() * 255)); // 0-255
-    setGridSides(Math.floor(Math.random() * 10) + 1); // 1-10 sides
-    setVhsGlitchIntensity(Math.random()); // 0-1
-    setGridRows(Math.floor(Math.random() * 50) + 1); // 1-50
-    setGridColumns(Math.floor(Math.random() * 50) + 1); // 1-50
-    setPolygon2Sides(Math.floor(Math.random() * 10) + 1); // 1-10
-    setWaveDistortionStrength(Math.floor(Math.random() * 80) + 10); // 10-89
-
-    // Randomize duotone colors
-    setDuotoneColor1(randomHexColor());
-    setDuotoneColor2(randomHexColor());
-    setDuotoneColor3(randomHexColor());
-  }, [ALL_EFFECTS, randomHexColor]);
 
   // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
   // BEAT/FX-on-Beat toggles), matching each control's actual slider range.

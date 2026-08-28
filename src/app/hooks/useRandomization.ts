@@ -783,7 +783,8 @@ export function useRandomization(params: RandomizationParams) {
     // fixed 9-effect list (kaleidoscope/chromatic/vignette/blur/grain/wave/
     // pixelate/shift/twist) — any other active effect sat frozen through
     // every hold/evolve. Extended to match the same coverage
-    // randomizeUncoveredParams brings to the Shuffle/WAV-click paths.
+    // randomizeUncoveredParams brings to the Shuffle/WAV-click paths
+    // (vhs/crt/slit-scan added, grain/dither/mirror filled out).
     // A single tap only nudges <2 (i.e. at most one) active effect at a
     // time, picked at random, rather than every active effect at once.
     const rng = (min: number, max: number) => min + Math.random() * (max - min) * (0.3 + factor * 0.7);
@@ -795,7 +796,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'chromatic') setChromaticOffset(Math.round(rng(...RANGES.chromaticOffset)));
       else if (eff === 'vignette') setVignetteStrength(rng(...RANGES.vignetteStrength));
       else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(...RANGES.blurGaussianAmount)));
-      else if (eff === 'grain') setGrainIntensity(rng(0, 0.5));
+      else if (eff === 'grain') { setGrainIntensity(rng(0, 0.5)); setGrainSize(Math.round(rng(1, 6))); }
       else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(...RANGES.waveDistortionStrength)));
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(...RANGES.pixelSize)));
       else if (eff === 'shift') setColorShiftHue(Math.round(rng(...RANGES.colorShiftHue)));
@@ -807,6 +808,9 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
       else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));
       else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }
+      else if (eff === 'vhs') { setVhsGlitchIntensity(rng(0.05, 0.4)); setVhsJitterAmount(Math.round(rng(50, 400))); }
+      else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); }
+      else if (eff === 'slit-scan') { setSlitScanIntensity(rng(0, 1)); setSlitScanHistory(Math.round(rng(12, 120))); }
     }
 
     // Gradient-specific params — scale range with factor. Was always the
