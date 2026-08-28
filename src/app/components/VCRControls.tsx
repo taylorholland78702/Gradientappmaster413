@@ -89,7 +89,7 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
           title={(isVCRPlaying || isAutoMode ? "Stop" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")) + " (Space)"}
           aria-label={isVCRPlaying || isAutoMode ? "Stop" : (vcrRecordedFrames.length > 0 ? "Play Recording" : "Auto Play")}
         >
-          {(isVCRPlaying || isAutoMode) ? <Stop weight="fill" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
+          {(isVCRPlaying || isAutoMode) ? <Stop weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}
         </button>
       </div>
 
