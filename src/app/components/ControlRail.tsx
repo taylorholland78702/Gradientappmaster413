@@ -78,6 +78,20 @@ const RailSep: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
 
 const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';
 
+// Desktop rail is rendered at its normal (mobile-matching) size, then
+// visually scaled up 30% as a whole via CSS transform — a single knob
+// that enlarges every button/icon/gap uniformly without needing to hand-
+// tune a second set of size classes throughout this file and
+// VCRControls.tsx. The transform doesn't affect layout sizing on its own
+// (a scaled element keeps contributing its original box to its parent's
+// layout), so the outer <nav> gets an explicit width equal to the scaled
+// footprint instead of relying on auto-sizing — that's what makes the
+// canvas area actually reflow to the enlarged rail's real visual size.
+const DESKTOP_RAIL_SCALE = 1.3;
+const DESKTOP_RAIL_CONTENT_W = 38; // px-1 (8px) + one 30px button
+const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_SCALE);
+const DESKTOP_COLLAPSED_W = Math.round(28 * DESKTOP_RAIL_SCALE); // w-7
+
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
  * control the card used to have is here — visibility, shuffle, export,
@@ -110,15 +124,16 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         ref={ref as React.Ref<HTMLButtonElement>}
         data-role="panel"
         onClick={() => setIsControlsVisible(true)}
+        style={!isMobile ? { width: DESKTOP_COLLAPSED_W } : undefined}
         className={
           isMobile
             ? 'flex-shrink-0 w-full pointer-events-auto flex items-center justify-center h-7 bg-black text-white/70 hover:text-white transition-colors'
-            : 'flex-shrink-0 h-full pointer-events-auto flex items-center justify-center w-7 bg-black text-white/70 hover:text-white transition-colors'
+            : 'flex-shrink-0 h-full pointer-events-auto flex items-center justify-center bg-black text-white/70 hover:text-white transition-colors'
         }
         title="Show Controls (H)"
         aria-label="Show Controls"
       >
-        <Eye weight="regular" className="w-3.5 h-3.5" />
+        <Eye weight="regular" className={isMobile ? 'w-3.5 h-3.5' : 'w-[18px] h-[18px]'} />
       </button>
     );
   }
@@ -128,17 +143,30 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       ref={ref}
       data-role="panel"
       aria-label="wāv controls"
+      style={!isMobile ? { width: DESKTOP_RAIL_SCALED_W } : undefined}
       className={
         isMobile
           // Docked flush to the bottom edge — square corners (it's the
-          // screen edge, not a floating card), full width, wraps to
-          // however many rows its content needs.
-          ? 'flex-shrink-0 w-full pointer-events-auto flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 bg-black px-2 py-1.5'
+          // screen edge, not a floating card).
+          ? 'flex-shrink-0 w-full pointer-events-auto bg-black'
           // Docked flush to the left edge — full height, scrolls
           // internally if content ever exceeds the viewport height rather
           // than overflowing off-screen with no way to reach it.
-          : 'flex-shrink-0 h-full pointer-events-auto flex flex-col items-center gap-0.5 bg-black px-1 py-2 overflow-y-auto'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-black overflow-y-auto overflow-x-hidden'
       }
+    >
+    {/* Desktop-only 1.3x scale wrapper — see DESKTOP_RAIL_SCALE comment
+        above. Rendered at natural size and blown up as a whole so every
+        button/icon/gap enlarges uniformly. Mobile keeps the plain
+        flex-row-wrap layout it always had, just moved down one level so
+        the <nav> above stays a pure sizing/background shell either way. */}
+    <div
+      className={
+        isMobile
+          ? 'flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 px-2 py-1.5'
+          : 'flex flex-col items-center gap-0.5 px-1 py-2 origin-top-left'
+      }
+      style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
     >
       {/* Wordmark — click opens About. Kept a plain mark here (not the
           full liquid-glass wordmark SVG) since the rail is a slim strip,
@@ -253,8 +281,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         isSpeedPopoverOpen={props.isSpeedPopoverOpen}
         onToggleSpeedPopover={props.onToggleSpeedPopover}
       />
-
-      {!isMobile && <div className="flex-1 min-h-1" />}
+    </div>
     </nav>
   );
 });

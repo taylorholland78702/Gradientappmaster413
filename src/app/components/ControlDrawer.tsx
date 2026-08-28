@@ -16,6 +16,16 @@ const TAB_LABELS: Record<TabId, string> = {
   presets: 'Presets',
 };
 
+// Desktop drawer content is rendered at its normal (mobile-matching) size,
+// then scaled up 30% as a whole via CSS transform — same technique and
+// reasoning as ControlRail's DESKTOP_RAIL_SCALE: the outer (ref/scroll)
+// container gets an explicit width equal to the scaled footprint since a
+// transform doesn't otherwise affect how much layout space a sibling
+// (the canvas area) sees it take up.
+const DESKTOP_DRAWER_SCALE = 1.3;
+const DESKTOP_DRAWER_CONTENT_W = 248;
+const DESKTOP_DRAWER_SCALED_W = Math.round(DESKTOP_DRAWER_CONTENT_W * DESKTOP_DRAWER_SCALE);
+
 export interface ControlDrawerProps {
   activeTab: TabId | null;
   isMobile: boolean;
@@ -79,12 +89,18 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       ref={drawerRef}
       role="dialog"
       aria-label={`${TAB_LABELS[activeTab]} panel`}
-      style={isMobile ? { maxHeight: mobileMaxHeight } : undefined}
+      style={isMobile ? { maxHeight: mobileMaxHeight } : { width: DESKTOP_DRAWER_SCALED_W }}
       className={
         isMobile
           ? 'flex-shrink-0 w-full pointer-events-auto bg-black rounded-t-2xl overflow-y-auto overflow-x-hidden'
-          : 'flex-shrink-0 h-full pointer-events-auto bg-black rounded-r-2xl overflow-y-auto overflow-x-hidden w-[248px]'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-black rounded-r-2xl overflow-y-auto overflow-x-hidden'
       }
+    >
+    {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
+        above. Mobile renders this content directly at natural size. */}
+    <div
+      className={isMobile ? '' : 'origin-top-left'}
+      style={!isMobile ? { transform: `scale(${DESKTOP_DRAWER_SCALE})`, width: DESKTOP_DRAWER_CONTENT_W } : undefined}
     >
       {/* No close button — repressing the tab's own rail icon (a toggle,
           see ControlRail's tab buttons) is the only way to close a drawer
@@ -115,6 +131,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           </Suspense>
         )}
       </div>
+    </div>
     </div>
   );
 });
