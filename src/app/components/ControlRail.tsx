@@ -15,8 +15,9 @@ export interface ControlRailProps {
   // not a repositionable floating panel.
   onWordmarkClick?: () => void;
 
-  // Visibility
-  isControlsVisible: boolean;
+  // Visibility — only the setter is needed; ControlRail is never mounted
+  // while controls are hidden (see the comment above its return), so it
+  // has no need to read the current value.
   setIsControlsVisible: (v: boolean) => void;
 
   // Shuffle / Auto Shuffle
@@ -90,7 +91,6 @@ const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-c
 const DESKTOP_RAIL_SCALE = 1.3;
 const DESKTOP_RAIL_CONTENT_W = 38; // px-1 (8px) + one 30px button
 const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_SCALE);
-const DESKTOP_COLLAPSED_W = Math.round(28 * DESKTOP_RAIL_SCALE); // w-7
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -103,7 +103,7 @@ const DESKTOP_COLLAPSED_W = Math.round(28 * DESKTOP_RAIL_SCALE); // w-7
 export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function ControlRail(props, ref) {
   const {
     isMobile, onWordmarkClick,
-    isControlsVisible, setIsControlsVisible,
+    setIsControlsVisible,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
@@ -113,31 +113,11 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const tabBtnClass = (tab: TabId) =>
     `${railBtnBase} ${activeTab === tab ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`;
 
-  // Collapsed state: rather than vanishing entirely, the rail shrinks down
-  // to a single narrow pill (still docked to the same edge) that
-  // re-expands the full rail on click. In-flow like the full rail below —
-  // collapsing it hands that width/height back to the canvas area instead
-  // of just fading out over it.
-  if (!isControlsVisible) {
-    return (
-      <button
-        ref={ref as React.Ref<HTMLButtonElement>}
-        data-role="panel"
-        onClick={() => setIsControlsVisible(true)}
-        style={!isMobile ? { width: DESKTOP_COLLAPSED_W } : undefined}
-        className={
-          isMobile
-            ? 'flex-shrink-0 w-full pointer-events-auto flex items-center justify-center h-7 bg-black text-white/70 hover:text-white transition-colors'
-            : 'flex-shrink-0 h-full pointer-events-auto flex items-center justify-center bg-black text-white/70 hover:text-white transition-colors'
-        }
-        title="Show Controls (H)"
-        aria-label="Show Controls"
-      >
-        <Eye weight="regular" className={isMobile ? 'w-3.5 h-3.5' : 'w-[18px] h-[18px]'} />
-      </button>
-    );
-  }
-
+  // No collapsed state any more — InteractiveGradient.tsx doesn't mount
+  // ControlRail/ControlDrawer at all while isControlsVisible is false, so
+  // pressing H hides the entire dock (rail + drawer) outright, handing
+  // that full width/height back to the canvas. The only way back is H
+  // again (or the Eye button below, while visible).
   return (
     <nav
       ref={ref}

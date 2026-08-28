@@ -3748,7 +3748,6 @@ export function InteractiveGradient() {
           ref={panelRef}
           isMobile={isMobile}
           onWordmarkClick={() => setIsAboutOpen(true)}
-          isControlsVisible={isControlsVisible}
           setIsControlsVisible={setIsControlsVisible}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
@@ -3807,7 +3806,6 @@ export function InteractiveGradient() {
           ref={panelRef}
           isMobile={isMobile}
           onWordmarkClick={() => setIsAboutOpen(true)}
-          isControlsVisible={isControlsVisible}
           setIsControlsVisible={setIsControlsVisible}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
@@ -3859,7 +3857,7 @@ export function InteractiveGradient() {
       style={{ flexDirection: isMobile ? 'column' : 'row' }}
       ref={containerRef}
     >
-      {!isMobile && dock}
+      {!isMobile && isControlsVisible && dock}
       <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
       <div ref={shakeWrapperRef} className="w-full h-full">
         <canvas
@@ -3877,7 +3875,7 @@ export function InteractiveGradient() {
         />
       </div>
       </div>
-      {isMobile && dock}
+      {isMobile && isControlsVisible && dock}
 
       {/* Upper Right Controls */}
       <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
