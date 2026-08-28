@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Play, Stop, Gauge, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Circle, Play, Stop, Gauge } from '@phosphor-icons/react';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -7,10 +7,8 @@ interface VCRControlsProps {
   isAutoMode: boolean;
   vcrRecordedFrames: unknown[];
   vcrPlaybackSpeed: number;
-  rotationDirection: 'clockwise' | 'counter';
   isEncoding: boolean;
   encodingProgress: number;
-  setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
   handleStop: () => void;
   toggleVCRPlayback: () => void;
@@ -35,10 +33,8 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
   isAutoMode,
   vcrRecordedFrames,
   vcrPlaybackSpeed,
-  rotationDirection,
   isEncoding,
   encodingProgress,
-  setRotationDirection,
   toggleVCRRecording,
   toggleVCRPlayback,
   isMobile,
@@ -99,15 +95,6 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
       >
         <Gauge weight="regular" className="w-4 h-4" />
         <span className="absolute -bottom-0.5 -right-0.5 text-[7px] leading-none font-mono tabular-nums bg-black rounded-[3px] px-[2px] text-white/70">{vcrPlaybackSpeed}x</span>
-      </button>
-
-      <button
-        onClick={() => setRotationDirection(rotationDirection === 'clockwise' ? 'counter' : 'clockwise')}
-        className={`${railBtnBase} hover:bg-white/15 text-white`}
-        title={(rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise') + " (D)"}
-        aria-label={rotationDirection === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'}
-      >
-        {rotationDirection === 'clockwise' ? <ArrowClockwise weight="regular" className="w-4 h-4" /> : <ArrowCounterClockwise weight="regular" className="w-4 h-4" />}
       </button>
     </div>
   );

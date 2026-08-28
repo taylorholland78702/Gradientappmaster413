@@ -54,10 +54,8 @@ export interface ControlRailProps {
   isAutoMode: boolean;
   vcrRecordedFrames: unknown[];
   vcrPlaybackSpeed: number;
-  rotationDirection: 'clockwise' | 'counter';
   isEncoding: boolean;
   encodingProgress: number;
-  setRotationDirection: (dir: 'clockwise' | 'counter') => void;
   toggleVCRRecording: () => void;
   handleStop: () => void;
   toggleVCRPlayback: () => void;
@@ -241,10 +239,8 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         isAutoMode={props.isAutoMode}
         vcrRecordedFrames={props.vcrRecordedFrames}
         vcrPlaybackSpeed={props.vcrPlaybackSpeed}
-        rotationDirection={props.rotationDirection}
         isEncoding={props.isEncoding}
         encodingProgress={props.encodingProgress}
-        setRotationDirection={props.setRotationDirection}
         toggleVCRRecording={props.toggleVCRRecording}
         handleStop={props.handleStop}
         toggleVCRPlayback={props.toggleVCRPlayback}

@@ -3780,10 +3780,8 @@ export function InteractiveGradient() {
           isAutoMode={isAutoMode}
           vcrRecordedFrames={vcrRecordedFrames}
           vcrPlaybackSpeed={vcrPlaybackSpeed}
-          rotationDirection={rotationDirection}
           isEncoding={isEncoding}
           encodingProgress={encodingProgress}
-          setRotationDirection={setRotationDirection}
           toggleVCRRecording={toggleVCRRecording}
           handleStop={handleStop}
           toggleVCRPlayback={toggleVCRPlayback}
@@ -3837,10 +3835,8 @@ export function InteractiveGradient() {
           isAutoMode={isAutoMode}
           vcrRecordedFrames={vcrRecordedFrames}
           vcrPlaybackSpeed={vcrPlaybackSpeed}
-          rotationDirection={rotationDirection}
           isEncoding={isEncoding}
           encodingProgress={encodingProgress}
-          setRotationDirection={setRotationDirection}
           toggleVCRRecording={toggleVCRRecording}
           handleStop={handleStop}
           toggleVCRPlayback={toggleVCRPlayback}
