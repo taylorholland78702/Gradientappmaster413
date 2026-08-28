@@ -84,6 +84,10 @@ const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-c
 const DESKTOP_RAIL_SCALE = 1.3;
 const DESKTOP_RAIL_CONTENT_W = 38; // px-1 (8px) + one 30px button
 const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_SCALE);
+// Desktop wordmark box height (pre-scale px) — also used by ControlDrawer's
+// header row so the two share this exact number and their vertical centers
+// land at the same Y (see the wordmark button's own comment for why).
+export const WORDMARK_BOX_H = 46;
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -141,18 +145,35 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       }
       style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
     >
-      {/* Wordmark — click opens About. Kept a plain mark here (not the
-          full liquid-glass wordmark SVG) since the rail is a slim strip,
-          not a card with room for a full lockup — the SVG wordmark still
-          appears once, inside the About panel itself. */}
+      {/* Wordmark — click opens About. Stacked w/ā/v (rather than the
+          single "w" this used to show) since the rail is a slim strip with
+          more room to spare vertically than horizontally — the SVG
+          wordmark still appears once, inside the About panel itself.
+          Fixed height (WORDMARK_BOX_H, matching ControlDrawer's header)
+          so its vertical center lines up with the drawer's own tab-label
+          text next to it — both sit under the same top inset (this
+          button under the rail's own py-2, the header under its own
+          matching pt-2) and share this same box height, so their centers
+          land at the same Y without needing to measure anything at
+          runtime. */}
       <button
         onClick={onWordmarkClick}
-        className={`w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 text-white font-black select-none ${isMobile ? '' : 'mb-0.5'}`}
-        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14 }}
+        className={`w-[30px] rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px]' : 'mb-0.5'}`}
+        style={{
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: isMobile ? 14 : 9,
+          height: isMobile ? undefined : WORDMARK_BOX_H,
+        }}
         title="About wāv"
         aria-label="About wāv"
       >
-          w
+        {isMobile ? 'w' : (
+          <>
+            <span>w</span>
+            <span>ā</span>
+            <span>v</span>
+          </>
+        )}
         </button>
 
       <RailSep isMobile={isMobile} />

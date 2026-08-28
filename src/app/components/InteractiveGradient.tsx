@@ -217,7 +217,7 @@ export function splitGraphemes(str: string): string[] {
 // Small pill showing a hotkey label, used in the About/Info panel's shortcut list
 function Kbd({ label }: { label: string }) {
   return (
-    <span className="shrink-0 text-[10px] text-black/70 bg-black/5 border border-black/15 rounded px-1.5 py-0.5 font-mono">
+    <span className="shrink-0 text-[10px] text-white/70 bg-white/10 border border-white/15 rounded px-1.5 py-0.5 font-mono">
       {label}
     </span>
   );
@@ -3987,9 +3987,12 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {/* About panel — centered over the canvas. The click-catcher behind
-          it stays unblurred so the gradient result underneath isn't
-          blurred out; only the card itself keeps its own surface. */}
+      {/* About panel — attached to the control panel's upper-left, flush
+          against the rail (same railRect-anchored positioning the first-run
+          hint above uses), rather than centered over the canvas. The
+          click-catcher behind it stays unblurred so the gradient result
+          underneath isn't blurred out; only the card itself keeps its own
+          surface. */}
       {isAboutOpen && (
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
@@ -3997,40 +4000,37 @@ export function InteractiveGradient() {
             role="dialog"
             aria-modal="true"
             aria-label="About wāv"
-            // mx-6 previously sat alongside the left-1/2 + -translate-x-1/2
-            // centering — margin on a translate-centered absolute element
-            // shifts it off-axis instead of adding equal breathing room, so
-            // this pushed the popup ~24px right of true center on mobile.
-            // w-[calc(100%-3rem)] gives the same edge clearance without
-            // touching the centering transform. Centered on both layouts now
-            // — the rail is a fixed docked sidebar (no drag position to
-            // anchor next to) rather than a floating, repositionable panel.
-            className={`absolute bg-white rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-black shadow-2xl left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${isMobile ? 'w-[calc(100%-3rem)]' : ''}`}
+            className={`absolute bg-black rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl ${isMobile ? 'w-[calc(100%-3rem)]' : ''}`}
+            style={railRect
+              ? (isMobile
+                  ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
+                  : { left: railRect.right + 12, top: railRect.top })
+              : { top: 16, left: 16 }}
           >
             <button
               ref={aboutCloseButtonRef}
               onClick={() => setIsAboutOpen(false)}
               aria-label="Close about panel"
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/5 flex items-center justify-center text-black/60 hover:text-black hover:bg-black/10 transition-all"
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all"
             >
               <X weight="regular" className="w-4 h-4" />
             </button>
             <div className="text-2xl font-black tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>wāv</div>
-            <div className="flex flex-col gap-4 text-sm text-black/80 leading-relaxed">
+            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed">
               <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
               <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
               <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
               <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, <strong>wāv</strong> can transform your audio experience into a spectacle.</p>
             </div>
 
-            <div className="flex flex-col gap-8 text-sm text-black/80 leading-relaxed mt-8">
+            <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Rail</p>
+                <p className="font-semibold text-white">Rail</p>
                 <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen.</p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Rail icons</p>
+                <p className="font-semibold text-white">Rail icons</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — hide the control rail</span><Kbd label="H" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
@@ -4043,10 +4043,10 @@ export function InteractiveGradient() {
                   <span className="flex items-center gap-2">
                     <Kbd label="⌥⇧W" />
                     <span
-                      className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-black' : 'bg-black/15'}`}
+                      className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/15'}`}
                     >
                       <span
-                        className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform bg-white ${isAutoShuffleOn ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
+                        className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform ${isAutoShuffleOn ? 'bg-black translate-x-[18px]' : 'bg-white translate-x-[2px]'}`}
                       />
                     </span>
                   </span>
@@ -4072,17 +4072,17 @@ export function InteractiveGradient() {
                     max={AUTO_SHUFFLE_MAX_SEC}
                     value={autoShuffleIntervalSec}
                     onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-                    className="text-[10px] text-black w-12 text-right bg-black/5 border border-black/20 rounded px-1"
+                    className="text-[10px] text-white w-12 text-right bg-white/10 border border-white/20 rounded px-1"
                     aria-label="Auto Shuffle interval in seconds"
                   />
-                  <span className="text-[10px] text-black/50 shrink-0">sec</span>
+                  <span className="text-[10px] text-white/50 shrink-0">sec</span>
                 </div>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Playback row</p>
+                <p className="font-semibold text-white">Playback row</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Stop weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / stop — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
@@ -4090,7 +4090,7 @@ export function InteractiveGradient() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Tabs</p>
+                <p className="font-semibold text-white">Tabs</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
@@ -4099,23 +4099,23 @@ export function InteractiveGradient() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">Randomizing</p>
+                <p className="font-semibold text-white">Randomizing</p>
                 <p>Five ways to randomize, from smallest to biggest change:</p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-black font-semibold">Nudge</span> — a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-black font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-black font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-black font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings (scoped to the current gradient and active effects). Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-black font-semibold">Remix</span> — click Shuffle to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings (scoped to the current gradient and active effects). Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
+                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — click Shuffle to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-black">More shortcuts</p>
+                <p className="font-semibold text-white">More shortcuts</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="Shift+R" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
-                <p className="text-xs text-black/50">Shortcuts are disabled while a text field is focused.</p>
+                <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
               </div>
             </div>
           </div>

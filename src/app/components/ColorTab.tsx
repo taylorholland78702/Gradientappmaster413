@@ -64,7 +64,11 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
       <div className="flex gap-2 w-full">
         <button
           onClick={() => setIsAutoColor(prev => !prev)}
-          className={`flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm ${isAutoColor ? 'bg-white text-black' : 'bg-black/25 text-white/50 hover:bg-white/15 hover:text-white'}`}
+          // Always black/white regardless of on/off state (was inverting to
+          // a white pill when active) — the icon itself (Pause vs Play)
+          // already communicates state, so the button doesn't need its own
+          // color swap too.
+          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm bg-black text-white hover:bg-white/15"
           title={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
           aria-label={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
         >{isAutoColor ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}</button>

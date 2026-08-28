@@ -1,5 +1,5 @@
 import React from 'react';
-import { Circle, Play, Stop, Gauge } from '@phosphor-icons/react';
+import { Circle, Play, Stop } from '@phosphor-icons/react';
 
 interface VCRControlsProps {
   isRecording: boolean;
@@ -85,16 +85,16 @@ const VCRControlsInner: React.FC<VCRControlsProps> = ({
       </button>
 
       {/* Single trigger — opens a popover (same pattern as Auto Shuffle)
-          instead of always-visible ‹/› step buttons. */}
+          instead of always-visible ‹/› step buttons. Text-only now (no
+          Gauge icon) — the speed value itself is the whole button label. */}
       <button
         onClick={(e) => onToggleSpeedPopover(e.currentTarget)}
-        className={`${railBtnBase} ${isSpeedPopoverOpen ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} relative`}
+        className={`${railBtnBase} ${isSpeedPopoverOpen ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} text-[10px] font-mono tabular-nums font-semibold`}
         title="Playback Speed"
         aria-label="Playback Speed settings"
         aria-pressed={isSpeedPopoverOpen}
       >
-        <Gauge weight="regular" className="w-4 h-4" />
-        <span className="absolute -bottom-0.5 -right-0.5 text-[7px] leading-none font-mono tabular-nums bg-black rounded-[3px] px-[2px] text-white/70">{vcrPlaybackSpeed}x</span>
+        {vcrPlaybackSpeed}x
       </button>
     </div>
   );

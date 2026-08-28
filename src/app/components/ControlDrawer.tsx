@@ -2,6 +2,7 @@ import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useR
 import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
+import { WORDMARK_BOX_H } from './ControlRail';
 
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
@@ -104,9 +105,21 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
     >
       {/* No close button — repressing the tab's own rail icon (a toggle,
           see ControlRail's tab buttons) is the only way to close a drawer
-          now, so there's nothing here needing its own dismiss control. */}
-      <div className="flex items-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10">
-        <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
+          now, so there's nothing here needing its own dismiss control.
+          pt-2 mirrors the rail's own py-2 top inset, and the inner box's
+          height matches WORDMARK_BOX_H — together those put this label's
+          vertical center at the same Y as the wordmark's stacked w/ā/v
+          next to it in the rail (mobile skips this: the rail's a bottom
+          bar there, not a side-by-side column, so there's no shared
+          vertical axis to line up against). */}
+      <div className={isMobile ? 'flex items-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10' : 'pt-2 px-3 sticky top-0 bg-black border-b border-white/10 z-10'}>
+        {isMobile ? (
+          <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
+        ) : (
+          <div className="flex items-center" style={{ height: WORDMARK_BOX_H }}>
+            <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-[6px] px-1.5 pb-2">
