@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import {
-  Eye, Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
+  Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
   Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
 import { VCRControls } from './VCRControls';
@@ -14,11 +14,6 @@ export interface ControlRailProps {
   // fixed docked sidebar (left edge on desktop, bottom edge on mobile),
   // not a repositionable floating panel.
   onWordmarkClick?: () => void;
-
-  // Visibility — only the setter is needed; ControlRail is never mounted
-  // while controls are hidden (see the comment above its return), so it
-  // has no need to read the current value.
-  setIsControlsVisible: (v: boolean) => void;
 
   // Shuffle / Auto Shuffle
   handleWavClick: () => void;
@@ -103,7 +98,6 @@ const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_S
 export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function ControlRail(props, ref) {
   const {
     isMobile, onWordmarkClick,
-    setIsControlsVisible,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
@@ -116,8 +110,9 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   // No collapsed state any more — InteractiveGradient.tsx doesn't mount
   // ControlRail/ControlDrawer at all while isControlsVisible is false, so
   // pressing H hides the entire dock (rail + drawer) outright, handing
-  // that full width/height back to the canvas. The only way back is H
-  // again (or the Eye button below, while visible).
+  // that full width/height back to the canvas. No in-rail button for this
+  // any more either (H is the only way, both to hide and to bring it
+  // back) — see the InteractiveGradient.tsx keydown handler.
   return (
     <nav
       ref={ref}
@@ -161,15 +156,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       >
           w
         </button>
-
-      <button
-        onClick={() => setIsControlsVisible(false)}
-        className={`${railBtnBase} text-white hover:bg-white/15`}
-        title="Hide Controls (H)"
-        aria-label="Hide Controls"
-      >
-        <Eye weight="regular" className="w-4 h-4" />
-      </button>
 
       <RailSep isMobile={isMobile} />
 

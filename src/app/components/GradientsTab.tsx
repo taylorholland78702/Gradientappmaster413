@@ -290,7 +290,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={type}
                       onClick={() => setGradientType(type)}
                       aria-pressed={gradientType === type}
-                      className={`px-1 py-0.5 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
                         gradientType === type
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'

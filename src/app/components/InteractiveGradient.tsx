@@ -3750,7 +3750,6 @@ export function InteractiveGradient() {
           ref={panelRef}
           isMobile={isMobile}
           onWordmarkClick={() => setIsAboutOpen(true)}
-          setIsControlsVisible={setIsControlsVisible}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
           isAutoShuffleOn={isAutoShuffleOn}
@@ -3808,7 +3807,6 @@ export function InteractiveGradient() {
           ref={panelRef}
           isMobile={isMobile}
           onWordmarkClick={() => setIsAboutOpen(true)}
-          setIsControlsVisible={setIsControlsVisible}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
           isAutoShuffleOn={isAutoShuffleOn}
