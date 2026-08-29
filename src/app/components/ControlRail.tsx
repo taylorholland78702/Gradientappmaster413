@@ -158,7 +158,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 20 : 30,
+          fontSize: isMobile ? 24 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
@@ -169,7 +169,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // together, same idea as the desktop stack's per-character
           // spacing control, just horizontal instead of vertical.
           <span style={{ whiteSpace: 'nowrap' }}>
-            w<span>ā</span><span style={{ marginLeft: 1 }}>v</span>
+            w<span>ā</span><span style={{ marginLeft: -1 }}>v</span>
           </span>
         ) : (
           // Explicit lineHeight on each line (rather than relying on the
@@ -180,8 +180,8 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // ā/v, rather than one uniform gap throughout.
           <>
             <span style={{ display: 'block', lineHeight: '29px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '29px', marginTop: -1 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '29px', marginTop: -7 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '29px', marginTop: -3 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '29px', marginTop: -9 }}>v</span>
           </>
         )}
         </button>
