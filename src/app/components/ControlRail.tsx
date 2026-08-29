@@ -78,7 +78,7 @@ const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_S
 // Desktop wordmark box height (pre-scale px) — also used by ControlDrawer's
 // header row so the two share this exact number and their vertical centers
 // land at the same Y (see the wordmark button's own comment for why).
-export const WORDMARK_BOX_H = 79;
+export const WORDMARK_BOX_H = 91;
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -153,7 +153,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 14 : 26,
+          fontSize: isMobile ? 14 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
@@ -167,9 +167,9 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // deliberately asymmetric: looser between w/ā, tighter between
           // ā/v, rather than one uniform gap throughout.
           <>
-            <span style={{ display: 'block', lineHeight: '25px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '25px', marginTop: -1 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '25px', marginTop: -4 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '29px' }}>w</span>
+            <span style={{ display: 'block', lineHeight: '29px', marginTop: 2 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '29px', marginTop: -5 }}>v</span>
           </>
         )}
         </button>
@@ -182,7 +182,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         title="Shuffle (Shift+W)"
         aria-label="Shuffle to a new look"
       >
-        <Shuffle weight="regular" className="w-4 h-4" />
+        <Shuffle weight="regular" className="w-[19px] h-[19px]" />
       </button>
       <button
         onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
@@ -192,16 +192,16 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         aria-pressed={isAutoShuffleOn}
         disabled={isNewPresetPending}
       >
-        <InfinityIcon weight="regular" className="w-4 h-4" />
+        <InfinityIcon weight="regular" className="w-[19px] h-[19px]" />
       </button>
 
       <RailSep isMobile={isMobile} />
 
       <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={tabBtnClass('gradients')}>
-        <Gradient weight="regular" className="w-4 h-4" />
+        <Gradient weight="regular" className="w-[19px] h-[19px]" />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" className={tabBtnClass('effects')}>
-        <MagicWand weight="regular" className="w-4 h-4" />
+        <MagicWand weight="regular" className="w-[19px] h-[19px]" />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" className={tabBtnClass('audio')}>
         <SpeakerHigh
@@ -211,19 +211,22 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // element in the tree carries that class any more (dropped along
           // with the old light-theme panel this component replaced), so
           // this silently did nothing. Plain Tailwind classes here instead.
-          className={`w-4 h-4 transition-colors ${isMicActive
+          className={`w-[19px] h-[19px] transition-colors ${isMicActive
             ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'text-green-500' : 'text-red-500')
             : ''}`}
         />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={tabBtnClass('color')}>
-        <Palette weight="regular" className="w-4 h-4" />
+        <Palette weight="regular" className="w-[19px] h-[19px]" />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={tabBtnClass('presets')}>
-        <FloppyDisk weight="regular" className="w-4 h-4" />
+        <FloppyDisk weight="regular" className="w-[19px] h-[19px]" />
       </button>
 
-      <RailSep isMobile={isMobile} />
+      {/* Mobile: force a row break here instead of a divider — the icon
+          bar splits into two rows between Presets and Record on mobile
+          only; desktop keeps its usual vertical-column hairline. */}
+      {isMobile ? <div className="basis-full h-0" /> : <RailSep isMobile={isMobile} />}
 
       {/* Record Video — moved ahead of Save PNG/Record GIF (was in a
           separate VCRControls sub-component alongside the now-removed
@@ -237,7 +240,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
       >
         {isEncoding ? (
-          <svg width="16" height="16" viewBox="0 0 16 16">
+          <svg width="19" height="19" viewBox="0 0 16 16">
             <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
             <circle
               cx="8" cy="8" r="6"
@@ -250,7 +253,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
             />
           </svg>
         ) : (
-          <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-4 h-4 ${isRecording ? 'text-red-500' : ''}`} />
+          <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-[19px] h-[19px] ${isRecording ? 'text-red-500' : ''}`} />
         )}
       </button>
       <button
@@ -259,7 +262,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         title="Save PNG (S)"
         aria-label="Save PNG"
       >
-        <Camera weight="regular" className="w-4 h-4" />
+        <Camera weight="regular" className="w-[19px] h-[19px]" />
       </button>
       <button
         onClick={toggleGifRecording}
@@ -269,14 +272,14 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
       >
         {isFinalizingGif ? (
-          <svg width="16" height="16" viewBox="0 0 16 16" className="animate-spin">
+          <svg width="19" height="19" viewBox="0 0 16 16" className="animate-spin">
             <circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
             <path d="M8 2 A6 6 0 0 1 14 8" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         ) : isRecordingGif ? (
-          <Circle weight="fill" className="w-4 h-4 text-red-500 animate-pulse" />
+          <Circle weight="fill" className="w-[19px] h-[19px] text-red-500 animate-pulse" />
         ) : (
-          <Gif weight="regular" className="w-4 h-4" />
+          <Gif weight="regular" className="w-[19px] h-[19px]" />
         )}
       </button>
     </div>

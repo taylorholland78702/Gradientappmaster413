@@ -1674,25 +1674,28 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top: number; left: number; width: number; height?: number } | null>(null);
+  const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
   // dismiss check below (see that handler for why).
   const autoShuffleTriggerElRef = useRef<HTMLElement | null>(null);
-  // Anchored to the trigger button (the rail's Auto Shuffle icon), falling
-  // back to the rail's own rect for the keyboard-triggered open (⌥⇧W, no
-  // click event to read a trigger element from). No height cap anymore —
-  // the rail is a slim strip, not a wide card with tab content stacked
-  // below it that the popover needs to avoid covering, so it just floats
-  // near the trigger and sizes to its own content.
+  // Anchored to the rail's own rect (like the drawer/About panel) rather
+  // than the trigger button — desktop opens it to the right of the panel,
+  // mobile opens it above the (bottom-docked) panel, matching every other
+  // popout instead of floating just below whichever button was clicked.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
     autoShuffleTriggerElRef.current = triggerEl ?? null;
-    const anchorEl = triggerEl || panelRef.current;
-    const rect = anchorEl ? anchorEl.getBoundingClientRect() : { top: 60, left: 16, bottom: 60, width: 240 } as DOMRect;
-    const width = Math.max(200, 240);
-    const left = Math.min(rect.left, window.innerWidth - width - 8);
-    const top = rect.bottom + 6;
-    setAutoShufflePopoverAnchor({ top, left: Math.max(8, left), width });
+    const railEl = panelRef.current;
+    const rect = railEl ? railEl.getBoundingClientRect() : { top: 16, left: 16, right: 60, bottom: 60, width: 240 } as DOMRect;
+    const width = 240;
+    if (isMobile) {
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+      setAutoShufflePopoverAnchor({ bottom: window.innerHeight - rect.top + 8, left, width });
+    } else {
+      const top = Math.max(8, rect.top);
+      const left = rect.right + 8;
+      setAutoShufflePopoverAnchor({ top, left, width });
+    }
   };
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
@@ -1729,6 +1732,7 @@ export function InteractiveGradient() {
         className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 rounded-lg bg-black"
         style={{
           top: autoShufflePopoverAnchor.top,
+          bottom: autoShufflePopoverAnchor.bottom,
           left: autoShufflePopoverAnchor.left,
           width: autoShufflePopoverAnchor.width,
           height: autoShufflePopoverAnchor.height,

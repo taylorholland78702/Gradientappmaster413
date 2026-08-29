@@ -112,12 +112,12 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           next to it in the rail (mobile skips this: the rail's a bottom
           bar there, not a side-by-side column, so there's no shared
           vertical axis to line up against). */}
-      <div className={isMobile ? 'flex items-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10' : 'pt-2 px-3 sticky top-0 bg-black border-b border-white/10 z-10'}>
+      <div className={isMobile ? 'flex items-center justify-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10' : 'pt-2 px-3 sticky top-0 bg-black border-b border-white/10 z-10'}>
         {isMobile ? (
-          <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
+          <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
         ) : (
-          <div className="flex items-center" style={{ height: WORDMARK_BOX_H }}>
-            <span className="text-white/90 text-xs font-semibold">{TAB_LABELS[activeTab]}</span>
+          <div className="w-full flex items-center justify-center" style={{ height: WORDMARK_BOX_H }}>
+            <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
           </div>
         )}
       </div>

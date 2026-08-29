@@ -111,20 +111,28 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           </div>
         )}
 
-        <div className="relative mb-2">
-          <MagicWand weight="regular" className="w-3.5 h-3.5 text-white/40 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value=""
-            readOnly
-            placeholder={selectedKeywords.length >= 8 ? 'Max 8 keywords selected' : 'Pick themes and colors below…'}
-            onFocus={() => setIsKeywordHelpOpen(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAIPromptSubmit();
-              if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
-            }}
-            className="w-full pl-7 pr-2 py-1.5 rounded-lg text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white/50 cursor-pointer"
-          />
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="relative flex-1">
+            <MagicWand weight="regular" className="w-3.5 h-3.5 text-white/40 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value=""
+              readOnly
+              placeholder={selectedKeywords.length >= 8 ? 'Max 8 keywords selected' : 'Pick themes and colors below…'}
+              onFocus={() => setIsKeywordHelpOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAIPromptSubmit();
+                if (e.key === 'Escape') { setIsAIColorPickerOpen(false); setAIPrompt(''); }
+              }}
+              className="w-full pl-7 pr-2 py-1.5 rounded-lg text-[10px] bg-black/25 border border-white/20 focus:border-white/50 focus:outline-none text-white placeholder-white/50 cursor-pointer"
+            />
+          </div>
+          <button
+            onClick={handleAIPromptSubmit}
+            className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-black text-white hover:bg-white/15 border border-white/20 transition-all flex-shrink-0"
+          >
+            Generate
+          </button>
         </div>
 
         {isKeywordHelpOpen && (
@@ -167,15 +175,6 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
             </div>
           </div>
         )}
-
-        <div className="flex justify-center">
-          <button
-            onClick={handleAIPromptSubmit}
-            className="px-2.5 py-1 rounded text-[10px] font-bold bg-white text-black hover:bg-white/90 transition-all"
-          >
-            Generate
-          </button>
-        </div>
       </div>
 
       {/* Palette-wide adjustments — applied to the whole gradientColors
