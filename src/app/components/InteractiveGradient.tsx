@@ -230,7 +230,7 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
 }) {
   if (!isMulti) return <>{children}</>;
   return (
-    <div className="border-b border-white last:border-0">
+    <div className="border-b border-white/50 last:border-0">
       <button
         onClick={() => onToggle(id)}
         className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
@@ -1283,6 +1283,25 @@ export function InteractiveGradient() {
     g: Math.floor(Math.random() * 256),
     b: Math.floor(Math.random() * 256),
   }), []);
+
+  // Plain setGradientColors/setTargetColors alone isn't enough for a
+  // structural change (adding/removing a swatch, not just recoloring one
+  // already there): the render loop lerps gradientColorsRef.current toward
+  // targetColorsRef.current every frame by index, using colors.length off
+  // the REF, and every 15 frames writes that ref straight back over React
+  // state (see the lerp-sync effect above). Setting only the React state
+  // left the ref at its old array length, so within a quarter second the
+  // sync wrote the old (unchanged-length) array back over whatever the
+  // Color tab's Add/Remove had just done — a delete or add would silently
+  // revert almost immediately. This updates both refs and both states
+  // together so there's nothing left for that sync to stomp, and — as a
+  // side benefit — also makes the edit instant instead of easing in.
+  const setColorsInstant = useCallback((colors: ColorRGB[]) => {
+    gradientColorsRef.current = colors.map(c => ({ ...c }));
+    targetColorsRef.current = colors.map(c => ({ ...c }));
+    setGradientColors(colors);
+    setTargetColors(colors);
+  }, []);
 
 
   // Each of these local clocks is skipped entirely in Display mode — that
@@ -3630,7 +3649,7 @@ export function InteractiveGradient() {
   const controlDrawerTabProps = {
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
-    submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, aiPrompt, setAIPrompt,
+    submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
     paletteContrast, setPaletteContrast,

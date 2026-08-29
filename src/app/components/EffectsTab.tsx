@@ -195,16 +195,16 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             card-in-a-card when the drawer wrapped this component. */}
         <div className="w-full">
           {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
-          <div className="w-full flex gap-0 border-b border-white">
+          <div className="w-full flex gap-0 border-b border-white/50">
             <button
               onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
               aria-pressed={isMultiFxMode}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
               onClick={randomizeEffects}
-              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white"
+              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
               title="Shuffle Effects (Shift+F)"
               aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
@@ -224,6 +224,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {effectsList.map((effect, i) => {
+                  const isLastInColumn = i % rows === rows - 1;
                   const isLeftColumn = i < rows;
                   const isActive = activeEffects.includes(effect.value);
                   // Manually stacking effects in Multi-FX had no limit at all
@@ -261,7 +262,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap border-b border-white ${isLeftColumn ? 'border-r border-white' : ''} ${
+                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${!isLastInColumn ? 'border-b border-white/50' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
@@ -282,7 +283,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className="w-full px-1.5 py-1 border-t border-white">
+          <div className="w-full px-1.5 py-1 border-t border-white/50">
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-2'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shuffle, Play, Pause, Plus, X } from '@phosphor-icons/react';
+import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb } from '../utils/color';
 
@@ -9,11 +9,9 @@ const MIN_PALETTE_COLORS = 2;
 const MAX_PALETTE_COLORS = 10;
 
 export interface ColorTabProps {
-  isAutoColor: boolean;
-  setIsAutoColor: (updater: (prev: boolean) => boolean) => void;
   saveCurrentState: () => void;
   setTargetColors: (colors: ColorRGB[]) => void;
-  setGradientColors: (colors: ColorRGB[]) => void;
+  setColorsInstant: (colors: ColorRGB[]) => void;
   gradientColors: ColorRGB[];
   randomColor: () => ColorRGB;
   paletteHue: number;
@@ -27,58 +25,48 @@ export interface ColorTabProps {
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
-  isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, setGradientColors, gradientColors, randomColor,
+  saveCurrentState, setTargetColors, setColorsInstant, gradientColors, randomColor,
   paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
   paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
 }) => {
   const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
-  // Editing a swatch writes both the live and target color arrays directly
-  // (rather than just setTargetColors, like Shuffle does) so the change is
-  // instant — a manual pick fighting the ~1s ease used for a random shuffle
-  // would read as laggy/unresponsive while dragging the native color-picker
-  // dialog.
+  // setColorsInstant (not setGradientColors/setTargetColors called
+  // separately) — the render loop lerps gradientColorsRef.current toward
+  // targetColorsRef.current every frame, by index, using colors.length off
+  // the REF, and periodically writes that ref straight back over React
+  // state. Setting only React state left the ref stale (old length, old
+  // values), so a moment later that sync wrote the stale ref back over
+  // whatever Add/Remove/a manual pick had just done — edits were silently
+  // reverting almost immediately. setColorsInstant updates both refs and
+  // both states together so there's nothing left for that sync to stomp.
   const setSwatch = (index: number, hex: string) => {
-    const next = gradientColors.map((c, i) => (i === index ? hexToRgb(hex) : c));
-    setGradientColors(next);
-    setTargetColors(next);
+    setColorsInstant(gradientColors.map((c, i) => (i === index ? hexToRgb(hex) : c)));
   };
 
   const addSwatch = () => {
     if (gradientColors.length >= MAX_PALETTE_COLORS) return;
     saveCurrentState();
-    const next = [...gradientColors, randomColor()];
-    setGradientColors(next);
-    setTargetColors(next);
+    setColorsInstant([...gradientColors, randomColor()]);
   };
 
   const removeSwatch = (index: number) => {
     if (gradientColors.length <= MIN_PALETTE_COLORS) return;
     saveCurrentState();
-    const next = gradientColors.filter((_, i) => i !== index);
-    setGradientColors(next);
-    setTargetColors(next);
+    setColorsInstant(gradientColors.filter((_, i) => i !== index));
   };
 
   return (
     <>
-      <div className="flex gap-2 w-full mt-2.5">
-        <button
-          onClick={() => setIsAutoColor(prev => !prev)}
-          // Always black/white regardless of on/off state (was inverting to
-          // a white pill when active) — the icon itself (Pause vs Play)
-          // already communicates state, so the button doesn't need its own
-          // color swap too.
-          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all font-semibold flex items-center justify-center shadow-sm bg-black text-white hover:bg-white/15"
-          title={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
-          aria-label={isAutoColor ? 'Pause auto color change' : 'Play auto color change'}
-        >{isAutoColor ? <Pause weight="regular" className="w-4 h-4" /> : <Play weight="regular" className="w-4 h-4" />}</button>
-        <button
-          onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
-          className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-black/25 text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
-          title="Shuffle Colors"
-        ><Shuffle weight="regular" className="w-4 h-4" /></button>
-      </div>
+      {/* Icon-only, full-width, same treatment as the Gradients tab's own
+          Shuffle button (border-b doubling as the divider before Palette
+          below it). No separate Play/Pause auto-color toggle any more. */}
+      <button
+        onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
+        className="w-full mt-2.5 px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
+        title="Shuffle Colors"
+        aria-label="Shuffle Colors"
+      ><Shuffle weight="regular" className="w-4 h-4" /></button>
 
       {/* Manual swatch picker — one native color input per palette stop,
           bound directly to gradientColors[i] (rgbToHex/hexToRgb in
@@ -86,7 +74,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           Shuffle only randomizes and Adjustments only shifts the whole
           palette uniformly. Square (not rounded) and small so a full
           palette fits inside the drawer without wrapping awkwardly. */}
-      <div className="w-full pt-2.5 border-t border-white">
+      <div className="w-full pt-2.5">
         <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palette</label>
         <div className="flex flex-wrap gap-1">
           {gradientColors.map((c, i) => (
@@ -115,7 +103,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               onClick={addSwatch}
               title="Add color"
               aria-label="Add color"
-              className="w-6 h-6 flex items-center justify-center border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white transition-colors"
+              className="w-6 h-6 flex items-center justify-center border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white/50 transition-colors"
             ><Plus weight="bold" className="w-3 h-3" /></button>
           )}
         </div>

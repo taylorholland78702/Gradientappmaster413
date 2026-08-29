@@ -367,7 +367,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               ? <Microphone weight="regular" className={`w-4 h-4 transition-colors ${Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? 'text-green-500' : ''}`} />
               : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
           </button>
-          <div className="w-px h-4 bg-white flex-shrink-0" />
+          <div className="w-px h-4 bg-white/50 flex-shrink-0" />
           {/* Device select — a Microphone icon alongside the caret ties this
               dropdown visually to the mic toggle next to it (previously
               just an unlabeled caret, easy to miss that it's an input-
@@ -397,7 +397,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <Microphone weight="regular" className="w-3.5 h-3.5 pointer-events-none opacity-60" />
             <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
           </div>
-          <div className="w-px h-4 bg-white flex-shrink-0" />
+          <div className="w-px h-4 bg-white/50 flex-shrink-0" />
           {/* Upload — labeled now (was a bare + with only a hover title),
               since a plus on its own next to a mic icon and a device
               dropdown read as another mic-related control rather than a
@@ -434,7 +434,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       {/* Always open now — was gated behind its own dropdown toggle
           (Parameters button), which just added an extra click to reach
           the panel's main controls every time. */}
-      <div className="w-full px-1.5 py-2 border-t border-white">
+      <div className="w-full px-1.5 py-2 border-t border-white/50">
           <div className="flex flex-col gap-2">
 
             {/* Style presets — one-click starting points for common audio/
@@ -733,7 +733,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full px-1.5 pt-2 border-t border-white">
+        <div className="w-full px-1.5 pt-2 border-t border-white/50">
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-white/20"></div>

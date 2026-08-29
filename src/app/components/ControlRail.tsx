@@ -58,7 +58,7 @@ export interface ControlRailProps {
 // horizontal wrapped bar, a horizontal line on desktop's vertical column
 // (each orthogonal to the axis the buttons are stacked along).
 const RailSep: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
-  <div className={isMobile ? 'w-px h-5 bg-white mx-0.5 flex-shrink-0' : 'w-5 h-px bg-white my-0.5 flex-shrink-0'} />
+  <div className={isMobile ? 'w-px h-5 bg-white/50 mx-0.5 flex-shrink-0' : 'w-5 h-px bg-white/50 my-0.5 flex-shrink-0'} />
 );
 
 const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';

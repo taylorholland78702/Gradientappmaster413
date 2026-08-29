@@ -279,7 +279,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
       {/* Sign-in — anonymous sessions already save presets, but only in
           this browser; signing in with email lets the same presets follow
           you across devices. */}
-      <div className="border-b border-white px-3 py-1.5">
+      <div className="border-b border-white/50 px-3 py-1.5">
         {authUser && !isAnonymous ? (
           <div className="flex items-center justify-between gap-2">
             <span className="text-[10px] text-white/80 truncate">
@@ -347,7 +347,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           input it opened. Merged from two always-visible rows into one so
           the list isn't permanently pushed down by two "new..." prompts. */}
       {isAddingFolder ? (
-        <div className="flex items-center border-b border-white">
+        <div className="flex items-center border-b border-white/50">
           <input
             autoFocus
             value={newFolderName}
@@ -375,7 +375,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           </button>
         </div>
       ) : isAddingPreset ? (
-        <div className="flex items-center border-b border-white">
+        <div className="flex items-center border-b border-white/50">
           <input
             autoFocus
             value={newPresetName}
@@ -403,7 +403,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           </button>
         </div>
       ) : (
-        <div className="flex items-stretch border-b border-white">
+        <div className="flex items-stretch border-b border-white/50">
           <button
             onClick={() => setIsAddingPreset(true)}
             className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"
@@ -411,7 +411,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
             <Plus weight="regular" className="w-3.5 h-3.5" />
             Preset
           </button>
-          <div className="w-px bg-white" />
+          <div className="w-px bg-white/50" />
           <button
             onClick={() => setIsAddingFolder(true)}
             className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"

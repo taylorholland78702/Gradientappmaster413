@@ -293,7 +293,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               shortcut), matching Effects' own Shuffle button. */}
           <button
             onClick={shuffleGradientType}
-            className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white"
+            className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
             title="Shuffle Gradient Type"
             aria-label="Shuffle Gradient Type"
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
@@ -310,7 +310,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={type}
                       onClick={() => setGradientType(type)}
                       aria-pressed={gradientType === type}
-                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white ${!isLastColumn ? 'border-r border-white' : ''} ${
+                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
                         gradientType === type
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'

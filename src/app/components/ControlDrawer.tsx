@@ -111,7 +111,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           Compact fixed padding now (was a much taller box sized to match
           the wordmark's 3-line stack height for vertical-center alignment
           — traded away in favor of a drastically tighter header). */}
-      <div className="flex items-center justify-center px-3 py-1.5 sticky top-0 bg-black/75 border-b border-white z-10">
+      <div className="flex items-center justify-center px-3 py-1.5 sticky top-0 bg-black/75 border-b border-white/50 z-10">
         <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
       </div>
 
