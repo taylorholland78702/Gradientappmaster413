@@ -139,7 +139,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           <div className="mb-2 rounded-lg bg-black/20 border border-white/8 overflow-hidden">
             <div className="p-2.5 max-h-64 overflow-y-auto">
               <div className="text-[10px] text-white/80 font-medium mb-1.5">Themes</div>
-              <div className="grid grid-cols-1 gap-1 mb-3">
+              <div className="grid grid-cols-2 gap-1 mb-3">
                 {THEME_KEYWORDS.map(t => {
                   const selected = selectedKeywords.includes(t);
                   const full = selectedKeywords.length >= 8;

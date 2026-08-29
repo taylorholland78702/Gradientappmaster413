@@ -3973,8 +3973,7 @@ export function InteractiveGradient() {
             >
               <X weight="regular" className="w-4 h-4" />
             </button>
-            <div className="text-2xl font-black tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>wāv</div>
-            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed">
+            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed mt-6">
               <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
               <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
               <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
