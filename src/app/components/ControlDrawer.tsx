@@ -10,7 +10,7 @@ const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default:
 type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
 
 const TAB_LABELS: Record<TabId, string> = {
-  gradients: 'Gradient',
+  gradients: 'Gradients',
   effects: 'Effects',
   audio: 'Audio',
   color: 'Color',

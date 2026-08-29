@@ -276,13 +276,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   return (
     <>
 
-        {/* Gradient Type Buttons - one rounded rectangle, 3 columns, thin dividing lines */}
+        {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
         <div className="w-full flex flex-col gap-2">
           {(() => {
-            const COLS = 3;
+            const COLS = 2;
             const rows = Math.ceil(FULL_GRADIENT_TYPES.length / COLS);
             return (
-              <div className="grid grid-cols-3 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
+              <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {FULL_GRADIENT_TYPES.map((type, i) => {
                   const isLastInColumn = i % rows === rows - 1;
                   const columnIndex = Math.floor(i / rows);
