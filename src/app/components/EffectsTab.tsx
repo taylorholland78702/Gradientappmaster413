@@ -262,7 +262,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${(!isLastInColumn || !isMobile) ? 'border-b border-white/50' : ''} ${
+                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${!isLastInColumn ? 'border-b border-white/50' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
