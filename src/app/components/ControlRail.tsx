@@ -169,7 +169,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           <>
             <span style={{ display: 'block', lineHeight: '21px' }}>w</span>
             <span style={{ display: 'block', lineHeight: '21px', marginTop: -3 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '21px', marginTop: -9 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '21px', marginTop: -4 }}>v</span>
           </>
         )}
         </button>
