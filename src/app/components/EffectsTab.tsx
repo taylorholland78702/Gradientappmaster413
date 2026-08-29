@@ -224,7 +224,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {effectsList.map((effect, i) => {
-                  const isLastInColumn = i % rows === rows - 1;
                   const isLeftColumn = i < rows;
                   const isActive = activeEffects.includes(effect.value);
                   // Manually stacking effects in Multi-FX had no limit at all
@@ -262,7 +261,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${!isLastInColumn ? 'border-b border-white/50' : ''} ${
+                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap border-b border-white/50 ${isLeftColumn ? 'border-r border-white/50' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
@@ -283,7 +282,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           const isMulti = activeEffects.length > 1;
 
           return (
-          <div className="w-full px-1.5 py-1 border-t border-white/50">
+          <div className="w-full px-1.5 py-1">
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-2'}`}>
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleidoscope" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>
