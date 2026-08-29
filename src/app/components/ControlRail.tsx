@@ -78,7 +78,7 @@ const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_S
 // Desktop wordmark box height (pre-scale px) — also used by ControlDrawer's
 // header row so the two share this exact number and their vertical centers
 // land at the same Y (see the wordmark button's own comment for why).
-export const WORDMARK_BOX_H = 54;
+export const WORDMARK_BOX_H = 66;
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -153,7 +153,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 14 : 17,
+          fontSize: isMobile ? 14 : 22,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
@@ -167,9 +167,9 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // deliberately asymmetric: looser between w/ā, tighter between
           // ā/v, rather than one uniform gap throughout.
           <>
-            <span style={{ display: 'block', lineHeight: '16px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: -1 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: -5 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '21px' }}>w</span>
+            <span style={{ display: 'block', lineHeight: '21px', marginTop: -3 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '21px', marginTop: -9 }}>v</span>
           </>
         )}
         </button>
