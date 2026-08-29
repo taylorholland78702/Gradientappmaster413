@@ -101,6 +101,11 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const tabBtnClass = (tab: TabId) =>
     `${railBtnBase} ${activeTab === tab ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`;
 
+  // Mobile icons are 20% larger than desktop's (23px vs 19px) — set
+  // independently rather than scaling together, since desktop already
+  // gets its own separate 1.3x whole-rail transform.
+  const iconCls = isMobile ? 'w-[23px] h-[23px]' : 'w-[19px] h-[19px]';
+
   // No collapsed state any more — InteractiveGradient.tsx doesn't mount
   // ControlRail/ControlDrawer at all while isControlsVisible is false, so
   // pressing H hides the entire dock (rail + drawer) outright, handing
@@ -133,7 +138,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       className={
         isMobile
           ? 'flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 px-2 py-1.5'
-          : 'flex flex-col items-center gap-0.5 px-1 py-2 origin-top-left'
+          : 'flex flex-col items-center gap-2 px-1 py-2 origin-top-left'
       }
       style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
     >
@@ -153,13 +158,20 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 14 : 30,
+          fontSize: isMobile ? 17 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
         aria-label="About wāv"
       >
-        {isMobile ? 'wāv' : (
+        {isMobile ? (
+          // Wrapped so the a-macron/v pair can be pulled a little closer
+          // together, same idea as the desktop stack's per-character
+          // spacing control, just horizontal instead of vertical.
+          <span style={{ whiteSpace: 'nowrap' }}>
+            w<span>ā</span><span style={{ marginLeft: -2 }}>v</span>
+          </span>
+        ) : (
           // Explicit lineHeight on each line (rather than relying on the
           // font's own metrics) — "ā"'s macron gives it a taller natural
           // glyph box than the plain "w"/"v", which without this made the
@@ -182,7 +194,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         title="Shuffle (Shift+W)"
         aria-label="Shuffle to a new look"
       >
-        <Shuffle weight="regular" className="w-[19px] h-[19px]" />
+        <Shuffle weight="regular" className={iconCls} />
       </button>
       <button
         onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
@@ -192,16 +204,16 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         aria-pressed={isAutoShuffleOn}
         disabled={isNewPresetPending}
       >
-        <InfinityIcon weight="regular" className="w-[19px] h-[19px]" />
+        <InfinityIcon weight="regular" className={iconCls} />
       </button>
 
       <RailSep isMobile={isMobile} />
 
       <button onClick={() => setActiveTab(activeTab === 'gradients' ? null : 'gradients')} title="Gradient (G)" aria-label="Gradient tab" className={tabBtnClass('gradients')}>
-        <Gradient weight="regular" className="w-[19px] h-[19px]" />
+        <Gradient weight="regular" className={iconCls} />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'effects' ? null : 'effects')} title="Effects (F)" aria-label="Effects tab" className={tabBtnClass('effects')}>
-        <MagicWand weight="regular" className="w-[19px] h-[19px]" />
+        <MagicWand weight="regular" className={iconCls} />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'audio' ? null : 'audio')} title="Audio (A)" aria-label="Audio tab" className={tabBtnClass('audio')}>
         <SpeakerHigh
@@ -211,16 +223,16 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // element in the tree carries that class any more (dropped along
           // with the old light-theme panel this component replaced), so
           // this silently did nothing. Plain Tailwind classes here instead.
-          className={`w-[19px] h-[19px] transition-colors ${isMicActive
+          className={`${iconCls} transition-colors ${isMicActive
             ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'text-green-500' : 'text-red-500')
             : ''}`}
         />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={tabBtnClass('color')}>
-        <Palette weight="regular" className="w-[19px] h-[19px]" />
+        <Palette weight="regular" className={iconCls} />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={tabBtnClass('presets')}>
-        <FloppyDisk weight="regular" className="w-[19px] h-[19px]" />
+        <FloppyDisk weight="regular" className={iconCls} />
       </button>
 
       {/* Mobile: force a row break here instead of a divider — the icon
@@ -253,7 +265,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
             />
           </svg>
         ) : (
-          <Circle weight={isRecording ? 'fill' : 'regular'} className={`w-[19px] h-[19px] ${isRecording ? 'text-red-500' : ''}`} />
+          <Circle weight={isRecording ? 'fill' : 'regular'} className={`${iconCls} ${isRecording ? 'text-red-500' : ''}`} />
         )}
       </button>
       <button
@@ -262,7 +274,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         title="Save PNG (S)"
         aria-label="Save PNG"
       >
-        <Camera weight="regular" className="w-[19px] h-[19px]" />
+        <Camera weight="regular" className={iconCls} />
       </button>
       <button
         onClick={toggleGifRecording}
@@ -277,9 +289,9 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
             <path d="M8 2 A6 6 0 0 1 14 8" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         ) : isRecordingGif ? (
-          <Circle weight="fill" className="w-[19px] h-[19px] text-red-500 animate-pulse" />
+          <Circle weight="fill" className={`${iconCls} text-red-500 animate-pulse`} />
         ) : (
-          <Gif weight="regular" className="w-[19px] h-[19px]" />
+          <Gif weight="regular" className={iconCls} />
         )}
       </button>
     </div>

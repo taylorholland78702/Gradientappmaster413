@@ -689,6 +689,18 @@ export function InteractiveGradient() {
     initAudioContext,
   } = audio;
 
+  // Opening the Audio drawer auto-expands Audio Parameters instead of
+  // requiring an extra click every time — the toggle is still there for
+  // collapsing it back once open.
+  useEffect(() => {
+    if (activeTab === 'audio') setIsAudioControlsOpen(true);
+  }, [activeTab, setIsAudioControlsOpen]);
+  // Same idea for Color's theme/color keyword picker — open by default
+  // whenever the Color drawer opens.
+  useEffect(() => {
+    if (activeTab === 'color') setIsKeywordHelpOpen(true);
+  }, [activeTab, setIsKeywordHelpOpen]);
+
   // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
   // single slider) rather than three separate per-band ones — the
   // underlying bass/mids/treble smoothing refs stay independent internally,
@@ -1686,6 +1698,10 @@ export function InteractiveGradient() {
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
+    // Its own popout now — opening it closes whatever tab drawer/About
+    // panel happened to be open instead of stacking on top of it.
+    setActiveTab(null);
+    setIsAboutOpen(false);
     autoShuffleTriggerElRef.current = triggerEl ?? null;
     const railEl = panelRef.current;
     const rect = railEl ? railEl.getBoundingClientRect() : { top: 16, left: 16, right: 60, bottom: 60, width: 240 } as DOMRect;
@@ -1695,6 +1711,24 @@ export function InteractiveGradient() {
       setAutoShufflePopoverAnchor({ top: rect.top, left: rect.right, width: DESKTOP_DRAWER_SCALED_W });
     }
   };
+  // Same "own popout" treatment as Auto Shuffle above — opening About
+  // closes whatever tab drawer/Auto Shuffle popover happened to be open
+  // instead of stacking on top of it.
+  const openAboutPanel = () => {
+    setActiveTab(null);
+    setAutoShufflePopoverAnchor(null);
+    setIsAboutOpen(true);
+  };
+  // The reverse direction of the "own popout" rule above — opening a tab
+  // drawer (Gradient/Effects/Audio/Color/Presets) closes Auto Shuffle/
+  // About too, so only one popout is ever showing at a time regardless of
+  // which one was opened last.
+  useEffect(() => {
+    if (activeTab) {
+      setAutoShufflePopoverAnchor(null);
+      setIsAboutOpen(false);
+    }
+  }, [activeTab]);
   useEffect(() => {
     if (!autoShufflePopoverAnchor) return;
     const handleClick = (e: MouseEvent) => {
@@ -1727,7 +1761,7 @@ export function InteractiveGradient() {
         // Fixed flush to the rail now (like the drawer) instead of
         // floating free — square on the edge touching the rail, rounded
         // on the edge facing the canvas.
-        className={`fixed z-50 shadow-sm p-3 flex flex-col gap-2 bg-black/75 ${isMobile ? 'rounded-t-2xl' : 'rounded-r-2xl'}`}
+        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 bg-black/75 rounded-none"
         style={{
           top: autoShufflePopoverAnchor.top,
           bottom: autoShufflePopoverAnchor.bottom,
@@ -3569,7 +3603,7 @@ export function InteractiveGradient() {
     gridCellAngleStep, setGridCellAngleStep, polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale, lavaBlobCount, setLavaBlobCount,
-    lavaBlobSize, setLavaBlobSize, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence,
+    lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed, rotationDirection, setRotationDirection, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence,
     marbleOctaves, setMarbleOctaves, metaballCount, setMetaballCount, metaballSize, setMetaballSize,
     metaballSpeed, setMetaballSpeed, truchetSize, setTruchetSize, truchetVariation, setTruchetVariation,
     truchetThickness, setTruchetThickness, moireScale, setMoireScale, moireOffset, setMoireOffset,
@@ -3684,7 +3718,7 @@ export function InteractiveGradient() {
         <ControlRail
           ref={panelRef}
           isMobile={isMobile}
-          onWordmarkClick={() => setIsAboutOpen(true)}
+          onWordmarkClick={openAboutPanel}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
           isAutoShuffleOn={isAutoShuffleOn}
@@ -3731,7 +3765,7 @@ export function InteractiveGradient() {
         <ControlRail
           ref={panelRef}
           isMobile={isMobile}
-          onWordmarkClick={() => setIsAboutOpen(true)}
+          onWordmarkClick={openAboutPanel}
           handleWavClick={handleWavClick}
           isWavPressed={isWavPressed}
           isAutoShuffleOn={isAutoShuffleOn}

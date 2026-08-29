@@ -638,7 +638,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 above) so all four buttons get the full row width instead of
                 splitting it with an inline label — "Contrast"/"Palette"
                 were getting squeezed to the point of near-illegibility. */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               <label className="text-[10px] text-white/80 font-medium">FX on Beat</label>
               <div className="flex gap-1.5">
                 <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={`flex-1 py-1 rounded text-[10px] font-semibold transition-all ${zoomBeatEnabled ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>Zoom</button>
@@ -664,10 +664,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                  Applied generically by param key in useCanvasDraw.ts, so
                  every entry in MODULATABLE_PARAMS works without a bind-icon
                  on each individual slider row. */
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-2">
                 <span className="text-[10px] text-white/80 font-medium">Modulation</span>
                 {audioBindings.length > 0 && (
-                  <div className="flex flex-col gap-1 mb-1">
+                  <div className="flex flex-col gap-2 mb-1">
                     <div className="flex items-center gap-1.5 px-1.5">
                       <span className="text-[9px] text-white/40 flex-1">Param</span>
                       <span className="text-[9px] text-white/40 w-9 flex-shrink-0 text-center">Band</span>

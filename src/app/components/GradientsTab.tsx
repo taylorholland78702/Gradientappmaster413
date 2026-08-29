@@ -6,6 +6,12 @@ export interface GradientsTabProps {
   setGradientType: (t: GradientType) => void;
   getGradientDisplayName: (t: GradientType) => string;
 
+  // Auto-rotate direction — shared across most gradient types (whichever
+  // ones animate gradientAngle on their own); previously only reachable
+  // via the D keyboard shortcut with no visible control anywhere.
+  rotationDirection: 'clockwise' | 'counter';
+  setRotationDirection: (dir: 'clockwise' | 'counter') => void;
+
   // Grid
   gridRows: number; setGridRows: (v: number) => void;
   gridColumns: number; setGridColumns: (v: number) => void;
@@ -29,6 +35,7 @@ export interface GradientsTabProps {
   // Lava Lamp
   lavaBlobCount: number; setLavaBlobCount: (v: number) => void;
   lavaBlobSize: number; setLavaBlobSize: (v: number) => void;
+  lavaSpeed: number; setLavaSpeed: (v: number) => void;
 
   // Marble
   marbleVeinFreq: number; setMarbleVeinFreq: (v: number) => void;
@@ -183,11 +190,12 @@ export interface GradientsTabProps {
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName,
+    rotationDirection, setRotationDirection,
     gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
-    lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize,
+    lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
@@ -305,6 +313,28 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </div>
             );
           })()}
+        </div>
+
+        {/* Auto-rotate direction — shared across most gradient types
+            (whichever ones animate gradientAngle on their own), so this
+            sits above the per-type blocks rather than duplicated inside
+            each one. Previously only reachable via the D key. */}
+        <div className="w-full flex items-center justify-between px-1.5 py-1">
+          <label className="text-[10px] text-white">Rotate Direction:</label>
+          <div className="flex gap-1">
+            {(['clockwise', 'counter'] as const).map((dir) => (
+              <button
+                key={dir}
+                onClick={() => setRotationDirection(dir)}
+                aria-pressed={rotationDirection === dir}
+                className={`px-2 py-0.5 rounded text-[10px] capitalize transition-all ${
+                  rotationDirection === dir ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                }`}
+              >
+                {dir === 'clockwise' ? 'CW' : 'CCW'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Gradient-specific Controls */}
@@ -470,6 +500,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
+              { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -1357,7 +1388,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
-          <div className="w-full px-3 py-1 bg-black/20 border border-white/8 rounded-lg">
+          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Cell Count:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1420,7 +1451,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (
-          <div className="w-full px-3 py-1 bg-black/20 border border-white/8 rounded-lg">
+          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Circles:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
