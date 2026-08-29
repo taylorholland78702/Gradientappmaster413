@@ -150,7 +150,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           runtime. */}
       <button
         onClick={onWordmarkClick}
-        className={`w-[30px] rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px]' : 'mb-0.5'}`}
+        className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
           fontSize: isMobile ? 14 : 17,
@@ -159,7 +159,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         title="About wāv"
         aria-label="About wāv"
       >
-        {isMobile ? 'w' : (
+        {isMobile ? 'wāv' : (
           // Explicit lineHeight on each line (rather than relying on the
           // font's own metrics) — "ā"'s macron gives it a taller natural
           // glyph box than the plain "w"/"v", which without this made the
