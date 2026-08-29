@@ -24,7 +24,7 @@ import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
 import { ControlRail } from './ControlRail';
-import { ControlDrawer } from './ControlDrawer';
+import { ControlDrawer, DESKTOP_DRAWER_SCALED_W } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
@@ -1680,21 +1680,19 @@ export function InteractiveGradient() {
   // dismiss check below (see that handler for why).
   const autoShuffleTriggerElRef = useRef<HTMLElement | null>(null);
   // Anchored to the rail's own rect (like the drawer/About panel) rather
-  // than the trigger button — desktop opens it to the right of the panel,
-  // mobile opens it above the (bottom-docked) panel, matching every other
-  // popout instead of floating just below whichever button was clicked.
+  // than the trigger button — desktop opens it flush to the right of the
+  // panel (matching the drawer's own width, not a separate guessed one),
+  // mobile opens it flush above the (bottom-docked) panel at full width
+  // (matching the mobile drawer), instead of floating just below whichever
+  // button was clicked.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
     autoShuffleTriggerElRef.current = triggerEl ?? null;
     const railEl = panelRef.current;
     const rect = railEl ? railEl.getBoundingClientRect() : { top: 16, left: 16, right: 60, bottom: 60, width: 240 } as DOMRect;
-    const width = 240;
     if (isMobile) {
-      const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
-      setAutoShufflePopoverAnchor({ bottom: window.innerHeight - rect.top + 8, left, width });
+      setAutoShufflePopoverAnchor({ bottom: window.innerHeight - rect.top, left: 0, width: window.innerWidth });
     } else {
-      const top = Math.max(8, rect.top);
-      const left = rect.right + 8;
-      setAutoShufflePopoverAnchor({ top, left, width });
+      setAutoShufflePopoverAnchor({ top: rect.top, left: rect.right, width: DESKTOP_DRAWER_SCALED_W });
     }
   };
   useEffect(() => {
@@ -1718,18 +1716,18 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    // Styled to match the panel's other popouts (solid black, white text —
-    // same bg-black the rail/drawer use) — this popover is portaled to
+    // Styled to match the panel's other popouts (bg-black/75, white text,
+    // same corner treatment as the drawer) — this popover is portaled to
     // document.body, outside the dock's own DOM subtree, so it doesn't get
     // that theme CSS applied automatically; the colors below are written
     // out directly instead.
     return createPortal(
       <div
         ref={autoShufflePopoverRef}
-        // Always fully rounded now — it floats freely near the rail's Auto
-        // Shuffle button rather than mounting flush under a wide card's top
-        // edge, so there's no adjacent edge to square a corner against.
-        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 rounded-lg bg-black"
+        // Fixed flush to the rail now (like the drawer) instead of
+        // floating free — square on the edge touching the rail, rounded
+        // on the edge facing the canvas.
+        className={`fixed z-50 shadow-sm p-3 flex flex-col gap-2 bg-black/75 ${isMobile ? 'rounded-t-2xl' : 'rounded-r-2xl'}`}
         style={{
           top: autoShufflePopoverAnchor.top,
           bottom: autoShufflePopoverAnchor.bottom,
@@ -3926,8 +3924,8 @@ export function InteractiveGradient() {
             aria-label="About wāv"
             className={
               isMobile
-                ? 'absolute bg-black rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
-                : 'absolute bg-black rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl'
+                ? 'absolute bg-black/75 rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
+                : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl'
             }
             style={isMobile ? undefined : (railRect
               ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }

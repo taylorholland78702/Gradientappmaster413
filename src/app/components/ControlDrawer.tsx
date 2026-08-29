@@ -2,7 +2,6 @@ import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useR
 import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
-import { WORDMARK_BOX_H } from './ControlRail';
 
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
@@ -25,7 +24,10 @@ const TAB_LABELS: Record<TabId, string> = {
 // (the canvas area) sees it take up.
 const DESKTOP_DRAWER_SCALE = 1.3;
 const DESKTOP_DRAWER_CONTENT_W = 248;
-const DESKTOP_DRAWER_SCALED_W = Math.round(DESKTOP_DRAWER_CONTENT_W * DESKTOP_DRAWER_SCALE);
+// Exported so other popouts (e.g. the Auto Shuffle popover in
+// InteractiveGradient.tsx) can match this exact width instead of using
+// their own guessed number.
+export const DESKTOP_DRAWER_SCALED_W = Math.round(DESKTOP_DRAWER_CONTENT_W * DESKTOP_DRAWER_SCALE);
 
 export interface ControlDrawerProps {
   activeTab: TabId | null;
@@ -93,8 +95,8 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       style={isMobile ? { maxHeight: mobileMaxHeight } : { width: DESKTOP_DRAWER_SCALED_W }}
       className={
         isMobile
-          ? 'flex-shrink-0 w-full pointer-events-auto bg-black rounded-t-2xl overflow-y-auto overflow-x-hidden'
-          : 'flex-shrink-0 h-full pointer-events-auto bg-black rounded-r-2xl overflow-y-auto overflow-x-hidden'
+          ? 'flex-shrink-0 w-full pointer-events-auto bg-black/75 rounded-t-2xl overflow-y-auto overflow-x-hidden'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-black/75 rounded-r-2xl overflow-y-auto overflow-x-hidden'
       }
     >
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
@@ -106,20 +108,11 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       {/* No close button — repressing the tab's own rail icon (a toggle,
           see ControlRail's tab buttons) is the only way to close a drawer
           now, so there's nothing here needing its own dismiss control.
-          pt-2 mirrors the rail's own py-2 top inset, and the inner box's
-          height matches WORDMARK_BOX_H — together those put this label's
-          vertical center at the same Y as the wordmark's stacked w/ā/v
-          next to it in the rail (mobile skips this: the rail's a bottom
-          bar there, not a side-by-side column, so there's no shared
-          vertical axis to line up against). */}
-      <div className={isMobile ? 'flex items-center justify-center px-3 py-2 sticky top-0 bg-black border-b border-white/10 z-10' : 'pt-2 px-3 sticky top-0 bg-black border-b border-white/10 z-10'}>
-        {isMobile ? (
-          <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
-        ) : (
-          <div className="w-full flex items-center justify-center" style={{ height: WORDMARK_BOX_H }}>
-            <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
-          </div>
-        )}
+          Compact fixed padding now (was a much taller box sized to match
+          the wordmark's 3-line stack height for vertical-center alignment
+          — traded away in favor of a drastically tighter header). */}
+      <div className="flex items-center justify-center px-3 py-1.5 sticky top-0 bg-black/75 border-b border-white/10 z-10">
+        <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
       </div>
 
       <div className="flex flex-col gap-[6px] px-1.5 pb-2">
