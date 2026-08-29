@@ -221,8 +221,20 @@ export function applyPhoto(P: any): void {
             if (canvas.width === 0 || canvas.height === 0) return;
             const photoImg = photoImageRef.current;
             if (!photoImg) return;
+            // Audio-reactive: bass pulses the image's scale, treble adds a
+            // brief opacity boost on top of the base slider, mids drive a
+            // small rotation wobble — same live levels (and the same
+            // isAudioEnabled && isAudioReactive gate) every other reactive
+            // effect in this pipeline already reads. Sits at rest (scale 1,
+            // no rotation, no boost) whenever audio isn't actively driving
+            // anything, so a photo with no audio playing looks identical to
+            // before this was added.
+            const photoAudioActive = isAudioEnabled && isAudioReactive;
+            const photoAudioScale = photoAudioActive ? 1 + Math.min(1, audioSubBassLevel) * 0.15 : 1;
+            const photoAudioOpacityBoost = photoAudioActive ? Math.min(1, audioTrebleLevel) * 0.15 : 0;
+            const photoAudioRotateDeg = photoAudioActive ? (audioMidsLevel - 0.5) * 4 : 0;
             ctx.save();
-            ctx.globalAlpha = Math.max(0, Math.min(1, photoOpacity / 100));
+            ctx.globalAlpha = Math.max(0, Math.min(1, photoOpacity / 100 + photoAudioOpacityBoost));
             ctx.globalCompositeOperation = photoBlendMode;
             const canvasAspect = displayWidth / displayHeight;
             const imgAspect = photoImg.width / photoImg.height;
@@ -237,6 +249,12 @@ export function applyPhoto(P: any): void {
               dh = dw / imgAspect;
               dx = 0;
               dy = (displayHeight - dh) / 2;
+            }
+            if (photoAudioActive) {
+              ctx.translate(displayWidth / 2, displayHeight / 2);
+              ctx.rotate(photoAudioRotateDeg * (Math.PI / 180));
+              ctx.scale(photoAudioScale, photoAudioScale);
+              ctx.translate(-displayWidth / 2, -displayHeight / 2);
             }
             ctx.drawImage(photoImg, dx, dy, dw, dh);
             ctx.restore();

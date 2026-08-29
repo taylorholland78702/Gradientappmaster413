@@ -186,7 +186,7 @@ const EFFECT_REGISTRY = {
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
-  photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: false },
+  photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
@@ -223,8 +223,11 @@ export const EFFECTS_UI_LIST: EffectType[] = EFFECT_IDS;
 // broken.
 export const ALL_EFFECTS: EffectType[] = EFFECT_IDS.filter((id) => id !== 'photo');
 
+// Same 'photo' exclusion as ALL_EFFECTS above, for the same reason — it's
+// flagged audio:true (it does react once an image is loaded) but a random
+// pick here has no way to know whether one actually has been.
 export const AUDIO_EFFECTS: EffectType[] = EFFECT_IDS.filter(
-  (id) => EFFECT_REGISTRY[id as keyof typeof EFFECT_REGISTRY].audio,
+  (id) => EFFECT_REGISTRY[id as keyof typeof EFFECT_REGISTRY].audio && id !== 'photo',
 );
 
 export const EFFECT_LABELS: Record<string, string> = Object.fromEntries(

@@ -36,7 +36,7 @@ import {
   WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
-import { totalCost, resolutionForEffectCost } from '../constants/effectCost';
+import { totalCost, resolutionForEffectCost, costOf, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
 import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
@@ -526,9 +526,11 @@ export function InteractiveGradient() {
   // screens/canvases stay under ~2560px on their long edge even at 2x DPR)
   // while still a small fraction of what a modern camera produces.
   const MAX_PHOTO_DIMENSION = 2048;
-  const handlePhotoFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Shared by both entry points — the hidden file-input's onChange and the
+  // canvas's onDrop — so drag-and-drop isn't a second, divergent upload
+  // path with its own bugs.
+  const loadPhotoFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return;
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
@@ -557,8 +559,35 @@ export function InteractiveGradient() {
     };
     img.src = url;
     setPhotoFileName(file.name);
+    // Auto-activate the Photo effect so a drop (or a picker upload) shows
+    // up immediately instead of needing a separate trip to the Effects tab
+    // to turn it on — in Multi-FX mode it's added alongside whatever's
+    // already active (if the cost budget allows), otherwise it becomes the
+    // sole active effect like any other single-FX selection.
+    setActiveEffects(prev => {
+      if (prev.includes('photo')) return prev;
+      if (isMultiFxMode) {
+        return totalCost(prev) + costOf('photo') > MULTI_FX_COST_BUDGET ? prev : [...prev, 'photo'];
+      }
+      return ['photo'];
+    });
+  }, [isMultiFxMode]);
+  const handlePhotoFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadPhotoFile(file);
+  }, [loadPhotoFile]);
+  // Canvas drag-and-drop — dragover must preventDefault or the browser
+  // refuses the drop entirely and just navigates to/opens the file instead.
+  const handleCanvasDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
   }, []);
-  
+  const handleCanvasDrop = useCallback((e: React.DragEvent) => {
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    e.preventDefault();
+    loadPhotoFile(file);
+  }, [loadPhotoFile]);
+
   // Fullscreen state
 
   // Undo state - store previous settings for one-level undo
@@ -3804,7 +3833,7 @@ export function InteractiveGradient() {
       {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
           so the dock's translucent background genuinely shows the gradient
           through it, instead of just the root's opaque black. */}
-      <div ref={shakeWrapperRef} className="fixed inset-0 z-0">
+      <div ref={shakeWrapperRef} className="fixed inset-0 z-0" onDragOver={handleCanvasDragOver} onDrop={handleCanvasDrop}>
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
