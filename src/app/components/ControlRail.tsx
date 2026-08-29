@@ -104,7 +104,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   // Mobile icons are 20% larger than desktop's (23px vs 19px) — set
   // independently rather than scaling together, since desktop already
   // gets its own separate 1.3x whole-rail transform.
-  const iconCls = isMobile ? 'w-[23px] h-[23px]' : 'w-[19px] h-[19px]';
+  const iconCls = isMobile ? 'w-[18px] h-[18px]' : 'w-[19px] h-[19px]';
 
   // No collapsed state any more — InteractiveGradient.tsx doesn't mount
   // ControlRail/ControlDrawer at all while isControlsVisible is false, so
@@ -158,7 +158,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 17 : 30,
+          fontSize: isMobile ? 20 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
@@ -169,7 +169,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // together, same idea as the desktop stack's per-character
           // spacing control, just horizontal instead of vertical.
           <span style={{ whiteSpace: 'nowrap' }}>
-            w<span>ā</span><span style={{ marginLeft: -2 }}>v</span>
+            w<span>ā</span><span style={{ marginLeft: 1 }}>v</span>
           </span>
         ) : (
           // Explicit lineHeight on each line (rather than relying on the

@@ -95,8 +95,8 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       style={isMobile ? { maxHeight: mobileMaxHeight } : { width: DESKTOP_DRAWER_SCALED_W }}
       className={
         isMobile
-          ? 'flex-shrink-0 w-full pointer-events-auto bg-black/75 rounded-t-2xl overflow-y-auto overflow-x-hidden'
-          : 'flex-shrink-0 h-full pointer-events-auto bg-black/75 rounded-r-2xl overflow-y-auto overflow-x-hidden'
+          ? 'flex-shrink-0 w-full pointer-events-auto bg-black/75 rounded-none overflow-y-auto overflow-x-hidden'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-black/75 rounded-none overflow-y-auto overflow-x-hidden'
       }
     >
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment

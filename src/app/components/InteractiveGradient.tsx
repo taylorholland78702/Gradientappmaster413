@@ -1708,7 +1708,12 @@ export function InteractiveGradient() {
     if (isMobile) {
       setAutoShufflePopoverAnchor({ bottom: window.innerHeight - rect.top, left: 0, width: window.innerWidth });
     } else {
-      setAutoShufflePopoverAnchor({ top: rect.top, left: rect.right, width: DESKTOP_DRAWER_SCALED_W });
+      // Unlike the tab drawer/About panel, this one pops out level with the
+      // button that opened it rather than flush to the top of the rail —
+      // fall back to the rail's own top if it was opened without a trigger
+      // element (e.g. a future keyboard shortcut).
+      const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
+      setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: DESKTOP_DRAWER_SCALED_W });
     }
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
@@ -3960,7 +3965,7 @@ export function InteractiveGradient() {
             aria-label="About wāv"
             className={
               isMobile
-                ? 'absolute bg-black/75 rounded-2xl p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
+                ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
                 : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl'
             }
             style={isMobile ? undefined : (railRect

@@ -23,6 +23,7 @@ const COLOR_KEYWORDS: Array<[name: string, hex: string]> = [
 ];
 
 export interface ColorTabProps {
+  isMobile: boolean;
   isAutoColor: boolean;
   setIsAutoColor: (updater: (prev: boolean) => boolean) => void;
   saveCurrentState: () => void;
@@ -50,6 +51,7 @@ export interface ColorTabProps {
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
+  isMobile,
   isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
   submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors,
   aiPrompt, setAIPrompt, isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
@@ -61,7 +63,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
 
   return (
     <>
-      <div className="flex gap-2 w-full">
+      <div className="flex gap-2 w-full mt-2.5">
         <button
           onClick={() => setIsAutoColor(prev => !prev)}
           // Always black/white regardless of on/off state (was inverting to
@@ -137,7 +139,20 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
 
         {isKeywordHelpOpen && (
           <div className="mb-2 rounded-lg bg-black/20 border border-white/8 overflow-hidden">
-            <div className="p-2.5 max-h-64 overflow-y-auto">
+            {/* Desktop: open to as much depth as the browser window allows
+                instead of a small fixed height, so it shows as many theme/
+                color chips as possible without scrolling. Divided by the
+                drawer's 1.3x desktop CSS scale (see ControlDrawer's
+                DESKTOP_DRAWER_SCALE) so the on-screen height actually
+                matches the intended viewport fraction rather than
+                overshooting it by 30%. Mobile keeps its original fixed
+                height — the drawer sheet there is already viewport-height
+                constrained as a whole. */}
+            <div
+              className="p-2.5 overflow-y-auto"
+              style={{ maxHeight: isMobile ? 256 : 'calc(70vh / 1.3)' }}
+            >
+
               <div className="text-[10px] text-white/80 font-medium mb-1.5">Themes</div>
               <div className="grid grid-cols-2 gap-1 mb-3">
                 {THEME_KEYWORDS.map(t => {

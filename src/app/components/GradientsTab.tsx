@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 
 export interface GradientsTabProps {
@@ -327,11 +328,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 key={dir}
                 onClick={() => setRotationDirection(dir)}
                 aria-pressed={rotationDirection === dir}
-                className={`px-2 py-0.5 rounded text-[10px] capitalize transition-all ${
-                  rotationDirection === dir ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                title={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
+                aria-label={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
+                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
+                  rotationDirection === dir ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
                 }`}
               >
-                {dir === 'clockwise' ? 'CW' : 'CCW'}
+                {dir === 'clockwise' ? <ArrowClockwise weight="bold" className="w-3.5 h-3.5" /> : <ArrowCounterClockwise weight="bold" className="w-3.5 h-3.5" />}
               </button>
             ))}
           </div>
