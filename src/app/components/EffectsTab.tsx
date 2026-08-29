@@ -224,7 +224,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {effectsList.map((effect, i) => {
-                  const isLastInColumn = i % rows === rows - 1;
                   const isLeftColumn = i < rows;
                   const isActive = activeEffects.includes(effect.value);
                   // Manually stacking effects in Multi-FX had no limit at all
@@ -262,7 +261,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/10' : ''} ${!isLastInColumn ? 'border-b border-white/10' : ''} ${
+                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap border-b border-white/10 ${isLeftColumn ? 'border-r border-white/10' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget

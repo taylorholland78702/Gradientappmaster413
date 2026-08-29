@@ -2,6 +2,16 @@
 @import './tailwind.css';
 @import './theme.css';
 
+/* Mobile Safari/Chrome paint a translucent gray/white overlay on any
+   tapped element by default, on top of whatever hover/active styling we
+   apply ourselves — nothing in this stylesheet suppressed it, so every
+   button got a native "flash" on press regardless of its own transition.
+   Most noticeable on buttons with a dark resting state (rail tab icons,
+   Presets) since the overlay reads as a bright flash against them. */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ── Beat flash: sweeping border animation ── */
 @property --beat-angle {
   syntax: '<angle>';

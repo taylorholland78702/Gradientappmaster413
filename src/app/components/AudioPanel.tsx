@@ -235,12 +235,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const [modParam, setModParam] = useState(MODULATABLE_PARAMS[0].key);
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
   const [modAmount, setModAmount] = useState(1);
-  // FX-on-Beat and Modulation are the two most advanced/least-used-by-default
-  // sections — collapsed behind one toggle so the default view is just
-  // Style Preset, Intensity, Auto Gain, Depth Layer, and the 4 band
-  // sliders (each with its own inline BEAT toggle), which covers the
-  // common case without the panel reading as one big wall of controls.
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  // Modulation (the only thing behind this toggle) opens by default now —
+  // the toggle itself stays, just for collapsing it back once open.
+  const [showAdvanced, setShowAdvanced] = useState(true);
 
   // Custom Style Presets — user-saved snapshots of the current live
   // settings, persisted locally (see saveCustomPresets above).
