@@ -172,6 +172,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           fontFamily: "'Space Grotesk', sans-serif",
           fontSize: isMobile ? 24 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
+          marginTop: isMobile ? -2 : undefined,
           // Audio pulse scale, read by the .wav-wordmark rule in index.css
           // (which also layers the :active press-bounce on top via calc()
           // — see that rule's comment for why it has to be a custom
@@ -257,10 +258,13 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         <FloppyDisk weight="regular" className={iconCls} />
       </button>
 
-      {/* Mobile: force a row break here instead of a divider — the icon
-          bar splits into two rows between Presets and Record on mobile
-          only; desktop keeps its usual vertical-column hairline. */}
-      {isMobile ? <div className="basis-full h-0" /> : <RailSep isMobile={isMobile} />}
+      {/* Same divider as every other group boundary, mobile or desktop —
+          previously a forced row-break here instead, which always split
+          the bar into two rows regardless of whether everything actually
+          fit on one at the current viewport width. Natural flex-wrap on
+          the row (see the wrapper above) now decides that instead, so
+          the icons only wrap when they genuinely don't fit. */}
+      <RailSep isMobile={isMobile} />
 
       {/* Record Video — moved ahead of Save PNG/Record GIF (was in a
           separate VCRControls sub-component alongside the now-removed
