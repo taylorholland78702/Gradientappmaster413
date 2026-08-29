@@ -3599,7 +3599,7 @@ export function InteractiveGradient() {
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
     paletteContrast, setPaletteContrast,
     // Gradients
-    gradientType, setGradientType, getGradientDisplayName, gridRows, setGridRows, gridColumns, setGridColumns,
+    gradientType, setGradientType, getGradientDisplayName, shuffleGradientType, gridRows, setGridRows, gridColumns, setGridColumns,
     gridCellAngleStep, setGridCellAngleStep, polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale, lavaBlobCount, setLavaBlobCount,

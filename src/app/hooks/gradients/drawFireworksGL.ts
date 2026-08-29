@@ -59,7 +59,12 @@ export function drawFireworksGL(P: any): CanvasGradient | undefined {
     const launchX = displayWidth * (0.15 + Math.random() * 0.7);
     const launchY = displayHeight * (0.15 + Math.random() * 0.55);
     const speed = Math.min(displayWidth, displayHeight) * (0.009 + Math.random() * 0.011) * (1 + trebleBoost);
-    const color = gradientColors[Math.floor(Math.random() * gradientColors.length)] || { r: 255, g: 255, b: 255 };
+    // colorIndex, not a frozen r/g/b — see the matching comment in
+    // drawFireworks.ts (the CPU version this mirrors, sharing the same
+    // fireworksParticlesRef). Freezing the resolved RGB here meant a
+    // Color-tab shuffle/adjustment had no visible effect on particles
+    // already in flight.
+    const colorIndex = Math.floor(Math.random() * gradientColors.length);
     for (let i = 0; i < perBurst; i++) {
       const angle = (i / perBurst) * Math.PI * 2 + Math.random() * 0.3;
       const spread = speed * (0.6 + Math.random() * 0.5);
@@ -69,7 +74,7 @@ export function drawFireworksGL(P: any): CanvasGradient | undefined {
         vy: Math.sin(angle) * spread,
         life: 1,
         maxLife: 45 + Math.random() * 35,
-        r: color.r, g: color.g, b: color.b,
+        colorIndex,
       });
     }
   }
@@ -99,9 +104,10 @@ export function drawFireworksGL(P: any): CanvasGradient | undefined {
     const [cx, cy] = toClipSpace(p.x, p.y, displayWidth, displayHeight);
     positions[n * 2] = cx;
     positions[n * 2 + 1] = cy;
-    colors[n * 4] = p.r / 255;
-    colors[n * 4 + 1] = p.g / 255;
-    colors[n * 4 + 2] = p.b / 255;
+    const c = gradientColors[p.colorIndex % gradientColors.length] || { r: 255, g: 255, b: 255 };
+    colors[n * 4] = c.r / 255;
+    colors[n * 4 + 1] = c.g / 255;
+    colors[n * 4 + 2] = c.b / 255;
     colors[n * 4 + 3] = alpha;
     sizes[n] = size;
     n++;

@@ -1,11 +1,12 @@
 import React from 'react';
-import { ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
 import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
 
 export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
   getGradientDisplayName: (t: GradientType) => string;
+  shuffleGradientType: () => void;
 
   // Auto-rotate direction — shared across most gradient types (whichever
   // ones animate gradientAngle on their own); previously only reachable
@@ -190,7 +191,7 @@ export interface GradientsTabProps {
 
 const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
-    gradientType, setGradientType, getGradientDisplayName,
+    gradientType, setGradientType, getGradientDisplayName, shuffleGradientType,
     rotationDirection, setRotationDirection,
     gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
@@ -287,6 +288,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
         <div className="w-full flex flex-col gap-2">
+          {/* Shuffle — picks a random type and randomizes its own shape
+              params too (same shuffleGradientType used by the Shift+G
+              shortcut), matching Effects' own Shuffle button. */}
+          <button
+            onClick={shuffleGradientType}
+            className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/10"
+            title="Shuffle Gradient Type"
+            aria-label="Shuffle Gradient Type"
+          ><Shuffle weight="regular" className="w-4 h-4" /> Shuffle</button>
           {(() => {
             const COLS = 2;
             const rows = Math.ceil(FULL_GRADIENT_TYPES.length / COLS);

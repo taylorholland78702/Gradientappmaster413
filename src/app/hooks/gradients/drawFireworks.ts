@@ -53,7 +53,13 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
     const launchX = displayWidth * (0.15 + Math.random() * 0.7);
     const launchY = displayHeight * (0.15 + Math.random() * 0.55);
     const speed = Math.min(displayWidth, displayHeight) * (0.009 + Math.random() * 0.011) * (1 + trebleBoost);
-    const color = gradientColors[Math.floor(Math.random() * gradientColors.length)] || { r: 255, g: 255, b: 255 };
+    // Store a color index rather than a frozen r/g/b — particles live for
+    // 45-80 frames (~0.75-1.3s), and baking the resolved RGB in here meant
+    // a Color-tab shuffle/adjustment had no visible effect on anything
+    // already in flight, only on the next burst. Re-resolving from the
+    // live gradientColors array in the render loop below fixes that, same
+    // pattern drawParticles.ts/drawLightning.ts already use.
+    const colorIndex = Math.floor(Math.random() * gradientColors.length);
     for (let i = 0; i < perBurst; i++) {
       const angle = (i / perBurst) * Math.PI * 2 + Math.random() * 0.3;
       const spread = speed * (0.6 + Math.random() * 0.5);
@@ -63,7 +69,7 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
         vy: Math.sin(angle) * spread,
         life: 1,
         maxLife: 45 + Math.random() * 35,
-        r: color.r, g: color.g, b: color.b,
+        colorIndex,
       });
     }
   }
@@ -85,7 +91,8 @@ export function drawFireworks(P: any): CanvasGradient | undefined {
     const t = p.life / p.maxLife;
     const alpha = Math.max(0, 1 - t) * 0.95;
     const size = dotBase * (1 - t * 0.5);
-    fwCtx.fillStyle = `rgba(${p.r},${p.g},${p.b},${alpha})`;
+    const c = gradientColors[p.colorIndex % gradientColors.length] || { r: 255, g: 255, b: 255 };
+    fwCtx.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha})`;
     fwCtx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
   }
 
