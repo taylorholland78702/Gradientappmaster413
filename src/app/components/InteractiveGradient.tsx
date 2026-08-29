@@ -695,11 +695,6 @@ export function InteractiveGradient() {
   useEffect(() => {
     if (activeTab === 'audio') setIsAudioControlsOpen(true);
   }, [activeTab, setIsAudioControlsOpen]);
-  // Same idea for Color's theme/color keyword picker — open by default
-  // whenever the Color drawer opens.
-  useEffect(() => {
-    if (activeTab === 'color') setIsKeywordHelpOpen(true);
-  }, [activeTab, setIsKeywordHelpOpen]);
 
   // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
   // single slider) rather than three separate per-band ones — the
