@@ -533,3 +533,36 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ── wāv wordmark: audio pulse + press bounce + reveal ──
+   The button's own transform is driven by a CSS custom property
+   (--wav-audio-scale) rather than an inline `transform` style directly —
+   React sets that variable each render (1 at rest, up to ~1.12 while a
+   live audio level is driving it), and the :active rule below multiplies
+   it via calc() for the press bounce. Doing it this way (instead of two
+   separate inline styles) is what lets a native :active press-state work
+   at all here — an inline `style.transform` would always beat a
+   stylesheet :active rule regardless of specificity, so the press bounce
+   would never be visible on top of the audio pulse without this. */
+.wav-wordmark {
+  transform: scale(var(--wav-audio-scale, 1));
+  transition: transform 100ms ease-out;
+}
+.wav-wordmark:active {
+  transform: scale(calc(var(--wav-audio-scale, 1) * 0.88));
+  transition: transform 60ms ease-out;
+}
+
+/* Per-letter stagger-in on first mount — animationDelay set inline per
+   letter span (0/80/160ms). `both` fill-mode holds the 0%-state pose
+   until its delayed start and the 100%-state pose after finishing, so
+   there's no flash-of-unstyled-letter before each one's turn. */
+@keyframes wav-letter-drop {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  60%  { opacity: 1; transform: translateY(1px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.wav-letter-reveal {
+  display: inline-block;
+  animation: wav-letter-drop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
