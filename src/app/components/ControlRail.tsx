@@ -168,8 +168,8 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // ā/v, rather than one uniform gap throughout.
           <>
             <span style={{ display: 'block', lineHeight: '16px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: -4 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: -7 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: -1 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: -5 }}>v</span>
           </>
         )}
         </button>
