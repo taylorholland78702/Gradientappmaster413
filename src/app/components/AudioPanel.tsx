@@ -356,7 +356,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               Flattening to one level removes that discrepancy. */}
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
             aria-label={isMicActive ? 'Turn Mic Off' : 'Turn Mic On'}
           >
@@ -372,7 +372,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               dropdown visually to the mic toggle next to it (previously
               just an unlabeled caret, easy to miss that it's an input-
               device picker rather than some other menu). */}
-          <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1 text-white transition-all ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
+          <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-white transition-all ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
             {isMicActive && (
               <select
                 value={selectedAudioDeviceId}
@@ -404,7 +404,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               separate "load a file instead" action. */}
           <button
             onClick={onAudioFileClick}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
+            className="flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
             title="Load Audio File"
             aria-label="Load Audio File"
           >
