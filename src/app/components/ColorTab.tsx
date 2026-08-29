@@ -168,17 +168,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           </div>
         )}
 
-        <div className="flex gap-1.5 justify-end">
-          <button
-            onClick={() => {
-              setIsAIColorPickerOpen(false);
-              setAIPrompt('');
-              setIsKeywordHelpOpen(false);
-            }}
-            className="px-2.5 py-1 rounded text-[10px] font-semibold bg-black/25 text-white hover:bg-white/15 transition-all"
-          >
-            Cancel
-          </button>
+        <div className="flex justify-center">
           <button
             onClick={handleAIPromptSubmit}
             className="px-2.5 py-1 rounded text-[10px] font-bold bg-white text-black hover:bg-white/90 transition-all"
