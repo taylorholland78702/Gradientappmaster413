@@ -230,7 +230,7 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
 }) {
   if (!isMulti) return <>{children}</>;
   return (
-    <div className="border-b border-white/10 last:border-0">
+    <div className="border-b border-white last:border-0">
       <button
         onClick={() => onToggle(id)}
         className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
@@ -576,16 +576,28 @@ export function InteractiveGradient() {
     const file = e.target.files?.[0];
     if (file) loadPhotoFile(file);
   }, [loadPhotoFile]);
-  // Canvas drag-and-drop — dragover must preventDefault or the browser
-  // refuses the drop entirely and just navigates to/opens the file instead.
-  const handleCanvasDragOver = useCallback((e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
-  }, []);
-  const handleCanvasDrop = useCallback((e: React.DragEvent) => {
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    e.preventDefault();
-    loadPhotoFile(file);
+  // Window-level drag-and-drop rather than a handler on one specific
+  // element — a React onDrop/onDragOver pair scoped to the canvas wrapper
+  // div wasn't reliably catching the browser's default action (dropping a
+  // file anywhere the listener wasn't attached, or during the split second
+  // before an event finished bubbling, fell through to the browser's own
+  // "navigate to this file" behavior instead of being caught). Listening
+  // on window and preventing default on EVERY dragover unconditionally
+  // (not just when a file is present) is what actually suppresses that
+  // reliably — matches the standard pattern for whole-page drop zones.
+  useEffect(() => {
+    const onDragOver = (e: DragEvent) => e.preventDefault();
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer?.files?.[0];
+      if (file) loadPhotoFile(file);
+    };
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('drop', onDrop);
+    return () => {
+      window.removeEventListener('dragover', onDragOver);
+      window.removeEventListener('drop', onDrop);
+    };
   }, [loadPhotoFile]);
 
   // Fullscreen state
@@ -3833,7 +3845,7 @@ export function InteractiveGradient() {
       {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
           so the dock's translucent background genuinely shows the gradient
           through it, instead of just the root's opaque black. */}
-      <div ref={shakeWrapperRef} className="fixed inset-0 z-0" onDragOver={handleCanvasDragOver} onDrop={handleCanvasDrop}>
+      <div ref={shakeWrapperRef} className="fixed inset-0 z-0">
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}

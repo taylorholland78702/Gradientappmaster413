@@ -223,16 +223,27 @@ export function applyPhoto(P: any): void {
             if (!photoImg) return;
             // Audio-reactive: bass pulses the image's scale, treble adds a
             // brief opacity boost on top of the base slider, mids drive a
-            // small rotation wobble — same live levels (and the same
+            // rotation wobble AND a pan — same live levels (and the same
             // isAudioEnabled && isAudioReactive gate) every other reactive
             // effect in this pipeline already reads. Sits at rest (scale 1,
-            // no rotation, no boost) whenever audio isn't actively driving
-            // anything, so a photo with no audio playing looks identical to
-            // before this was added.
+            // no rotation, no pan, no boost) whenever audio isn't actively
+            // driving anything, so a photo with no audio playing looks
+            // identical to before this was added.
+            //
+            // The image is always drawn cover-fit (overflowing the canvas
+            // in one dimension — see below), so scale alone was nearly
+            // invisible: growing an already-overflowing image just pushes
+            // more of it further outside the visible frame without
+            // changing what's on screen. The pan (audioPanX/Y) is what
+            // actually reads as motion, since shifting a cover-fit image
+            // changes which part of it is currently in frame; scale and
+            // rotation are kept too, but boosted, for corner/edge motion.
             const photoAudioActive = isAudioEnabled && isAudioReactive;
-            const photoAudioScale = photoAudioActive ? 1 + Math.min(1, audioSubBassLevel) * 0.15 : 1;
-            const photoAudioOpacityBoost = photoAudioActive ? Math.min(1, audioTrebleLevel) * 0.15 : 0;
-            const photoAudioRotateDeg = photoAudioActive ? (audioMidsLevel - 0.5) * 4 : 0;
+            const photoAudioScale = photoAudioActive ? 1 + Math.min(1, audioSubBassLevel) * 0.4 : 1;
+            const photoAudioOpacityBoost = photoAudioActive ? Math.min(1, audioTrebleLevel) * 0.25 : 0;
+            const photoAudioRotateDeg = photoAudioActive ? Math.min(1, audioMidsLevel) * 6 : 0;
+            const photoAudioPanX = photoAudioActive ? Math.min(1, audioMidsLevel) * displayWidth * 0.06 : 0;
+            const photoAudioPanY = photoAudioActive ? Math.min(1, audioTrebleLevel) * displayHeight * 0.06 : 0;
             ctx.save();
             ctx.globalAlpha = Math.max(0, Math.min(1, photoOpacity / 100 + photoAudioOpacityBoost));
             ctx.globalCompositeOperation = photoBlendMode;
@@ -251,7 +262,21 @@ export function applyPhoto(P: any): void {
               dy = (displayHeight - dh) / 2;
             }
             if (photoAudioActive) {
-              ctx.translate(displayWidth / 2, displayHeight / 2);
+              // Plain cover-fit only overflows the canvas along ONE axis
+              // (whichever one isn't the aspect-ratio-limiting dimension —
+              // dh===displayHeight exactly in one branch above, dw===
+              // displayWidth exactly in the other), so panning along the
+              // other axis would immediately expose a gap at that edge.
+              // A flat 25% overscan on both dimensions here (audio-active
+              // only, so a photo with no audio playing keeps the original
+              // precise cover-fit) guarantees margin on both axes for the
+              // pan/rotate/scale below to move within.
+              const overscan = 1.25;
+              dw *= overscan;
+              dh *= overscan;
+              dx = (displayWidth - dw) / 2;
+              dy = (displayHeight - dh) / 2;
+              ctx.translate(displayWidth / 2 + photoAudioPanX, displayHeight / 2 + photoAudioPanY);
               ctx.rotate(photoAudioRotateDeg * (Math.PI / 180));
               ctx.scale(photoAudioScale, photoAudioScale);
               ctx.translate(-displayWidth / 2, -displayHeight / 2);

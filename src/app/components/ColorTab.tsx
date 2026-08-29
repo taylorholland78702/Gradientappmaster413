@@ -1,7 +1,12 @@
 import React from 'react';
-import { Shuffle, Play, Pause } from '@phosphor-icons/react';
+import { Shuffle, Play, Pause, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb } from '../utils/color';
+
+// Keeps the palette a valid gradient (at least 2 stops) and keeps the
+// swatch row from growing unboundedly if someone just holds down +.
+const MIN_PALETTE_COLORS = 2;
+const MAX_PALETTE_COLORS = 10;
 
 export interface ColorTabProps {
   isAutoColor: boolean;
@@ -39,6 +44,22 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setTargetColors(next);
   };
 
+  const addSwatch = () => {
+    if (gradientColors.length >= MAX_PALETTE_COLORS) return;
+    saveCurrentState();
+    const next = [...gradientColors, randomColor()];
+    setGradientColors(next);
+    setTargetColors(next);
+  };
+
+  const removeSwatch = (index: number) => {
+    if (gradientColors.length <= MIN_PALETTE_COLORS) return;
+    saveCurrentState();
+    const next = gradientColors.filter((_, i) => i !== index);
+    setGradientColors(next);
+    setTargetColors(next);
+  };
+
   return (
     <>
       <div className="flex gap-2 w-full mt-2.5">
@@ -63,22 +84,40 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           bound directly to gradientColors[i] (rgbToHex/hexToRgb in
           utils/color.ts). The only way to set an exact color before this;
           Shuffle only randomizes and Adjustments only shifts the whole
-          palette uniformly. */}
-      <div className="w-full pt-2.5 border-t border-white/10">
+          palette uniformly. Square (not rounded) and small so a full
+          palette fits inside the drawer without wrapping awkwardly. */}
+      <div className="w-full pt-2.5 border-t border-white">
         <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palette</label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {gradientColors.map((c, i) => (
-            <input
-              key={i}
-              type="color"
-              value={rgbToHex(c)}
-              onFocus={saveCurrentState}
-              onChange={(e) => setSwatch(i, e.target.value)}
-              title={`Color ${i + 1}`}
-              aria-label={`Palette color ${i + 1}`}
-              className="w-9 h-9 rounded-lg cursor-pointer border border-white/20 bg-transparent p-0.5"
-            />
+            <div key={i} className="relative">
+              <input
+                type="color"
+                value={rgbToHex(c)}
+                onFocus={saveCurrentState}
+                onChange={(e) => setSwatch(i, e.target.value)}
+                title={`Color ${i + 1}`}
+                aria-label={`Palette color ${i + 1}`}
+                className="w-6 h-6 rounded-none cursor-pointer border border-white/20 bg-transparent p-0"
+              />
+              {gradientColors.length > MIN_PALETTE_COLORS && (
+                <button
+                  onClick={() => removeSwatch(i)}
+                  title={`Remove color ${i + 1}`}
+                  aria-label={`Remove color ${i + 1}`}
+                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-white/30 text-white flex items-center justify-center hover:bg-red-500/70 transition-colors"
+                ><X weight="bold" className="w-2 h-2" /></button>
+              )}
+            </div>
           ))}
+          {gradientColors.length < MAX_PALETTE_COLORS && (
+            <button
+              onClick={addSwatch}
+              title="Add color"
+              aria-label="Add color"
+              className="w-6 h-6 flex items-center justify-center border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white transition-colors"
+            ><Plus weight="bold" className="w-3 h-3" /></button>
+          )}
         </div>
       </div>
 
