@@ -199,19 +199,19 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             <button
               onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
               aria-pressed={isMultiFxMode}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
               onClick={randomizeEffects}
-              className="flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
+              className="flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
               title="Shuffle Effects (Shift+F)"
               aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
-              className={`flex-1 px-0.5 py-1 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
           {(() => {
@@ -262,7 +262,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${!isLastInColumn ? 'border-b border-white/50' : ''} ${
+                      className={`px-1 py-2 text-[10px] transition-all whitespace-nowrap ${isLeftColumn ? 'border-r border-white/50' : ''} ${(!isLastInColumn || !isMobile) ? 'border-b border-white/50' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget

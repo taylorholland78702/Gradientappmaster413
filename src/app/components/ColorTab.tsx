@@ -63,7 +63,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           below it). No separate Play/Pause auto-color toggle any more. */}
       <button
         onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
-        className="w-full mt-2.5 px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
+        className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
         title="Shuffle Colors"
         aria-label="Shuffle Colors"
       ><Shuffle weight="regular" className="w-4 h-4" /></button>
