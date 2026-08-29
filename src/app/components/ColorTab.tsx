@@ -1,12 +1,14 @@
 import React from 'react';
 import { Shuffle, Play, Pause } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
+import { rgbToHex, hexToRgb } from '../utils/color';
 
 export interface ColorTabProps {
   isAutoColor: boolean;
   setIsAutoColor: (updater: (prev: boolean) => boolean) => void;
   saveCurrentState: () => void;
   setTargetColors: (colors: ColorRGB[]) => void;
+  setGradientColors: (colors: ColorRGB[]) => void;
   gradientColors: ColorRGB[];
   randomColor: () => ColorRGB;
   paletteHue: number;
@@ -20,11 +22,22 @@ export interface ColorTabProps {
 }
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
-  isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
+  isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, setGradientColors, gradientColors, randomColor,
   paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
   paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
 }) => {
   const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
+
+  // Editing a swatch writes both the live and target color arrays directly
+  // (rather than just setTargetColors, like Shuffle does) so the change is
+  // instant — a manual pick fighting the ~1s ease used for a random shuffle
+  // would read as laggy/unresponsive while dragging the native color-picker
+  // dialog.
+  const setSwatch = (index: number, hex: string) => {
+    const next = gradientColors.map((c, i) => (i === index ? hexToRgb(hex) : c));
+    setGradientColors(next);
+    setTargetColors(next);
+  };
 
   return (
     <>
@@ -44,6 +57,29 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           className="flex-1 px-1.5 py-1 rounded-lg text-xs transition-all bg-black/25 text-white hover:bg-white/15 font-semibold shadow-sm flex items-center justify-center"
           title="Shuffle Colors"
         ><Shuffle weight="regular" className="w-4 h-4" /></button>
+      </div>
+
+      {/* Manual swatch picker — one native color input per palette stop,
+          bound directly to gradientColors[i] (rgbToHex/hexToRgb in
+          utils/color.ts). The only way to set an exact color before this;
+          Shuffle only randomizes and Adjustments only shifts the whole
+          palette uniformly. */}
+      <div className="w-full pt-2.5 border-t border-white/10">
+        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palette</label>
+        <div className="flex flex-wrap gap-2">
+          {gradientColors.map((c, i) => (
+            <input
+              key={i}
+              type="color"
+              value={rgbToHex(c)}
+              onFocus={saveCurrentState}
+              onChange={(e) => setSwatch(i, e.target.value)}
+              title={`Color ${i + 1}`}
+              aria-label={`Palette color ${i + 1}`}
+              className="w-9 h-9 rounded-lg cursor-pointer border border-white/20 bg-transparent p-0.5"
+            />
+          ))}
+        </div>
       </div>
 
       {/* Palette-wide adjustments — applied to the whole gradientColors

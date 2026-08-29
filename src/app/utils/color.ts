@@ -1,5 +1,15 @@
 import type { ColorRGB } from '../constants/gradientEffects';
 
+// For the manual swatch picker (native <input type="color">, which speaks
+// hex) — the app's own color state is ColorRGB {r,g,b} everywhere else.
+export const rgbToHex = ({ r, g, b }: ColorRGB): string =>
+  '#' + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+
+export const hexToRgb = (hex: string): ColorRGB => {
+  const n = parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+};
+
 export const hslToRgb = (h: number, s: number, l: number): ColorRGB => {
   s /= 100; l /= 100;
   const k = (n: number) => (n + h / 30) % 12;
