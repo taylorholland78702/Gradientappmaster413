@@ -3806,9 +3806,10 @@ export function InteractiveGradient() {
       style={{ flexDirection: isMobile ? 'column' : 'row' }}
       ref={containerRef}
     >
-      {!isMobile && isControlsVisible && dock}
-      <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
-      <div ref={shakeWrapperRef} className="w-full h-full">
+      {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
+          so the dock's translucent background genuinely shows the gradient
+          through it, instead of just the root's opaque black. */}
+      <div ref={shakeWrapperRef} className="fixed inset-0 z-0">
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
@@ -3823,8 +3824,9 @@ export function InteractiveGradient() {
           style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
         />
       </div>
-      </div>
-      {isMobile && isControlsVisible && dock}
+      {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
+      <div className="relative flex-1 min-w-0 min-h-0" />
+      {isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
 
       {/* Upper Right Controls */}
       <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>

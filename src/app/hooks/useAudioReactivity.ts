@@ -79,9 +79,14 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const [bassMultiplier, setBassMultiplier] = useState(1.5);
   const [midsMultiplier, setMidsMultiplier] = useState(1.2);
   const [trebleMultiplier, setTrebleMultiplier] = useState(1);
-  const [bassSmoothing, setBassSmoothing] = useState(0.55);
-  const [midsSmoothing, setMidsSmoothing] = useState(0.55);
-  const [trebleSmoothing, setTrebleSmoothing] = useState(0.55);
+  // Raised from 0.55 — Brik's visualizer (the smoothness reference this was
+  // benchmarked against) runs its FFT smoothing at ~0.88; 0.55 let real
+  // per-frame FFT noise through as visible jitter even before accounting for
+  // multiplier-driven motion. Still exposed as one user-facing "Reaction
+  // Smoothing" control (AudioPanel.tsx) that sets all three together.
+  const [bassSmoothing, setBassSmoothing] = useState(0.85);
+  const [midsSmoothing, setMidsSmoothing] = useState(0.85);
+  const [trebleSmoothing, setTrebleSmoothing] = useState(0.85);
   const [bassThreshold, setBassThreshold] = useState(0);
   const [midsThreshold, setMidsThreshold] = useState(0);
   const [trebleThreshold, setTrebleThreshold] = useState(0);
