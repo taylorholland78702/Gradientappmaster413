@@ -138,7 +138,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       className={
         isMobile
           ? 'flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 px-2 py-1.5'
-          : 'flex flex-col items-center gap-2 px-1 py-2 origin-top-left'
+          : 'flex flex-col items-center gap-2 px-1 pt-0.5 pb-2 origin-top-left'
       }
       style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
     >
@@ -186,7 +186,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         )}
         </button>
 
-      <RailSep isMobile={isMobile} />
+      {isMobile && <RailSep isMobile={isMobile} />}
 
       <button
         onClick={handleWavClick}
