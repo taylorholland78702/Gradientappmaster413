@@ -343,7 +343,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   return (
     <>
       {/* Audiovisuals Section — single pill */}
-      <div className="w-full flex">
+      <div className="w-full flex mt-2.5">
         <div className="flex items-center justify-between flex-1 overflow-hidden">
           {/* Mic toggle, device select, upload, parameters — a flat row of 4
               equal-width segments with matching dividers between all of
@@ -648,15 +648,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                  every entry in MODULATABLE_PARAMS works without a bind-icon
                  on each individual slider row. */
               <div className="flex flex-col gap-2">
-                <span className="text-[10px] text-white/80 font-medium">Modulation</span>
                 {audioBindings.length > 0 && (
                   <div className="flex flex-col gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 px-1.5">
-                      <span className="text-[9px] text-white/40 flex-1 text-left">Parameter</span>
-                      <span className="text-[9px] text-white/40 w-9 flex-shrink-0 text-left">Band</span>
-                      <span className="w-9 flex-shrink-0" />
-                      <span className="w-3 flex-shrink-0" />
-                    </div>
                     {audioBindings.map((b) => {
                       const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
                       return (

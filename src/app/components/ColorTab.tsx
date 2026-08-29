@@ -50,7 +50,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           array at a single point (see adjustPalette in utils/color.ts),
           so these work the same regardless of whether the palette came
           from a theme/color keyword, shuffle, or manual pin edits. */}
-      <div className="w-full pt-2 border-t border-white/10">
+      <div className="w-full pt-2">
         {isPaletteAdjusted && (
           <div className="flex items-center justify-end mb-1.5">
             <button

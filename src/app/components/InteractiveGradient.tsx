@@ -368,10 +368,12 @@ export function InteractiveGradient() {
   // key or a click) — a keyboard/screen-reader user got no indication a
   // dialog had appeared, since focus just stayed wherever it was on the
   // page behind it. Escape already closed it (see the keydown handler
-  // below); this only adds the open-time focus move.
-  const aboutCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  // below); this only adds the open-time focus move. Focuses the dialog
+  // container itself (tabIndex={-1} below) rather than a close button —
+  // there isn't one anymore (closing is via Escape or clicking outside).
+  const aboutDialogRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if (isAboutOpen) aboutCloseButtonRef.current?.focus();
+    if (isAboutOpen) aboutDialogRef.current?.focus();
   }, [isAboutOpen]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
@@ -3948,26 +3950,20 @@ export function InteractiveGradient() {
         <div className="absolute inset-0 pointer-events-auto z-50">
           <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
           <div
+            ref={aboutDialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label="About wāv"
             className={
               isMobile
-                ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
-                : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl'
+                ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
+                : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
             }
             style={isMobile ? undefined : (railRect
               ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }
               : { top: 16, left: 16 })}
           >
-            <button
-              ref={aboutCloseButtonRef}
-              onClick={() => setIsAboutOpen(false)}
-              aria-label="Close about panel"
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all"
-            >
-              <X weight="regular" className="w-4 h-4" />
-            </button>
             <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed mt-6">
               <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
               <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
