@@ -689,13 +689,6 @@ export function InteractiveGradient() {
     initAudioContext,
   } = audio;
 
-  // Opening the Audio drawer auto-expands Audio Parameters instead of
-  // requiring an extra click every time — the toggle is still there for
-  // collapsing it back once open.
-  useEffect(() => {
-    if (activeTab === 'audio') setIsAudioControlsOpen(true);
-  }, [activeTab, setIsAudioControlsOpen]);
-
   // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
   // single slider) rather than three separate per-band ones — the
   // underlying bass/mids/treble smoothing refs stay independent internally,

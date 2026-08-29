@@ -51,15 +51,14 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           so these work the same regardless of whether the palette came
           from a theme/color keyword, shuffle, or manual pin edits. */}
       <div className="w-full pt-2 border-t border-white/10">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-white/80 font-medium">Adjustments</span>
-          {isPaletteAdjusted && (
+        {isPaletteAdjusted && (
+          <div className="flex items-center justify-end mb-1.5">
             <button
               onClick={() => { setPaletteHue(0); setPaletteSaturation(100); setPaletteBrightness(0); setPaletteContrast(0); }}
               className="text-[10px] text-white/50 hover:text-white transition-all"
             >Reset</button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">

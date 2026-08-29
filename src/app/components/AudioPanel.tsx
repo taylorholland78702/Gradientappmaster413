@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CaretDown, Plus, SlidersHorizontal, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, Trash, Check } from '@phosphor-icons/react';
+import { CaretDown, Plus, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, Trash, Check } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 
@@ -222,8 +222,8 @@ interface AudioPanelProps {
 
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
-    isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
-    masterSensitivity, reactionSmoothing, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
+    isMicActive, micError, audioInputDevices, selectedAudioDeviceId,
+    masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
     bassBeatSync, midsBeatSync, trebleBeatSync,
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
@@ -290,8 +290,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   };
 
   const {
-    setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
-    setMasterSensitivity, setReactionSmoothing, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setSelectedAudioDeviceId, setMicError,
+    setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
@@ -371,7 +371,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
           </button>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-          <div className={`relative flex-1 flex items-center px-2 py-1 text-white transition-all justify-center ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
+          {/* Device select — a Microphone icon alongside the caret ties this
+              dropdown visually to the mic toggle next to it (previously
+              just an unlabeled caret, easy to miss that it's an input-
+              device picker rather than some other menu). */}
+          <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1 text-white transition-all ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
             {isMicActive && (
               <select
                 value={selectedAudioDeviceId}
@@ -383,7 +387,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   // isMicActive off with no guarantee the restart landed.
                   startMicVisualization(e.target.value);
                 }}
-                title="Select audio input"
+                title="Select microphone input"
                 className="absolute inset-0 opacity-0 cursor-pointer w-full"
               >
                 {audioInputDevices.map(d => (
@@ -393,28 +397,22 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 ))}
               </select>
             )}
+            <Microphone weight="regular" className="w-3.5 h-3.5 pointer-events-none opacity-60" />
             <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
           </div>
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-          {/* Upload */}
+          {/* Upload — labeled now (was a bare + with only a hover title),
+              since a plus on its own next to a mic icon and a device
+              dropdown read as another mic-related control rather than a
+              separate "load a file instead" action. */}
           <button
             onClick={onAudioFileClick}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
             title="Load Audio File"
             aria-label="Load Audio File"
           >
-            <Plus weight="regular" className="w-4 h-4" />
-          </button>
-          <div className="w-px h-4 bg-white/20 flex-shrink-0" />
-          {/* Parameters toggle */}
-          <button
-            onClick={() => setIsAudioControlsOpen(!isAudioControlsOpen)}
-            className="flex-1 px-2 py-1 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
-            title="Audio Parameters"
-            aria-label="Audio Parameters"
-          >
-            <SlidersHorizontal weight="regular" className="w-4 h-4 flex-shrink-0" />
-            <CaretDown weight="regular" className={`w-4 h-4 transition-transform flex-shrink-0 ${isAudioControlsOpen ? 'rotate-180' : ''}`} />
+            <Plus weight="regular" className="w-4 h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">Upload</span>
           </button>
         </div>
       </div>
@@ -436,8 +434,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
         </div>
       )}
 
-      {isAudioControlsOpen && (
-        <div className="w-full px-1.5 py-2 border-t border-white/10">
+      {/* Always open now — was gated behind its own dropdown toggle
+          (Parameters button), which just added an extra click to reach
+          the panel's main controls every time. */}
+      <div className="w-full px-1.5 py-2 border-t border-white/10">
           <div className="flex flex-col gap-2">
 
             {/* Style presets — one-click starting points for common audio/
@@ -550,20 +550,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <input type="number" min="0" max="10" step="0.1" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
             </div>
 
-            {/* Reaction Smoothing — EMA factor applied to each band's raw FFT
-                level before it drives anything downstream (zoom, hue drift,
-                shimmer, audio bindings). Higher = slower/smoother response,
-                lower = snappier but jitterier. One shared control (sets
-                bass/mids/treble smoothing together, see
-                InteractiveGradient.tsx's setReactionSmoothing) rather than
-                three separate sliders, since they're always tuned in unison
-                in practice. */}
-            <div className="flex items-center gap-1">
-              <label className="text-[10px] text-white whitespace-nowrap" title="How much incoming audio levels are smoothed before driving motion — higher is slower/smoother, lower is snappier but more jittery">Reaction Smoothing:</label>
-              <input type="range" min="0" max="0.95" step="0.01" value={reactionSmoothing} onChange={(e) => setReactionSmoothing(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="0" max="0.95" step="0.01" value={reactionSmoothing} onChange={(e) => setReactionSmoothing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
-
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
               <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-white/80 font-medium" title="~20-60Hz — kick drum fundamental">Sub</div>
@@ -669,9 +655,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 {audioBindings.length > 0 && (
                   <div className="flex flex-col gap-2 mb-1">
                     <div className="flex items-center gap-1.5 px-1.5">
-                      <span className="text-[9px] text-white/40 flex-1">Param</span>
-                      <span className="text-[9px] text-white/40 w-9 flex-shrink-0 text-center">Band</span>
-                      <span className="text-[9px] text-white/40 w-9 flex-shrink-0 text-center">Amount</span>
+                      <span className="text-[9px] text-white/40 flex-1 text-left">Parameter</span>
+                      <span className="text-[9px] text-white/40 w-9 flex-shrink-0 text-left">Band</span>
+                      <span className="w-9 flex-shrink-0" />
                       <span className="w-3 flex-shrink-0" />
                     </div>
                     {audioBindings.map((b) => {
@@ -753,8 +739,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             )}
 
           </div>
-        </div>
-      )}
+      </div>
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
