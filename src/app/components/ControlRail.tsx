@@ -78,7 +78,7 @@ const DESKTOP_RAIL_SCALED_W = Math.round(DESKTOP_RAIL_CONTENT_W * DESKTOP_RAIL_S
 // Desktop wordmark box height (pre-scale px) — also used by ControlDrawer's
 // header row so the two share this exact number and their vertical centers
 // land at the same Y (see the wordmark button's own comment for why).
-export const WORDMARK_BOX_H = 46;
+export const WORDMARK_BOX_H = 54;
 
 /**
  * The left-edge icon rail replacing the old draggable 3-row card. Every
@@ -153,7 +153,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         className={`w-[30px] rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px]' : 'mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 14 : 13,
+          fontSize: isMobile ? 14 : 17,
           height: isMobile ? undefined : WORDMARK_BOX_H,
         }}
         title="About wāv"
@@ -163,11 +163,13 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // Explicit lineHeight on each line (rather than relying on the
           // font's own metrics) — "ā"'s macron gives it a taller natural
           // glyph box than the plain "w"/"v", which without this made the
-          // 3-line stack's spacing visibly uneven between rows.
+          // 3-line stack's spacing visibly uneven between rows. Leading is
+          // deliberately asymmetric: tight between w/ā, looser between
+          // ā/v, rather than one uniform gap throughout.
           <>
-            <span style={{ display: 'block', lineHeight: '15px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '15px' }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '15px' }}>v</span>
+            <span style={{ display: 'block', lineHeight: '16px' }}>w</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: -2 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: 3 }}>v</span>
           </>
         )}
         </button>
