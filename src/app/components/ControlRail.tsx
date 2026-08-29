@@ -164,12 +164,12 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // font's own metrics) — "ā"'s macron gives it a taller natural
           // glyph box than the plain "w"/"v", which without this made the
           // 3-line stack's spacing visibly uneven between rows. Leading is
-          // deliberately asymmetric: tight between w/ā, looser between
+          // deliberately asymmetric: looser between w/ā, tighter between
           // ā/v, rather than one uniform gap throughout.
           <>
             <span style={{ display: 'block', lineHeight: '16px' }}>w</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: -2 }}>ā</span>
-            <span style={{ display: 'block', lineHeight: '16px', marginTop: 3 }}>v</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: 3 }}>ā</span>
+            <span style={{ display: 'block', lineHeight: '16px', marginTop: -2 }}>v</span>
           </>
         )}
         </button>
