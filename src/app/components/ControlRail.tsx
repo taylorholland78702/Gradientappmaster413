@@ -203,7 +203,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // drop-in as mobile, top to bottom.
           <>
             <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', animationDelay: '0ms' }}>w</span>
-            <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -5, animationDelay: '80ms' }}>ā</span>
+            <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -8, animationDelay: '80ms' }}>ā</span>
             <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -11, animationDelay: '160ms' }}>v</span>
           </>
         )}
