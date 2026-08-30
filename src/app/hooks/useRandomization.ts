@@ -85,7 +85,6 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
-    setCubismFacetSize, setCubismOffset, setPopTiles, setPopHueShift, setFuturismEchoes, setFuturismSpread,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
@@ -304,18 +303,6 @@ export function useRandomization(params: RandomizationParams) {
     // Surrealism
     setSurrealMelt(Math.random());                                       // 0–1
     setSurrealMirror(Math.random());                                     // 0–1
-
-    // Cubism
-    setCubismFacetSize(Math.floor(Math.random() * 50) + 10);             // 10–59
-    setCubismOffset(Math.random());                                      // 0–1
-
-    // Pop Art
-    setPopTiles(Math.floor(Math.random() * 5) + 2);                      // 2–6
-    setPopHueShift(Math.floor(Math.random() * 361));                     // 0–360
-
-    // Futurism
-    setFuturismEchoes(Math.floor(Math.random() * 7) + 2);                 // 2–8
-    setFuturismSpread(Math.floor(Math.random() * 30) + 4);                // 4–33
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).

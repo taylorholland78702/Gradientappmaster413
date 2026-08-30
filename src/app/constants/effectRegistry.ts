@@ -18,7 +18,6 @@ import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hook
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
 import { applyCrt } from '../hooks/effects/applyCrt';
-import { applyCubism } from '../hooks/effects/applyCubism';
 import { applyDada } from '../hooks/effects/applyDada';
 import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
@@ -26,7 +25,6 @@ import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
 import { applyFisheye } from '../hooks/effects/applyFisheye';
 import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
-import { applyFuturism } from '../hooks/effects/applyFuturism';
 import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
@@ -40,7 +38,6 @@ import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirr
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
-import { applyPopArt } from '../hooks/effects/applyPopArt';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
@@ -166,10 +163,6 @@ const EFFECT_REGISTRY = {
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
   // same cost tier as Blur/Chromatic.
   crt: { drawFn: applyCrt, label: 'Cathode', cost: 2, category: ['Cathode'], audio: false },
-  // Jittered-grid Voronoi faceting — each pixel finds its nearest of 9
-  // candidate seed points, giving cheap O(9) irregular polygons instead of
-  // a true unbounded Voronoi. Capped working resolution like Watercolor.
-  cubism: { drawFn: applyCubism, label: 'Cubism', cost: 3, category: ['Cubism'], audio: false },
   // Photomontage cut-up — slices the canvas into a panel grid, each panel
   // reading from a different (flipped/rotated) part of the same image with
   // a torn-paper seam between them. Capped working resolution like
@@ -188,10 +181,6 @@ const EFFECT_REGISTRY = {
   // let Multi-FX/Remix stack it alongside genuinely cheap effects thinking
   // the combined cost was low when it wasn't.
   fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
-  // Pure Canvas 2D drawImage compositing (snapshot + N offset redraws at
-  // falling opacity), not per-pixel math — cheap regardless of canvas
-  // size, no working-resolution cap needed.
-  futurism: { drawFn: applyFuturism, label: 'Futurism', cost: 2, category: ['Futurism'], audio: false },
   glitch: { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffectWorkerAuto, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
@@ -221,10 +210,6 @@ const EFFECT_REGISTRY = {
   'oil-paint': { drawFn: applyOilPaint, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
-  // Warhol-style repeat grid — the whole source image redrawn into every
-  // tile of an NxN grid, each hue-shifted and lightly posterized. Capped
-  // working resolution like Watercolor/Dada/Cubism.
-  'pop-art': { drawFn: applyPopArt, label: 'Pop Art', cost: 3, category: ['Pop Art'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },

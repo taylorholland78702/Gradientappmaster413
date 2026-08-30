@@ -62,9 +62,6 @@ import { useDigitalNoiseState } from '../hooks/state/useDigitalNoiseState';
 import { useDitherState } from '../hooks/state/useDitherState';
 import { useOilPaintState } from '../hooks/state/useOilPaintState';
 import { useWatercolorState } from '../hooks/state/useWatercolorState';
-import { useCubismState } from '../hooks/state/useCubismState';
-import { usePopArtState } from '../hooks/state/usePopArtState';
-import { useFuturismState } from '../hooks/state/useFuturismState';
 import { useDadaState } from '../hooks/state/useDadaState';
 import { useSurrealismState } from '../hooks/state/useSurrealismState';
 import { useDuotoneState } from '../hooks/state/useDuotoneState';
@@ -308,9 +305,6 @@ export function InteractiveGradient() {
   const { ditherType, setDitherType, ditherLevels, setDitherLevels, ditherScale, setDitherScale } = useDitherState();
   const { oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels } = useOilPaintState();
   const { watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle } = useWatercolorState();
-  const { cubismFacetSize, setCubismFacetSize, cubismOffset, setCubismOffset } = useCubismState();
-  const { popTiles, setPopTiles, popHueShift, setPopHueShift } = usePopArtState();
-  const { futurismEchoes, setFuturismEchoes, futurismSpread, setFuturismSpread } = useFuturismState();
   const { dadaPanels, setDadaPanels, dadaChaos, setDadaChaos } = useDadaState();
   const { surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror } = useSurrealismState();
   const { duotoneIntensity, setDuotoneIntensity, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor } = useDuotoneState();
@@ -1459,9 +1453,6 @@ export function InteractiveGradient() {
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType, ditherScale,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
-    cubismFacetSize, setCubismFacetSize, cubismOffset, setCubismOffset,
-    popTiles, setPopTiles, popHueShift, setPopHueShift,
-    futurismEchoes, setFuturismEchoes, futurismSpread, setFuturismSpread,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity, duotoneThreeColor, dustCrackleColor, dustCrackleIntensity, dustCrackleLength,
     emojiChars, emojiOffsetX, emojiRotateSpeed, emojiSize, emojiSizeVariation, fadeDirection,
@@ -1655,7 +1646,6 @@ export function InteractiveGradient() {
     setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setWatercolorBleed, setWatercolorGrain,
-    setCubismFacetSize, setCubismOffset, setPopTiles, setPopHueShift, setFuturismEchoes, setFuturismSpread,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridCellAngleStep, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
@@ -2924,7 +2914,7 @@ export function InteractiveGradient() {
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
     marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
     noiseDirection,
-    ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, cubismFacetSize, cubismOffset, popTiles, popHueShift, futurismEchoes, futurismSpread, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory,
+    ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
     starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize,
@@ -2944,7 +2934,7 @@ export function InteractiveGradient() {
     depthLayerEnabled, depthLayerStrength,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, grainSize, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, vhsJitterAmount, crtIntensity, crtScanlineSpacing, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, radialHardEdge, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, cubismFacetSize, cubismOffset, popTiles, popHueShift, futurismEchoes, futurismSpread, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory, addGradientStops, isAudioEnabled, isAudioReactive, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, grainSize, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, vhsJitterAmount, crtIntensity, crtScanlineSpacing, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, concentricRingWidth, concentricRingCount, polygon2Sides, radialSizeScale, radialHardEdge, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory, addGradientStops, isAudioEnabled, isAudioReactive, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, glitchIntensity, glitchBlockSize, glitchChromaSplit, auraGlowCount, auraGlowSpeed, auraGlowOpacity, starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame
@@ -2992,7 +2982,7 @@ export function InteractiveGradient() {
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue,
     paletteHue, paletteSaturation, paletteBrightness, paletteContrast, concentricRingCount,
-    concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, cubismFacetSize, cubismOffset, popTiles, popHueShift, futurismEchoes, futurismSpread, dadaPanels, dadaChaos, surrealMelt, surrealMirror, drawParams,
+    concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, ditherScale, oilPaintRadius, oilPaintLevels, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, surrealMelt, surrealMirror, drawParams,
     glitchIntensity, glitchBlockSize, glitchChromaSplit,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
     starfieldCount, starfieldSpeed, starfieldOpacity, starfieldSize, starfieldParticlesRef,
@@ -3772,9 +3762,6 @@ export function InteractiveGradient() {
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
-    cubismFacetSize, setCubismFacetSize, cubismOffset, setCubismOffset,
-    popTiles, setPopTiles, popHueShift, setPopHueShift,
-    futurismEchoes, setFuturismEchoes, futurismSpread, setFuturismSpread,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
