@@ -1,3 +1,14 @@
+// Deterministic pseudo-random in [0,1) from two integers — used so each
+// shatter tile always flies in the same direction/distance ratio every
+// frame (only the overall magnitude changes with the live bass level),
+// rather than jittering to a new random direction every frame.
+function tileHash(a: number, b: number): number {
+  let h = a * 374761393 + b * 668265263;
+  h = (h ^ (h >>> 13)) * 1274126177;
+  h = h ^ (h >>> 16);
+  return (h >>> 0) / 4294967295;
+}
+
 export function applyPhoto(P: any): void {
   const {
     activeEffects,
@@ -221,29 +232,18 @@ export function applyPhoto(P: any): void {
             if (canvas.width === 0 || canvas.height === 0) return;
             const photoImg = photoImageRef.current;
             if (!photoImg) return;
-            // Audio-reactive: bass pulses the image's scale, treble adds a
-            // brief opacity boost on top of the base slider, mids drive a
-            // rotation wobble AND a pan — same live levels (and the same
+            // Audio-reactive: bass shatters the image into a grid of tiles
+            // that fly apart from their home positions and reassemble as
+            // the level falls; treble adds a brief opacity boost on top of
+            // the base slider. Same live levels (and the same
             // isAudioEnabled && isAudioReactive gate) every other reactive
-            // effect in this pipeline already reads. Sits at rest (scale 1,
-            // no rotation, no pan, no boost) whenever audio isn't actively
-            // driving anything, so a photo with no audio playing looks
-            // identical to before this was added.
-            //
-            // The image is always drawn cover-fit (overflowing the canvas
-            // in one dimension — see below), so scale alone was nearly
-            // invisible: growing an already-overflowing image just pushes
-            // more of it further outside the visible frame without
-            // changing what's on screen. The pan (audioPanX/Y) is what
-            // actually reads as motion, since shifting a cover-fit image
-            // changes which part of it is currently in frame; scale and
-            // rotation are kept too, but boosted, for corner/edge motion.
+            // effect in this pipeline already reads. Sits at rest (tiles
+            // flush, no boost) whenever audio isn't actively driving
+            // anything, so a photo with no audio playing looks identical
+            // to before this was added.
             const photoAudioActive = isAudioEnabled && isAudioReactive;
-            const photoAudioScale = photoAudioActive ? 1 + Math.min(1, audioSubBassLevel) * 0.4 : 1;
             const photoAudioOpacityBoost = photoAudioActive ? Math.min(1, audioTrebleLevel) * 0.25 : 0;
-            const photoAudioRotateDeg = photoAudioActive ? Math.min(1, audioMidsLevel) * 6 : 0;
-            const photoAudioPanX = photoAudioActive ? Math.min(1, audioMidsLevel) * displayWidth * 0.06 : 0;
-            const photoAudioPanY = photoAudioActive ? Math.min(1, audioTrebleLevel) * displayHeight * 0.06 : 0;
+            const shatterAmount = photoAudioActive ? Math.min(1, audioSubBassLevel) : 0;
             ctx.save();
             ctx.globalAlpha = Math.max(0, Math.min(1, photoOpacity / 100 + photoAudioOpacityBoost));
             ctx.globalCompositeOperation = photoBlendMode;
@@ -261,26 +261,44 @@ export function applyPhoto(P: any): void {
               dx = 0;
               dy = (displayHeight - dh) / 2;
             }
-            if (photoAudioActive) {
-              // Plain cover-fit only overflows the canvas along ONE axis
-              // (whichever one isn't the aspect-ratio-limiting dimension —
-              // dh===displayHeight exactly in one branch above, dw===
-              // displayWidth exactly in the other), so panning along the
-              // other axis would immediately expose a gap at that edge.
-              // A flat 25% overscan on both dimensions here (audio-active
-              // only, so a photo with no audio playing keeps the original
-              // precise cover-fit) guarantees margin on both axes for the
-              // pan/rotate/scale below to move within.
-              const overscan = 1.25;
-              dw *= overscan;
-              dh *= overscan;
-              dx = (displayWidth - dw) / 2;
-              dy = (displayHeight - dh) / 2;
-              ctx.translate(displayWidth / 2 + photoAudioPanX, displayHeight / 2 + photoAudioPanY);
-              ctx.rotate(photoAudioRotateDeg * (Math.PI / 180));
-              ctx.scale(photoAudioScale, photoAudioScale);
-              ctx.translate(-displayWidth / 2, -displayHeight / 2);
+            if (shatterAmount > 0.02) {
+              // Slice the cover-fit rect into a fixed-column grid of small
+              // tiles (row count follows from the image's own aspect ratio
+              // so tiles stay roughly square) and draw each one offset from
+              // its home position by a direction/distance hashed from its
+              // own (tx,ty) — stable frame to frame, so a tile always flies
+              // the same way, only how FAR scales with the live bass level.
+              // Cheap even at a few hundred tiles (plain drawImage calls),
+              // so this only runs once shatterAmount clears the threshold —
+              // silent/no-audio playback keeps the single-draw fast path.
+              const GRID_COLS = 14;
+              const tileSize = dw / GRID_COLS;
+              const gridRows = Math.max(1, Math.ceil(dh / tileSize));
+              const maxDisplacement = Math.max(displayWidth, displayHeight) * 0.18 * shatterAmount;
+              for (let ty = 0; ty < gridRows; ty++) {
+                const destTileY = dy + ty * tileSize;
+                const destTileH = Math.min(tileSize, dy + dh - destTileY);
+                if (destTileH <= 0) continue;
+                for (let tx = 0; tx < GRID_COLS; tx++) {
+                  const destTileX = dx + tx * tileSize;
+                  const destTileW = Math.min(tileSize, dx + dw - destTileX);
+                  if (destTileW <= 0) continue;
+                  const srcTileX = ((destTileX - dx) / dw) * photoImg.width;
+                  const srcTileY = ((destTileY - dy) / dh) * photoImg.height;
+                  const srcTileW = (destTileW / dw) * photoImg.width;
+                  const srcTileH = (destTileH / dh) * photoImg.height;
+                  const angle = tileHash(tx, ty) * Math.PI * 2;
+                  const mag = 0.4 + tileHash(tx + 1000, ty + 1000) * 0.6;
+                  const offX = Math.cos(angle) * maxDisplacement * mag;
+                  const offY = Math.sin(angle) * maxDisplacement * mag;
+                  ctx.drawImage(
+                    photoImg, srcTileX, srcTileY, srcTileW, srcTileH,
+                    destTileX + offX, destTileY + offY, destTileW, destTileH,
+                  );
+                }
+              }
+            } else {
+              ctx.drawImage(photoImg, dx, dy, dw, dh);
             }
-            ctx.drawImage(photoImg, dx, dy, dw, dh);
             ctx.restore();
 }

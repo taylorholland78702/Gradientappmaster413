@@ -24,7 +24,7 @@ import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
 import { ControlRail } from './ControlRail';
-import { ControlDrawer, DESKTOP_DRAWER_SCALED_W } from './ControlDrawer';
+import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { useSnapshot } from '../hooks/useSnapshot';
@@ -233,12 +233,12 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
     <div className="border-b border-white/50 last:border-0">
       <button
         onClick={() => onToggle(id)}
-        className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
+        className="flex items-center justify-between w-full py-2.5 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
       >
         <span className="text-[10px] text-white/80 font-medium">{label}</span>
         <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
-      {expanded && <div className="flex flex-col gap-2 pb-1">{children}</div>}
+      {expanded && <div className="flex flex-col gap-2 pb-3">{children}</div>}
     </div>
   );
 }
@@ -1762,8 +1762,11 @@ export function InteractiveGradient() {
       // button that opened it rather than flush to the top of the rail —
       // fall back to the rail's own top if it was opened without a trigger
       // element (e.g. a future keyboard shortcut).
+      // Much narrower than the tab drawer it pops out next to — its only
+      // content is a toggle and one interval slider, not a full panel's
+      // worth of controls, so there's no reason to match the drawer's width.
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
-      setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: DESKTOP_DRAWER_SCALED_W });
+      setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 168 });
     }
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
