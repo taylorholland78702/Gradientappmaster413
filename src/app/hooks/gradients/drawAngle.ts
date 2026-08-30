@@ -7,6 +7,7 @@ export function drawAngle(P: any): CanvasGradient | undefined {
     angleCenterX,
     angleCenterY,
     angleStartOffset,
+    angleHardEdge,
     asciiChars,
     asciiColor,
     asciiSize,
@@ -255,9 +256,14 @@ export function drawAngle(P: any): CanvasGradient | undefined {
                 continue;
               }
 
-              angleData[idx] = color1.r + (color2.r - color1.r) * colorFrac;
-              angleData[idx + 1] = color1.g + (color2.g - color1.g) * colorFrac;
-              angleData[idx + 2] = color1.b + (color2.b - color1.b) * colorFrac;
+              // Hard Edge: snap to color1 outright (frac forced to 0)
+              // instead of blending toward color2, so each wedge is a flat
+              // solid color with a hard cut at the boundary — a pinwheel
+              // instead of a smooth conic sweep.
+              const frac = angleHardEdge ? 0 : colorFrac;
+              angleData[idx] = color1.r + (color2.r - color1.r) * frac;
+              angleData[idx + 1] = color1.g + (color2.g - color1.g) * frac;
+              angleData[idx + 2] = color1.b + (color2.b - color1.b) * frac;
               angleData[idx + 3] = 255;
             }
           }

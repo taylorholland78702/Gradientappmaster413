@@ -11,6 +11,10 @@ export function useGridState() {
   // (herringbone look); 0deg gives uniform bands, 90deg gives a
   // checkerboard-like alternation.
   const [gridCellAngleStep, setGridCellAngleStep] = useState(30);
+  // Hard Edge — fills each cell with one flat color instead of blending
+  // across it, turning the grid into a solid-color mosaic (Mondrian-style)
+  // instead of a field of tiny gradients.
+  const [gridHardEdge, setGridHardEdge] = useState(false);
 
   return {
     gridSides,
@@ -27,5 +31,7 @@ export function useGridState() {
     setGridShapeSize,
     gridCellAngleStep,
     setGridCellAngleStep,
+    gridHardEdge,
+    setGridHardEdge,
   };
 }

@@ -39,7 +39,11 @@ function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>):
   switch (gradientType) {
     case 'plasma': return detectPlasmaGLSupport() ? getPlasmaGLStage(drawCtx) : null;
     case 'noise': return detectNoiseGLSupport() ? getNoiseGLStage(drawCtx) : null;
-    case 'angle': return detectAngleGLSupport() ? getAngleGLStage(drawCtx) : null;
+    // angleHardEdge forces the CPU path below (drawAngle.ts) since the GL
+    // shader doesn't implement the hard-edge nearest-stop lookup — the GL
+    // stage is skipped whenever it's on rather than rendering the smooth
+    // GL version and silently ignoring the toggle.
+    case 'angle': return (!drawCtx.angleHardEdge && detectAngleGLSupport()) ? getAngleGLStage(drawCtx) : null;
     case 'caustics': return detectCausticsGLSupport() ? getCausticsGLStage(drawCtx) : null;
     case 'marble': return detectMarbleGLSupport() ? getMarbleGLStage(drawCtx) : null;
     case 'lava-lamp': return detectLavaLampGLSupport() ? getLavaLampGLStage(drawCtx) : null;
@@ -677,7 +681,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
       if (!directRenderTypes.includes(gradientType)) {
         if (gradient) {
-          addGradientStops(gradient, renderColors);
+          // Only Radial ever returns a real (unstopped) CanvasGradient
+          // through this shared path today — every other indirect type
+          // either self-draws its own stops or returns undefined above —
+          // so radialHardEdge is the only per-type flag that needs reading
+          // here.
+          addGradientStops(gradient, renderColors, drawCtx.radialHardEdge);
 
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, displayWidth, displayHeight);

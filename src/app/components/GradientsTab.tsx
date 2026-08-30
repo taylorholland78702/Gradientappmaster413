@@ -18,6 +18,7 @@ export interface GradientsTabProps {
   gridRows: number; setGridRows: (v: number) => void;
   gridColumns: number; setGridColumns: (v: number) => void;
   gridCellAngleStep: number; setGridCellAngleStep: (v: number) => void;
+  gridHardEdge: boolean; setGridHardEdge: (v: boolean) => void;
 
   // Polar Grid
   polygon2Sides: number; setPolygon2Sides: (v: number) => void;
@@ -131,7 +132,9 @@ export interface GradientsTabProps {
   angleStartOffset: number; setAngleStartOffset: (v: number) => void;
   angleCenterX: number; setAngleCenterX: (v: number) => void;
   angleCenterY: number; setAngleCenterY: (v: number) => void;
+  angleHardEdge: boolean; setAngleHardEdge: (v: boolean) => void;
   radialSizeScale: number; setRadialSizeScale: (v: number) => void;
+  radialHardEdge: boolean; setRadialHardEdge: (v: boolean) => void;
 
   // Shapes
   concentricRingWidth: number; setConcentricRingWidth: (v: number) => void;
@@ -193,7 +196,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName, shuffleGradientType,
     rotationDirection, setRotationDirection,
-    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep,
+    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
@@ -215,7 +218,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
-    angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, radialSizeScale, setRadialSizeScale,
+    angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
+    radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
@@ -281,6 +285,25 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         </div>
       )}
     </>
+  );
+
+  // Hard Edge toggle — rendered inline inside a gradient type's own control
+  // block (Radial/Angle/Grid) rather than as one global switch, so it's a
+  // per-gradient setting: each type remembers its own on/off state and the
+  // control only ever appears alongside that type's own sliders.
+  const renderHardEdgeToggle = (value: boolean, setValue: (v: boolean) => void) => (
+    <div className="flex items-center justify-between">
+      <label className="text-[10px] text-white whitespace-nowrap" title="Flat solid bands with hard cuts instead of a smooth blend">Hard Edge:</label>
+      <button
+        onClick={() => setValue(!value)}
+        aria-pressed={value}
+        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${
+          value ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
+        }`}
+      >
+        {value ? 'On' : 'Off'}
+      </button>
+    </div>
   );
 
   return (
@@ -353,6 +376,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Grid Controls */}
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -820,6 +844,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Angle Gradient Controls */}
         {gradientType === 'angle' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {renderHardEdgeToggle(angleHardEdge, setAngleHardEdge)}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Start Angle:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -1217,6 +1242,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Radial Controls */}
         {gradientType === 'radial' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {renderHardEdgeToggle(radialHardEdge, setRadialHardEdge)}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Center X:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">

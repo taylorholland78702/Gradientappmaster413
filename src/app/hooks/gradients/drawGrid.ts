@@ -91,6 +91,7 @@ export function drawGrid(P: any): CanvasGradient | undefined {
     grainType,
     gridCellAngleStep,
     gridColumns,
+    gridHardEdge,
     gridRotation,
     gridRows,
     gridShapeSize,
@@ -254,15 +255,27 @@ export function drawGrid(P: any): CanvasGradient | undefined {
               const y1 = cellCenterY - Math.sin(angleRad) * gradLength / 2;
               const x2 = cellCenterX + Math.cos(angleRad) * gradLength / 2;
               const y2 = cellCenterY + Math.sin(angleRad) * gradLength / 2;
-              const cellGrad = ctx.createLinearGradient(x1, y1, x2, y2);
-              for (let j = 0; j < gradientColors.length; j++) {
-                const cellColor = gradientColors[(j + row + col) % gradientColors.length];
-                if (!cellColor) continue;
-                cellGrad.addColorStop(j / (gradientColors.length - 1),
-                  `rgb(${cellColor.r}, ${cellColor.g}, ${cellColor.b})`);
+              if (gridHardEdge) {
+                // Fills the whole cell with one flat color (the same color
+                // that would have led its blend) instead of a per-cell
+                // gradient — turns the field of tiny gradients into a
+                // solid-color mosaic, each cell a hard-edged tile.
+                const flatColor = gradientColors[(row + col) % gradientColors.length];
+                if (flatColor) {
+                  ctx.fillStyle = `rgb(${flatColor.r}, ${flatColor.g}, ${flatColor.b})`;
+                  ctx.fillRect(gridOffX + col * cellWidth, gridOffY + row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
+                }
+              } else {
+                const cellGrad = ctx.createLinearGradient(x1, y1, x2, y2);
+                for (let j = 0; j < gradientColors.length; j++) {
+                  const cellColor = gradientColors[(j + row + col) % gradientColors.length];
+                  if (!cellColor) continue;
+                  cellGrad.addColorStop(j / (gradientColors.length - 1),
+                    `rgb(${cellColor.r}, ${cellColor.g}, ${cellColor.b})`);
+                }
+                ctx.fillStyle = cellGrad;
+                ctx.fillRect(gridOffX + col * cellWidth, gridOffY + row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
               }
-              ctx.fillStyle = cellGrad;
-              ctx.fillRect(gridOffX + col * cellWidth, gridOffY + row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
             }
           }
           ctx.restore();

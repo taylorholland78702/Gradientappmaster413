@@ -135,7 +135,10 @@ function drawNoiseAuto(P: any): CanvasGradient | undefined {
 }
 
 function drawAngleAuto(P: any): CanvasGradient | undefined {
-  if (detectAngleGLSupport()) {
+  // Hard Edge has no GL implementation (the shader always blends) — skip
+  // straight to the CPU path, which does implement it, rather than
+  // silently rendering the smooth GL version with the toggle ignored.
+  if (!P.angleHardEdge && detectAngleGLSupport()) {
     try {
       return drawAngleGL(P);
     } catch (err) {
