@@ -137,6 +137,9 @@ export interface EffectsTabProps {
   // Futurism
   futurismEchoes: number; setFuturismEchoes: (v: number) => void;
   futurismSpread: number; setFuturismSpread: (v: number) => void;
+  // Datamosh
+  datamoshBlockSize: number; setDatamoshBlockSize: (v: number) => void;
+  datamoshAmount: number; setDatamoshAmount: (v: number) => void;
   // Dada
   dadaPanels: number; setDadaPanels: (v: number) => void;
   dadaChaos: number; setDadaChaos: (v: number) => void;
@@ -199,6 +202,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     cubismFacetSize, setCubismFacetSize, cubismOffset, setCubismOffset,
     popTiles, setPopTiles, popHueShift, setPopHueShift,
     futurismEchoes, setFuturismEchoes, futurismSpread, setFuturismSpread,
+    datamoshBlockSize, setDatamoshBlockSize, datamoshAmount, setDatamoshAmount,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
@@ -1519,6 +1523,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('datamosh') && (
+                <EffectSection id="datamosh" label="Datamosh" isMulti={isMulti} expanded={!collapsedEffects.has('datamosh')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Block Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="4" max="40" step="1" value={datamoshBlockSize} onChange={(e) => setDatamoshBlockSize(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="4" max="40" step="1" value={datamoshBlockSize} onChange={(e) => setDatamoshBlockSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={datamoshAmount} onChange={(e) => setDatamoshAmount(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={datamoshAmount} onChange={(e) => setDatamoshAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
