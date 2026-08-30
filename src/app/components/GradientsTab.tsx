@@ -310,7 +310,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     <>
 
         {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
-        <div className="w-full flex flex-col gap-2">
+        <div className="w-full">
           {/* Shuffle — picks a random type and randomizes its own shape
               params too (same shuffleGradientType used by the Shift+G
               shortcut), matching Effects' own Shuffle button. */}
