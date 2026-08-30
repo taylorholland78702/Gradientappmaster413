@@ -86,7 +86,6 @@ export function useRandomization(params: RandomizationParams) {
     setOilPaintRadius, setOilPaintLevels, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
     setCubismFacetSize, setCubismOffset, setPopTiles, setPopHueShift, setFuturismEchoes, setFuturismSpread,
-    setDatamoshBlockSize, setDatamoshAmount,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
@@ -317,10 +316,6 @@ export function useRandomization(params: RandomizationParams) {
     // Futurism
     setFuturismEchoes(Math.floor(Math.random() * 7) + 2);                 // 2–8
     setFuturismSpread(Math.floor(Math.random() * 30) + 4);                // 4–33
-
-    // Datamosh
-    setDatamoshBlockSize(Math.floor(Math.random() * 33) + 8);             // 8–40
-    setDatamoshAmount(Math.random());                                     // 0–1
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).

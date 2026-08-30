@@ -53,8 +53,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'cubismOffset', label: 'Cubism Offset', category: 'Cubism', min: 0.0, max: 1.0 },
   { key: 'dadaPanels', label: 'Dada Panels', category: 'Dada', min: 2.0, max: 8.0 },
   { key: 'dadaChaos', label: 'Dada Chaos', category: 'Dada', min: 0.0, max: 1.0 },
-  { key: 'datamoshBlockSize', label: 'Datamosh Block Size', category: 'Datamosh', min: 4.0, max: 40.0 },
-  { key: 'datamoshAmount', label: 'Datamosh Amount', category: 'Datamosh', min: 0.0, max: 1.0 },
   { key: 'ditherLevels', label: 'Dither Levels', category: 'Dither', min: 2.0, max: 16.0 },
   { key: 'ditherScale', label: 'Dither Scale', category: 'Dither', min: 1.0, max: 8.0 },
   { key: 'duotoneIntensity', label: 'Duotone Intensity', category: 'Duotone', min: 0.0, max: 1.0 },

@@ -20,7 +20,6 @@ import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticT
 import { applyCrt } from '../hooks/effects/applyCrt';
 import { applyCubism } from '../hooks/effects/applyCubism';
 import { applyDada } from '../hooks/effects/applyDada';
-import { applyDatamosh } from '../hooks/effects/applyDatamosh';
 import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
@@ -176,11 +175,6 @@ const EFFECT_REGISTRY = {
   // a torn-paper seam between them. Capped working resolution like
   // Watercolor, same cost tier.
   dada: { drawFn: applyDada, label: 'Dada', cost: 3, category: ['Dada'], audio: false },
-  // Block-shaped patches redrawn from the previous frame instead of the
-  // current one — Canvas 2D drawImage compositing, not per-pixel math, and
-  // deliberately synchronous (see applyDatamosh.ts's own comment for why
-  // this isn't Worker-backed like Dither/Halftone).
-  datamosh: { drawFn: applyDatamosh, label: 'Datamosh', cost: 3, category: ['Datamosh'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid/Fisheye.
