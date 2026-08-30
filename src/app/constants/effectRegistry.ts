@@ -44,6 +44,7 @@ import { applyStarfield } from '../hooks/effects/applyStarfield';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
+import { applyWatercolor } from '../hooks/effects/applyWatercolor';
 import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
 
@@ -205,6 +206,10 @@ const EFFECT_REGISTRY = {
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
+  // Edge-aware domain warp (bleed grows near color boundaries, stays put in
+  // flat washes) plus a paper-grain multiply — single-pass per pixel, same
+  // cost tier as Liquid/Fisheye rather than Oil Paint's neighborhood scan.
+  watercolor: { drawFn: applyWatercolor, label: 'Watercolor', cost: 2, category: ['Watercolor'], audio: false },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 
