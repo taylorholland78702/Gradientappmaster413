@@ -127,6 +127,7 @@ export interface EffectsTabProps {
   // Watercolor
   watercolorBleed: number; setWatercolorBleed: (v: number) => void;
   watercolorGrain: number; setWatercolorGrain: (v: number) => void;
+  watercolorStyle: 'watercolor' | 'gouache' | 'ink-wash'; setWatercolorStyle: (v: 'watercolor' | 'gouache' | 'ink-wash') => void;
   // Glitch
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
@@ -179,7 +180,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
-    watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain,
+    watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
@@ -1392,6 +1393,29 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('watercolor') && (
                 <EffectSection id="watercolor" label="Watercolor" isMulti={isMulti} expanded={!collapsedEffects.has('watercolor')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Style:</label>
+                    <div className="flex gap-1 flex-1">
+                      {([
+                        { id: 'watercolor', label: 'Watercolor', bleed: 3, grain: 0.4 },
+                        { id: 'gouache', label: 'Gouache', bleed: 1.5, grain: 0.25 },
+                        { id: 'ink-wash', label: 'Ink Wash', bleed: 6, grain: 0.3 },
+                      ] as const).map((s) => (
+                        <button
+                          key={s.id}
+                          onClick={() => { setWatercolorStyle(s.id); setWatercolorBleed(s.bleed); setWatercolorGrain(s.grain); }}
+                          aria-pressed={watercolorStyle === s.id}
+                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                            watercolorStyle === s.id
+                              ? 'bg-white text-black font-bold'
+                              : 'bg-black/25 text-white hover:bg-white/15'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Bleed:</label>
                     <div className="flex items-center gap-1 flex-1">

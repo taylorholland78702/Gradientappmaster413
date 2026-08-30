@@ -46,9 +46,30 @@ function captureDownscaled(canvas: HTMLCanvasElement, w: number, h: number): Ima
   return sctx.getImageData(0, 0, w, h);
 }
 
+// Gouache and Ink Wash are the same underlying mechanism (coherent warp +
+// smear + edge pooling + paper grain) as Watercolor — real gouache and ink
+// wash are both water-based media on the same kind of paper, just used
+// differently. Rather than three separate effects duplicating that pixel
+// math, they're style variants here: a few multipliers on the shared
+// pipeline plus a finishing pass (posterize for gouache's flat opaque
+// fields, posterize+desaturate for ink wash's flat monochrome tones).
+const WATERCOLOR_STYLES: Record<string, { warpMul: number; poolMul: number; posterizeLevels: number; desaturate: number }> = {
+  watercolor: { warpMul: 1, poolMul: 1, posterizeLevels: 0, desaturate: 0 },
+  // Opaque and flatter: less bleed (gouache doesn't run the way a thin
+  // watercolor wash does), a gentler edge pool (it dries matte, not with
+  // watercolor's glassy pooled rim), and a moderate posterize for the
+  // characteristic flat, chalky color fields.
+  gouache: { warpMul: 0.4, poolMul: 0.5, posterizeLevels: 12, desaturate: 0 },
+  // Sumi-e: bolder, more dramatic bleed and much stronger edge pooling
+  // (ink concentrates hard at a stroke's boundary), collapsed to a few
+  // tonal steps of a single ink color instead of full hue.
+  'ink-wash': { warpMul: 1.8, poolMul: 1.6, posterizeLevels: 4, desaturate: 1 },
+};
+
 export function applyWatercolor(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const { displayWidth, displayHeight, watercolorBleed, watercolorGrain, ctx, canvas, putLowResImageData } = P;
+  const { displayWidth, displayHeight, watercolorBleed, watercolorGrain, watercolorStyle, ctx, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
+  const style = WATERCOLOR_STYLES[watercolorStyle] || WATERCOLOR_STYLES.watercolor;
 
   const longEdge = Math.max(displayWidth, displayHeight, 1);
   const scale = Math.min(1, MAX_DIM / longEdge);
@@ -63,7 +84,8 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
   // Warp field scale is in working-buffer pixels, so it stays proportional
   // to the (now capped) canvas rather than the real display size.
   const warpScale = 1 / 50;
-  const warpMag = watercolorBleed * 4;
+  const warpMag = watercolorBleed * 4 * style.warpMul;
+  const posterizeStep = style.posterizeLevels > 0 ? 255 / (style.posterizeLevels - 1) : 0;
   const TAPS = 4;
 
   for (let y = 0; y < h; y++) {
@@ -107,11 +129,11 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
 
       // Edge pooling — darken and lightly saturate toward the boundary,
       // the way concentrated pigment collects as a wash dries.
-      const pool = 1 - edge * 0.35;
+      const pool = 1 - edge * 0.35 * style.poolMul;
       const lum = r * 0.299 + g * 0.587 + b * 0.114;
-      r = lum + (r - lum) * (1 + edge * 0.4);
-      g = lum + (g - lum) * (1 + edge * 0.4);
-      b = lum + (b - lum) * (1 + edge * 0.4);
+      r = lum + (r - lum) * (1 + edge * 0.4 * style.poolMul);
+      g = lum + (g - lum) * (1 + edge * 0.4 * style.poolMul);
+      b = lum + (b - lum) * (1 + edge * 0.4 * style.poolMul);
       r *= pool; g *= pool; b *= pool;
 
       // Paper texture — a large soft blotch layer (cold-press paper's
@@ -119,10 +141,28 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
       const blotch = valueNoise(x * 0.12, y * 0.12);
       const fiber = hash2(x, y) - 0.5;
       const paperMul = (1 - watercolorGrain * 0.22 + blotch * watercolorGrain * 0.4) * (1 + fiber * watercolorGrain * 0.06);
+      r *= paperMul; g *= paperMul; b *= paperMul;
 
-      o[i] = r * paperMul;
-      o[i + 1] = g * paperMul;
-      o[i + 2] = b * paperMul;
+      // Ink Wash collapses to tonal steps of a single ink color rather
+      // than full hue — desaturate before posterizing so the bands land on
+      // clean grays instead of muddy quantized hues.
+      if (style.desaturate > 0) {
+        const lum2 = r * 0.299 + g * 0.587 + b * 0.114;
+        r = r + (lum2 - r) * style.desaturate;
+        g = g + (lum2 - g) * style.desaturate;
+        b = b + (lum2 - b) * style.desaturate;
+      }
+      // Gouache/Ink Wash's flat, opaque color fields — collapses the
+      // continuous wash into a handful of solid bands.
+      if (posterizeStep > 0) {
+        r = Math.round(r / posterizeStep) * posterizeStep;
+        g = Math.round(g / posterizeStep) * posterizeStep;
+        b = Math.round(b / posterizeStep) * posterizeStep;
+      }
+
+      o[i] = r;
+      o[i + 1] = g;
+      o[i + 2] = b;
       o[i + 3] = 255;
     }
   }
