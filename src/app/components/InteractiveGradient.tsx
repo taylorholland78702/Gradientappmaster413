@@ -27,6 +27,7 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
+import { hslToRgb } from '../utils/color';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -1285,12 +1286,18 @@ export function InteractiveGradient() {
     };
   }, []);
 
-  // Generate random color (memoized as it doesn't depend on state)
-  const randomColor = useCallback((): ColorRGB => ({
-    r: Math.floor(Math.random() * 256),
-    g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256),
-  }), []);
+  // Generate random color (memoized as it doesn't depend on state). Uses
+  // HSL with a floor on saturation/lightness rather than uniform RGB —
+  // uniform RGB has a real chance of landing near-black (or near-white/
+  // muddy-gray), which is invisible for solid-fill types like Shapes and
+  // Polar Grid (flat rgb() fills straight onto a #000 background, no
+  // gradient blending to soften a dark hit) and reads as a near-black
+  // shuffle result.
+  const randomColor = useCallback((): ColorRGB => hslToRgb(
+    Math.random() * 360,
+    55 + Math.random() * 45,
+    38 + Math.random() * 32,
+  ), []);
 
   // Plain setGradientColors/setTargetColors alone isn't enough for a
   // structural change (adding/removing a swatch, not just recoloring one
