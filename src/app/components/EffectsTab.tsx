@@ -128,6 +128,12 @@ export interface EffectsTabProps {
   watercolorBleed: number; setWatercolorBleed: (v: number) => void;
   watercolorGrain: number; setWatercolorGrain: (v: number) => void;
   watercolorStyle: 'watercolor' | 'gouache' | 'ink-wash'; setWatercolorStyle: (v: 'watercolor' | 'gouache' | 'ink-wash') => void;
+  // Dada
+  dadaPanels: number; setDadaPanels: (v: number) => void;
+  dadaChaos: number; setDadaChaos: (v: number) => void;
+  // Surrealism
+  surrealMelt: number; setSurrealMelt: (v: number) => void;
+  surrealMirror: number; setSurrealMirror: (v: number) => void;
   // Glitch
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
@@ -181,6 +187,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
+    dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
@@ -1428,6 +1435,42 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('dada') && (
+                <EffectSection id="dada" label="Dada" isMulti={isMulti} expanded={!collapsedEffects.has('dada')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Panels:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="2" max="8" step="1" value={dadaPanels} onChange={(e) => setDadaPanels(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="2" max="8" step="1" value={dadaPanels} onChange={(e) => setDadaPanels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Chaos:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('surrealism') && (
+                <EffectSection id="surrealism" label="Surrealism" isMulti={isMulti} expanded={!collapsedEffects.has('surrealism')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Melt:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={surrealMelt} onChange={(e) => setSurrealMelt(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={surrealMelt} onChange={(e) => setSurrealMelt(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Mirror:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={surrealMirror} onChange={(e) => setSurrealMirror(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={surrealMirror} onChange={(e) => setSurrealMirror(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

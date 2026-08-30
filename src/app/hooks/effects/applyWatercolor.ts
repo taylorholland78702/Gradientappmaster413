@@ -1,28 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
-
-// Deterministic pseudo-random in [0,1) from two integers — same hash shape
-// used by applyPhoto.ts's shatter tiles.
-function hash2(a: number, b: number): number {
-  let h = a * 374761393 + b * 668265263;
-  h = (h ^ (h >>> 13)) * 1274126177;
-  h = h ^ (h >>> 16);
-  return (h >>> 0) / 4294967295;
-}
-
-// Bilinear-interpolated value noise — unlike a raw per-pixel hash (which
-// jumps randomly from one pixel to its neighbor and reads as static/grain),
-// this varies smoothly across space, so regions tens of pixels wide drift
-// together. That coherence is what makes the warp below read as flowing
-// pigment instead of scrambled noise.
-function valueNoise(x: number, y: number): number {
-  const x0 = Math.floor(x), y0 = Math.floor(y);
-  const fx = x - x0, fy = y - y0;
-  const v00 = hash2(x0, y0), v10 = hash2(x0 + 1, y0);
-  const v01 = hash2(x0, y0 + 1), v11 = hash2(x0 + 1, y0 + 1);
-  const vx0 = v00 + (v10 - v00) * fx;
-  const vx1 = v01 + (v11 - v01) * fx;
-  return vx0 + (vx1 - vx0) * fy;
-}
+import { hash2, valueNoise } from '../../utils/valueNoise';
 
 // Working resolution cap — same reasoning as oilPaintDownscale.ts: the
 // smear below samples several taps per pixel plus a handful of noise

@@ -18,6 +18,7 @@ import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hook
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
 import { applyCrt } from '../hooks/effects/applyCrt';
+import { applyDada } from '../hooks/effects/applyDada';
 import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
@@ -41,6 +42,7 @@ import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
 import { applyStarfield } from '../hooks/effects/applyStarfield';
+import { applySurrealism } from '../hooks/effects/applySurrealism';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
@@ -161,6 +163,11 @@ const EFFECT_REGISTRY = {
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
   // same cost tier as Blur/Chromatic.
   crt: { drawFn: applyCrt, label: 'Cathode', cost: 2, category: ['Cathode'], audio: false },
+  // Photomontage cut-up — slices the canvas into a panel grid, each panel
+  // reading from a different (flipped/rotated) part of the same image with
+  // a torn-paper seam between them. Capped working resolution like
+  // Watercolor, same cost tier.
+  dada: { drawFn: applyDada, label: 'Dada', cost: 3, category: ['Dada'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid/Fisheye.
@@ -211,6 +218,10 @@ const EFFECT_REGISTRY = {
   // frame's own line segment stroke is the "trail," no persistent decay
   // buffer needed, same cost tier as Aura Glow.
   starfield: { drawFn: applyStarfield, label: 'Starfield', cost: 2, category: ['Starfield'], audio: true },
+  // Vertical melt/drip (per-column, noise-varied) plus an uncanny mirror-
+  // symmetry blend — both single-sample-plus-a-bit-more per pixel, capped
+  // working resolution like Watercolor/Dada.
+  surrealism: { drawFn: applySurrealism, label: 'Surrealism', cost: 3, category: ['Surrealism'], audio: false },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },

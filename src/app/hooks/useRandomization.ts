@@ -83,6 +83,8 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
     setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
+    setOilPaintRadius, setOilPaintLevels, setWatercolorBleed, setWatercolorGrain,
+    setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
@@ -284,6 +286,23 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanIntensity(Math.random());                                 // 0–1
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
+
+    // Oil Paint
+    setOilPaintRadius(Math.floor(Math.random() * 6) + 1);                // 1–6
+    setOilPaintLevels(Math.floor(Math.random() * 33) + 8);               // 8–40
+
+    // Watercolor — style itself is left alone here (it's a curated preset,
+    // not a continuous slider), just Bleed/Grain.
+    setWatercolorBleed(Math.random() * 10);                              // 0–10
+    setWatercolorGrain(Math.random());                                   // 0–1
+
+    // Dada
+    setDadaPanels(Math.floor(Math.random() * 7) + 2);                    // 2–8
+    setDadaChaos(Math.random());                                         // 0–1
+
+    // Surrealism
+    setSurrealMelt(Math.random());                                       // 0–1
+    setSurrealMirror(Math.random());                                     // 0–1
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).
