@@ -34,7 +34,7 @@ import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
-import { applyOilPaintWorkerAuto } from '../hooks/effects/applyOilPaintWorkerAuto';
+import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
@@ -191,8 +191,16 @@ const EFFECT_REGISTRY = {
   // Neighborhood mode-filter (each pixel replaced by the average color of
   // its most-common local intensity band) — O(width * height * radius^2),
   // the heaviest per-pixel scan in the registry, so this sits at the top
-  // cost tier alongside Halftone's multi-pass dot rendering.
-  'oil-paint': { drawFn: applyOilPaintWorkerAuto, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
+  // cost tier alongside Halftone's multi-pass dot rendering. Runs
+  // synchronously (not Worker-backed like Dither/Halftone) — its working
+  // resolution is already capped (see oilPaintDownscale.ts) to keep the
+  // scan cheap regardless of real canvas size, and a Worker's one-frame-
+  // stale-result handoff turned out to race the main draw loop's own
+  // "skip drawing once the gradient has converged" idle optimization: the
+  // worker's response could arrive after the loop had already stopped
+  // calling draw() for good, leaving the finished result computed but
+  // never painted — reads as the canvas freezing and refusing to update.
+  'oil-paint': { drawFn: applyOilPaint, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },

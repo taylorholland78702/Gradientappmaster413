@@ -591,7 +591,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
         voronoiAnimTime, flowerAnimTime,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
-        displayWidth, displayHeight, putScaledImageData, getDisplayImageData,
+        displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,
         ...audioBoundOverrides,
       };

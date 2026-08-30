@@ -3081,6 +3081,13 @@ export function InteractiveGradient() {
   }, [isDragging, gradientColors.length, baseAIColors, randomColor]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Clicking the canvas is "outside" whichever tab drawer (Gradient/
+    // Effects/Audio/Color/Presets) is open — same dismissal Escape already
+    // does, just reachable without the keyboard. Auto Shuffle/About already
+    // close on any outside click via their own document-level listeners
+    // (see the effect above renderAutoShufflePopover), so this only needs
+    // to cover the one popup that didn't have that: the main drawer.
+    if (activeTab) setActiveTab(null);
     // Self-animating gradients — drag interaction conflicts with their own animation
     if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
 
@@ -3098,9 +3105,10 @@ export function InteractiveGradient() {
   }, [handleInteraction]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (activeTab) setActiveTab(null);
     setIsDragging(true);
     previousPosition.current = null;
-  }, []);
+  }, [activeTab, setActiveTab]);
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
@@ -3907,7 +3915,12 @@ export function InteractiveGradient() {
         />
       </div>
       {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
-      <div className="relative flex-1 min-w-0 min-h-0" />
+      {/* Pure flex spacer — no content, so it must not intercept pointer
+          events. Without pointer-events-none, this (relative, DOM-order
+          after the canvas's fixed z-0 wrapper) painted above the canvas
+          across the entire non-dock area and silently swallowed every
+          click/drag meant for it in desktop layout. */}
+      <div className="relative flex-1 min-w-0 min-h-0 pointer-events-none" />
       {isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
 
       {/* Upper Right Controls */}
