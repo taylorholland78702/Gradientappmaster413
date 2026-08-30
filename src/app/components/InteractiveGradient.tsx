@@ -1414,7 +1414,8 @@ export function InteractiveGradient() {
   // step 3). The single source of truth for undo/redo AND presets, so it
   // touches nearly every piece of state (~380 values/setters).
   const { buildSnapshot, applySnapshot } = useSnapshot({
-    activeEffects, angleCenterX, angleCenterY, angleStartOffset, asciiChars, asciiColor,
+    activeEffects, angleCenterX, angleCenterY, angleStartOffset, angleHardEdge, setAngleHardEdge, asciiChars, asciiColor,
+    gridHardEdge, setGridHardEdge, radialHardEdge, setRadialHardEdge,
     asciiSize, auroraBandCount, auroraBandHeight, auroraWaveSpeed, autoGainEnabled, baseAIColors,
     depthLayerEnabled, depthLayerStrength, setDepthLayerEnabled, setDepthLayerStrength,
     glitchIntensity, glitchBlockSize, glitchChromaSplit, setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
