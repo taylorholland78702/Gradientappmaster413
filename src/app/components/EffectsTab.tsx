@@ -128,6 +128,15 @@ export interface EffectsTabProps {
   watercolorBleed: number; setWatercolorBleed: (v: number) => void;
   watercolorGrain: number; setWatercolorGrain: (v: number) => void;
   watercolorStyle: 'watercolor' | 'gouache' | 'ink-wash'; setWatercolorStyle: (v: 'watercolor' | 'gouache' | 'ink-wash') => void;
+  // Cubism
+  cubismFacetSize: number; setCubismFacetSize: (v: number) => void;
+  cubismOffset: number; setCubismOffset: (v: number) => void;
+  // Pop Art
+  popTiles: number; setPopTiles: (v: number) => void;
+  popHueShift: number; setPopHueShift: (v: number) => void;
+  // Futurism
+  futurismEchoes: number; setFuturismEchoes: (v: number) => void;
+  futurismSpread: number; setFuturismSpread: (v: number) => void;
   // Dada
   dadaPanels: number; setDadaPanels: (v: number) => void;
   dadaChaos: number; setDadaChaos: (v: number) => void;
@@ -187,6 +196,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
+    cubismFacetSize, setCubismFacetSize, cubismOffset, setCubismOffset,
+    popTiles, setPopTiles, popHueShift, setPopHueShift,
+    futurismEchoes, setFuturismEchoes, futurismSpread, setFuturismSpread,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
@@ -521,6 +533,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
+              {activeEffects.includes('pop-art') && (
+                <EffectSection id="pop-art" label="Pop Art" isMulti={isMulti} expanded={!collapsedEffects.has('pop-art')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="2" max="6" step="1" value={popTiles} onChange={(e) => setPopTiles(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="2" max="6" step="1" value={popTiles} onChange={(e) => setPopTiles(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Hue Shift:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="360" step="5" value={popHueShift} onChange={(e) => setPopHueShift(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="360" step="5" value={popHueShift} onChange={(e) => setPopHueShift(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
               {activeEffects.includes('triangulate') && (
                 <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={!collapsedEffects.has('triangulate')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
@@ -565,6 +595,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <label className="text-[10px] text-white whitespace-nowrap">Center Y:</label>
                     <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
                     <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('futurism') && (
+                <EffectSection id="futurism" label="Futurism" isMulti={isMulti} expanded={!collapsedEffects.has('futurism')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Echoes:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="2" max="8" step="1" value={futurismEchoes} onChange={(e) => setFuturismEchoes(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="2" max="8" step="1" value={futurismEchoes} onChange={(e) => setFuturismEchoes(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Spread:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="2" max="40" step="1" value={futurismSpread} onChange={(e) => setFuturismSpread(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="2" max="40" step="1" value={futurismSpread} onChange={(e) => setFuturismSpread(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
                   </div>
                 </EffectSection>
               )}
@@ -1435,6 +1483,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('cubism') && (
+                <EffectSection id="cubism" label="Cubism" isMulti={isMulti} expanded={!collapsedEffects.has('cubism')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Facet Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="10" max="60" step="1" value={cubismFacetSize} onChange={(e) => setCubismFacetSize(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="10" max="60" step="1" value={cubismFacetSize} onChange={(e) => setCubismFacetSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="1" step="0.05" value={cubismOffset} onChange={(e) => setCubismOffset(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="1" step="0.05" value={cubismOffset} onChange={(e) => setCubismOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
