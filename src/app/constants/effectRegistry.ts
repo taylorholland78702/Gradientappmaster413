@@ -34,6 +34,7 @@ import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
+import { applyOilPaintWorkerAuto } from '../hooks/effects/applyOilPaintWorkerAuto';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
@@ -186,6 +187,11 @@ const EFFECT_REGISTRY = {
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
+  // Neighborhood mode-filter (each pixel replaced by the average color of
+  // its most-common local intensity band) — O(width * height * radius^2),
+  // the heaviest per-pixel scan in the registry, so this sits at the top
+  // cost tier alongside Halftone's multi-pass dot rendering.
+  'oil-paint': { drawFn: applyOilPaintWorkerAuto, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },

@@ -121,6 +121,9 @@ export interface EffectsTabProps {
   ditherLevels: number; setDitherLevels: (v: number) => void;
   ditherScale: number; setDitherScale: (v: number) => void;
   ditherType: 'bayer' | 'floyd-steinberg'; setDitherType: (v: 'bayer' | 'floyd-steinberg') => void;
+  // Oil Paint
+  oilPaintRadius: number; setOilPaintRadius: (v: number) => void;
+  oilPaintLevels: number; setOilPaintLevels: (v: number) => void;
   // Glitch
   glitchIntensity: number; setGlitchIntensity: (v: number) => void;
   glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
@@ -172,6 +175,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
     slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
+    oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
     starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
@@ -1362,6 +1366,24 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </div>
                     </div>
                   )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('oil-paint') && (
+                <EffectSection id="oil-paint" label="Oil Paint" isMulti={isMulti} expanded={!collapsedEffects.has('oil-paint')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Brush Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="1" max="6" step="1" value={oilPaintRadius} onChange={(e) => setOilPaintRadius(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="1" max="6" step="1" value={oilPaintRadius} onChange={(e) => setOilPaintRadius(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Detail:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('glitch') && (
