@@ -221,9 +221,19 @@ export function drawShapes(P: any): CanvasGradient | undefined {
           const shapeRingWidth = (concentricRingWidth + audioShapeRingWidth) * shapesScale;
           // Always respect shapesCount slider regardless of audio
           const numShapeRings = shapesCount;
-        
+          // concentricRingWidth/shapesCount are independent px-based sliders
+          // (30-179px, 3-32 rings) with no relation to the actual canvas
+          // size — a low width with few rings can leave the outermost ring
+          // just a tiny circle in the center, with the rest of the canvas
+          // showing nothing but the black fill below. Only ever scales UP
+          // (never down), so combinations that already fill the canvas
+          // reasonably are untouched.
+          const uncappedOuterRadius = (numShapeRings - 1) * shapeRingWidth;
+          const fillScale = uncappedOuterRadius > 0 ? Math.max(1, (fitRadius * shapesScale) / uncappedOuterRadius) : 1;
+          const effectiveRingWidth = shapeRingWidth * fillScale;
+
           for (let i = numShapeRings - 1; i >= 0; i--) {
-            const radius = i * shapeRingWidth;
+            const radius = i * effectiveRingWidth;
             if (radius <= 0) continue;
           
             // Static color assignment based on ring index

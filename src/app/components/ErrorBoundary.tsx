@@ -31,7 +31,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   render() {
-    if (this.state.hasError) return null;
+    // Was `return null` — with nothing behind it but the page's own white
+    // background, the 300ms recovery window read as a jarring white flash
+    // rather than the brief, unremarkable hiccup it's meant to be. The app's
+    // own root is bg-black (see InteractiveGradient.tsx's outer container),
+    // so matching that here makes the same recovery window nearly invisible
+    // instead.
+    if (this.state.hasError) return <div className="fixed inset-0 bg-black" />;
     return <div key={this.state.key}>{this.props.children}</div>;
   }
 }

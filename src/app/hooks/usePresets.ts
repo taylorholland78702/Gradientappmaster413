@@ -39,6 +39,25 @@ export interface SavedPreset {
   folder?: string;
 }
 
+// applySnapshot's own `??`/`||` fallbacks only cover a field being missing
+// (null/undefined) — they let a field that's *present but garbage* (NaN,
+// Infinity, from a hand-edited or partially-corrupted preset) straight
+// through, which can throw later during React's render pass or the canvas
+// draw loop, well outside loadPreset's own try/catch below (that call stack
+// has already returned by the time the throw happens). Stripping non-finite
+// numbers here — before they ever reach applySnapshot — turns them back
+// into "missing", so the existing fallbacks handle them the normal way.
+function sanitizePresetData(data: unknown): unknown {
+  if (Array.isArray(data)) return data.map(sanitizePresetData);
+  if (data === null || typeof data !== 'object') return data;
+  const out: PresetData = {};
+  for (const [key, value] of Object.entries(data as PresetData)) {
+    if (typeof value === 'number' && !Number.isFinite(value)) continue;
+    out[key] = sanitizePresetData(value);
+  }
+  return out;
+}
+
 export interface UsePresetsParams {
   getCurrentState: () => PresetData;
   applyPresetData: (data: PresetData) => void;
@@ -236,7 +255,7 @@ export function usePresets(params: UsePresetsParams) {
   // wrong. Catching it here means a bad preset just fails to load instead.
   const loadPreset = (preset: SavedPreset) => {
     try {
-      applyPresetData(preset.data);
+      applyPresetData(sanitizePresetData(preset.data) as PresetData);
     } catch (err) {
       console.error('Failed to load preset:', err);
       alert(`Couldn't load "${preset.name}" — this preset's data looks corrupted.`);
