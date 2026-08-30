@@ -106,18 +106,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   // gets its own separate 1.3x whole-rail transform.
   const iconCls = isMobile ? 'w-[18px] h-[18px]' : 'w-[19px] h-[19px]';
 
-  // Audio-reactive pulse on the wordmark button — same live levels already
-  // driving the mic icon's color above, reused here as a scale multiplier
-  // instead. Only active while a mic is actually feeding in; sits at rest
-  // (1) otherwise so the mark doesn't idle-jitter with no audio driving it.
-  // Read through a CSS custom property rather than an inline `transform`
-  // directly — see the .wav-wordmark comment in index.css for why that
-  // split is what makes the separate :active press-bounce visible at all.
-  const wordmarkAudioLevel = isMicActive
-    ? Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy)
-    : 0;
-  const wordmarkAudioScale = 1 + Math.min(1, wordmarkAudioLevel) * 0.12;
-
   // No collapsed state any more — InteractiveGradient.tsx doesn't mount
   // ControlRail/ControlDrawer at all while isControlsVisible is false, so
   // pressing H hides the entire dock (rail + drawer) outright, handing
@@ -173,11 +161,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           fontSize: isMobile ? 24 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
           marginTop: isMobile ? -2 : undefined,
-          // Audio pulse scale, read by the .wav-wordmark rule in index.css
-          // (which also layers the :active press-bounce on top via calc()
-          // — see that rule's comment for why it has to be a custom
-          // property instead of a plain inline `transform`).
-          '--wav-audio-scale': wordmarkAudioScale,
         } as React.CSSProperties}
         title="About wāv"
         aria-label="About wāv"
@@ -203,7 +186,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // drop-in as mobile, top to bottom.
           <>
             <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', animationDelay: '0ms' }}>w</span>
-            <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -8, animationDelay: '80ms' }}>ā</span>
+            <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -6, animationDelay: '80ms' }}>ā</span>
             <span className="wav-letter-reveal" style={{ display: 'block', lineHeight: '29px', marginTop: -11, animationDelay: '160ms' }}>v</span>
           </>
         )}
