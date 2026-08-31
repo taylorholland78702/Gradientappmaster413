@@ -719,11 +719,15 @@ export function useRandomization(params: RandomizationParams) {
       // bounds total per-frame compute cost instead of just effect count.
       // At most one shape-changer is included (they mask the gradient
       // entirely when stacked), the rest are light/audio effects.
-      // Average EFFECT_COST is ~1.8, so a budget centered around 4-5
-      // (triangular distribution, sum of two uniforms) lands the common
-      // case at 2-4 active effects — pulled down from the previous 9-10
-      // centered range (4-8 effects), which stacked too much on a shuffle.
-      const costBudget = 1 + Math.floor(((Math.random() + Math.random()) / 2) * 6);
+      // Average EFFECT_COST is ~1.8-2, so hitting 5 effects needs a budget
+      // around 9-10 — a floor of 5 plus a 0-10 triangular spread keeps cost
+      // from being the thing that usually stops selection short of the
+      // MAX_SHUFFLE_EFFECTS cap below (previously floored at 1, which let
+      // a couple of mid-cost effects exhaust the budget well before 5
+      // effects were picked — a shuffle topping out around 2-3 in
+      // practice despite the cap already being higher).
+      const MAX_SHUFFLE_EFFECTS = 5;
+      const costBudget = 9 + Math.floor(((Math.random() + Math.random()) / 2) * 10);
       const selectedEffects: EffectType[] = [];
       let spentCost = 0;
       const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
@@ -733,6 +737,7 @@ export function useRandomization(params: RandomizationParams) {
         spentCost += costOf(shapeChanger);
       }
       for (const fx of shuffledLight) {
+        if (selectedEffects.length >= MAX_SHUFFLE_EFFECTS) break;
         const cost = costOf(fx);
         if (spentCost + cost > costBudget) continue;
         selectedEffects.push(fx);
