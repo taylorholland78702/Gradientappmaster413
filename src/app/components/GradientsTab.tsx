@@ -80,6 +80,7 @@ export interface GradientsTabProps {
   particlesTrail: number; setParticlesTrail: (v: number) => void;
   particlesGravity: number; setParticlesGravity: (v: number) => void;
   particlesSides: number; setParticlesSides: (v: number) => void;
+  particlesMode: 'drift' | 'flow-field'; setParticlesMode: (v: 'drift' | 'flow-field') => void;
   // Tiling
   tilingSize: number; setTilingSize: (v: number) => void;
   tilingSymmetry: number; setTilingSymmetry: (v: number) => void;
@@ -139,6 +140,7 @@ export interface GradientsTabProps {
   // Shapes
   concentricRingWidth: number; setConcentricRingWidth: (v: number) => void;
   shapesSides: number; setShapesSides: (v: number) => void;
+  shapesMode: 'polygon' | 'polar-grid'; setShapesMode: (v: 'polygon' | 'polar-grid') => void;
   shapesCount: number; setShapesCount: (v: number) => void;
 
   // Windmill (spiral)
@@ -208,7 +210,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
-    particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity, particlesSides, setParticlesSides,
+    particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity, particlesSides, setParticlesSides, particlesMode, setParticlesMode,
     tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingRowOffset, setTilingRowOffset,
     fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
@@ -220,7 +222,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
     radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge,
-    concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount,
+    concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount, shapesMode, setShapesMode,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
     drawParamsDirtyRef,
@@ -443,54 +445,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Polar Grid Controls */}
-        {gradientType === 'polar-grid' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Radials:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="24"
-                  value={polygon2Sides}
-                  onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={polygon2Sides}
-                  onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Ring Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="30"
-                  value={concentricRingCount}
-                  onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={concentricRingCount}
-                  onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
         {/* Iridescent Controls */}
         {/* Aurora Controls */}
         {gradientType === 'aurora' && (
@@ -623,25 +577,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {gradientType === 'flow-field' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
-              { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
-              { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
-              { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
         {gradientType === 'attractor' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {[
@@ -662,16 +597,51 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
+        {/* Particles Controls — 'flow-field' mode folds in the former
+            standalone Flow Field gradient (noise-driven drifting particle
+            trails) as an alternate mode, same precedent as Helix merging
+            into Windmill. */}
         {gradientType === 'particles' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
-              { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
-              { label: 'Sides', value: particlesSides, set: setParticlesSides, min: 1, max: 8, step: 1 },
-              { label: 'Speed', value: particlesSpeed, set: setParticlesSpeed, min: 0.1, max: 5, step: 0.1 },
-              { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
-              { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Mode:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <button
+                  onClick={() => setParticlesMode('drift')}
+                  aria-pressed={particlesMode === 'drift'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    particlesMode === 'drift' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Drift
+                </button>
+                <button
+                  onClick={() => setParticlesMode('flow-field')}
+                  aria-pressed={particlesMode === 'flow-field'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    particlesMode === 'flow-field' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Flow Field
+                </button>
+              </div>
+            </div>
+            {(particlesMode === 'flow-field'
+              ? [
+                  { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
+                  { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
+                  { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
+                  { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
+                ]
+              : [
+                  { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
+                  { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
+                  { label: 'Sides', value: particlesSides, set: setParticlesSides, min: 1, max: 8, step: 1 },
+                  { label: 'Speed', value: particlesSpeed, set: setParticlesSpeed, min: 0.1, max: 5, step: 0.1 },
+                  { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
+                  { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
+                ]
+            ).map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
@@ -911,75 +881,149 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
         
-        {/* Shapes Controls */}
+        {/* Shapes Controls — 'polar-grid' mode folds in the former standalone
+            Polar Grid gradient (angular sector rings) as an alternate mode,
+            same precedent as Helix merging into Windmill. */}
         {gradientType === 'shapes' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
+              <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="300"
-                  value={concentricRingWidth}
-                  onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="10"
-                  max="300"
-                  value={concentricRingWidth}
-                  onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
+                <button
+                  onClick={() => setShapesMode('polygon')}
+                  aria-pressed={shapesMode === 'polygon'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    shapesMode === 'polygon' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Polygon
+                </button>
+                <button
+                  onClick={() => setShapesMode('polar-grid')}
+                  aria-pressed={shapesMode === 'polar-grid'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    shapesMode === 'polar-grid' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Polar Grid
+                </button>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Sides:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={shapesSides}
-                  onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={shapesSides}
-                  onChange={(e) => setShapesSides(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={shapesCount}
-                  onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={shapesCount}
-                  onChange={(e) => setShapesCount(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            {shapesMode === 'polygon' ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Scale:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="10"
+                      max="300"
+                      value={concentricRingWidth}
+                      onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="10"
+                      max="300"
+                      value={concentricRingWidth}
+                      onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Sides:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={shapesSides}
+                      onChange={(e) => setShapesSides(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={shapesSides}
+                      onChange={(e) => setShapesSides(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Count:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={shapesCount}
+                      onChange={(e) => setShapesCount(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={shapesCount}
+                      onChange={(e) => setShapesCount(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Radials:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="24"
+                      value={polygon2Sides}
+                      onChange={(e) => setPolygon2Sides(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="24"
+                      value={polygon2Sides}
+                      onChange={(e) => setPolygon2Sides(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Ring Count:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="30"
+                      value={concentricRingCount}
+                      onChange={(e) => setConcentricRingCount(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={concentricRingCount}
+                      onChange={(e) => setConcentricRingCount(Number(e.target.value))}
+                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
-        
+
         {/* Spiral Controls — 'helix' mode folds in the former standalone
             Helix gradient (continuous conical spiral) as an alternate mode,
             same precedent as Radar merging into Radial Burst. */}

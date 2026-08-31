@@ -22,11 +22,11 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // pools since it's a no-op with no uploaded image.
 const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
-  fireworks: ['Fireworks'], 'flow-field': ['Flow Field'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
+  fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
-  noise: ['Noise'], particles: ['Particles'], plasma: ['Plasma'], 'polar-grid': ['Polar Grid', 'Shapes'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
-  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
+  noise: ['Noise'], particles: ['Particles', 'Flow Field'], plasma: ['Plasma'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
+  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
@@ -863,13 +863,13 @@ export function useRandomization(params: RandomizationParams) {
     // same 7 params regardless of the current gradient type; now gated to
     // only nudge the params the active type actually uses, and extended to
     // cover the 14 types that previously had none here at all (angle, fade,
-    // radial, polar-grid, julia, attractor, reaction-diffusion, topographic,
+    // radial, julia, attractor, reaction-diffusion, topographic,
     // particles, tiling, wave-interference, mesh-wireframe, fireworks,
     // lightning).
     if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
-    else if (gradientType === 'shapes') setConcentricRingWidth(Math.round(rng(20, 180)));
+    else if (gradientType === 'shapes') { setConcentricRingWidth(Math.round(rng(20, 180))); setPolygon2Sides(Math.round(rng(1, 24))); }
     else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); setRadarBeamWidth(Math.round(rng(1, 90))); }
     else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
     else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
@@ -880,17 +880,15 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSpeed(rng(0.1, 5)); }
     else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
     else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
-    else if (gradientType === 'flow-field') { setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
     else if (gradientType === 'fade') setFadeDirection(Math.round(rng(0, 360)));
     else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
-    else if (gradientType === 'polar-grid') setPolygon2Sides(Math.round(rng(1, 24)));
     else if (gradientType === 'julia') setJuliaZoom(rng(0.3, 3));
     else if (gradientType === 'attractor') setAttractorSpeed(rng(0.1, 5));
     else if (gradientType === 'reaction-diffusion') setReactionDiffusionSpeed(rng(0.2, 3));
     else if (gradientType === 'topographic') setTopographicScale(Math.round(rng(10, 99)));
-    else if (gradientType === 'particles') setParticlesSpeed(rng(0.1, 5));
+    else if (gradientType === 'particles') { setParticlesSpeed(rng(0.1, 5)); setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'tiling') setTilingComplexity(rng(0.5, 10));
     else if (gradientType === 'wave-interference') setWaveInterferenceSpeed(rng(0.1, 5));
     else if (gradientType === 'mesh-wireframe') setMeshWireframeJitter(rng(0, 1));

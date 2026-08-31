@@ -1,6 +1,5 @@
 import { drawRadial } from './drawRadial';
 import { drawAngle } from './drawAngle';
-import { drawPolarGrid } from './drawPolarGrid';
 import { drawWindmill } from './drawWindmill';
 import { drawShapes } from './drawShapes';
 import { drawFade } from './drawFade';
@@ -55,7 +54,6 @@ function lazyGradient<T extends (P: any) => CanvasGradient | undefined>( // esli
   return (P) => (impl ? impl(P) : undefined);
 }
 
-const drawFlowFieldLazy = lazyGradient(() => import('./drawFlowField').then((m) => m.drawFlowField));
 const drawAttractorLazy = lazyGradient(() => import('./drawAttractor').then((m) => m.drawAttractor));
 const drawParticlesLazy = lazyGradient(() => import('./drawParticles').then((m) => m.drawParticles));
 
@@ -268,7 +266,6 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'radial': drawRadial,
   'angle': drawAngleAuto,
-  'polar-grid': drawPolarGrid,
   'windmill': drawWindmillAuto,
   'shapes': drawShapes,
   'fade': drawFade,
@@ -286,7 +283,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'metaballs': drawMetaballsAuto,
   'truchet': drawTruchet,
   'moire': drawMoire,
-  'flow-field': drawFlowFieldLazy,
   'attractor': drawAttractorLazy,
   'reaction-diffusion': drawReactionDiffusionLazy,
   'flower': drawFlower,

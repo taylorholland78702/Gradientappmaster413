@@ -161,6 +161,7 @@ export function drawShapes(P: any): CanvasGradient | undefined {
     scanlineSpeed,
     shapesCount,
     shapesSides,
+    shapesMode,
     slitScanBufferRef,
     slitScanDirection,
     slitScanIntensity,
@@ -210,9 +211,53 @@ export function drawShapes(P: any): CanvasGradient | undefined {
     getDisplayImageData
   } = P;
   let gradient: CanvasGradient | undefined;
-          // Create concentric polygons with variable sides
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+          if (shapesMode === 'polar-grid') {
+            // Former standalone Polar Grid gradient, folded in as a Shapes
+            // mode: circular concentric rings, each subdivided into
+            // polygon2Sides angular sectors, colored by (sector+ring) so
+            // adjacent cells never repeat the same color. Ring radius is
+            // proportional to maxRadius (always reaches it at the outer
+            // ring) rather than Shapes' own absolute-pixel ring width, which
+            // is what let this mode's rings always fill the canvas
+            // regardless of ring count — kept exactly as-is rather than
+            // reusing Shapes' own radius system.
+            const audioRotation = (isAudioEnabled && isAudioReactive)
+              ? audioTrebleLevel * 5 // Treble barely rotates (±5°)
+              : 0;
+            const solidSides = Math.max(1, polygon2Sides);
+            const solidAnglePerSide = 360 / solidSides;
+            const solidSectorHalf = Math.PI / solidSides;
+            const polygonRingCount = concentricRingCount;
+
+            for (let ring = polygonRingCount; ring >= 0; ring--) {
+              const ringRadius = maxRadius * (ring / polygonRingCount);
+
+              for (let i = 0; i < solidSides; i++) {
+                const angle = (i * solidAnglePerSide + gradientAngle + audioRotation) * (Math.PI / 180);
+                const colorIndex = (i + ring) % gradientColors.length;
+                const color = gradientColors[colorIndex];
+                if (!color) continue;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                // Extend the arc to overlap slightly and prevent gaps
+                const angleStart = angle - solidSectorHalf - 0.01;
+                const angleEnd = angle + solidSectorHalf + 0.01;
+                ctx.arc(centerX, centerY, ringRadius, angleStart, angleEnd);
+                ctx.closePath();
+                ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                ctx.fill();
+                ctx.restore();
+              }
+            }
+            return gradient;
+          }
+
+          // Create concentric polygons with variable sides
           const shapesScale = (isAudioEnabled && isAudioReactive) ? 1 : 1 / zoom;
           // Bass pulses ring width slightly; cap so count and rotate sliders stay effective
           const audioShapeRingWidth = (isAudioEnabled && isAudioReactive)
