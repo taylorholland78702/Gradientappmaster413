@@ -81,7 +81,6 @@ export function useRandomization(params: RandomizationParams) {
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
-    setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
@@ -112,7 +111,6 @@ export function useRandomization(params: RandomizationParams) {
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
     setCrtIntensity, setCrtScanlineSpacing, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
-    setStarfieldCount, setStarfieldSpeed, setStarfieldOpacity, setStarfieldSize,
   } = params;
 
   const randomizeUncoveredParams = useCallback(() => {
@@ -277,11 +275,6 @@ export function useRandomization(params: RandomizationParams) {
     // Invert effect
     setInvertAmount(Math.random());                                     // 0–1
 
-    // Glitch effect
-    setGlitchIntensity(Math.random() * 0.95 + 0.05);                    // 0.05–1
-    setGlitchBlockSize(Math.floor(Math.random() * 39) * 2 + 4);         // 4–80 (even)
-    setGlitchChromaSplit(Math.floor(Math.random() * 21));               // 0–20
-
     // Slit-Scan effect
     setSlitScanIntensity(Math.random());                                 // 0–1
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
@@ -407,17 +400,13 @@ export function useRandomization(params: RandomizationParams) {
     setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
     setDustCrackleColor(randomHexColor());
 
-    // Aura Glow / Starfield — same gap Mesh Wireframe/Wave Interference
-    // above used to have: fully wired everywhere else (sliders, modulation,
-    // snapshot) but never touched by any shuffle/remix path, so activating
-    // either via Shuffle always showed the same look every time.
+    // Aura Glow — same gap Mesh Wireframe/Wave Interference above used to
+    // have: fully wired everywhere else (sliders, modulation, snapshot) but
+    // never touched by any shuffle/remix path, so activating it via Shuffle
+    // always showed the same look every time.
     setAuraGlowCount(Math.floor(Math.random() * 6) + 1);                // 1–6
     setAuraGlowSpeed(Math.random() * 2.9 + 0.1);                        // 0.1–3
     setAuraGlowOpacity(Math.random() * 0.9 + 0.1);                      // 0.1–1
-    setStarfieldCount(Math.floor(Math.random() * 471) + 30);            // 30–500
-    setStarfieldSpeed(Math.random() * 3.8 + 0.2);                       // 0.2–4
-    setStarfieldOpacity(Math.random() * 0.9 + 0.1);                     // 0.1–1
-    setStarfieldSize(Math.random() * 3.8 + 0.2);                        // 0.2–4
 
     // Global palette adjust (Color tab). Brightness/Contrast now match the
     // ColorTab sliders' own ±25 bounds (see adjustPalette's defensive

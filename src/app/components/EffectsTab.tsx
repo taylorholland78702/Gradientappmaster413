@@ -140,19 +140,10 @@ export interface EffectsTabProps {
   // Surrealism
   surrealMelt: number; setSurrealMelt: (v: number) => void;
   surrealMirror: number; setSurrealMirror: (v: number) => void;
-  // Glitch
-  glitchIntensity: number; setGlitchIntensity: (v: number) => void;
-  glitchBlockSize: number; setGlitchBlockSize: (v: number) => void;
-  glitchChromaSplit: number; setGlitchChromaSplit: (v: number) => void;
   // Aura Glow
   auraGlowCount: number; setAuraGlowCount: (v: number) => void;
   auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
   auraGlowOpacity: number; setAuraGlowOpacity: (v: number) => void;
-  // Starfield
-  starfieldCount: number; setStarfieldCount: (v: number) => void;
-  starfieldSpeed: number; setStarfieldSpeed: (v: number) => void;
-  starfieldOpacity: number; setStarfieldOpacity: (v: number) => void;
-  starfieldSize: number; setStarfieldSize: (v: number) => void;
 }
 
 const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
@@ -196,9 +187,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     brushStrokesSize, setBrushStrokesSize, brushStrokesLength, setBrushStrokesLength,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
-    glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
-    starfieldCount, setStarfieldCount, starfieldSpeed, setStarfieldSpeed, starfieldOpacity, setStarfieldOpacity, starfieldSize, setStarfieldSize,
   } = props;
 
   // Was recomputed inline on every render this component made (including
@@ -1519,29 +1508,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('glitch') && (
-                <EffectSection id="glitch" label="Glitch" isMulti={isMulti} expanded={!collapsedEffects.has('glitch')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0.05" max="1" step="0.05" value={glitchIntensity} onChange={(e) => setGlitchIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.05" max="1" step="0.05" value={glitchIntensity} onChange={(e) => setGlitchIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Block Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="4" max="80" step="2" value={glitchBlockSize} onChange={(e) => setGlitchBlockSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Chroma Split:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="20" step="1" value={glitchChromaSplit} onChange={(e) => setGlitchChromaSplit(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
               {activeEffects.includes('aura-glow') && (
                 <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={!collapsedEffects.has('aura-glow')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
@@ -1561,36 +1527,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('starfield') && (
-                <EffectSection id="starfield" label="Starfield" isMulti={isMulti} expanded={!collapsedEffects.has('starfield')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Density:</label>
-                    <input type="range" min="10" max="1000" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="10" max="1000" step="10" value={starfieldCount} onChange={(e) => setStarfieldCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.2" max="4" step="0.1" value={starfieldSpeed} onChange={(e) => setStarfieldSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.2" max="4" step="0.1" value={starfieldSpeed} onChange={(e) => setStarfieldSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={starfieldOpacity} onChange={(e) => setStarfieldOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.2" max="4" step="0.1" value={starfieldSize} onChange={(e) => setStarfieldSize(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.2" max="4" step="0.1" value={starfieldSize} onChange={(e) => setStarfieldSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

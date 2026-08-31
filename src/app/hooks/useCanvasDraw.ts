@@ -204,7 +204,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue,
     paletteHue = 0, paletteSaturation = 100, paletteBrightness = 0, paletteContrast = 0, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
-    glitchIntensity, glitchBlockSize, glitchChromaSplit,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
