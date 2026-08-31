@@ -669,6 +669,20 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
       gradientHandledByPipeline = runGLEffectChain(runStages, canvas, ctx, displayWidth, displayHeight);
       if (gradientHandledByPipeline) effectStartIndex = lookahead;
+      // The lookahead loop above called buildEffectCtx on every peeked
+      // effect (including the one that broke the loop, e.g. a needsImageData
+      // effect like Halftone) to check GL eligibility — before this GL
+      // gradient stage had actually rendered anything onto `canvas`/`ctx`.
+      // For a needsImageData effect that context's imageData is a snapshot
+      // of last frame's (or a blank) canvas, not this frame's just-rendered
+      // gradient. Left cached, the real per-effect loop below would reuse
+      // that stale snapshot instead of rebuilding it post-render — e.g.
+      // Caustics + Halftone rendered as solid black, since Halftone's dot
+      // radius scales with sampled brightness and the stale snapshot read
+      // as all-zero. Clearing forces a fresh, correctly-ordered rebuild;
+      // effectCtx values already captured into local variables above are
+      // untouched by this, so nothing already in flight is invalidated.
+      effectCtxCache.clear();
     }
 
     if (!gradientHandledByPipeline) {
@@ -778,6 +792,13 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           runStages.push(nextStage);
           lookahead++;
         }
+        // Same staleness issue as the gradient-stage lookahead above: this
+        // loop just called buildEffectCtx on every peeked effect (including
+        // the one that broke it) before the current GL-eligible effect
+        // actually rendered. Clear so a needsImageData effect further down
+        // the chain rebuilds its imageData snapshot fresh once this frame's
+        // canvas is caught up, rather than reusing a pre-render one.
+        effectCtxCache.clear();
         if (runStages.length >= 2) {
           const pipelined = runGLEffectChain(runStages, canvas, ctx, displayWidth, displayHeight);
           if (pipelined) {
