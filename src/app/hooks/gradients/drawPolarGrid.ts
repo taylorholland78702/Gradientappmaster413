@@ -215,9 +215,6 @@ export function drawPolarGrid(P: any): CanvasGradient | undefined {
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-          const polygonSolidScale = 1 / zoom;
-          const polygonSolidRadius = fitRadius; // Use fitRadius to ensure shape fits
-
           // Audio reactivity: very subtle brightness/color shift only, no geometry changes
           const audioRadialBoost = 0;
           const audioRingBoost = 0;
