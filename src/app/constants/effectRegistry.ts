@@ -231,10 +231,12 @@ const EFFECT_REGISTRY = {
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
-  // Edge-aware domain warp (bleed grows near color boundaries, stays put in
-  // flat washes) plus a paper-grain multiply — single-pass per pixel, same
-  // cost tier as Liquid/Fisheye rather than Oil Paint's neighborhood scan.
-  watercolor: { drawFn: applyWatercolor, label: 'Watercolor', cost: 2, category: ['Watercolor'], audio: false },
+  // Was priced at cost 2 (single-pass-per-pixel tier, alongside Liquid/
+  // Fisheye) but its per-pixel work is heavier than that tier assumes: a
+  // 4-tap directional smear plus 3 valueNoise calls and a hash2 call per
+  // pixel for the warp field, paper blotch, and fiber grain — comparable to
+  // or more than Dada/Surrealism, both already priced at cost 3.
+  watercolor: { drawFn: applyWatercolor, label: 'Watercolor', cost: 3, category: ['Watercolor'], audio: false },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 

@@ -210,7 +210,23 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
           {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
           <div className="w-full flex gap-0 border-b border-white/50">
             <button
-              onClick={() => { setIsMultiFxMode(!isMultiFxMode); if (!isMultiFxMode && activeEffects.length === 0) {} }}
+              onClick={() => {
+                const next = !isMultiFxMode;
+                setIsMultiFxMode(next);
+                // Turning Multi-FX off while several effects are stacked left
+                // activeEffects out of sync with what single-select mode can
+                // represent — the effect grid kept showing the whole stack
+                // highlighted, and the next click on any of them silently
+                // collapsed everything down to just that one (single-select's
+                // own click handler below always replaces). That read as an
+                // effect click randomly "wiping out" the others for no
+                // visible reason. Collapse right here, at the moment of the
+                // mode switch, so the highlighted state always matches what
+                // the current mode can actually do.
+                if (!next && activeEffects.length > 1) {
+                  setActiveEffects([activeEffects[0]]);
+                }
+              }}
               aria-pressed={isMultiFxMode}
               className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
