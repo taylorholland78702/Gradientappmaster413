@@ -31,14 +31,15 @@ export interface GradientsTabProps {
   auroraBandHeight: number; setAuroraBandHeight: (v: number) => void;
   auroraWaveSpeed: number; setAuroraWaveSpeed: (v: number) => void;
 
-  // Turrell
+  // Fade — 'light' mode folds in the former standalone Turrell gradient.
+  fadeMode: 'angle' | 'light'; setFadeMode: (v: 'angle' | 'light') => void;
   turrellSpeed: number; setTurrellSpeed: (v: number) => void;
   turrellGlow: number; setTurrellGlow: (v: number) => void;
 
-  // Color Field
-  colorFieldPanels: number; setColorFieldPanels: (v: number) => void;
-  colorFieldDrift: number; setColorFieldDrift: (v: number) => void;
-  colorFieldPulse: number; setColorFieldPulse: (v: number) => void;
+  // Stack
+  stackCount: number; setStackCount: (v: number) => void;
+  stackGap: number; setStackGap: (v: number) => void;
+  stackResponse: number; setStackResponse: (v: number) => void;
 
   // Caustics
   causticsBrightness: number; setCausticsBrightness: (v: number) => void;
@@ -210,8 +211,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
-    turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    colorFieldPanels, setColorFieldPanels, colorFieldDrift, setColorFieldDrift, colorFieldPulse, setColorFieldPulse,
+    fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
+    stackCount, setStackCount, stackGap, setStackGap, stackResponse, setStackResponse,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
@@ -476,36 +477,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Turrell Controls — a full-bleed field with no visible gradient
-            stop, crossing the palette slowly over minutes; Glow breathes
-            gently on a smoothed sub-bass level rather than reacting frame
-            to frame. */}
-        {gradientType === 'turrell' && (
+        {/* Stack Controls — identical hard-edged bars at regular intervals;
+            orientation reuses the shared Angle control below. */}
+        {gradientType === 'stack' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {[
-              { label: 'Speed', value: turrellSpeed, set: setTurrellSpeed, min: 0.1, max: 2, step: 0.1 },
-              { label: 'Glow', value: turrellGlow, set: setTurrellGlow, min: 0, max: 1, step: 0.05 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Color Field Controls — flat, unblended panels; split direction
-            reuses the shared Angle control below rather than a dedicated
-            slider here. */}
-        {gradientType === 'color-field' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Panels', value: colorFieldPanels, set: setColorFieldPanels, min: 2, max: 6, step: 1 },
-              { label: 'Drift', value: colorFieldDrift, set: setColorFieldDrift, min: 0, max: 1, step: 0.05 },
-              { label: 'Pulse', value: colorFieldPulse, set: setColorFieldPulse, min: 0, max: 1, step: 0.05 },
+              { label: 'Count', value: stackCount, set: setStackCount, min: 2, max: 40, step: 1 },
+              { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
+              { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -1569,17 +1548,60 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Fade Controls */}
+        {/* Fade Controls — 'light' mode folds in the former standalone
+            Turrell gradient (a full-bleed field with no visible gradient
+            stop, crossing the palette slowly over minutes) as an
+            alternate mode, same precedent as Helix merging into Windmill. */}
         {gradientType === 'fade' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {renderFieldMappingRows()}
             <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Direction:</label>
+              <label className="text-[10px] text-white">Mode:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                <button
+                  onClick={() => setFadeMode('angle')}
+                  aria-pressed={fadeMode === 'angle'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    fadeMode === 'angle' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Angle
+                </button>
+                <button
+                  onClick={() => setFadeMode('light')}
+                  aria-pressed={fadeMode === 'light'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    fadeMode === 'light' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Light
+                </button>
               </div>
             </div>
+            {fadeMode === 'angle' ? (
+              <>
+                {renderFieldMappingRows()}
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-white">Direction:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </div>
+              </>
+            ) : (
+              [
+                { label: 'Speed', value: turrellSpeed, set: setTurrellSpeed, min: 0.1, max: 2, step: 0.1 },
+                { label: 'Glow', value: turrellGlow, set: setTurrellGlow, min: 0, max: 1, step: 0.05 },
+              ].map(({ label, value, set, min, max, step }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                  <div className="flex items-center gap-1 flex-1 ml-2">
+                    <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 

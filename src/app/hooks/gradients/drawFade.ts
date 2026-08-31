@@ -67,6 +67,10 @@ export function drawFade(P: any): CanvasGradient | undefined {
     emojiSize,
     emojiSizeVariation,
     fadeDirection,
+    fadeMode,
+    turrellAnimTime,
+    turrellGlow,
+    turrellSmoothRef,
     feedbackBufferRef,
     feedbackDecay,
     feedbackRotation,
@@ -213,6 +217,51 @@ export function drawFade(P: any): CanvasGradient | undefined {
     getDisplayImageData
   } = P;
   let gradient: CanvasGradient | undefined;
+
+          if (fadeMode === 'light') {
+            // Former standalone Turrell gradient, folded in as a Fade
+            // mode: a full-bleed field with no visible gradient stop,
+            // crossing the palette in sequence over minutes rather than
+            // seconds. Its one glow breathes on a heavily-smoothed
+            // sub-bass level (an EMA in turrellSmoothRef) instead of
+            // reacting frame to frame — deliberately the calm counterpoint
+            // to 'angle' mode's instant audio-driven blend below.
+            if (!gradientColors || gradientColors.length === 0) return gradient;
+            const lightAudioActive = isAudioEnabled && isAudioReactive;
+            const rawLevel = lightAudioActive ? audioSubBassLevel : 0;
+            if (turrellSmoothRef) {
+              turrellSmoothRef.current += (rawLevel - turrellSmoothRef.current) * 0.01;
+            }
+            const smoothLevel = turrellSmoothRef ? turrellSmoothRef.current : 0;
+
+            const totalColors = gradientColors.length;
+            const cyclePos = ((turrellAnimTime % totalColors) + totalColors) % totalColors;
+            const colorIndex = Math.floor(cyclePos);
+            const nextIndex = (colorIndex + 1) % totalColors;
+            const lightBlend = cyclePos - colorIndex;
+            const current = gradientColors[colorIndex];
+            const next = gradientColors[nextIndex] || current;
+            if (!current) return gradient;
+
+            const lr = Math.round(current.r + (next.r - current.r) * lightBlend);
+            const lg = Math.round(current.g + (next.g - current.g) * lightBlend);
+            const lb = Math.round(current.b + (next.b - current.b) * lightBlend);
+
+            ctx.fillStyle = `rgb(${lr}, ${lg}, ${lb})`;
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+            if (turrellGlow > 0.001) {
+              const glowRadius = Math.max(displayWidth, displayHeight) * 1.1;
+              const glowStrength = turrellGlow * (0.15 + smoothLevel * 0.5);
+              const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+              glow.addColorStop(0, `rgba(255,255,255,${glowStrength})`);
+              glow.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = glow;
+              ctx.fillRect(0, 0, displayWidth, displayHeight);
+            }
+            return gradient;
+          }
+
           const fadeAudioActive = isAudioEnabled && isAudioReactive;
           const totalColors = gradientColors.length;
           const normalizedAngle = gradientAngle / 360;

@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'radial' | 'angle' | 'windmill' | 'fade' | 'fireworks' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'lightning' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia' | 'particles' | 'tiling' | 'wave-interference' | 'mesh-wireframe' | 'color-field' | 'turrell';
+export type GradientType = 'radial' | 'angle' | 'windmill' | 'fade' | 'fireworks' | 'radial-burst' | 'noise' | 'plasma' | 'grid' | 'shapes' | 'voronoi' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'lightning' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia' | 'particles' | 'tiling' | 'wave-interference' | 'mesh-wireframe' | 'stack';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -63,6 +63,9 @@ export const ID_MIGRATIONS: Record<string, string> = {
   // Flow Field was folded into Particles as a 'flow-field' mode
   // (particlesMode) — same reasoning as Radar/Helix above.
   'flow-field': 'particles',
+  // Turrell was folded into Fade as a 'light' mode (fadeMode) — same
+  // reasoning as Radar/Helix above.
+  'turrell': 'fade',
   'film-grain': 'grain',
   'color-shift': 'shift',
   'vhs-glitch': 'vhs',
@@ -124,18 +127,17 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   tiling: 'Tiling',
   'wave-interference': 'Wave Interference',
   'mesh-wireframe': 'Mesh Wireframe',
-  'color-field': 'Color Field',
-  'turrell': 'Turrell',
+  'stack': 'Stack',
 };
 
 // Full gradient type list for UI
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'moire', 'noise', 'plasma', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill', 'color-field', 'turrell'];
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'moire', 'noise', 'plasma', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill', 'stack'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
-export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'noise', 'plasma', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'voronoi', 'wave-interference', 'windmill', 'metaballs', 'truchet', 'moire', 'color-field', 'turrell'];
+export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'noise', 'plasma', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'voronoi', 'wave-interference', 'windmill', 'metaballs', 'truchet', 'moire', 'stack'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'plasma', 'noise', 'windmill', 'grid', 'angle', 'fade', 'flower', 'voronoi', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet', 'particles', 'wave-interference', 'mesh-wireframe', 'color-field', 'turrell'];
+export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'plasma', 'noise', 'windmill', 'grid', 'angle', 'fade', 'flower', 'voronoi', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet', 'particles', 'wave-interference', 'mesh-wireframe', 'stack'];
 
 // Gradient types where click-drag should not move the gradient's center.
 // Doesn't cover Particles' 'flow-field' mode (formerly the standalone Flow

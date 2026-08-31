@@ -114,8 +114,7 @@ import { useReactionDiffusionGridState } from '../hooks/state/useReactionDiffusi
 import { useRedoState } from '../hooks/state/useRedoState';
 import { useSepiaState } from '../hooks/state/useSepiaState';
 import { useShapesState } from '../hooks/state/useShapesState';
-import { useColorFieldState } from '../hooks/state/useColorFieldState';
-import { useTurrellState } from '../hooks/state/useTurrellState';
+import { useStackState } from '../hooks/state/useStackState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
 import { useStructuralSeedState } from '../hooks/state/useStructuralSeedState';
@@ -315,7 +314,7 @@ export function InteractiveGradient() {
   const { duotoneIntensity, setDuotoneIntensity, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor } = useDuotoneState();
   const { dustCrackleIntensity, setDustCrackleIntensity, dustSize, setDustSize, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor } = useDustState();
   const { emojiSize, setEmojiSize, emojiChars, setEmojiChars, emojiRotateSpeed, setEmojiRotateSpeed, emojiAnimTime, setEmojiAnimTime, emojiOffsetX, setEmojiOffsetX, emojiSizeVariation, setEmojiSizeVariation, emojiPickerSearch, setEmojiPickerSearch } = useEmojiState();
-  const { fadeDirection, setFadeDirection } = useFadeState();
+  const { fadeDirection, setFadeDirection, fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow, turrellSmoothRef } = useFadeState();
   const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
   const { fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands } = useFieldMappingState();
   const { fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY } = useFisheyeState();
@@ -402,8 +401,7 @@ export function InteractiveGradient() {
   const { redoStackRef, redoDepth, setRedoDepth } = useRedoState();
   const { sepiaIntensity, setSepiaIntensity } = useSepiaState();
   const { shapesSides, setShapesSides, shapesCount, setShapesCount, shapesMode, setShapesMode } = useShapesState();
-  const { colorFieldPanels, setColorFieldPanels, colorFieldDrift, setColorFieldDrift, colorFieldPulse, setColorFieldPulse } = useColorFieldState();
-  const { turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow, turrellSmoothRef } = useTurrellState();
+  const { stackCount, setStackCount, stackGap, setStackGap, stackResponse, setStackResponse } = useStackState();
   const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanHistory, setSlitScanHistory, slitScanBufferRef } = useSlitScanState();
   const { solarizeThreshold, setSolarizeThreshold } = useSolarizeState();
   const { structuralSeed, setStructuralSeed } = useStructuralSeedState();
@@ -1335,14 +1333,14 @@ export function InteractiveGradient() {
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'turrell' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
+    if (gradientType !== 'fade' || fadeMode !== 'light' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     // Deliberately slow — a full crossfade between two palette colors takes
     // roughly 20s at the default speed, not the ~1-2s of every other clock
-    // in this file. Turrell's whole point is that nothing here should read
+    // in this file. Light mode's whole point is that nothing here should read
     // as "reactive."
     const id = setInterval(() => setTurrellAnimTime(t => t + 0.0008 * vcrPlaybackSpeed * turrellSpeed), 16);
     return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, turrellSpeed]);
+  }, [gradientType, fadeMode, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, turrellSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
@@ -1453,8 +1451,8 @@ export function InteractiveGradient() {
     fieldContrast, paletteMode, paletteBands, setFieldContrast, setPaletteMode, setPaletteBands,
     invertAmount, setInvertAmount,
     voronoiAnimTime, setVoronoiAnimTime, flowerAnimTime, setFlowerAnimTime, auroraAnimTime, setAuroraAnimTime,
-    turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    colorFieldPanels, setColorFieldPanels, colorFieldDrift, setColorFieldDrift, colorFieldPulse, setColorFieldPulse,
+    fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
+    stackCount, setStackCount, stackGap, setStackGap, stackResponse, setStackResponse,
     causticsAnimTime, setCausticsAnimTime, lavaAnimTime, setLavaAnimTime, marbleAnimTime, setMarbleAnimTime,
     metaballAnimTime, setMetaballAnimTime, moireAnimTime, setMoireAnimTime, flowAnimTime, setFlowAnimTime,
     liquidAnimTime, setLiquidAnimTime, emojiAnimTime, setEmojiAnimTime, attractorAnimTime, setAttractorAnimTime,
@@ -1682,7 +1680,8 @@ export function InteractiveGradient() {
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
-    setColorFieldPanels, setColorFieldDrift, setColorFieldPulse, setTurrellSpeed, setTurrellGlow,
+    setTurrellSpeed, setTurrellGlow,
+    setStackCount, setStackGap, setStackResponse,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -2928,7 +2927,8 @@ export function InteractiveGradient() {
     digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep,
     gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations,
     windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesMode, concentricRingWidth, concentricRingCount,
-    colorFieldPanels, colorFieldDrift, colorFieldPulse, turrellAnimTime, turrellSpeed, turrellGlow,
+    fadeMode, turrellAnimTime, turrellSpeed, turrellGlow,
+    stackCount, stackGap, stackResponse,
     radialSizeScale, radialHardEdge, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed,
     plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, helixTurns, helixTightness,
@@ -2957,7 +2957,7 @@ export function InteractiveGradient() {
     depthLayerEnabled, depthLayerStrength,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
-  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, grainSize, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, vhsJitterAmount, crtIntensity, crtScanlineSpacing, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesMode, concentricRingWidth, concentricRingCount, colorFieldPanels, colorFieldDrift, colorFieldPulse, turrellSpeed, turrellGlow, polygon2Sides, radialSizeScale, radialHardEdge, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, impastoStrength, impastoLightAngle, brushStrokesSize, brushStrokesLength, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory, addGradientStops, isAudioEnabled, isAudioReactive, fadeDirection, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, particlesMode, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, auraGlowCount, auraGlowSpeed, auraGlowOpacity, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
+  }), [resolutionMultiplier, gradientType, activeEffects, kaleidoscopeSegments, kaleidoscopeRotateSpeed, twistAmount, pixelSize, triangleSize, triangulateVariation, chromaticOffset, fisheyeStrength, grainIntensity, grainType, grainSize, blurMotionAmount, blurGaussianAmount, blurRadialAmount, blurMotionDirection, blurType, posterizeLevels, halftoneSize, halftoneVariation, halftoneMove, halftoneMoveSpeed, halftoneCMYK, bloomIntensity, bloomRadius, feedbackDecay, feedbackZoom, feedbackRotation, vignetteStrength, colorShiftHue, paletteHue, paletteSaturation, paletteBrightness, paletteContrast, pinchStrength, hexGridSize, linesCount, linesAngle, linesThickness, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, vhsGlitchIntensity, vhsJitterAmount, crtIntensity, crtScanlineSpacing, waveDistortionStrength, waveDistortionRotation, liquifyStrength, sepiaIntensity, solarizeThreshold, lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor, digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep, gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesMode, concentricRingWidth, concentricRingCount, turrellSpeed, turrellGlow, stackCount, stackGap, stackResponse, polygon2Sides, radialSizeScale, radialHardEdge, noiseScale, noiseOctaves, noiseWarp, noiseType, plasmaSpeed, plasmaComplexity, plasmaZoomScale, radialBurstCount, radialBurstMode, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion, helixTurns, helixTightness, radarSweepAngle, radarFadeLength, flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, auroraBandCount, auroraWaveSpeed, auroraBandHeight, causticsBrightness, causticsScale, lavaBlobCount, lavaBlobSize, lavaSpeed, marbleVeinFreq, marbleTurbulence, marbleOctaves, noiseDirection, ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, impastoStrength, impastoLightAngle, brushStrokesSize, brushStrokesLength, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, surrealMelt, surrealMirror, slitScanIntensity, slitScanDirection, slitScanHistory, addGradientStops, isAudioEnabled, isAudioReactive, fadeDirection, fadeMode, radarBeamWidth, chromaticAngle, vignetteSoftness, fisheyeCenterX, fisheyeCenterY, mirrorMode, mirrorTileCount, metaballCount, metaballSize, metaballSpeed, truchetSize, truchetVariation, truchetThickness, moireScale, moireOffset, moireSpeed, flowParticleCount, flowSpeed, flowScale, flowThickness, attractorPointCount, attractorSpeed, attractorScale, attractorDotSize, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, particlesMode, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset, waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed, meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth, fireworksCount, fireworksParticleCount, fireworksTrailFade, lightningBoltCount, lightningJitter, lightningBranchiness, reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed, topographicScale, topographicBands, topographicLineWidth, juliaReal, juliaImaginary, juliaZoom, juliaIterations, auraGlowCount, auraGlowSpeed, auraGlowOpacity, asciiSize, asciiColor, asciiChars, emojiSize, emojiChars, emojiRotateSpeed, liquidStrength, liquidScale, chromaticTrailsDecay, chromaticTrailsOffset, fieldContrast, paletteMode, paletteBands, invertAmount, attractorTrailFade, structuralSeed, audioBindings, photoVersion, photoBlendMode, photoOpacity, depthLayerEnabled, depthLayerStrength]);
 
 // Flow Field's canvas is a persistent low-alpha trail buffer, not a full
   // repaint each frame — unlike every other gradient, a single dirty frame
@@ -2994,7 +2994,8 @@ export function InteractiveGradient() {
     activeEffects, addGradientStops, angleCenterX, angleCenterY, angleStartOffset, angleHardEdge, asciiChars,
     asciiColor, asciiSize, attractorBufferRef, attractorPointCount, attractorPointsRef,
     particlesBufferRef, particlesPointsRef, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, particlesMode,
-    colorFieldPanels, colorFieldDrift, colorFieldPulse, turrellSpeed, turrellGlow, turrellSmoothRef,
+    fadeMode, turrellSpeed, turrellGlow, turrellSmoothRef,
+    stackCount, stackGap, stackResponse,
     tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
@@ -3746,8 +3747,8 @@ export function InteractiveGradient() {
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
     radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides,
     shapesCount, setShapesCount, shapesMode, setShapesMode, windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations,
-    colorFieldPanels, setColorFieldPanels, colorFieldDrift, setColorFieldDrift, colorFieldPulse, setColorFieldPulse,
-    turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
+    fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
+    stackCount, setStackCount, stackGap, setStackGap, stackResponse, setStackResponse,
     windmillThickness, setWindmillThickness, windmillZoomResponse, windmillMode, setWindmillMode, setWindmillZoomResponse,
     drawParamsDirtyRef, noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection,
     noiseWarp, setNoiseWarp, noiseType, setNoiseType, plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,

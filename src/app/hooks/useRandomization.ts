@@ -21,14 +21,14 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // photo has a modulatable category but is excluded elsewhere from random
 // pools since it's a no-op with no uploaded image.
 const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
-  angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade'],
+  angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field'], plasma: ['Plasma'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
-  'color-field': ['Color Field'], turrell: ['Turrell'],
+  stack: ['Stack'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
@@ -97,7 +97,8 @@ export function useRandomization(params: RandomizationParams) {
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
-    setColorFieldPanels, setColorFieldDrift, setColorFieldPulse, setTurrellSpeed, setTurrellGlow,
+    setTurrellSpeed, setTurrellGlow,
+    setStackCount, setStackGap, setStackResponse,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -205,14 +206,15 @@ export function useRandomization(params: RandomizationParams) {
     setRadarFadeLength(Math.floor(Math.random() * 170) + 10);          // 10–179
     setRadarBeamWidth(Math.floor(Math.random() * 89) + 1);             // 1–89
 
-    // Color Field
-    setColorFieldPanels(Math.floor(Math.random() * 4) + 2);            // 2–5
-    setColorFieldDrift(Math.random() * 0.6 + 0.1);                     // 0.1–0.7
-    setColorFieldPulse(Math.random() * 0.6);                           // 0–0.6
-
-    // Turrell — kept in its own slow, calm range even on Shuffle.
+    // Light (Fade's slow-crossfade mode) — kept in its own slow, calm
+    // range even on Shuffle.
     setTurrellSpeed(Math.random() * 1.4 + 0.4);                        // 0.4–1.8
     setTurrellGlow(Math.random() * 0.5 + 0.2);                         // 0.2–0.7
+
+    // Stack
+    setStackCount(Math.floor(Math.random() * 24) + 8);                 // 8–31
+    setStackGap(Math.random() * 0.5 + 0.15);                           // 0.15–0.65
+    setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
 
     // Bloom
     setBloomIntensity(Math.random() * 2);                              // 0–2
@@ -893,7 +895,7 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
-    else if (gradientType === 'fade') setFadeDirection(Math.round(rng(0, 360)));
+    else if (gradientType === 'fade') { setFadeDirection(Math.round(rng(0, 360))); setTurrellGlow(rng(0.2, 0.7)); }
     else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
     else if (gradientType === 'julia') setJuliaZoom(rng(0.3, 3));
     else if (gradientType === 'attractor') setAttractorSpeed(rng(0.1, 5));
@@ -905,8 +907,7 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'mesh-wireframe') setMeshWireframeJitter(rng(0, 1));
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
-    else if (gradientType === 'color-field') setColorFieldDrift(rng(0.1, 0.7));
-    else if (gradientType === 'turrell') setTurrellGlow(rng(0.2, 0.7));
+    else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.
