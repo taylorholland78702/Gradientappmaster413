@@ -726,6 +726,7 @@ export function useRandomization(params: RandomizationParams) {
       // a couple of mid-cost effects exhaust the budget well before 5
       // effects were picked — a shuffle topping out around 2-3 in
       // practice despite the cap already being higher).
+      const MIN_SHUFFLE_EFFECTS = 2;
       const MAX_SHUFFLE_EFFECTS = 5;
       const costBudget = 9 + Math.floor(((Math.random() + Math.random()) / 2) * 10);
       const selectedEffects: EffectType[] = [];
@@ -742,6 +743,16 @@ export function useRandomization(params: RandomizationParams) {
         if (spentCost + cost > costBudget) continue;
         selectedEffects.push(fx);
         spentCost += cost;
+      }
+      // A low budget roll landing on costlier effects first can come up
+      // short of even a couple of effects (or none at all) — a shuffle
+      // that sometimes turns effects off entirely reads as broken rather
+      // than as a deliberate "clean" look, so guarantee at least
+      // MIN_SHUFFLE_EFFECTS by topping up from the same shuffled pool,
+      // overriding the cost budget for just the extra picks needed.
+      for (const fx of shuffledLight) {
+        if (selectedEffects.length >= MIN_SHUFFLE_EFFECTS) break;
+        if (!selectedEffects.includes(fx)) selectedEffects.push(fx);
       }
 
       setActiveEffects(selectedEffects);
