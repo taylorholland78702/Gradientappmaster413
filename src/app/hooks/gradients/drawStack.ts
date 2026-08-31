@@ -21,6 +21,7 @@ export function drawStack(P: any): CanvasGradient | undefined {
     audioTrebleLevel,
     stackCount,
     stackGap,
+    stackWidth,
     stackResponse,
   } = P;
   let gradient: CanvasGradient | undefined;
@@ -29,6 +30,7 @@ export function drawStack(P: any): CanvasGradient | undefined {
 
   const count = Math.max(2, Math.round(stackCount));
   const gap = Math.min(0.8, Math.max(0, stackGap));
+  const widthMult = Math.max(0.1, stackWidth ?? 1);
   const cx = displayWidth / 2;
   const cy = displayHeight / 2;
   const diag = Math.sqrt(displayWidth * displayWidth + displayHeight * displayHeight);
@@ -38,7 +40,10 @@ export function drawStack(P: any): CanvasGradient | undefined {
   ctx.translate(cx, cy);
   ctx.rotate(gradientAngle * DEG_TO_RAD);
   const unitWidth = (2 * diag) / count;
-  const barWidth = unitWidth * (1 - gap);
+  // Width scales the gap-derived bar thickness independently — clamped
+  // just under a full unit so adjacent bars can get close/touching at
+  // high Width without ever fully erasing the gaps between them.
+  const barWidth = Math.min(unitWidth * 0.98, unitWidth * (1 - gap) * widthMult);
   const baseHalfLength = diag * 0.28;
   const third = count / 3;
   for (let i = 0; i < count; i++) {

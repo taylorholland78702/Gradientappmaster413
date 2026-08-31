@@ -15,6 +15,13 @@ export function useGridState() {
   // across it, turning the grid into a solid-color mosaic (Mondrian-style)
   // instead of a field of tiny gradients.
   const [gridHardEdge, setGridHardEdge] = useState(false);
+  // 'classic' is the existing per-cell gradient mosaic; 'martin' folds in
+  // an Agnes Martin-style treatment — a pale wash blended toward white,
+  // overlaid with a fine hairline grid whose opacity breathes gently with
+  // mids. Reuses gridRows/gridColumns for hairline density rather than
+  // adding new sliders. Same mode-toggle pattern as Windmill's
+  // 'blades'/'helix'.
+  const [gridMode, setGridMode] = useState<'classic' | 'martin'>('classic');
 
   return {
     gridSides,
@@ -33,5 +40,7 @@ export function useGridState() {
     setGridCellAngleStep,
     gridHardEdge,
     setGridHardEdge,
+    gridMode,
+    setGridMode,
   };
 }

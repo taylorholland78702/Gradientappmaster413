@@ -19,6 +19,7 @@ export interface GradientsTabProps {
   gridColumns: number; setGridColumns: (v: number) => void;
   gridCellAngleStep: number; setGridCellAngleStep: (v: number) => void;
   gridHardEdge: boolean; setGridHardEdge: (v: boolean) => void;
+  gridMode: 'classic' | 'martin'; setGridMode: (v: 'classic' | 'martin') => void;
 
   // Polar Grid
   polygon2Sides: number; setPolygon2Sides: (v: number) => void;
@@ -39,6 +40,7 @@ export interface GradientsTabProps {
   // Stack
   stackCount: number; setStackCount: (v: number) => void;
   stackGap: number; setStackGap: (v: number) => void;
+  stackWidth: number; setStackWidth: (v: number) => void;
   stackResponse: number; setStackResponse: (v: number) => void;
 
   // Caustics
@@ -208,11 +210,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName, shuffleGradientType,
     rotationDirection, setRotationDirection,
-    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge,
+    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge, gridMode, setGridMode,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackResponse, setStackResponse,
+    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackResponse, setStackResponse,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
@@ -390,7 +392,30 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Grid Controls */}
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Mode:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <button
+                  onClick={() => setGridMode('classic')}
+                  aria-pressed={gridMode === 'classic'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    gridMode === 'classic' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Classic
+                </button>
+                <button
+                  onClick={() => setGridMode('martin')}
+                  aria-pressed={gridMode === 'martin'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    gridMode === 'martin' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Martin
+                </button>
+              </div>
+            </div>
+            {gridMode === 'classic' && renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
             <div className="flex items-center justify-between">
               <label className="text-[10px] text-white">Rows:</label>
               <div className="flex items-center gap-1 flex-1 ml-2">
@@ -433,27 +458,29 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white whitespace-nowrap" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation">Cell Angle Step:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="90"
-                  value={gridCellAngleStep}
-                  onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="90"
-                  value={gridCellAngleStep}
-                  onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
+            {gridMode === 'classic' && (
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] text-white whitespace-nowrap" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation">Cell Angle Step:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="90"
+                    value={gridCellAngleStep}
+                    onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
+                    className="flex-1"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="90"
+                    value={gridCellAngleStep}
+                    onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
+                    className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -484,6 +511,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Count', value: stackCount, set: setStackCount, min: 2, max: 40, step: 1 },
               { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
+              { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
               { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">

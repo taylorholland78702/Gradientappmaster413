@@ -92,6 +92,7 @@ export function drawGrid(P: any): CanvasGradient | undefined {
     gridCellAngleStep,
     gridColumns,
     gridHardEdge,
+    gridMode,
     gridRotation,
     gridRows,
     gridShapeSize,
@@ -212,6 +213,50 @@ export function drawGrid(P: any): CanvasGradient | undefined {
     getDisplayImageData
   } = P;
   let gradient: CanvasGradient | undefined;
+
+          if (gridMode === 'martin') {
+            // Agnes Martin: a pale wash (each palette color blended
+            // heavily toward white in horizontal bands) with a fine
+            // hairline grid laid over it — restrained, near-monochrome,
+            // meditative repetition instead of Classic mode's saturated
+            // per-cell gradient mosaic. Reuses gridRows/gridColumns for
+            // hairline density; mids nudge line opacity gently rather
+            // than driving any motion.
+            if (!gradientColors || gradientColors.length === 0) return gradient;
+            const martinRows = Math.max(2, gridRows);
+            const martinCols = Math.max(2, gridColumns);
+            const bandHeight = displayHeight / martinRows;
+            const wash = 0.85;
+            for (let row = 0; row < martinRows; row++) {
+              const color = gradientColors[row % gradientColors.length];
+              if (!color) continue;
+              const r = Math.round(color.r + (255 - color.r) * wash);
+              const g = Math.round(color.g + (255 - color.g) * wash);
+              const b = Math.round(color.b + (255 - color.b) * wash);
+              ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+              ctx.fillRect(0, row * bandHeight, displayWidth, bandHeight + 1);
+            }
+
+            const martinAudioActive = isAudioEnabled && isAudioReactive;
+            const martinPulse = martinAudioActive ? audioMidsLevel * 0.15 : 0;
+            ctx.strokeStyle = `rgba(40, 40, 40, ${0.18 + martinPulse})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let row = 0; row <= martinRows; row++) {
+              const y = Math.round(row * bandHeight) + 0.5;
+              ctx.moveTo(0, y);
+              ctx.lineTo(displayWidth, y);
+            }
+            const colWidth = displayWidth / martinCols;
+            for (let col = 0; col <= martinCols; col++) {
+              const x = Math.round(col * colWidth) + 0.5;
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, displayHeight);
+            }
+            ctx.stroke();
+            return gradient;
+          }
+
           // Grid pattern with customizable rows and columns
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, displayWidth, displayHeight);

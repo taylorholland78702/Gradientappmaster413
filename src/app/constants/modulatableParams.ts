@@ -151,6 +151,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'shapesSides', label: 'Shapes Sides', category: 'Shapes', min: 1.0, max: 10.0 },
   { key: 'stackCount', label: 'Stack Count', category: 'Stack', min: 2.0, max: 40.0 },
   { key: 'stackGap', label: 'Stack Gap', category: 'Stack', min: 0.0, max: 0.8 },
+  { key: 'stackWidth', label: 'Stack Width', category: 'Stack', min: 0.1, max: 2.0 },
   { key: 'stackResponse', label: 'Stack Response', category: 'Stack', min: 0.0, max: 1.0 },
   { key: 'colorShiftHue', label: 'Color Shift Hue', category: 'Shift', min: 0.0, max: 255.0 },
   { key: 'slitScanIntensity', label: 'Slit Scan Intensity', category: 'Slit-Scan', min: 0.1, max: 10.0 },

@@ -98,7 +98,7 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackResponse,
+    setStackCount, setStackGap, setStackWidth, setStackResponse,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -214,6 +214,7 @@ export function useRandomization(params: RandomizationParams) {
     // Stack
     setStackCount(Math.floor(Math.random() * 24) + 8);                 // 8–31
     setStackGap(Math.random() * 0.5 + 0.15);                           // 0.15–0.65
+    setStackWidth(Math.random() * 1.3 + 0.4);                          // 0.4–1.7
     setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
 
     // Bloom
