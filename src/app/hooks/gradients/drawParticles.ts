@@ -57,9 +57,83 @@ export function drawParticles(P: any): CanvasGradient | undefined {
     flowAnimTime,
     flowBufferRef,
     flowParticlesRef,
+    marksCount,
+    marksSize,
+    marksDecay,
+    marksStateRef,
   } = P;
   let gradient: CanvasGradient | undefined;
           if (canvas.width === 0 || canvas.height === 0) return gradient;
+
+          if (particlesMode === 'marks') {
+            // Lee Ufan: a handful of fixed marks in mostly-empty space,
+            // each dormant until an audio onset makes it briefly bloom
+            // and then decay — restraint and the relationship between
+            // mark and void, not continuous motion or density. Positions
+            // are placed once via a golden-angle spiral (deliberate,
+            // evenly weighted) rather than randomly scattered.
+            const st = marksStateRef.current;
+            const n = Math.max(1, Math.round(marksCount));
+            if (st.marks.length !== n) {
+              const golden = Math.PI * (3 - Math.sqrt(5));
+              const marks = [];
+              for (let i = 0; i < n; i++) {
+                const t = (i + 0.5) / n;
+                const r = Math.sqrt(t) * 0.42;
+                const angle = i * golden;
+                marks.push({ nx: 0.5 + Math.cos(angle) * r, ny: 0.5 + Math.sin(angle) * r, level: 0 });
+              }
+              st.marks = marks;
+            }
+
+            const marksAudio = isAudioEnabled && isAudioReactive;
+            const decay = Math.min(0.99, Math.max(0.5, marksDecay));
+
+            if (marksAudio) {
+              const level = audioSubBassLevel + audioTrebleLevel * 0.5;
+              // Onset: level rises well above its own slow-moving
+              // baseline, with a short cooldown so one loud moment
+              // doesn't light every mark at once — bloom them one at a
+              // time, round robin.
+              if (level > st.baseline * 1.6 + 0.05 && st.cooldown <= 0) {
+                const idx = st.index % st.marks.length;
+                st.marks[idx].level = 1;
+                st.index = idx + 1;
+                st.cooldown = 8;
+              }
+              st.baseline += (level - st.baseline) * 0.04;
+              st.cooldown = Math.max(0, st.cooldown - 1);
+            } else {
+              // No audio: a slow, staggered breathing cycle so the marks
+              // read as quietly present rather than simply switched off.
+              st.time += 0.01;
+              for (let i = 0; i < st.marks.length; i++) {
+                st.marks[i].level = 0.25 + 0.2 * (0.5 + 0.5 * Math.sin(st.time + i * 1.7));
+              }
+            }
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+            for (let i = 0; i < st.marks.length; i++) {
+              const m = st.marks[i];
+              if (marksAudio) m.level *= decay;
+              if (m.level < 0.02) continue;
+              const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
+              const radius = marksSize * (0.4 + m.level * 0.8);
+              const x = m.nx * displayWidth;
+              const y = m.ny * displayHeight;
+              const markGrad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+              const alpha = Math.min(1, m.level);
+              markGrad.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`);
+              markGrad.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
+              ctx.fillStyle = markGrad;
+              ctx.beginPath();
+              ctx.arc(x, y, radius, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            return gradient;
+          }
 
           if (particlesMode === 'flow-field') {
             // Former standalone Flow Field gradient, folded in as a

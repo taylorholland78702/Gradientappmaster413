@@ -25,7 +25,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
-  noise: ['Noise'], particles: ['Particles', 'Flow Field'], plasma: ['Plasma'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
+  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], plasma: ['Plasma'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
   stack: ['Stack'],
@@ -65,6 +65,7 @@ export function useRandomization(params: RandomizationParams) {
     setMeshWireframeGridSize, setMeshWireframeJitter, setMeshWireframeLineWidth,
     setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed,
     setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides,
+    setMarksCount, setMarksSize, setMarksDecay,
     setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset,
     plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
@@ -139,6 +140,11 @@ export function useRandomization(params: RandomizationParams) {
     setParticlesSpeed(Math.random() * 4.9 + 0.1);                      // 0.1–5
     setParticlesTrail(Math.random() * 0.48 + 0.02);                    // 0.02–0.5
     setParticlesGravity(Math.random() * 3);                            // 0–3
+
+    // Marks
+    setMarksCount(Math.floor(Math.random() * 12) + 4);                  // 4–15
+    setMarksSize(Math.random() * 40 + 20);                              // 20–60
+    setMarksDecay(Math.random() * 0.1 + 0.88);                          // 0.88–0.98
 
     // Tiling
     setTilingSize(Math.floor(Math.random() * 27) * 10 + 30);           // 30–300

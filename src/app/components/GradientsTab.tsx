@@ -92,7 +92,10 @@ export interface GradientsTabProps {
   particlesTrail: number; setParticlesTrail: (v: number) => void;
   particlesGravity: number; setParticlesGravity: (v: number) => void;
   particlesSides: number; setParticlesSides: (v: number) => void;
-  particlesMode: 'drift' | 'flow-field'; setParticlesMode: (v: 'drift' | 'flow-field') => void;
+  particlesMode: 'drift' | 'flow-field' | 'marks'; setParticlesMode: (v: 'drift' | 'flow-field' | 'marks') => void;
+  marksCount: number; setMarksCount: (v: number) => void;
+  marksSize: number; setMarksSize: (v: number) => void;
+  marksDecay: number; setMarksDecay: (v: number) => void;
   // Tiling
   tilingSize: number; setTilingSize: (v: number) => void;
   tilingSymmetry: number; setTilingSymmetry: (v: number) => void;
@@ -225,6 +228,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
     particlesCount, setParticlesCount, particlesSpeed, setParticlesSpeed, particlesSize, setParticlesSize, particlesTrail, setParticlesTrail, particlesGravity, setParticlesGravity, particlesSides, setParticlesSides, particlesMode, setParticlesMode,
+    marksCount, setMarksCount, marksSize, setMarksSize, marksDecay, setMarksDecay,
     tilingSize, setTilingSize, tilingSymmetry, setTilingSymmetry, tilingComplexity, setTilingComplexity, tilingRotation, setTilingRotation, tilingRowOffset, setTilingRowOffset,
     fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
@@ -660,7 +664,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Particles Controls — 'flow-field' mode folds in the former
             standalone Flow Field gradient (noise-driven drifting particle
             trails) as an alternate mode, same precedent as Helix merging
-            into Windmill. */}
+            into Windmill. 'marks' is a Lee Ufan-inspired treatment: a
+            handful of fixed marks that bloom on an audio onset and decay,
+            instead of continuous drift or density. */}
         {gradientType === 'particles' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
@@ -684,6 +690,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 >
                   Flow Field
                 </button>
+                <button
+                  onClick={() => setParticlesMode('marks')}
+                  aria-pressed={particlesMode === 'marks'}
+                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
+                    particlesMode === 'marks' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                  }`}
+                >
+                  Marks
+                </button>
               </div>
             </div>
             {(particlesMode === 'flow-field'
@@ -692,6 +707,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
                   { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
                   { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
+                ]
+              : particlesMode === 'marks'
+              ? [
+                  { label: 'Count', value: marksCount, set: setMarksCount, min: 1, max: 16, step: 1 },
+                  { label: 'Size', value: marksSize, set: setMarksSize, min: 10, max: 80, step: 5 },
+                  { label: 'Decay', value: marksDecay, set: setMarksDecay, min: 0.5, max: 0.99, step: 0.01 },
                 ]
               : [
                   { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
