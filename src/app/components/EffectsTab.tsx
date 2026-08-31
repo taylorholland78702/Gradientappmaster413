@@ -124,6 +124,12 @@ export interface EffectsTabProps {
   // Oil Paint
   oilPaintRadius: number; setOilPaintRadius: (v: number) => void;
   oilPaintLevels: number; setOilPaintLevels: (v: number) => void;
+  // Impasto
+  impastoStrength: number; setImpastoStrength: (v: number) => void;
+  impastoLightAngle: number; setImpastoLightAngle: (v: number) => void;
+  // Brush Strokes
+  brushStrokesSize: number; setBrushStrokesSize: (v: number) => void;
+  brushStrokesLength: number; setBrushStrokesLength: (v: number) => void;
   // Watercolor
   watercolorBleed: number; setWatercolorBleed: (v: number) => void;
   watercolorGrain: number; setWatercolorGrain: (v: number) => void;
@@ -186,6 +192,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
+    impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
+    brushStrokesSize, setBrushStrokesSize, brushStrokesLength, setBrushStrokesLength,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
     glitchIntensity, setGlitchIntensity, glitchBlockSize, setGlitchBlockSize, glitchChromaSplit, setGlitchChromaSplit,
@@ -1394,6 +1402,42 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('impasto') && (
+                <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="1" max="7" step="0.1" value={impastoStrength} onChange={(e) => setImpastoStrength(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="1" max="7" step="0.1" value={impastoStrength} onChange={(e) => setImpastoStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Light Angle:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="0" max="359" step="1" value={impastoLightAngle} onChange={(e) => setImpastoLightAngle(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="0" max="359" step="1" value={impastoLightAngle} onChange={(e) => setImpastoLightAngle(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('brush-strokes') && (
+                <EffectSection id="brush-strokes" label="Brush Strokes" isMulti={isMulti} expanded={!collapsedEffects.has('brush-strokes')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="8" max="33" step="1" value={brushStrokesSize} onChange={(e) => setBrushStrokesSize(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="8" max="33" step="1" value={brushStrokesSize} onChange={(e) => setBrushStrokesSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Length:</label>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input type="range" min="1.2" max="4.2" step="0.1" value={brushStrokesLength} onChange={(e) => setBrushStrokesLength(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min="1.2" max="4.2" step="0.1" value={brushStrokesLength} onChange={(e) => setBrushStrokesLength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>

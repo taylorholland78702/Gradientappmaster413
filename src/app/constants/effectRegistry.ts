@@ -15,6 +15,7 @@ import { applyAuraGlow } from '../hooks/effects/applyAuraGlow';
 import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
+import { applyBrushStrokesWorkerAuto } from '../hooks/effects/applyBrushStrokesWorkerAuto';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
 import { applyCrt } from '../hooks/effects/applyCrt';
@@ -29,6 +30,7 @@ import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
 import { applyHalftoneWorkerAuto } from '../hooks/effects/applyHalftoneWorkerAuto';
+import { applyImpasto } from '../hooks/effects/applyImpasto';
 import { applyInvert } from '../hooks/effects/applyInvert';
 import { applyKaleidoscope } from '../hooks/effects/applyKaleidoscope';
 import { applyLiquid } from '../hooks/effects/applyLiquid';
@@ -158,6 +160,11 @@ const EFFECT_REGISTRY = {
   'aura-glow': { drawFn: applyAuraGlow, label: 'Aura Glow', cost: 2, category: ['Aura Glow'], audio: true },
   bloom: { drawFn: applyBloom, label: 'Bloom', cost: 1, category: ['Bloom'], audio: true },
   blur: { drawFn: applyBlurAuto, label: 'Blur', cost: 2, category: ['Blur'], audio: true },
+  // Rotated, elongated daubs following the local brightness contour (a
+  // classic non-photorealistic-rendering trick — strokes read as painted
+  // along the shape rather than a uniform hatch). Same per-cell-shape cost
+  // tier as Grid, so Worker-backed like it.
+  'brush-strokes': { drawFn: applyBrushStrokesWorkerAuto, label: 'Brush Strokes', cost: 3, category: ['Brush Strokes'], audio: false },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrailsWorkerAuto, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
@@ -189,6 +196,13 @@ const EFFECT_REGISTRY = {
   // applyHalftone.ts) that's several times costlier than a single-pass
   // per-pixel effect, so this sits a tier above Dither/Triangulate/Grid.
   halftone: { drawFn: applyHalftoneWorkerAuto, label: 'Halftone', cost: 4, category: ['Halftone'], audio: false },
+  // Sobel-derived normal map relit against a directional light — the bump
+  // exaggeration + light angle actually simulate raised paint catching and
+  // losing light, distinct from Oil Paint's flat color-daub look. Runs
+  // synchronously like Oil Paint (see its comment above on why a Worker's
+  // one-frame-stale handoff can race the idle-skip optimization) — its
+  // working resolution is capped the same way for the same reason.
+  impasto: { drawFn: applyImpasto, label: 'Impasto', cost: 4, category: ['Impasto'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
   // Same under-pricing issue as fisheye above — full-res per-pixel

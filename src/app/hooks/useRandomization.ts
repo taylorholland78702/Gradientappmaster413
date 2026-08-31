@@ -83,7 +83,7 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
     setGlitchIntensity, setGlitchBlockSize, setGlitchChromaSplit,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
-    setOilPaintRadius, setOilPaintLevels, setWatercolorBleed, setWatercolorGrain,
+    setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
@@ -290,6 +290,14 @@ export function useRandomization(params: RandomizationParams) {
     // Oil Paint
     setOilPaintRadius(Math.floor(Math.random() * 6) + 1);                // 1–6
     setOilPaintLevels(Math.floor(Math.random() * 33) + 8);               // 8–40
+
+    // Impasto
+    setImpastoStrength(Math.random() * 6 + 1);                           // 1–7
+    setImpastoLightAngle(Math.floor(Math.random() * 360));               // 0–359
+
+    // Brush Strokes
+    setBrushStrokesSize(Math.floor(Math.random() * 26) + 8);             // 8–33
+    setBrushStrokesLength(Math.random() * 3 + 1.2);                      // 1.2–4.2
 
     // Watercolor — style itself is left alone here (it's a curated preset,
     // not a continuous slider), just Bleed/Grain.
