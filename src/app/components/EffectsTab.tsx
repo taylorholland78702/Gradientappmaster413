@@ -640,7 +640,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={!collapsedEffects.has('vignette')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
+                  <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                   <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
                   <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                 </div>
@@ -799,7 +799,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   {blurType === 'gaussian' && (
                     <div className="flex items-center justify-between gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                       <div className="flex items-center gap-1 flex-1">
                         <input
                           type="range"
@@ -823,7 +823,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   {blurType === 'motion' && (
                     <>
                       <div className="flex items-center justify-between gap-1">
-                        <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                        <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                         <div className="flex items-center gap-1 flex-1">
                           <input
                             type="range"
@@ -868,7 +868,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   )}
                   {(blurType === 'radial' || blurType === 'zoom') && (
                     <div className="flex items-center justify-between gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
+                      <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                       <div className="flex items-center gap-1 flex-1">
                         <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
                         <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
@@ -1298,7 +1298,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input
                         type="range"
@@ -1539,7 +1539,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
+                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
