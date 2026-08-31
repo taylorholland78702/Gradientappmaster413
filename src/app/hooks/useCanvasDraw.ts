@@ -285,6 +285,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // it just no longer needs to reconstruct this closure to do it).
     const av = animValuesRef.current;
     const auroraAnimTime = av.auroraAnimTime;
+    const turrellAnimTime = av.turrellAnimTime;
     const causticsAnimTime = av.causticsAnimTime;
     const lavaAnimTime = av.lavaAnimTime;
     const marbleAnimTime = av.marbleAnimTime;
@@ -520,7 +521,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
-      auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
+      auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
       moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
       voronoiAnimTime, flowerAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
