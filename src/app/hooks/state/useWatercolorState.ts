@@ -11,7 +11,7 @@ export function useWatercolorState() {
   // Style — Watercolor/Gouache/Ink Wash all share the same warp+smear+
   // pooling+grain pipeline (applyWatercolor.ts); this only selects which
   // multipliers and finishing pass (posterize/desaturate) it uses.
-  const [watercolorStyle, setWatercolorStyle] = useState<WatercolorStyle>('watercolor');
+  const [watercolorStyle, setWatercolorStyle] = useState<WatercolorStyle>('gouache');
 
   return {
     watercolorBleed,
