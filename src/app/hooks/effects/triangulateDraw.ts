@@ -34,11 +34,42 @@ export function drawTrianglePixels(ctx: TriangulateDrawCtx, opts: TriangulateDra
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
 
+  // A single nearest-pixel sample per triangle aliases away thin/sparse
+  // source content (a fine trail, a hairline, a scatter of dots) almost
+  // entirely at a large triangleSize: the odds of that one point landing
+  // on the sparse content — rather than the much larger surrounding empty
+  // area — are low, so nearly every triangle samples background and the
+  // whole effect reads as solid black even though the source clearly
+  // isn't. Averaging a small fixed grid of points across each triangle's
+  // footprint instead makes the sampled color a real area estimate, so a
+  // triangle that's mostly background but partly covered by a thin trail
+  // comes out dim rather than a coin-flip between "full color" and
+  // "black". Grid resolution scales mildly with cell size (capped) since
+  // a bigger triangle needs more samples to represent its area well, but
+  // stays cheap — worst case 5x5=25 samples, vs. the O(cell area) cost of
+  // a true average.
+  const sampleGrid = Math.max(1, Math.min(5, Math.round(tSz / 20)));
   const sample = (px: number, py: number): [number, number, number] => {
-    const sx = Math.max(0, Math.min(sampleWidth - 1, Math.round(px)));
-    const sy = Math.max(0, Math.min(sampleHeight - 1, Math.round(py)));
-    const i = (sy * sampleWidth + sx) * 4;
-    return [pixels[i], pixels[i + 1], pixels[i + 2]];
+    if (sampleGrid === 1) {
+      const sx = Math.max(0, Math.min(sampleWidth - 1, Math.round(px)));
+      const sy = Math.max(0, Math.min(sampleHeight - 1, Math.round(py)));
+      const i = (sy * sampleWidth + sx) * 4;
+      return [pixels[i], pixels[i + 1], pixels[i + 2]];
+    }
+    const radius = (tSz / 3) * resolutionMultiplier;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let gy = 0; gy < sampleGrid; gy++) {
+      for (let gx = 0; gx < sampleGrid; gx++) {
+        const ox = ((gx + 0.5) / sampleGrid - 0.5) * radius * 2;
+        const oy = ((gy + 0.5) / sampleGrid - 0.5) * radius * 2;
+        const sx = Math.max(0, Math.min(sampleWidth - 1, Math.round(px + ox)));
+        const sy = Math.max(0, Math.min(sampleHeight - 1, Math.round(py + oy)));
+        const i = (sy * sampleWidth + sx) * 4;
+        r += pixels[i]; g += pixels[i + 1]; b += pixels[i + 2];
+        n++;
+      }
+    }
+    return [r / n, g / n, b / n];
   };
 
   const tHalfCols = Math.ceil(displayWidth / tSz / 2) + 1;
