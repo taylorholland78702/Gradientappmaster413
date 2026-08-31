@@ -1,24 +1,11 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2 } from '../../utils/valueNoise';
 
-// Working resolution cap — same reasoning as oilPaintDownscale.ts/
-// applyWatercolor.ts: keeps cost roughly constant regardless of the real
-// canvas size, and keeps panel/border sizes (defined in absolute pixels)
-// looking consistent across screen sizes too.
+// Working resolution cap — see downscaleCapture.ts. Keeps cost roughly
+// constant regardless of the real canvas size, and keeps panel/border sizes
+// (defined in absolute pixels) looking consistent across screen sizes too.
 const MAX_DIM = 640;
-let smallCanvas: HTMLCanvasElement | null = null;
-
-function captureDownscaled(canvas: HTMLCanvasElement, w: number, h: number): ImageData {
-  if (!smallCanvas) smallCanvas = document.createElement('canvas');
-  if (smallCanvas.width !== w || smallCanvas.height !== h) {
-    smallCanvas.width = w;
-    smallCanvas.height = h;
-  }
-  const sctx = smallCanvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
-  sctx.clearRect(0, 0, w, h);
-  sctx.drawImage(canvas, 0, 0, w, h);
-  return sctx.getImageData(0, 0, w, h);
-}
 
 // Photomontage cut-up: slices whatever's already on the canvas into a grid
 // of panels, then reassembles it with each panel reading from a different
@@ -31,12 +18,8 @@ export function applyDada(P: any): void { // eslint-disable-line @typescript-esl
   const { displayWidth, displayHeight, dadaPanels, dadaChaos, ctx, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
-  const longEdge = Math.max(displayWidth, displayHeight, 1);
-  const scale = Math.min(1, MAX_DIM / longEdge);
-  const w = Math.max(1, Math.round(displayWidth * scale));
-  const h = Math.max(1, Math.round(displayHeight * scale));
-
-  const src = captureDownscaled(canvas, w, h);
+  const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
+  const src = captureDownscaledSource('dada', canvas, w, h);
   const s = src.data;
   const out = getScratchImageData('dada', ctx, w, h);
   const o = out.data;

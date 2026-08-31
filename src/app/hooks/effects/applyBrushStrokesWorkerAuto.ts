@@ -1,7 +1,7 @@
 // Web Worker-backed Auto wrapper for Brush Strokes — same shape as
 // applyGridEffectWorkerAuto.ts (see applyHalftoneWorkerAuto.ts for the
 // fuller explanation of the one-frame-latency tradeoff).
-import { getScratchCanvas } from '../../utils/scratchCanvas';
+import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { applyBrushStrokes } from './applyBrushStrokes';
 import type { BrushStrokesWorkerRequest, BrushStrokesWorkerResponse } from './brushStrokesWorker';
 
@@ -65,16 +65,8 @@ export function applyBrushStrokesWorkerAuto(P: any): void { // eslint-disable-li
   if (!pending) {
     pending = true;
     try {
-      const longEdge = Math.max(displayWidth, displayHeight, 1);
-      const scale = Math.min(1, MAX_DIM / longEdge);
-      const w = Math.max(1, Math.round(displayWidth * scale));
-      const h = Math.max(1, Math.round(displayHeight * scale));
-      const tempCanvas = getScratchCanvas('brushStrokesWorkerSnapshot', w, h);
-      const bCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-      if (!bCtx) throw new Error('no 2d context for snapshot');
-      bCtx.clearRect(0, 0, w, h);
-      bCtx.drawImage(canvas, 0, 0, w, h);
-      const snapshot = bCtx.getImageData(0, 0, w, h);
+      const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
+      const snapshot = captureDownscaledSource('brushStrokesWorkerSnapshot', canvas, w, h);
 
       const wk = getWorker();
       const request: BrushStrokesWorkerRequest = {

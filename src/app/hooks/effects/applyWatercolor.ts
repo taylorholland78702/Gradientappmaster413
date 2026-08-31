@@ -1,27 +1,14 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2, valueNoise } from '../../utils/valueNoise';
 
-// Working resolution cap — same reasoning as oilPaintDownscale.ts: the
-// smear below samples several taps per pixel plus a handful of noise
-// evaluations, cheap at the ~800px this was developed at but scales with
-// real window size, so a large display could turn this from "one pass" to
-// "visibly janky" without a bound. 640 keeps the wash texture's scale
-// (which is defined in absolute pixels) looking consistent across screen
-// sizes too, not just fast.
+// Working resolution cap — see downscaleCapture.ts. The smear below samples
+// several taps per pixel plus a handful of noise evaluations, cheap at the
+// ~800px this was developed at but scales with real window size, so a large
+// display could turn this from "one pass" to "visibly janky" without a
+// bound. 640 keeps the wash texture's scale (which is defined in absolute
+// pixels) looking consistent across screen sizes too, not just fast.
 const MAX_DIM = 640;
-let smallCanvas: HTMLCanvasElement | null = null;
-
-function captureDownscaled(canvas: HTMLCanvasElement, w: number, h: number): ImageData {
-  if (!smallCanvas) smallCanvas = document.createElement('canvas');
-  if (smallCanvas.width !== w || smallCanvas.height !== h) {
-    smallCanvas.width = w;
-    smallCanvas.height = h;
-  }
-  const sctx = smallCanvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
-  sctx.clearRect(0, 0, w, h);
-  sctx.drawImage(canvas, 0, 0, w, h);
-  return sctx.getImageData(0, 0, w, h);
-}
 
 // Gouache and Ink Wash are the same underlying mechanism (coherent warp +
 // smear + edge pooling + paper grain) as Watercolor — real gouache and ink
@@ -48,12 +35,8 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
   if (canvas.width === 0 || canvas.height === 0) return;
   const style = WATERCOLOR_STYLES[watercolorStyle] || WATERCOLOR_STYLES.watercolor;
 
-  const longEdge = Math.max(displayWidth, displayHeight, 1);
-  const scale = Math.min(1, MAX_DIM / longEdge);
-  const w = Math.max(1, Math.round(displayWidth * scale));
-  const h = Math.max(1, Math.round(displayHeight * scale));
-
-  const src = captureDownscaled(canvas, w, h);
+  const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
+  const src = captureDownscaledSource('watercolor', canvas, w, h);
   const s = src.data;
   const out = getScratchImageData('watercolor', ctx, w, h);
   const o = out.data;
