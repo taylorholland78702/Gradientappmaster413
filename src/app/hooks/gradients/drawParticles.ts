@@ -103,6 +103,15 @@ export function drawParticles(P: any): CanvasGradient | undefined {
               }
               st.baseline += (level - st.baseline) * 0.04;
               st.cooldown = Math.max(0, st.cooldown - 1);
+              // A quiet track (or audio enabled with no real signal
+              // reaching the analyser) can go long stretches — or forever
+              // — without a level ever spiking past the onset threshold,
+              // which used to leave every mark sitting at level 0
+              // indefinitely: a black canvas. This ambient floor, tracked
+              // independently of the onset baseline, guarantees marks
+              // stay dimly present the whole time audio is on, with real
+              // onsets still blooming clearly on top of it.
+              st.ambient += (level - st.ambient) * 0.05;
             } else {
               // No audio: a slow, staggered breathing cycle so the marks
               // read as quietly present rather than simply switched off.
@@ -115,16 +124,18 @@ export function drawParticles(P: any): CanvasGradient | undefined {
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, displayWidth, displayHeight);
 
+            const ambientFloor = marksAudio ? Math.min(0.5, 0.15 + st.ambient * 0.4) : 0;
             for (let i = 0; i < st.marks.length; i++) {
               const m = st.marks[i];
               if (marksAudio) m.level *= decay;
-              if (m.level < 0.02) continue;
+              const displayLevel = Math.max(m.level, ambientFloor);
+              if (displayLevel < 0.02) continue;
               const color = gradientColors[i % gradientColors.length] || { r: 255, g: 255, b: 255 };
-              const radius = marksSize * (0.4 + m.level * 0.8);
+              const radius = marksSize * (0.4 + displayLevel * 0.8);
               const x = m.nx * displayWidth;
               const y = m.ny * displayHeight;
               const markGrad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-              const alpha = Math.min(1, m.level);
+              const alpha = Math.min(1, displayLevel);
               markGrad.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`);
               markGrad.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
               ctx.fillStyle = markGrad;

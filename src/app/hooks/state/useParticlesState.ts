@@ -26,10 +26,11 @@ export function useParticlesState() {
   const marksStateRef = useRef<{
     marks: { nx: number; ny: number; level: number }[];
     baseline: number;
+    ambient: number;
     cooldown: number;
     index: number;
     time: number;
-  }>({ marks: [], baseline: 0, cooldown: 0, index: 0, time: 0 });
+  }>({ marks: [], baseline: 0, ambient: 0, cooldown: 0, index: 0, time: 0 });
 
   return {
     particlesCount,
