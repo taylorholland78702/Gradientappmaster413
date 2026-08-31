@@ -12,6 +12,11 @@ let worker: Worker | null = null;
 let workerFailed = false;
 let pending = false;
 let lastResult: { imageData: ImageData; displayWidth: number; displayHeight: number } | null = null;
+// Captured on every applyGridEffectWorkerAuto call so the onmessage handler
+// below — set up once, lazily, and long-lived across calls — can still
+// reach whichever component instance's ref is current. See the wake-up
+// comment in that handler for why this exists.
+let latestDirtyRef: { current: boolean } | null = null;
 
 export function detectGridEffectWorkerSupport(): boolean {
   return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined' && !workerFailed;
@@ -28,6 +33,18 @@ function getWorker(): Worker {
         displayWidth,
         displayHeight,
       };
+      // The main draw loop stops calling draw() once colors/angle/zoom have
+      // converged and nothing else is animating (see InteractiveGradient.tsx's
+      // isAnimating/hasConverged check) — for a static gradient this can
+      // happen within a couple of frames. If that convergence lands right as
+      // this response arrives, the freshly-computed (correct) result would
+      // never actually get painted: the loop already stopped calling draw(),
+      // so whatever was on screen the moment it went idle — possibly an
+      // in-between frame from a rapid effect toggle — stays there
+      // indefinitely. Marking dirty forces at least one more draw so this
+      // result is the one that ends up on screen before the loop goes idle
+      // again.
+      if (latestDirtyRef) latestDirtyRef.current = true;
     };
     worker.onerror = (err) => {
       console.error('Grid effect worker failed, falling back to main thread:', err);
@@ -44,8 +61,9 @@ export function applyGridEffectWorkerAuto(P: any): void { // eslint-disable-line
     return;
   }
 
-  const { canvas, displayWidth, displayHeight, gridRows, gridColumns, gridShapeSize, gridSides, gridRotation, gridVariation, putScaledImageData } = P;
+  const { canvas, displayWidth, displayHeight, gridRows, gridColumns, gridShapeSize, gridSides, gridRotation, gridVariation, putScaledImageData, drawParamsDirtyRef } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
+  if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
 
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyGridEffect(P);

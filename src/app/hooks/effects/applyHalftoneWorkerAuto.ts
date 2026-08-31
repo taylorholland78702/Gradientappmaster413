@@ -19,6 +19,8 @@ let worker: Worker | null = null;
 let workerFailed = false;
 let pending = false;
 let lastResult: { imageData: ImageData; displayWidth: number; displayHeight: number } | null = null;
+// See applyGridEffectWorkerAuto.ts for why this exists.
+let latestDirtyRef: { current: boolean } | null = null;
 
 export function detectHalftoneWorkerSupport(): boolean {
   return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined' && !workerFailed;
@@ -35,6 +37,11 @@ function getWorker(): Worker {
         displayWidth,
         displayHeight,
       };
+      // Wakes the idle-skip main loop so this fresh result actually gets
+      // painted instead of possibly freezing on an in-between frame — see
+      // applyGridEffectWorkerAuto.ts's onmessage handler for the full
+      // explanation.
+      if (latestDirtyRef) latestDirtyRef.current = true;
     };
     // Any worker-level failure (e.g. OffscreenCanvas 2D context creation
     // throwing on a browser that lied about supporting it) permanently
@@ -55,8 +62,9 @@ export function applyHalftoneWorkerAuto(P: any): void { // eslint-disable-line @
     return;
   }
 
-  const { imageData, displayWidth, displayHeight, centerX, centerY, halftoneSize, halftoneCMYK, halftoneMove, halftoneVariation, halftoneTimeRef, putScaledImageData } = P;
+  const { imageData, displayWidth, displayHeight, centerX, centerY, halftoneSize, halftoneCMYK, halftoneMove, halftoneVariation, halftoneTimeRef, putScaledImageData, drawParamsDirtyRef } = P;
   if (!imageData) return;
+  if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
 
   // No completed result yet (first-ever call, or the last one was
   // discarded below for a size mismatch) — draw synchronously this one

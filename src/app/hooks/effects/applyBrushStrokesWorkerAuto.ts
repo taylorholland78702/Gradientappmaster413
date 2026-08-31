@@ -11,6 +11,8 @@ let worker: Worker | null = null;
 let workerFailed = false;
 let pending = false;
 let lastResult: { imageData: ImageData; displayWidth: number; displayHeight: number } | null = null;
+// See applyGridEffectWorkerAuto.ts for why this exists.
+let latestDirtyRef: { current: boolean } | null = null;
 
 export function detectBrushStrokesWorkerSupport(): boolean {
   return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined' && !workerFailed;
@@ -27,6 +29,11 @@ function getWorker(): Worker {
         displayWidth,
         displayHeight,
       };
+      // Wakes the idle-skip main loop so this fresh result actually gets
+      // painted instead of possibly freezing on an in-between frame — see
+      // applyGridEffectWorkerAuto.ts's onmessage handler for the full
+      // explanation.
+      if (latestDirtyRef) latestDirtyRef.current = true;
     };
     worker.onerror = (err) => {
       console.error('Brush Strokes worker failed, falling back to main thread:', err);
@@ -43,8 +50,9 @@ export function applyBrushStrokesWorkerAuto(P: any): void { // eslint-disable-li
     return;
   }
 
-  const { canvas, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, putScaledImageData } = P;
+  const { canvas, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, putScaledImageData, drawParamsDirtyRef } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
+  if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
 
   if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
     applyBrushStrokes(P);
