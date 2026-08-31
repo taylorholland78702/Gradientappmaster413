@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Shared post-processing controls for scalar-field gradients (Reaction-
-// Diffusion, Marble, Caustics, Topographic, Julia, Plasma). A single field
+// Diffusion, Marble, Caustics, Topographic, Julia). A single field
 // each rather than one per gradient — only one gradient type is ever active
 // at a time, so there's no need for e.g. marbleFieldContrast vs
 // causticsFieldContrast as separate persisted values.

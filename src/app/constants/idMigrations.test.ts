@@ -22,7 +22,7 @@ describe('ID_MIGRATIONS', () => {
   });
 
   it('migrateId passes through unknown ids unchanged', () => {
-    expect(migrateId('plasma')).toBe('plasma');
+    expect(migrateId('noise')).toBe('noise');
     expect(migrateId('totally-unknown-id')).toBe('totally-unknown-id');
   });
 

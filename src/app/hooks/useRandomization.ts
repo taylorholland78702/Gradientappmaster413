@@ -25,7 +25,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
-  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], plasma: ['Plasma'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
+  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
   stack: ['Stack'],
@@ -67,7 +67,7 @@ export function useRandomization(params: RandomizationParams) {
     setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides,
     setMarksCount, setMarksSize, setMarksDecay,
     setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset,
-    plasmaSpeed, randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
+    randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
     setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset,
@@ -77,7 +77,7 @@ export function useRandomization(params: RandomizationParams) {
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
-    setNoiseType, setNoiseWarp, setPlasmaZoomScale, setRadialSizeScale, setVignetteSoftness, setWaveDistortionRotation,
+    setNoiseType, setNoiseWarp, setRadialSizeScale, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
@@ -94,7 +94,7 @@ export function useRandomization(params: RandomizationParams) {
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
-    setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize, setPlasmaComplexity, setPlasmaSpeed,
+    setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
@@ -287,7 +287,7 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicLineWidth(Math.random() * 0.14 + 0.01);               // 0.01–0.15
 
     // Shared field-mapping controls (Reaction-Diffusion/Marble/Caustics/
-    // Topographic/Julia/Plasma/Fade's Contrast/Palette Mode/Bands).
+    // Topographic/Julia/Fade's Contrast/Palette Mode/Bands).
     setFieldContrast(Math.random() * 2.7 + 0.3);                        // 0.3–3
     setPaletteMode((['linear', 'banded', 'cyclic'] as const)[Math.floor(Math.random() * 3)]);
     setPaletteBands(Math.floor(Math.random() * 15) + 2);                // 2–16
@@ -339,7 +339,6 @@ export function useRandomization(params: RandomizationParams) {
     setNoiseWarp(Math.random());                                          // 0–1
     setFadeDirection(Math.floor(Math.random() * 361));                   // 0–360
     setGridRotationDirection((['none', 'clockwise', 'counterclockwise'] as const)[Math.floor(Math.random() * 3)]);
-    setPlasmaZoomScale(Math.random() * 4.9 + 0.1);                       // 0.1–5
     setRadialSizeScale(Math.random() * 3.75 + 0.25);                     // 0.25–4
     setVignetteSoftness(Math.floor(Math.random() * 101));                // 0–100
     setWaveDistortionRotation(Math.floor(Math.random() * 361));          // 0–360
@@ -393,8 +392,6 @@ export function useRandomization(params: RandomizationParams) {
     setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
     setNoiseOctaves(Math.floor(Math.random() * 5) + 2);               // 2–6
     setNoiseDirection(Math.floor(Math.random() * 360));
-    setPlasmaSpeed(Math.random() * 3 + 0.5);                          // 0.5–3.5
-    setPlasmaComplexity(Math.floor(Math.random() * 7) + 2);           // 2–8
     setRadialBurstCount(Math.floor(Math.random() * 14) + 4);          // 4–17
     setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
     setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
@@ -662,8 +659,6 @@ export function useRandomization(params: RandomizationParams) {
       if (baseResult.data.pixelSize) setPixelSize(Math.round(blendValue(baseResult.data.pixelSize, 5, 54)));
       if (baseResult.data.vignetteStrength) setVignetteStrength(blendValue(baseResult.data.vignetteStrength, 0, 1));
       if (baseResult.data.windmillTightness) setWindmillTightness(Math.round(blendValue(baseResult.data.windmillTightness, 1, 20)));
-      if (baseResult.data.plasmaSpeed) setPlasmaSpeed(blendValue(baseResult.data.plasmaSpeed, 0.25, 5));
-      
       // Randomize remaining parameters normally
       setTriangleSize(Math.floor(Math.random() * 80) + 20);
       setChromaticOffset(Math.floor(Math.random() * 20) + 1);
@@ -888,7 +883,6 @@ export function useRandomization(params: RandomizationParams) {
     // lightning).
     if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
-    else if (gradientType === 'plasma') setPlasmaSpeed(rng(0.5, 3.5));
     else if (gradientType === 'shapes') { setConcentricRingWidth(Math.round(rng(20, 180))); setPolygon2Sides(Math.round(rng(1, 24))); }
     else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); setRadarBeamWidth(Math.round(rng(1, 90))); }
     else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }

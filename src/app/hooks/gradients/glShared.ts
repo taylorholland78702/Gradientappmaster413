@@ -1,5 +1,5 @@
-// Shared WebGL2 infrastructure for the per-pixel "field" gradients (Plasma,
-// Noise, ...) — the ones that are a pure function of (x, y, t) with no
+// Shared WebGL2 infrastructure for the per-pixel "field" gradients (Noise,
+// ...) — the ones that are a pure function of (x, y, t) with no
 // simulation state, unlike Reaction-Diffusion's ping-ponged framebuffers
 // (drawReactionDiffusionGL.ts, which stays self-contained and untouched —
 // its capability bar (float framebuffers) is stricter than what these need,

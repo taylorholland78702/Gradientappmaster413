@@ -118,7 +118,7 @@ export interface GradientsTabProps {
   reactionDiffusionKill: number; setReactionDiffusionKill: (v: number) => void;
   reactionDiffusionSpeed: number; setReactionDiffusionSpeed: (v: number) => void;
 
-  // Shared field mapping (Reaction-Diffusion, Marble, Caustics, Topographic, Julia, Plasma, Wave Interference, Mesh Wireframe)
+  // Shared field mapping (Reaction-Diffusion, Marble, Caustics, Topographic, Julia, Wave Interference, Mesh Wireframe)
   fieldContrast: number; setFieldContrast: (v: number) => void;
   paletteMode: 'linear' | 'banded' | 'cyclic'; setPaletteMode: (v: 'linear' | 'banded' | 'cyclic') => void;
   paletteBands: number; setPaletteBands: (v: number) => void;
@@ -175,10 +175,6 @@ export interface GradientsTabProps {
   noiseDirection: number; setNoiseDirection: (v: number) => void;
   noiseWarp: number; setNoiseWarp: (v: number) => void;
   noiseType: 'smooth' | 'ridged'; setNoiseType: (t: 'smooth' | 'ridged') => void;
-
-  // Plasma
-  plasmaComplexity: number; setPlasmaComplexity: (v: number) => void;
-  plasmaZoomScale: number; setPlasmaZoomScale: (v: number) => void;
 
   // Radial Burst
   radialBurstCount: number; setRadialBurstCount: (v: number) => void;
@@ -245,7 +241,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
     drawParamsDirtyRef,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
-    plasmaComplexity, setPlasmaComplexity, plasmaZoomScale, setPlasmaZoomScale,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
     radialBurstMode, setRadialBurstMode,
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
@@ -1343,26 +1338,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Plasma Gradient Controls */}
-        {gradientType === 'plasma' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {renderFieldMappingRows()}
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Complexity:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="1" max="10" value={plasmaComplexity} onChange={(e) => setPlasmaComplexity(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="5" step="0.1" value={plasmaZoomScale} onChange={(e) => setPlasmaZoomScale(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Radial Controls */}
         {gradientType === 'radial' && (

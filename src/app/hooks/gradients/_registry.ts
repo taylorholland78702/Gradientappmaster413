@@ -7,7 +7,6 @@ import { drawFade } from './drawFade';
 import { drawNoise } from './drawNoise';
 import { drawTopographic } from './drawTopographic';
 import { drawJulia } from './drawJulia';
-import { drawPlasma } from './drawPlasma';
 import { drawGrid } from './drawGrid';
 import { drawRadialBurst } from './drawRadialBurst';
 import { drawVoronoi } from './drawVoronoi';
@@ -18,7 +17,6 @@ import { drawMarble } from './drawMarble';
 import { drawMetaballs } from './drawMetaballs';
 import { drawTruchet } from './drawTruchet';
 import { drawMoire } from './drawMoire';
-import { drawPlasmaGL, detectPlasmaGLSupport } from './drawPlasmaGL';
 import { drawNoiseGL, detectNoiseGLSupport } from './drawNoiseGL';
 import { drawAngleGL, detectAngleGLSupport } from './drawAngleGL';
 import { drawCausticsGL, detectCausticsGLSupport } from './drawCausticsGL';
@@ -106,21 +104,6 @@ const drawLightningLazy = lazyGradient(() =>
     },
   ),
 );
-
-// Same dispatch pattern as Reaction-Diffusion above, gated on the much
-// lighter detectFieldGLSupport check (plain WebGL2, no float-framebuffer
-// requirement) — see glShared.ts and drawPlasmaGL.ts for why these two
-// checks are kept separate rather than shared.
-function drawPlasmaAuto(P: any): CanvasGradient | undefined {
-  if (detectPlasmaGLSupport()) {
-    try {
-      return drawPlasmaGL(P);
-    } catch (err) {
-      console.error('WebGL Plasma failed, falling back to CPU:', err);
-    }
-  }
-  return drawPlasma(P);
-}
 
 function drawNoiseAuto(P: any): CanvasGradient | undefined {
   if (detectNoiseGLSupport()) {
@@ -274,7 +257,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'noise': drawNoiseAuto,
   'topographic': drawTopographicAuto,
   'julia': drawJuliaAuto,
-  'plasma': drawPlasmaAuto,
   'grid': drawGrid,
   'radial-burst': drawRadialBurstAuto,
   'voronoi': drawVoronoiAuto,

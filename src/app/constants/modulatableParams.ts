@@ -136,8 +136,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'particlesGravity', label: 'Particles Gravity', category: 'Particles', min: 0.0, max: 3.0 },
   { key: 'photoOpacity', label: 'Photo Opacity', category: 'Photo', min: 0.0, max: 100.0 },
   { key: 'pixelSize', label: 'Pixel Size', category: 'Pixelate', min: 5.0, max: 200.0 },
-  { key: 'plasmaComplexity', label: 'Plasma Complexity', category: 'Plasma', min: 1.0, max: 10.0 },
-  { key: 'plasmaZoomScale', label: 'Plasma Zoom Scale', category: 'Plasma', min: 0.1, max: 5.0 },
   { key: 'posterizeLevels', label: 'Posterize Levels', category: 'Posterize', min: 2.0, max: 16.0 },
   { key: 'radarBeamWidth', label: 'Radar Beam Width', category: 'Radar', min: 1.0, max: 90.0 },
   { key: 'radarFadeLength', label: 'Radar Fade Length', category: 'Radar', min: 10.0, max: 180.0 },

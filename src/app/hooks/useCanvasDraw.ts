@@ -10,7 +10,6 @@ import { EFFECT_DRAW_FNS } from './effects/_registry';
 import { runGLEffectChain, type GLEffectStage } from './effects/glEffectPipeline';
 import { detectLiquidGLSupport, getLiquidGLStage } from './effects/applyLiquidGL';
 import { detectBlurGLSupport, getBlurZoomGLStage, getBlurRadialGLStage } from './effects/applyBlurGL';
-import { detectPlasmaGLSupport, getPlasmaGLStage } from './gradients/drawPlasmaGL';
 import { detectNoiseGLSupport, getNoiseGLStage } from './gradients/drawNoiseGL';
 import { detectAngleGLSupport, getAngleGLStage } from './gradients/drawAngleGL';
 import { detectCausticsGLSupport, getCausticsGLStage } from './gradients/drawCausticsGL';
@@ -29,15 +28,14 @@ import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
 import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL';
 
 // Phase-3 pilot: which gradients (given their live params) can lead a
-// GL-pipeline run. Plasma plus the 12 other field-shader gradients that
-// share glShared.ts's infra — Radial Burst and Windmill are mode-gated
+// GL-pipeline run. The field-shader gradients that share glShared.ts's
+// infra — Radial Burst and Windmill are mode-gated
 // (only their 'sweep'/'helix' submodes have a GL renderer at all; their
 // default modes already draw via native canvas ops and aren't part of
 // this). Mirrors each gradient's own Auto-wrapper eligibility check in
 // gradients/_registry.ts.
 function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
   switch (gradientType) {
-    case 'plasma': return detectPlasmaGLSupport() ? getPlasmaGLStage(drawCtx) : null;
     case 'noise': return detectNoiseGLSupport() ? getNoiseGLStage(drawCtx) : null;
     // angleHardEdge forces the CPU path below (drawAngle.ts) since the GL
     // shader doesn't implement the hard-edge nearest-stop lookup — the GL
@@ -692,7 +690,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
 
       // For gradients that use the gradient variable (not direct pixel manipulation)
-      const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'plasma', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
+      const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
       if (!directRenderTypes.includes(gradientType)) {
         if (gradient) {
           // Only Radial ever returns a real (unstopped) CanvasGradient
