@@ -1,84 +1,24 @@
-// Web Worker-backed Auto wrapper for Brush Strokes — same shape as
-// applyGridEffectWorkerAuto.ts (see applyHalftoneWorkerAuto.ts for the
-// fuller explanation of the one-frame-latency tradeoff).
+// Web Worker-backed Auto wrapper for Brush Strokes — see
+// workerAutoEffect.ts.
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
+import { createWorkerAutoEffect } from './workerAutoEffect';
 import { applyBrushStrokes } from './applyBrushStrokes';
 import type { BrushStrokesWorkerRequest, BrushStrokesWorkerResponse } from './brushStrokesWorker';
 
 const MAX_DIM = 480;
 
-let worker: Worker | null = null;
-let workerFailed = false;
-let pending = false;
-let lastResult: { imageData: ImageData; displayWidth: number; displayHeight: number } | null = null;
-// See applyGridEffectWorkerAuto.ts for why this exists.
-let latestDirtyRef: { current: boolean } | null = null;
-
-export function detectBrushStrokesWorkerSupport(): boolean {
-  return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined' && !workerFailed;
-}
-
-function getWorker(): Worker {
-  if (!worker) {
-    worker = new Worker(new URL('./brushStrokesWorker.ts', import.meta.url), { type: 'module' });
-    worker.onmessage = (e: MessageEvent<BrushStrokesWorkerResponse>) => {
-      pending = false;
-      const { buffer, displayWidth, displayHeight } = e.data;
-      lastResult = {
-        imageData: new ImageData(new Uint8ClampedArray(buffer), displayWidth, displayHeight),
-        displayWidth,
-        displayHeight,
-      };
-      // Wakes the idle-skip main loop so this fresh result actually gets
-      // painted instead of possibly freezing on an in-between frame — see
-      // applyGridEffectWorkerAuto.ts's onmessage handler for the full
-      // explanation.
-      if (latestDirtyRef) latestDirtyRef.current = true;
+export const applyBrushStrokesWorkerAuto = createWorkerAutoEffect<BrushStrokesWorkerRequest, BrushStrokesWorkerResponse>({
+  workerUrl: new URL('./brushStrokesWorker.ts', import.meta.url),
+  effectName: 'Brush Strokes',
+  cpuFallback: applyBrushStrokes,
+  shouldRun: (P) => P.canvas.width !== 0 && P.canvas.height !== 0,
+  buildRequest: (P) => {
+    const { canvas, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength } = P;
+    const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
+    const snapshot = captureDownscaledSource('brushStrokesWorkerSnapshot', canvas, w, h);
+    return {
+      buffer: snapshot.data.buffer,
+      extra: { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, sampleWidth: w, sampleHeight: h },
     };
-    worker.onerror = (err) => {
-      console.error('Brush Strokes worker failed, falling back to main thread:', err);
-      workerFailed = true;
-      pending = false;
-    };
-  }
-  return worker;
-}
-
-export function applyBrushStrokesWorkerAuto(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
-  if (!detectBrushStrokesWorkerSupport()) {
-    applyBrushStrokes(P);
-    return;
-  }
-
-  const { canvas, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, putScaledImageData, drawParamsDirtyRef } = P;
-  if (canvas.width === 0 || canvas.height === 0) return;
-  if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
-
-  if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
-    applyBrushStrokes(P);
-  } else {
-    // putScaledImageData, not raw ctx.putImageData — see
-    // applyHalftoneWorkerAuto.ts for why.
-    putScaledImageData(lastResult.imageData);
-  }
-
-  if (!pending) {
-    pending = true;
-    try {
-      const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
-      const snapshot = captureDownscaledSource('brushStrokesWorkerSnapshot', canvas, w, h);
-
-      const wk = getWorker();
-      const request: BrushStrokesWorkerRequest = {
-        buffer: snapshot.data.buffer,
-        displayWidth, displayHeight, brushStrokesSize, brushStrokesLength,
-        sampleWidth: w, sampleHeight: h,
-      };
-      wk.postMessage(request, [request.buffer]);
-    } catch (err) {
-      console.error('Brush Strokes worker postMessage failed, falling back to main thread:', err);
-      workerFailed = true;
-      pending = false;
-    }
-  }
-}
+  },
+});

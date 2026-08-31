@@ -1,80 +1,25 @@
-// Web Worker-backed Auto wrapper for Dither — same shape as
-// applyHalftoneWorkerAuto.ts/applyGridEffectWorkerAuto.ts. No OffscreenCanvas
-// step here since ditherWorker.ts is pure array math; this wrapper still
-// needs to call the main-thread-only putScaledImageData to composite the
-// (possibly one-frame-stale) result back onto the real canvas respecting
-// DPR scaling, same as the original applyDither.ts did.
+// Web Worker-backed Auto wrapper for Dither — see workerAutoEffect.ts. No
+// OffscreenCanvas step here since ditherWorker.ts is pure array math; this
+// still calls the main-thread-only putScaledImageData (inside the shared
+// factory) to composite the (possibly one-frame-stale) result back onto the
+// real canvas respecting DPR scaling, same as the original applyDither.ts.
+import { createWorkerAutoEffect } from './workerAutoEffect';
 import { applyDither } from './applyDither';
 import type { DitherWorkerRequest, DitherWorkerResponse } from './ditherWorker';
 
-let worker: Worker | null = null;
-let workerFailed = false;
-let pending = false;
-let lastResult: { imageData: ImageData; displayWidth: number; displayHeight: number } | null = null;
-// See applyGridEffectWorkerAuto.ts for why this exists.
-let latestDirtyRef: { current: boolean } | null = null;
-
-export function detectDitherWorkerSupport(): boolean {
-  return typeof Worker !== 'undefined' && !workerFailed;
-}
-
-function getWorker(): Worker {
-  if (!worker) {
-    worker = new Worker(new URL('./ditherWorker.ts', import.meta.url), { type: 'module' });
-    worker.onmessage = (e: MessageEvent<DitherWorkerResponse>) => {
-      pending = false;
-      const { buffer, displayWidth, displayHeight } = e.data;
-      lastResult = {
-        imageData: new ImageData(new Uint8ClampedArray(buffer), displayWidth, displayHeight),
-        displayWidth,
-        displayHeight,
-      };
-      // Wakes the idle-skip main loop so this fresh result actually gets
-      // painted instead of possibly freezing on an in-between frame — see
-      // applyGridEffectWorkerAuto.ts's onmessage handler for the full
-      // explanation.
-      if (latestDirtyRef) latestDirtyRef.current = true;
+export const applyDitherWorkerAuto = createWorkerAutoEffect<DitherWorkerRequest, DitherWorkerResponse>({
+  workerUrl: new URL('./ditherWorker.ts', import.meta.url),
+  effectName: 'Dither',
+  requiresOffscreenCanvas: false,
+  cpuFallback: applyDither,
+  buildRequest: (P) => {
+    const { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, getDisplayImageData } = P;
+    // Fresh snapshot each call (getDisplayImageData always returns a new
+    // ImageData), so transferring its buffer to the worker is safe.
+    const snapshot = getDisplayImageData();
+    return {
+      buffer: snapshot.data.buffer,
+      extra: { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale },
     };
-    worker.onerror = (err) => {
-      console.error('Dither worker failed, falling back to main thread:', err);
-      workerFailed = true;
-      pending = false;
-    };
-  }
-  return worker;
-}
-
-export function applyDitherWorkerAuto(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
-  if (!detectDitherWorkerSupport()) {
-    applyDither(P);
-    return;
-  }
-
-  const { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, putScaledImageData, getDisplayImageData, drawParamsDirtyRef } = P;
-  if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
-
-  if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
-    applyDither(P);
-  } else {
-    putScaledImageData(lastResult.imageData);
-  }
-
-  if (!pending) {
-    pending = true;
-    try {
-      // Fresh snapshot each call (getDisplayImageData always returns a new
-      // ImageData), so transferring its buffer to the worker is safe.
-      const snapshot = getDisplayImageData();
-      const w = getWorker();
-      const request: DitherWorkerRequest = {
-        buffer: snapshot.data.buffer,
-        displayWidth, displayHeight, ditherType, ditherLevels, ditherScale,
-      };
-      w.postMessage(request, [request.buffer]);
-    } catch (err) {
-      console.error('Dither worker postMessage failed, falling back to main thread:', err);
-      workerFailed = true;
-      pending = false;
-    }
-  }
-}
+  },
+});
