@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'radial' | 'angle' | 'windmill' | 'fade' | 'fireworks' | 'radial-burst' | 'noise' | 'grid' | 'shapes' | 'voronoi' | 'flower' | 'aurora' | 'caustics' | 'lava-lamp' | 'lightning' | 'marble' | 'metaballs' | 'truchet' | 'moire' | 'attractor' | 'reaction-diffusion' | 'topographic' | 'julia' | 'particles' | 'tiling' | 'wave-interference' | 'mesh-wireframe' | 'stack' | 'hatch';
+export type GradientType = 'angle' | 'attractor' | 'aurora' | 'caustics' | 'fade' | 'fireworks' | 'flower' | 'grid' | 'hatch' | 'julia' | 'lava-lamp' | 'lightning' | 'marble' | 'mesh-wireframe' | 'metaballs' | 'noise' | 'particles' | 'radial' | 'radial-burst' | 'reaction-diffusion' | 'shapes' | 'stack' | 'tiling' | 'topographic' | 'truchet' | 'voronoi' | 'wave-interference' | 'windmill';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -111,34 +111,47 @@ export const WAV_MOODS = [
 ];
 
 // Display name shown in the Gradient tab for each internal GradientType id.
+// Alphabetical by display name — keep new entries sorted in.
 export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
-  angle: 'Angle', aurora: 'Aurora', caustics: 'Caustics',
-  fade: 'Fade', fireworks: 'Fireworks', flower: 'Flower',
+  angle: 'Angle',
+  attractor: 'Attractor',
+  aurora: 'Aurora',
+  caustics: 'Caustics',
+  fade: 'Fade',
+  fireworks: 'Fireworks',
+  flower: 'Flower',
   grid: 'Grid',
-  'lava-lamp': 'Lava Lamp', lightning: 'Lightning', marble: 'Marble',
-  noise: 'Noise',
-  radial: 'Radial', 'radial-burst': 'Radial Burst',
-  shapes: 'Shapes', windmill: 'Windmill',
-  voronoi: 'Voronoi',
-  metaballs: 'Metaballs', truchet: 'Truchet', moire: 'Moire',
-  attractor: 'Attractor', 'reaction-diffusion': 'Reaction-Diffusion',
-  topographic: 'Topographic', julia: 'Julia Set',
-  particles: 'Particles',
-  tiling: 'Tiling',
-  'wave-interference': 'Wave Interference',
+  hatch: 'Hatch',
+  julia: 'Julia Set',
+  'lava-lamp': 'Lava Lamp',
+  lightning: 'Lightning',
+  marble: 'Marble',
   'mesh-wireframe': 'Mesh Wireframe',
-  'stack': 'Stack',
-  'hatch': 'Hatch',
+  metaballs: 'Metaballs',
+  noise: 'Noise',
+  particles: 'Particles',
+  radial: 'Radial',
+  'radial-burst': 'Radial Burst',
+  'reaction-diffusion': 'Reaction-Diffusion',
+  shapes: 'Shapes',
+  stack: 'Stack',
+  tiling: 'Tiling',
+  topographic: 'Topographic',
+  truchet: 'Truchet',
+  voronoi: 'Voronoi',
+  'wave-interference': 'Wave Interference',
+  windmill: 'Windmill',
 };
 
-// Full gradient type list for UI
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'moire', 'noise', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill', 'stack', 'hatch'];
+// Full gradient type list for UI — alphabetical by id (matches display-name
+// order, since none of these ids and their labels disagree on sort position).
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'hatch', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'noise', 'particles', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'stack', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
-export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'noise', 'radial', 'radial-burst', 'particles', 'reaction-diffusion', 'shapes', 'tiling', 'topographic', 'voronoi', 'wave-interference', 'windmill', 'metaballs', 'truchet', 'moire', 'stack', 'hatch'];
+export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'hatch', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'noise', 'particles', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'stack', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['radial', 'radial-burst', 'shapes', 'noise', 'windmill', 'grid', 'angle', 'fade', 'flower', 'voronoi', 'aurora', 'caustics', 'lava-lamp', 'marble', 'attractor', 'julia', 'metaballs', 'moire', 'reaction-diffusion', 'topographic', 'truchet', 'particles', 'wave-interference', 'mesh-wireframe', 'stack', 'hatch'];
+export const AUDIO_GRADIENTS: GradientType[] = ['angle', 'attractor', 'aurora', 'caustics', 'fade', 'flower', 'grid', 'hatch', 'julia', 'lava-lamp', 'marble', 'mesh-wireframe', 'metaballs', 'noise', 'particles', 'radial', 'radial-burst', 'reaction-diffusion', 'shapes', 'stack', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill'];
 
 // Gradient types where click-drag should not move the gradient's center.
 // Doesn't cover Particles' 'flow-field' mode (formerly the standalone Flow

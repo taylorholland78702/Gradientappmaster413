@@ -43,7 +43,6 @@ import { applyPixelate } from '../hooks/effects/applyPixelate';
 import { applyPosterize } from '../hooks/effects/applyPosterize';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
-import { applySurrealism } from '../hooks/effects/applySurrealism';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
@@ -229,10 +228,6 @@ const EFFECT_REGISTRY = {
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
-  // Vertical melt/drip (per-column, noise-varied) plus an uncanny mirror-
-  // symmetry blend — both single-sample-plus-a-bit-more per pixel, capped
-  // working resolution like Watercolor/Dada.
-  surrealism: { drawFn: applySurrealism, label: 'Surrealism', cost: 3, category: ['Surrealism'], audio: false },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
@@ -240,7 +235,7 @@ const EFFECT_REGISTRY = {
   // Fisheye) but its per-pixel work is heavier than that tier assumes: a
   // 4-tap directional smear plus 3 valueNoise calls and a hash2 call per
   // pixel for the warp field, paper blotch, and fiber grain — comparable to
-  // or more than Dada/Surrealism, both already priced at cost 3.
+  // or more than Dada, already priced at cost 3.
   watercolor: { drawFn: applyWatercolor, label: 'Watercolor', cost: 3, category: ['Watercolor'], audio: false },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;

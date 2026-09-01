@@ -41,6 +41,7 @@ export interface GradientsTabProps {
   stackCount: number; setStackCount: (v: number) => void;
   stackGap: number; setStackGap: (v: number) => void;
   stackWidth: number; setStackWidth: (v: number) => void;
+  stackLength: number; setStackLength: (v: number) => void;
   stackResponse: number; setStackResponse: (v: number) => void;
 
   // Hatch
@@ -72,10 +73,6 @@ export interface GradientsTabProps {
   truchetVariation: number; setTruchetVariation: (v: number) => void;
   truchetThickness: number; setTruchetThickness: (v: number) => void;
 
-  // Moire
-  moireScale: number; setMoireScale: (v: number) => void;
-  moireOffset: number; setMoireOffset: (v: number) => void;
-  moireSpeed: number; setMoireSpeed: (v: number) => void;
 
   // Flow Field
   flowParticleCount: number; setFlowParticleCount: (v: number) => void;
@@ -218,14 +215,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackResponse, setStackResponse,
+    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse,
     hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
     truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
-    moireScale, setMoireScale, moireOffset, setMoireOffset, moireSpeed, setMoireSpeed,
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
@@ -517,6 +513,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Count', value: stackCount, set: setStackCount, min: 2, max: 40, step: 1 },
               { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
               { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
+              { label: 'Length', value: stackLength, set: setStackLength, min: 0.1, max: 2, step: 0.05 },
               { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
@@ -633,24 +630,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Tile Size', value: truchetSize, set: setTruchetSize, min: 15, max: 100, step: 5 },
               { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
               { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {gradientType === 'moire' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Scale', value: moireScale, set: setMoireScale, min: 3, max: 40, step: 1 },
-              { label: 'Offset', value: moireOffset, set: setMoireOffset, min: 0, max: 100, step: 1 },
-              { label: 'Speed', value: moireSpeed, set: setMoireSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>

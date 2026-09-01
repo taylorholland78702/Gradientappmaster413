@@ -216,7 +216,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     lavaBlobCount, lavaBlobSize, lavaSpeed, liquidScale,
     liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
     meshJitter, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
-    moireOffset, moireScale, noiseDirection, noiseOctaves, noiseScale,
+    noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
@@ -288,7 +288,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const lavaAnimTime = av.lavaAnimTime;
     const marbleAnimTime = av.marbleAnimTime;
     const metaballAnimTime = av.metaballAnimTime;
-    const moireAnimTime = av.moireAnimTime;
     const flowAnimTime = av.flowAnimTime;
     const attractorAnimTime = av.attractorAnimTime;
     const liquidAnimTime = av.liquidAnimTime;
@@ -520,7 +519,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
-      moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
+      flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
       voronoiAnimTime, flowerAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
@@ -586,7 +585,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         // applyLiquid's coordinate math into a fully-black frame (NaN written
         // into a Uint8ClampedArray clamps to 0).
         auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
-        moireAnimTime, flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
+        flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
         voronoiAnimTime, flowerAnimTime,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,

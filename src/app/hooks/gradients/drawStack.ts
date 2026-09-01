@@ -22,6 +22,7 @@ export function drawStack(P: any): CanvasGradient | undefined {
     stackCount,
     stackGap,
     stackWidth,
+    stackLength,
     stackResponse,
   } = P;
   let gradient: CanvasGradient | undefined;
@@ -44,7 +45,8 @@ export function drawStack(P: any): CanvasGradient | undefined {
   // just under a full unit so adjacent bars can get close/touching at
   // high Width without ever fully erasing the gaps between them.
   const barWidth = Math.min(unitWidth * 0.98, unitWidth * (1 - gap) * widthMult);
-  const baseHalfLength = diag * 0.28;
+  const lengthMult = Math.max(0.1, stackLength ?? 1);
+  const baseHalfLength = diag * 0.28 * lengthMult;
   const third = count / 3;
   for (let i = 0; i < count; i++) {
     // First third responds to sub-bass, middle third to mids, last third

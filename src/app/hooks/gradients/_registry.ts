@@ -17,7 +17,6 @@ import { drawLavaLamp } from './drawLavaLamp';
 import { drawMarble } from './drawMarble';
 import { drawMetaballs } from './drawMetaballs';
 import { drawTruchet } from './drawTruchet';
-import { drawMoire } from './drawMoire';
 import { drawNoiseGL, detectNoiseGLSupport } from './drawNoiseGL';
 import { drawAngleGL, detectAngleGLSupport } from './drawAngleGL';
 import { drawCausticsGL, detectCausticsGLSupport } from './drawCausticsGL';
@@ -248,34 +247,34 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
   return drawWindmill(P);
 }
 
+// Alphabetical by id — keep new entries sorted in.
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
-  'radial': drawRadial,
   'angle': drawAngleAuto,
-  'windmill': drawWindmillAuto,
-  'shapes': drawShapes,
-  'stack': drawStack,
-  'hatch': drawHatch,
-  'fade': drawFade,
-  'noise': drawNoiseAuto,
-  'topographic': drawTopographicAuto,
-  'julia': drawJuliaAuto,
-  'grid': drawGrid,
-  'radial-burst': drawRadialBurstAuto,
-  'voronoi': drawVoronoiAuto,
+  'attractor': drawAttractorLazy,
   'aurora': drawAurora,
   'caustics': drawCausticsAuto,
-  'lava-lamp': drawLavaLampAuto,
-  'marble': drawMarbleAuto,
-  'metaballs': drawMetaballsAuto,
-  'truchet': drawTruchet,
-  'moire': drawMoire,
-  'attractor': drawAttractorLazy,
-  'reaction-diffusion': drawReactionDiffusionLazy,
-  'flower': drawFlower,
-  'particles': drawParticlesLazy,
-  'tiling': drawTilingAuto,
+  'fade': drawFade,
   'fireworks': drawFireworksLazy,
+  'flower': drawFlower,
+  'grid': drawGrid,
+  'hatch': drawHatch,
+  'julia': drawJuliaAuto,
+  'lava-lamp': drawLavaLampAuto,
   'lightning': drawLightningLazy,
-  'wave-interference': drawWaveInterference,
+  'marble': drawMarbleAuto,
   'mesh-wireframe': drawMeshWireframe,
+  'metaballs': drawMetaballsAuto,
+  'noise': drawNoiseAuto,
+  'particles': drawParticlesLazy,
+  'radial': drawRadial,
+  'radial-burst': drawRadialBurstAuto,
+  'reaction-diffusion': drawReactionDiffusionLazy,
+  'shapes': drawShapes,
+  'stack': drawStack,
+  'tiling': drawTilingAuto,
+  'topographic': drawTopographicAuto,
+  'truchet': drawTruchet,
+  'voronoi': drawVoronoiAuto,
+  'wave-interference': drawWaveInterference,
+  'windmill': drawWindmillAuto,
 };

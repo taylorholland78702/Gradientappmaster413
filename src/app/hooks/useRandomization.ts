@@ -24,7 +24,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
-  'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'], moire: ['Moire'],
+  'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
@@ -85,7 +85,7 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
-    setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
+    setDadaPanels, setDadaChaos,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
     setGridColumns,
@@ -95,13 +95,13 @@ export function useRandomization(params: RandomizationParams) {
     setMidsBeatSync, setMidsMultiplier,
     setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
-    setMirrorTileCount, setMoireOffset, setMoireScale, setMoireSpeed, setNoiseDirection, setNoiseOctaves,
+    setMirrorTileCount, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackWidth, setStackResponse,
+    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
     setHatchLayers, setHatchSpacing, setHatchResponse,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
@@ -195,11 +195,6 @@ export function useRandomization(params: RandomizationParams) {
     setTruchetVariation(Math.random());                                 // 0–1
     setTruchetThickness(Math.floor(Math.random() * 14) + 1);           // 1–14
 
-    // Moire
-    setMoireScale(Math.floor(Math.random() * 37) + 3);                 // 3–39
-    setMoireOffset(Math.floor(Math.random() * 100));                   // 0–99
-    setMoireSpeed(Math.random() * 4.9 + 0.1);                          // 0.1–5
-
     // Flow Field
     setFlowParticleCount(Math.floor(Math.random() * 780) + 20);        // 20–799
     setFlowSpeed(Math.random() * 4.9 + 0.1);                           // 0.1–5
@@ -224,6 +219,7 @@ export function useRandomization(params: RandomizationParams) {
     setStackCount(Math.floor(Math.random() * 24) + 8);                 // 8–31
     setStackGap(Math.random() * 0.5 + 0.15);                           // 0.15–0.65
     setStackWidth(Math.random() * 1.3 + 0.4);                          // 0.4–1.7
+    setStackLength(Math.random() * 1.3 + 0.4);                         // 0.4–1.7
     setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
 
     // Hatch
@@ -328,10 +324,6 @@ export function useRandomization(params: RandomizationParams) {
     // Dada
     setDadaPanels(Math.floor(Math.random() * 7) + 2);                    // 2–8
     setDadaChaos(Math.random());                                         // 0–1
-
-    // Surrealism
-    setSurrealMelt(Math.random());                                       // 0–1
-    setSurrealMirror(Math.random());                                     // 0–1
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).
@@ -906,7 +898,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'marble') setMarbleTurbulence(rng(0, 5));
     else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSpeed(rng(0.1, 5)); }
     else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
-    else if (gradientType === 'moire') { setMoireScale(Math.round(rng(3, 40))); setMoireSpeed(rng(0.1, 5)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
     else if (gradientType === 'fade') { setFadeDirection(Math.round(rng(0, 360))); setTurrellGlow(rng(0.2, 0.7)); }

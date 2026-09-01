@@ -141,9 +141,6 @@ export interface EffectsTabProps {
   // Dada
   dadaPanels: number; setDadaPanels: (v: number) => void;
   dadaChaos: number; setDadaChaos: (v: number) => void;
-  // Surrealism
-  surrealMelt: number; setSurrealMelt: (v: number) => void;
-  surrealMirror: number; setSurrealMirror: (v: number) => void;
   // Aura Glow
   auraGlowCount: number; setAuraGlowCount: (v: number) => void;
   auraGlowSpeed: number; setAuraGlowSpeed: (v: number) => void;
@@ -191,7 +188,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
     brushStrokesSize, setBrushStrokesSize, brushStrokesLength, setBrushStrokesLength,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
-    dadaPanels, setDadaPanels, dadaChaos, setDadaChaos, surrealMelt, setSurrealMelt, surrealMirror, setSurrealMirror,
+    dadaPanels, setDadaPanels, dadaChaos, setDadaChaos,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
   } = props;
 
@@ -1526,24 +1523,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <div className="flex items-center gap-1 flex-1">
                       <input type="range" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="flex-1" />
                       <input type="number" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                </EffectSection>
-              )}
-              {activeEffects.includes('surrealism') && (
-                <EffectSection id="surrealism" label="Surrealism" isMulti={isMulti} expanded={!collapsedEffects.has('surrealism')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Melt:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="1" step="0.05" value={surrealMelt} onChange={(e) => setSurrealMelt(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="1" step="0.05" value={surrealMelt} onChange={(e) => setSurrealMelt(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Mirror:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="1" step="0.05" value={surrealMirror} onChange={(e) => setSurrealMirror(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="1" step="0.05" value={surrealMirror} onChange={(e) => setSurrealMirror(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                     </div>
                   </div>
                 </EffectSection>
