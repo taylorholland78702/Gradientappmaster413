@@ -94,8 +94,15 @@ export function drawParticles(P: any): CanvasGradient | undefined {
               // Onset: level rises well above its own slow-moving
               // baseline, with a short cooldown so one loud moment
               // doesn't light every mark at once — bloom them one at a
-              // time, round robin.
-              if (level > st.baseline * 1.6 + 0.05 && st.cooldown <= 0) {
+              // time, round robin. The extra margin above baseline scales
+              // with baseline itself (not a fixed absolute amount) so
+              // onsets can still fire on a quiet track, where sub+treble
+              // routinely sit two or three orders of magnitude below the
+              // 0-1 range other gradients assume — a fixed additive
+              // epsilon here would dwarf any real signal and the onset
+              // would just never fire. A small absolute floor keeps it
+              // from triggering on pure noise when baseline is near zero.
+              if (level > st.baseline * 1.4 + Math.max(0.002, st.baseline * 0.3) && st.cooldown <= 0) {
                 const idx = st.index % st.marks.length;
                 st.marks[idx].level = 1;
                 st.index = idx + 1;
