@@ -565,7 +565,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect)
         ? audioMidsLevel
         : 0;
-      const needsImageData = ['invert', 'grain', 'posterize', 'halftone', 'shift', 'duotone', 'ascii', 'emoji'].includes(effectType);
+      const needsImageData = ['invert', 'grain', 'gesso', 'posterize', 'halftone', 'shift', 'duotone', 'ascii', 'emoji'].includes(effectType);
       let imageData: ImageData | null = null;
       if (needsImageData) {
         try {

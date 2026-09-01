@@ -26,6 +26,7 @@ import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
 import { applyFisheye } from '../hooks/effects/applyFisheye';
 import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
+import { applyGesso } from '../hooks/effects/applyGesso';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
 import { applyHalftoneWorkerAuto } from '../hooks/effects/applyHalftoneWorkerAuto';
@@ -186,6 +187,10 @@ const EFFECT_REGISTRY = {
   // let Multi-FX/Remix stack it alongside genuinely cheap effects thinking
   // the combined cost was low when it wasn't.
   fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
+  // Robert Ryman: the ground itself as subject — desaturates and lifts
+  // toward near-white, then a fine brushed-texture noise pass. Audio only
+  // ever deepens texture, never reintroduces color.
+  gesso: { drawFn: applyGesso, label: 'Gesso', cost: 1, category: ['Gesso'], audio: true },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffectWorkerAuto, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
   // CMYK mode (halftoneCMYK, ~40% of shuffles) draws 4 full rotated dot

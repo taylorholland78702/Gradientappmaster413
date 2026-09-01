@@ -28,7 +28,7 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
-  stack: ['Stack'],
+  stack: ['Stack'], hatch: ['Hatch'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
@@ -86,7 +86,9 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos, setSurrealMelt, setSurrealMirror,
-    setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize, setGridColumns,
+    setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
+    setGessoWhiteness, setGessoTexture, setGessoResponse,
+    setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
@@ -100,6 +102,7 @@ export function useRandomization(params: RandomizationParams) {
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
     setTurrellSpeed, setTurrellGlow,
     setStackCount, setStackGap, setStackWidth, setStackResponse,
+    setHatchLayers, setHatchSpacing, setHatchResponse,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
@@ -222,6 +225,11 @@ export function useRandomization(params: RandomizationParams) {
     setStackGap(Math.random() * 0.5 + 0.15);                           // 0.15–0.65
     setStackWidth(Math.random() * 1.3 + 0.4);                          // 0.4–1.7
     setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
+
+    // Hatch
+    setHatchLayers(Math.floor(Math.random() * 4) + 1);                  // 1–4
+    setHatchSpacing(Math.random() * 25 + 6);                            // 6–31
+    setHatchResponse(Math.random() * 0.8 + 0.2);                        // 0.2–1.0
 
     // Bloom
     setBloomIntensity(Math.random() * 2);                              // 0–2
@@ -666,6 +674,8 @@ export function useRandomization(params: RandomizationParams) {
 
       setGrainIntensity(Math.random() * 0.5);
       setGrainSize(Math.floor(Math.random() * 6) + 1);
+      setGessoWhiteness(Math.random() * 0.4 + 0.6);                    // 0.6–1.0
+      setGessoTexture(Math.random() * 0.6);                            // 0–0.6
     } else {
       // Full random generation — curated ranges for better results
 
@@ -782,6 +792,8 @@ export function useRandomization(params: RandomizationParams) {
       setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
       setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
+      setGessoWhiteness(Math.random() * 0.4 + 0.6);                   // 0.6–1.0
+      setGessoTexture(Math.random() * 0.6);                           // 0–0.6
     }
     
     setBaseAIColors(null);
@@ -858,6 +870,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'vignette') setVignetteStrength(rng(...RANGES.vignetteStrength));
       else if (eff === 'blur') setBlurGaussianAmount(Math.round(rng(...RANGES.blurGaussianAmount)));
       else if (eff === 'grain') { setGrainIntensity(rng(0, 0.5)); setGrainSize(Math.round(rng(1, 6))); }
+      else if (eff === 'gesso') setGessoTexture(rng(0, 0.6));
       else if (eff === 'wave') setWaveDistortionStrength(Math.round(rng(...RANGES.waveDistortionStrength)));
       else if (eff === 'pixelate') setPixelSize(Math.round(rng(...RANGES.pixelSize)));
       else if (eff === 'shift') setColorShiftHue(Math.round(rng(...RANGES.colorShiftHue)));
@@ -909,6 +922,7 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
     else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));
+    else if (gradientType === 'hatch') setHatchResponse(rng(0.2, 1.0));
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.

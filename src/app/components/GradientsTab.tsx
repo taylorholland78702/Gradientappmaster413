@@ -43,6 +43,11 @@ export interface GradientsTabProps {
   stackWidth: number; setStackWidth: (v: number) => void;
   stackResponse: number; setStackResponse: (v: number) => void;
 
+  // Hatch
+  hatchLayers: number; setHatchLayers: (v: number) => void;
+  hatchSpacing: number; setHatchSpacing: (v: number) => void;
+  hatchResponse: number; setHatchResponse: (v: number) => void;
+
   // Caustics
   causticsBrightness: number; setCausticsBrightness: (v: number) => void;
   causticsScale: number; setCausticsScale: (v: number) => void;
@@ -214,6 +219,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
     stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackResponse, setStackResponse,
+    hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
@@ -512,6 +518,27 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
               { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
               { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
+            ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Hatch Controls — 1-4 layers of straight parallel lines, one
+            direction per layer, evenly spread around the shared Angle
+            control below. */}
+        {gradientType === 'hatch' && (
+          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {[
+              { label: 'Layers', value: hatchLayers, set: setHatchLayers, min: 1, max: 4, step: 1 },
+              { label: 'Spacing', value: hatchSpacing, set: setHatchSpacing, min: 3, max: 40, step: 1 },
+              { label: 'Response', value: hatchResponse, set: setHatchResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>

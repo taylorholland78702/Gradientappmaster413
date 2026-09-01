@@ -76,6 +76,10 @@ export interface EffectsTabProps {
   grainIntensity: number; setGrainIntensity: (v: number) => void;
   grainSize: number; setGrainSize: (v: number) => void;
   grainType: 'fine' | 'medium' | 'coarse' | 'film'; setGrainType: (v: 'fine' | 'medium' | 'coarse' | 'film') => void;
+  // Gesso
+  gessoWhiteness: number; setGessoWhiteness: (v: number) => void;
+  gessoTexture: number; setGessoTexture: (v: number) => void;
+  gessoResponse: number; setGessoResponse: (v: number) => void;
   // Blur
   blurType: 'gaussian' | 'motion' | 'radial' | 'zoom'; setBlurType: (v: 'gaussian' | 'motion' | 'radial' | 'zoom') => void;
   blurGaussianAmount: number; setBlurGaussianAmount: (v: number) => void;
@@ -168,6 +172,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness,
     colorShiftHue, setColorShiftHue,
     grainIntensity, setGrainIntensity, grainSize, setGrainSize, grainType, setGrainType,
+    gessoWhiteness, setGessoWhiteness, gessoTexture, setGessoTexture, gessoResponse, setGessoResponse,
     blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
@@ -744,6 +749,25 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </div>
                     </>
                   )}
+                </EffectSection>
+              )}
+              {activeEffects.includes('gesso') && (
+                <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Whiteness:</label>
+                    <input type="range" min="0" max="1" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Texture:</label>
+                    <input type="range" min="0" max="1" step="0.01" value={gessoTexture} onChange={(e) => setGessoTexture(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={gessoTexture} onChange={(e) => setGessoTexture(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] text-white whitespace-nowrap">Response:</label>
+                    <input type="range" min="0" max="1" step="0.01" value={gessoResponse} onChange={(e) => setGessoResponse(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="1" step="0.01" value={gessoResponse} onChange={(e) => setGessoResponse(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  </div>
                 </EffectSection>
               )}
               {activeEffects.includes('blur') && (

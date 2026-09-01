@@ -3,6 +3,7 @@ import { drawAngle } from './drawAngle';
 import { drawWindmill } from './drawWindmill';
 import { drawShapes } from './drawShapes';
 import { drawStack } from './drawStack';
+import { drawHatch } from './drawHatch';
 import { drawFade } from './drawFade';
 import { drawNoise } from './drawNoise';
 import { drawTopographic } from './drawTopographic';
@@ -253,6 +254,7 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'windmill': drawWindmillAuto,
   'shapes': drawShapes,
   'stack': drawStack,
+  'hatch': drawHatch,
   'fade': drawFade,
   'noise': drawNoiseAuto,
   'topographic': drawTopographicAuto,
