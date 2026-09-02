@@ -154,6 +154,7 @@ export interface GradientsTabProps {
   angleHardEdge: boolean; setAngleHardEdge: (v: boolean) => void;
   radialSizeScale: number; setRadialSizeScale: (v: number) => void;
   radialHardEdge: boolean; setRadialHardEdge: (v: boolean) => void;
+  radialSpeed: number; setRadialSpeed: (v: number) => void;
 
   // Shapes
   concentricRingWidth: number; setConcentricRingWidth: (v: number) => void;
@@ -178,6 +179,7 @@ export interface GradientsTabProps {
   noiseDirection: number; setNoiseDirection: (v: number) => void;
   noiseWarp: number; setNoiseWarp: (v: number) => void;
   noiseType: 'smooth' | 'ridged'; setNoiseType: (t: 'smooth' | 'ridged') => void;
+  noiseSpeed: number; setNoiseSpeed: (v: number) => void;
 
   // Radial Burst
   radialBurstCount: number; setRadialBurstCount: (v: number) => void;
@@ -238,12 +240,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
     juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
-    radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge,
+    radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, radialSpeed, setRadialSpeed,
     concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount, shapesMode, setShapesMode,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
     drawParamsDirtyRef,
-    noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType,
+    noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType, noiseSpeed, setNoiseSpeed,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
     radialBurstMode, setRadialBurstMode,
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
@@ -1343,6 +1345,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <input type="number" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Speed:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.1" max="3" step="0.1" value={noiseSpeed} onChange={(e) => setNoiseSpeed(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0.1" max="3" step="0.1" value={noiseSpeed} onChange={(e) => setNoiseSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -1398,6 +1407,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <div className="flex items-center gap-1 flex-1 ml-2">
                 <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
                 <input type="number" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Speed:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min="0.1" max="3" step="0.1" value={radialSpeed} onChange={(e) => setRadialSpeed(Number(e.target.value))} className="flex-1" />
+                <input type="number" min="0.1" max="3" step="0.1" value={radialSpeed} onChange={(e) => setRadialSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
               </div>
             </div>
           </div>

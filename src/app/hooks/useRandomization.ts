@@ -77,7 +77,7 @@ export function useRandomization(params: RandomizationParams) {
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
-    setNoiseType, setNoiseWarp, setRadialSizeScale, setVignetteSoftness, setWaveDistortionRotation,
+    setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
@@ -338,9 +338,11 @@ export function useRandomization(params: RandomizationParams) {
     setGrainType((['fine', 'medium', 'coarse', 'film'] as const)[Math.floor(Math.random() * 4)]);
     setNoiseType((['smooth', 'ridged'] as const)[Math.floor(Math.random() * 2)]);
     setNoiseWarp(Math.random());                                          // 0–1
+    setNoiseSpeed(Math.random() * 1.4 + 0.4);                            // 0.4–1.8
     setFadeDirection(Math.floor(Math.random() * 361));                   // 0–360
     setGridRotationDirection((['none', 'clockwise', 'counterclockwise'] as const)[Math.floor(Math.random() * 3)]);
     setRadialSizeScale(Math.random() * 3.75 + 0.25);                     // 0.25–4
+    setRadialSpeed(Math.random() * 1.4 + 0.4);                           // 0.4–1.8
     setVignetteSoftness(Math.floor(Math.random() * 101));                // 0–100
     setWaveDistortionRotation(Math.floor(Math.random() * 361));          // 0–360
     setAsciiChars(ASCII_CHARSET_POOL[Math.floor(Math.random() * ASCII_CHARSET_POOL.length)]);

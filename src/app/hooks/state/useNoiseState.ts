@@ -6,6 +6,8 @@ export function useNoiseState() {
   const [noiseDirection, setNoiseDirection] = useState(0);
   const [noiseWarp, setNoiseWarp] = useState(0);
   const [noiseType, setNoiseType] = useState<'smooth' | 'ridged' | 'turbulence'>('smooth');
+  const [noiseAnimTime, setNoiseAnimTime] = useState(0);
+  const [noiseSpeed, setNoiseSpeed] = useState(1);
 
   return {
     noiseScale,
@@ -18,5 +20,9 @@ export function useNoiseState() {
     setNoiseWarp,
     noiseType,
     setNoiseType,
+    noiseAnimTime,
+    setNoiseAnimTime,
+    noiseSpeed,
+    setNoiseSpeed,
   };
 }

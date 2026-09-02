@@ -1,7 +1,3 @@
-// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
-// no undo/redo or Display-mode value depends on it.
-let invertTime = 0;
-
 export function applyInvert(P: any): void {
   const {
     invertAmount,
@@ -224,16 +220,10 @@ export function applyInvert(P: any): void {
             if (!imageData) return;
             const data = imageData.data;
             const amt = invertAmount ?? 1;
-            // A slow traveling wipe — vertical bands of stronger/weaker
-            // invert drifting sideways — rather than a flat, unmoving
-            // blend, so the boundary itself reads as in motion.
-            invertTime += 0.015;
             for (let i = 0; i < data.length; i += 4) {
-              const x = (i / 4) % displayWidth;
-              const localAmt = amt * (0.5 + 0.5 * Math.sin(x * 0.02 + invertTime));
-              data[i] = data[i] + (255 - 2 * data[i]) * localAmt;         // Red
-              data[i + 1] = data[i + 1] + (255 - 2 * data[i + 1]) * localAmt; // Green
-              data[i + 2] = data[i + 2] + (255 - 2 * data[i + 2]) * localAmt; // Blue
+              data[i] = data[i] + (255 - 2 * data[i]) * amt;         // Red
+              data[i + 1] = data[i + 1] + (255 - 2 * data[i + 1]) * amt; // Green
+              data[i + 2] = data[i + 2] + (255 - 2 * data[i + 2]) * amt; // Blue
             }
             putScaledImageData(imageData);
 }

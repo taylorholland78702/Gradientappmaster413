@@ -151,6 +151,7 @@ export function drawRadial(P: any): CanvasGradient | undefined {
     radialBurstSize,
     radialBurstSpread,
     radialSizeScale,
+    radialAnimTime,
     reactionDiffusionFeed,
     reactionDiffusionGridRef,
     reactionDiffusionKill,
@@ -216,8 +217,15 @@ export function drawRadial(P: any): CanvasGradient | undefined {
           // Bass makes ring breathe — larger pulse on strong hits, decays between
           const audioRadiusScale = radialAudioActive ? 1 + audioSubBassLevel * 0.8 : 1;
           const radialScale = (1 / dampenedRadialZoom) * audioRadiusScale * radialSizeScale;
-          const radialCenterX = (displayWidth * angleCenterX) / 100;
-          const radialCenterY = (displayHeight * angleCenterY) / 100;
+          // Slow orbit around whatever center the user set — a small
+          // fraction of the shorter canvas dimension, so the ring keeps
+          // drifting rather than sitting perfectly still, without moving
+          // Center X/Y themselves.
+          const radialOrbitR = Math.min(displayWidth, displayHeight) * 0.02;
+          const radialOrbitX = Math.cos(radialAnimTime) * radialOrbitR;
+          const radialOrbitY = Math.sin(radialAnimTime * 0.8) * radialOrbitR;
+          const radialCenterX = (displayWidth * angleCenterX) / 100 + radialOrbitX;
+          const radialCenterY = (displayHeight * angleCenterY) / 100 + radialOrbitY;
           const radialRadius = Math.max(0, Math.min(displayWidth, displayHeight) / 2 * radialScale);
           gradient = ctx.createRadialGradient(radialCenterX, radialCenterY, 0, radialCenterX, radialCenterY, radialRadius);
   return gradient;

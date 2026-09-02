@@ -138,6 +138,7 @@ export function drawNoise(P: any): CanvasGradient | undefined {
     noiseScale,
     noiseType,
     noiseWarp,
+    noiseAnimTime,
     photoBlendMode,
     photoImageRef,
     photoOpacity,
@@ -274,8 +275,12 @@ export function drawNoise(P: any): CanvasGradient | undefined {
                 const oSin = Math.sin(octAngle);
                 const orx = rx * oCos - ry * oSin;
                 const ory = rx * oSin + ry * oCos;
-                const raw = Math.sin(orx * scale + noiseDirection * 0.1 * frequency) *
-                            Math.cos(ory * scale + noiseDirection * 0.1 * frequency);
+                // noiseAnimTime is a plain phase offset (not scaled by
+                // frequency/scale like the spatial terms) so the whole
+                // field visibly flows/boils at a constant screen-space
+                // rate regardless of Scale or Detail.
+                const raw = Math.sin(orx * scale + noiseDirection * 0.1 * frequency + noiseAnimTime) *
+                            Math.cos(ory * scale + noiseDirection * 0.1 * frequency + noiseAnimTime);
                 const n = noiseType === 'ridged'      ? 1 - Math.abs(raw)
                         : noiseType === 'turbulence'  ? Math.abs(raw)
                         : raw;
