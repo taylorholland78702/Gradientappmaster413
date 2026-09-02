@@ -1717,6 +1717,10 @@ export function InteractiveGradient() {
     zoom,
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
+    setWindmillMode, setWindmillZoomResponse, setFadeMode, setGridMode, setParticlesMode, setRadialBurstMode,
+    setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
+    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
+    setTriangulateVariation, setEmojiOffsetX,
   });
 
   // Shuffle click handler — single click = full remix, shared by both the

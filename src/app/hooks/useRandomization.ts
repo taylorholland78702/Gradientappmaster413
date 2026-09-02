@@ -118,13 +118,34 @@ export function useRandomization(params: RandomizationParams) {
     setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
     setCrtIntensity, setCrtScanlineSpacing, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
+    // Same gap, found in a follow-up audit: mode/enum toggles and a few
+    // stray sliders that had real UI controls but no shuffle path ever
+    // touched them, either because they were never destructured here at
+    // all or (structuralSeed) only ever got rerolled by a big audio hit.
+    setWindmillMode, setWindmillZoomResponse, setFadeMode, setGridMode, setParticlesMode, setRadialBurstMode,
+    setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
+    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
+    setTriangulateVariation, setEmojiOffsetX,
   } = params;
 
   const randomizeUncoveredParams = useCallback(() => {
     // Previously-partial gradient types
     setRadialBurstSize(Math.floor(Math.random() * 190) + 10);          // 10–199
+    setRadialBurstMode(Math.random() < 0.5 ? 'burst' : 'sweep');
     setGridShapeSize(Math.floor(Math.random() * 99) + 1);              // 1–99
     setGridVariation(Math.random());                                    // 0–1
+    setGridMode(Math.random() < 0.5 ? 'classic' : 'martin');
+    setFadeMode(Math.random() < 0.5 ? 'angle' : 'light');
+    setAngleHardEdge(Math.random() < 0.5);
+    setGridHardEdge(Math.random() < 0.5);
+    setRadialHardEdge(Math.random() < 0.5);
+    // Caustics/Voronoi/Marble/Metaballs/Topographic's underlying pattern
+    // structure (see the comment on structuralSeed's own reseed effect in
+    // InteractiveGradient.tsx) — previously only ever rerolled by a big
+    // audio hit, so those 5 types always rendered the same structure
+    // across every shuffle, just with different colors/scale.
+    setStructuralSeed(Math.floor(Math.random() * 1000000));
+    setTriangulateVariation(Math.random());                             // 0–1
 
     // Fireworks
     setFireworksCount(Math.floor(Math.random() * 10) + 5);             // 5–14
@@ -137,6 +158,7 @@ export function useRandomization(params: RandomizationParams) {
     setLightningBranchiness(Math.random() * 0.6 + 0.15);               // 0.15–0.75
 
     // Particles
+    setParticlesMode((['drift', 'flow-field', 'marks'] as const)[Math.floor(Math.random() * 3)]);
     setParticlesCount(Math.floor(Math.random() * 490) + 10);           // 10–499
     setParticlesSize(Math.random() * 9.5 + 0.5);                       // 0.5–10
     setParticlesSides(Math.floor(Math.random() * 8) + 1);              // 1–8
@@ -179,6 +201,7 @@ export function useRandomization(params: RandomizationParams) {
     // Lava Lamp
     setLavaBlobCount(Math.floor(Math.random() * 10) + 2);              // 2–11
     setLavaBlobSize(Math.random() * 0.35 + 0.05);                      // 0.05–0.4
+    setLavaSpeed(Math.random() * 4.9 + 0.1);                           // 0.1–5
 
     // Marble
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10
@@ -205,6 +228,9 @@ export function useRandomization(params: RandomizationParams) {
     setFlowerCircles(Math.floor(Math.random() * 11) + 1);              // 1–11
     setFlowerScale(Math.random() * 2.9 + 0.1);                         // 0.1–3
     setFlowerSpread(Math.random() * 2.2 + 0.3);                        // 0.3–2.5
+    setFlowerRotation(Math.floor(Math.random() * 360));                // 0–359
+    setFlowerSymmetry(Math.floor(Math.random() * 10) + 3);             // 3–12
+    setFlowerOpacity(Math.random() * 1.3 + 0.2);                       // 0.2–1.5
 
     // Radar
     setRadarFadeLength(Math.floor(Math.random() * 170) + 10);          // 10–179
@@ -267,6 +293,7 @@ export function useRandomization(params: RandomizationParams) {
     setEmojiSize(Math.floor(Math.random() * 50) + 10);                 // 10–59
     setEmojiRotateSpeed(Math.floor(Math.random() * 180));              // 0–179
     setEmojiSizeVariation(Math.floor(Math.random() * 100));            // 0–99
+    setEmojiOffsetX(Math.floor(Math.random() * 41) - 20);               // -20–20
 
     // Julia Set — never touched by any randomize/shuffle/nudge path before.
     setJuliaReal(Math.random() * 2 - 1);                                // -1–1
@@ -388,6 +415,8 @@ export function useRandomization(params: RandomizationParams) {
     setWindmillRotations(Math.floor(Math.random() * 9) + 1); // 1-10
     setWindmillThickness(Math.floor(Math.random() * 95) + 5); // 5-100
     setWindmillZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
+    setWindmillZoomResponse(Math.random());                             // 0–1
+    setWindmillMode(Math.random() < 0.5 ? 'blades' : 'helix');
     // Was never touched here, so Shuffle/Auto Shuffle could only ever land
     // on whatever mode was already selected (in practice always 'polygon',
     // its default) — Polar Grid was unreachable except by a manual visit to
@@ -676,6 +705,7 @@ export function useRandomization(params: RandomizationParams) {
       setGrainSize(Math.floor(Math.random() * 6) + 1);
       setGessoWhiteness(Math.random() * 0.3 + 0.55);                   // 0.55–0.85
       setGessoTexture(Math.random() * 0.6);                            // 0–0.6
+      setGessoResponse(Math.random());                                 // 0–1
     } else {
       // Full random generation — curated ranges for better results
 
@@ -794,6 +824,7 @@ export function useRandomization(params: RandomizationParams) {
       setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
       setGessoWhiteness(Math.random() * 0.3 + 0.55);                  // 0.55–0.85
       setGessoTexture(Math.random() * 0.6);                           // 0–0.6
+      setGessoResponse(Math.random());                                // 0–1
     }
     
     setBaseAIColors(null);
