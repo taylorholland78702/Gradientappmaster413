@@ -4,8 +4,14 @@
 // whichever narrow intensity band is most common in its neighborhood,
 // rather than a blur (which would average every band together). That's
 // what produces clumpy, edge-preserving daubs instead of a soft smear.
-export function oilPaintPixels(data: Uint8ClampedArray, displayWidth: number, displayHeight: number, radius: number, levels: number): void {
+// centerOffsetX/Y: a slow, caller-driven drift of the neighborhood-scan
+// window relative to the output pixel — the daubs keep migrating rather
+// than sitting fixed the instant they're computed. Purely cosmetic, so
+// defaults to 0 (no drift) for any caller that doesn't pass it.
+export function oilPaintPixels(data: Uint8ClampedArray, displayWidth: number, displayHeight: number, radius: number, levels: number, centerOffsetX = 0, centerOffsetY = 0): void {
   const r = Math.max(1, Math.round(radius));
+  const ox = Math.round(centerOffsetX);
+  const oy = Math.round(centerOffsetY);
   const lv = Math.max(4, Math.round(levels));
   const w = displayWidth, h = displayHeight;
   // Read from a snapshot of the source pixels so a pixel's own already-
@@ -24,9 +30,9 @@ export function oilPaintPixels(data: Uint8ClampedArray, displayWidth: number, di
       sumG.fill(0);
       sumB.fill(0);
 
-      for (let ny = y - r; ny <= y + r; ny++) {
+      for (let ny = y - r + oy; ny <= y + r + oy; ny++) {
         const cy = ny < 0 ? 0 : ny >= h ? h - 1 : ny;
-        for (let nx = x - r; nx <= x + r; nx++) {
+        for (let nx = x - r + ox; nx <= x + r + ox; nx++) {
           const cx = nx < 0 ? 0 : nx >= w ? w - 1 : nx;
           const si = (cy * w + cx) * 4;
           const rr = src[si], gg = src[si + 1], bb = src[si + 2];

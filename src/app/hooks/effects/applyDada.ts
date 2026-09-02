@@ -1,11 +1,17 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2 } from '../../utils/valueNoise';
+import { TWO_PI } from '../../constants/gradientEffects';
 
 // Working resolution cap — see downscaleCapture.ts. Keeps cost roughly
 // constant regardless of the real canvas size, and keeps panel/border sizes
 // (defined in absolute pixels) looking consistent across screen sizes too.
 const MAX_DIM = 640;
+
+// Module-level clock — see applyAuraGlow.ts's agTime for why this is a
+// plain accumulator rather than threaded state: purely cosmetic, no
+// undo/redo or Display-mode value depends on it.
+let dadaTime = 0;
 
 // Photomontage cut-up: slices whatever's already on the canvas into a grid
 // of panels, then reassembles it with each panel reading from a different
@@ -30,6 +36,12 @@ export function applyDada(P: any): void { // eslint-disable-line @typescript-esl
   const cellH = h / rows;
   const borderPx = Math.max(1, Math.min(w, h) * 0.006);
 
+  // Each panel's sampling window creeps in its own slow, independent
+  // ellipse (phase seeded per panel via hash2) — the montage keeps
+  // resettling rather than sitting frozen once cut, on top of whatever
+  // jitter dadaChaos already adds.
+  dadaTime += 0.02;
+
   for (let y = 0; y < h; y++) {
     const panelY = Math.min(rows - 1, Math.floor(y / cellH));
     const ly = y - panelY * cellH;
@@ -46,9 +58,12 @@ export function applyDada(P: any): void { // eslint-disable-line @typescript-esl
 
       const jitterX = (hash2(panelX + 500, panelY + 500) - 0.5) * 2 * dadaChaos * w;
       const jitterY = (hash2(panelX + 900, panelY + 900) - 0.5) * 2 * dadaChaos * h;
+      const driftPhase = hash2(panelX + 200, panelY + 200) * TWO_PI;
+      const driftX = Math.sin(dadaTime + driftPhase) * cellW * 0.04;
+      const driftY = Math.cos(dadaTime * 0.8 + driftPhase) * cellH * 0.04;
 
-      let sx = Math.round(panelX * cellW + tx + jitterX);
-      let sy = Math.round(panelY * cellH + ty + jitterY);
+      let sx = Math.round(panelX * cellW + tx + jitterX + driftX);
+      let sy = Math.round(panelY * cellH + ty + jitterY + driftY);
       sx = ((sx % w) + w) % w;
       sy = ((sy % h) + h) % h;
 

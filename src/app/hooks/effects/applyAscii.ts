@@ -1,3 +1,9 @@
+import { TWO_PI } from '../../constants/gradientEffects';
+
+// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
+// no undo/redo or Display-mode value depends on it.
+let asciiTime = 0;
+
 export function applyAscii(P: any): void {
   const {
     activeEffects,
@@ -232,6 +238,10 @@ export function applyAscii(P: any): void {
             ctx.fillRect(0, 0, displayWidth, displayHeight);
             ctx.font = `${aSize}px monospace`;
             ctx.textBaseline = 'top';
+            // Each cell flickers at its own slow, asynchronous rate between
+            // adjacent ramp characters — like an unstable terminal readout —
+            // rather than every cell sitting on a fixed character forever.
+            asciiTime += 0.03;
             for (let r = rowStartA; r < rowEndA; r++) {
               for (let c = colStartA; c < colEndA; c++) {
                 const cellX = centerX + c * aSize;
@@ -240,7 +250,9 @@ export function applyAscii(P: any): void {
                 const py = Math.min(displayHeight - 1, Math.max(0, cellY + Math.floor(aSize / 2)));
                 const pIdx = (py * displayWidth + px) * 4;
                 const pr = idatA[pIdx], pg = idatA[pIdx + 1], pb = idatA[pIdx + 2];
-                const brightness = (pr + pg + pb) / 3 / 255;
+                const cellPhase = (r * 12.9898 + c * 78.233) % TWO_PI;
+                const flicker = Math.sin(asciiTime + cellPhase) * 0.06;
+                const brightness = Math.max(0, Math.min(1, (pr + pg + pb) / 3 / 255 + flicker));
                 const charIdx = Math.min(chars.length - 1, Math.floor(brightness * chars.length));
                 const ch = chars[charIdx];
                 if (ch === ' ') continue;

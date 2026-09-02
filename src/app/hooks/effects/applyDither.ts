@@ -1,5 +1,9 @@
 import { ditherPixels } from './ditherPixels';
 
+// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
+// no undo/redo or Display-mode value depends on it.
+let ditherTime = 0;
+
 export function applyDither(P: any): void {
   const {
     activeEffects,
@@ -220,7 +224,8 @@ export function applyDither(P: any): void {
   // Dither effect. Pixel math itself lives in ditherPixels.ts, shared with
   // ditherWorker.ts (see applyDitherWorkerAuto.ts) so the exact same code
   // runs whether this executes here on the main thread or inside a Worker.
+  ditherTime += 0.08;
   const ditherImageData = getDisplayImageData();
-  ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale);
+  ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherTime);
   putScaledImageData(ditherImageData);
 }

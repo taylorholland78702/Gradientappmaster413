@@ -10,6 +10,10 @@ import { hash2, valueNoise } from '../../utils/valueNoise';
 // pixels) looking consistent across screen sizes too, not just fast.
 const MAX_DIM = 640;
 
+// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
+// no undo/redo or Display-mode value depends on it.
+let watercolorTime = 0;
+
 // Gouache and Ink Wash are the same underlying mechanism (coherent warp +
 // smear + edge pooling + paper grain) as Watercolor — real gouache and ink
 // wash are both water-based media on the same kind of paper, just used
@@ -47,6 +51,11 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
   const warpMag = watercolorBleed * 4 * style.warpMul;
   const posterizeStep = style.posterizeLevels > 0 ? 255 / (style.posterizeLevels - 1) : 0;
   const TAPS = 4;
+  // A wash never fully dries in this render — the coherent warp field
+  // keeps drifting through the noise space at a slow, fixed rate so the
+  // bleed continues to creep even over an otherwise-static source.
+  watercolorTime += 0.003;
+  const wt = watercolorTime;
 
   for (let y = 0; y < h; y++) {
     const yu = y > 0 ? y - 1 : 0;
@@ -69,8 +78,8 @@ export function applyWatercolor(P: any): void { // eslint-disable-line @typescri
 
       // Coherent low-frequency warp direction — stronger near edges (that's
       // where a real wash actually moves) than in the middle of a flat fill.
-      const nx = valueNoise(x * warpScale, y * warpScale) * 2 - 1;
-      const ny = valueNoise(x * warpScale + 37.1, y * warpScale + 91.7) * 2 - 1;
+      const nx = valueNoise(x * warpScale + wt, y * warpScale) * 2 - 1;
+      const ny = valueNoise(x * warpScale + 37.1, y * warpScale + 91.7 + wt) * 2 - 1;
       const mag = warpMag * (0.35 + edge * 1.8);
       const dx = nx * mag, dy = ny * mag;
 

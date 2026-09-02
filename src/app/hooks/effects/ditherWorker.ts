@@ -10,6 +10,7 @@ export interface DitherWorkerRequest {
   ditherType: string;
   ditherLevels: number;
   ditherScale: number;
+  ditherPhase: number;
 }
 
 export interface DitherWorkerResponse {
@@ -19,9 +20,9 @@ export interface DitherWorkerResponse {
 }
 
 self.onmessage = (e: MessageEvent<DitherWorkerRequest>) => {
-  const { buffer, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale } = e.data;
+  const { buffer, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherPhase } = e.data;
   const data = new Uint8ClampedArray(buffer);
-  ditherPixels(data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale);
+  ditherPixels(data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherPhase);
   const response: DitherWorkerResponse = { buffer: data.buffer, displayWidth, displayHeight };
   (self as unknown as Worker).postMessage(response, [response.buffer]);
 };

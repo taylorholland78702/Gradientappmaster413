@@ -10,7 +10,7 @@
 // a single ordered pass; that's true whichever thread it runs on, a
 // Worker doesn't change it, it just moves the sequential work off the
 // main thread.
-export function ditherPixels(data: Uint8ClampedArray, displayWidth: number, displayHeight: number, ditherType: string, ditherLevels: number, ditherScale = 1): void {
+export function ditherPixels(data: Uint8ClampedArray, displayWidth: number, displayHeight: number, ditherType: string, ditherLevels: number, ditherScale = 1, ditherPhase = 0): void {
   const bayer = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
   const lv = Math.max(2, ditherLevels);
   const st = 255 / (lv - 1);
@@ -18,13 +18,19 @@ export function ditherPixels(data: Uint8ClampedArray, displayWidth: number, disp
   // original per-pixel sampling, higher values read as a chunkier,
   // lower-fidelity dither pattern.
   const scale = Math.max(1, Math.round(ditherScale));
+  // Bayer only (Floyd-Steinberg's error diffusion has a genuine sequential
+  // data dependency on the source pixels — there's no clean phase to
+  // offset without changing what the algorithm means): marching the 4x4
+  // matrix diagonally makes the ordered pattern visibly crawl instead of
+  // sitting fixed over a static source.
+  const phaseOffset = Math.floor(ditherPhase);
 
   if (ditherType === 'bayer') {
     for (let y = 0; y < displayHeight; y++) {
       for (let x = 0; x < displayWidth; x++) {
         const i = (y * displayWidth + x) * 4;
-        const by = Math.floor(y / scale) % 4;
-        const bx = Math.floor(x / scale) % 4;
+        const by = (Math.floor(y / scale) + phaseOffset) % 4;
+        const bx = (Math.floor(x / scale) + phaseOffset) % 4;
         const t = (bayer[by][bx] / 16) * st;
         for (let c = 0; c < 3; c++) {
           const v = Math.round(data[i + c] / st) * st;

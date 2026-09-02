@@ -7,6 +7,12 @@ import { createWorkerAutoEffect } from './workerAutoEffect';
 import { applyDither } from './applyDither';
 import type { DitherWorkerRequest, DitherWorkerResponse } from './ditherWorker';
 
+// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
+// no undo/redo or Display-mode value depends on it. Computed here (main
+// thread) rather than inside ditherWorker.ts since buildRequest already
+// runs once per call regardless of which thread does the pixel math.
+let ditherPhaseTime = 0;
+
 export const applyDitherWorkerAuto = createWorkerAutoEffect<DitherWorkerRequest, DitherWorkerResponse>({
   workerUrl: new URL('./ditherWorker.ts', import.meta.url),
   effectName: 'Dither',
@@ -17,9 +23,10 @@ export const applyDitherWorkerAuto = createWorkerAutoEffect<DitherWorkerRequest,
     // Fresh snapshot each call (getDisplayImageData always returns a new
     // ImageData), so transferring its buffer to the worker is safe.
     const snapshot = getDisplayImageData();
+    ditherPhaseTime += 0.08;
     return {
       buffer: snapshot.data.buffer,
-      extra: { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale },
+      extra: { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherPhase: ditherPhaseTime },
     };
   },
 });

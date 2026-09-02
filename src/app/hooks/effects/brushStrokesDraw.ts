@@ -37,8 +37,16 @@ export interface BrushStrokesDrawOptions {
   pixels: Uint8ClampedArray | null;
 }
 
+// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
+// no undo/redo or Display-mode value depends on it.
+let brushTime = 0;
+
 export function drawBrushStrokes(ctx: BrushStrokesDrawCtx, opts: BrushStrokesDrawOptions): void {
   const { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, sampleWidth, sampleHeight, pixels } = opts;
+  // A very slow overall drift on top of each stroke's shape-following
+  // angle — as if the whole canvas of strokes were still being worked,
+  // resettling rather than sitting frozen the instant it's painted.
+  brushTime += 0.004;
 
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -86,7 +94,8 @@ export function drawBrushStrokes(ctx: BrushStrokesDrawCtx, opts: BrushStrokesDra
       // Perpendicular to the brightness gradient — tangent to the local
       // contour — reads as strokes following the shape's edge rather than
       // crossing it.
-      const angle = gradMag > 2 ? Math.atan2(gx, -gy) : hash * Math.PI * 2;
+      const wobble = Math.sin(brushTime + hash * Math.PI * 2) * 0.25;
+      const angle = (gradMag > 2 ? Math.atan2(gx, -gy) : hash * Math.PI * 2) + wobble;
 
       const [r0, g0, b0] = colorAt(sx, sy);
       ctx.fillStyle = `rgb(${r0},${g0},${b0})`;
