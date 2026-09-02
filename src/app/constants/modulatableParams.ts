@@ -74,7 +74,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'flowerScale', label: 'Flower Scale', category: 'Flower', min: 0.1, max: 3.0 },
   { key: 'flowerSpread', label: 'Flower Spread', category: 'Flower', min: 0.3, max: 2.5 },
   { key: 'dustCrackleIntensity', label: 'Dust Crackle Intensity', category: 'Grain', min: 0.0, max: 1.0 },
-  { key: 'gessoWhiteness', label: 'Gesso Whiteness', category: 'Gesso', min: 0.0, max: 1.0 },
+  { key: 'gessoWhiteness', label: 'Gesso Whiteness', category: 'Gesso', min: 0.0, max: 0.94 },
   { key: 'gessoTexture', label: 'Gesso Texture', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'gessoResponse', label: 'Gesso Response', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'grainIntensity', label: 'Grain Intensity', category: 'Grain', min: 0.0, max: 1.0 },

@@ -752,8 +752,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Whiteness:</label>
-                    <input type="range" min="0" max="1" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                    <input type="range" min="0" max="0.94" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="flex-1" />
+                    <input type="number" min="0" max="0.94" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
                   </div>
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Texture:</label>

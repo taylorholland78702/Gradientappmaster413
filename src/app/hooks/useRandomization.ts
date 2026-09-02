@@ -669,7 +669,7 @@ export function useRandomization(params: RandomizationParams) {
 
       setGrainIntensity(Math.random() * 0.5);
       setGrainSize(Math.floor(Math.random() * 6) + 1);
-      setGessoWhiteness(Math.random() * 0.4 + 0.6);                    // 0.6–1.0
+      setGessoWhiteness(Math.random() * 0.3 + 0.55);                   // 0.55–0.85
       setGessoTexture(Math.random() * 0.6);                            // 0–0.6
     } else {
       // Full random generation — curated ranges for better results
@@ -787,7 +787,7 @@ export function useRandomization(params: RandomizationParams) {
       setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
       setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
-      setGessoWhiteness(Math.random() * 0.4 + 0.6);                   // 0.6–1.0
+      setGessoWhiteness(Math.random() * 0.3 + 0.55);                  // 0.55–0.85
       setGessoTexture(Math.random() * 0.6);                           // 0–0.6
     }
     

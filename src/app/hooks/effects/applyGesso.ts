@@ -19,7 +19,13 @@ export function applyGesso(P: any): void {
   if (!imageData) return;
   const d = imageData.data;
 
-  const whiteness = Math.min(1, Math.max(0, gessoWhiteness));
+  // Capped below 1 even at the slider's max — Ryman's grounds are a
+  // near-white field with the surface still legible underneath, not a
+  // blank sheet. Uncapped, whiteness=1 sends every pixel to exactly 255
+  // regardless of what's underneath, destroying the piece entirely (and
+  // making it a prime source of the "shuffle landed on pure white"
+  // complaint, since Feeling Lucky/Shuffle randomize this slider high).
+  const whiteness = Math.min(0.94, Math.max(0, gessoWhiteness));
   const audioActive = isAudioEnabled && isAudioReactive;
   const textureBoost = audioActive ? gessoResponse * audioTrebleLevel * 0.5 : 0;
   const texture = Math.min(1, Math.max(0, gessoTexture) + textureBoost + (isFirstEffect ? audioModulation * 0.1 : 0));
