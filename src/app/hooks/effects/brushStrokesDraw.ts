@@ -35,18 +35,20 @@ export interface BrushStrokesDrawOptions {
   sampleWidth: number;
   sampleHeight: number;
   pixels: Uint8ClampedArray | null;
-}
-
-// Module-level clock — see applyAuraGlow.ts's agTime: purely cosmetic,
-// no undo/redo or Display-mode value depends on it.
-let brushTime = 0;
-
-export function drawBrushStrokes(ctx: BrushStrokesDrawCtx, opts: BrushStrokesDrawOptions): void {
-  const { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, sampleWidth, sampleHeight, pixels } = opts;
   // A very slow overall drift on top of each stroke's shape-following
   // angle — as if the whole canvas of strokes were still being worked,
   // resettling rather than sitting frozen the instant it's painted.
-  brushTime += 0.004;
+  // Owned by the caller (applyBrushStrokesWorkerAuto.ts) rather than a
+  // module-level accumulator here: this same function also runs inside a
+  // Worker (brushStrokesWorker.ts, a separate JS realm with its own copy
+  // of this module's state) for the off-main-thread path, and that path's
+  // "only one request in flight" gating meant a worker-owned clock could
+  // silently freeze forever if the round trip never completes.
+  brushTime: number;
+}
+
+export function drawBrushStrokes(ctx: BrushStrokesDrawCtx, opts: BrushStrokesDrawOptions): void {
+  const { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, sampleWidth, sampleHeight, pixels, brushTime } = opts;
 
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

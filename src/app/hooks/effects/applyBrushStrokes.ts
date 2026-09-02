@@ -8,7 +8,7 @@ import { drawBrushStrokes } from './brushStrokesDraw';
 const MAX_DIM = 480;
 
 export function applyBrushStrokes(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, canvas, ctx } = P;
+  const { displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, brushStrokesDriftTime, canvas, ctx } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
   const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);
 
@@ -19,6 +19,6 @@ export function applyBrushStrokes(P: any): void { // eslint-disable-line @typesc
 
   drawBrushStrokes(ctx, {
     displayWidth, displayHeight, brushStrokesSize, brushStrokesLength,
-    sampleWidth: w, sampleHeight: h, pixels,
+    sampleWidth: w, sampleHeight: h, pixels, brushTime: brushStrokesDriftTime ?? 0,
   });
 }

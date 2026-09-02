@@ -14,6 +14,7 @@ export interface BrushStrokesWorkerRequest {
   displayHeight: number;
   brushStrokesSize: number;
   brushStrokesLength: number;
+  brushStrokesDriftTime: number;
   sampleWidth: number;
   sampleHeight: number;
 }
@@ -25,7 +26,7 @@ export interface BrushStrokesWorkerResponse {
 }
 
 self.onmessage = (e: MessageEvent<BrushStrokesWorkerRequest>) => {
-  const { buffer, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, sampleWidth, sampleHeight } = e.data;
+  const { buffer, displayWidth, displayHeight, brushStrokesSize, brushStrokesLength, brushStrokesDriftTime, sampleWidth, sampleHeight } = e.data;
 
   if (!offscreen || offscreen.width !== displayWidth || offscreen.height !== displayHeight) {
     offscreen = new OffscreenCanvas(displayWidth, displayHeight);
@@ -36,6 +37,7 @@ self.onmessage = (e: MessageEvent<BrushStrokesWorkerRequest>) => {
     displayWidth, displayHeight, brushStrokesSize, brushStrokesLength,
     sampleWidth, sampleHeight,
     pixels: new Uint8ClampedArray(buffer),
+    brushTime: brushStrokesDriftTime,
   });
 
   const result = offCtx!.getImageData(0, 0, displayWidth, displayHeight);
