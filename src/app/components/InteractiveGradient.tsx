@@ -1703,7 +1703,7 @@ export function InteractiveGradient() {
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
-    setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
+    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
     setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchSpeed,

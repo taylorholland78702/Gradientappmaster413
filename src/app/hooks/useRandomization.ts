@@ -99,7 +99,7 @@ export function useRandomization(params: RandomizationParams) {
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
-    setSepiaIntensity, setShakeBeatEnabled, setShapesCount,
+    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
     setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchSpeed,
@@ -380,7 +380,7 @@ export function useRandomization(params: RandomizationParams) {
     setVhsJitterAmount(Math.floor(Math.random() * 351) + 50);        // 50–400
     setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
-    setPolygon2Sides(Math.floor(Math.random() * 8) + 3);              // 3–10
+    setPolygon2Sides(Math.floor(Math.random() * 14) + 3);             // 3–16
     setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
 
     // Gradient-shape sliders
@@ -388,7 +388,12 @@ export function useRandomization(params: RandomizationParams) {
     setWindmillRotations(Math.floor(Math.random() * 9) + 1); // 1-10
     setWindmillThickness(Math.floor(Math.random() * 95) + 5); // 5-100
     setWindmillZoom(Math.random() * 3 + 0.5);                           // 0.5–3.5
-    setShapesSides(Math.floor(Math.random() * 8) + 3);                // 3–10
+    // Was never touched here, so Shuffle/Auto Shuffle could only ever land
+    // on whatever mode was already selected (in practice always 'polygon',
+    // its default) — Polar Grid was unreachable except by a manual visit to
+    // the Gradients tab.
+    setShapesMode(Math.random() < 0.5 ? 'polygon' : 'polar-grid');
+    setShapesSides(Math.floor(Math.random() * 10) + 3);               // 3–12
     setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
     setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
     setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
