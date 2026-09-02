@@ -156,6 +156,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'stackLength', label: 'Stack Length', category: 'Stack', min: 0.1, max: 2.0 },
   { key: 'hatchLayers', label: 'Hatch Layers', category: 'Hatch', min: 1.0, max: 4.0 },
   { key: 'hatchSpacing', label: 'Hatch Spacing', category: 'Hatch', min: 3.0, max: 40.0 },
+  { key: 'hatchSpeed', label: 'Hatch Speed', category: 'Hatch', min: 0.1, max: 3.0 },
   { key: 'stackResponse', label: 'Stack Response', category: 'Stack', min: 0.0, max: 1.0 },
   { key: 'colorShiftHue', label: 'Color Shift Hue', category: 'Shift', min: 0.0, max: 255.0 },
   { key: 'slitScanIntensity', label: 'Slit Scan Intensity', category: 'Slit-Scan', min: 0.1, max: 10.0 },

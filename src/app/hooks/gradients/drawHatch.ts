@@ -3,7 +3,11 @@ import { DEG_TO_RAD } from '../../constants/gradientEffects';
 // Sol LeWitt: a wall drawing reduced to its own instructions — 1-4 layers
 // of straight parallel lines, each layer one fixed direction evenly spread
 // around the shared Angle control, each layer one color. Density (line
-// spacing), not color or position, is what audio is allowed to touch.
+// spacing), not color, is what audio is allowed to touch. Speed drifts the
+// lines along their own perpendicular at a slow, uniform, non-reactive
+// rate — a literal instruction ("slide layer N this way") rather than a
+// gesture, and alternates direction per layer so adjacent layers cross
+// rather than the whole field sliding in lockstep.
 export function drawHatch(P: any): CanvasGradient | undefined {
   const {
     ctx,
@@ -18,6 +22,7 @@ export function drawHatch(P: any): CanvasGradient | undefined {
     hatchLayers,
     hatchSpacing,
     hatchResponse,
+    hatchAnimTime,
   } = P;
   let gradient: CanvasGradient | undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -40,13 +45,15 @@ export function drawHatch(P: any): CanvasGradient | undefined {
     const angle = gradientAngle + layer * (180 / layers);
     const color = gradientColors[layer % gradientColors.length];
     if (!color) continue;
+    const direction = layer % 2 === 0 ? 1 : -1;
+    const phase = ((hatchAnimTime * direction) % spacing + spacing) % spacing;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(angle * DEG_TO_RAD);
     ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    for (let x = -diag; x <= diag; x += spacing) {
+    for (let x = -diag - spacing + phase; x <= diag; x += spacing) {
       ctx.moveTo(x, -diag);
       ctx.lineTo(x, diag);
     }

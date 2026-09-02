@@ -292,6 +292,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const attractorAnimTime = av.attractorAnimTime;
     const liquidAnimTime = av.liquidAnimTime;
     const emojiAnimTime = av.emojiAnimTime;
+    const hatchAnimTime = av.hatchAnimTime;
     const voronoiAnimTime = av.voronoiAnimTime;
     const flowerAnimTime = av.flowerAnimTime;
     // tilingAnimTime was already in animValuesRef's shape but never actually
@@ -519,7 +520,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
-      flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
+      flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime, hatchAnimTime,
       voronoiAnimTime, flowerAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,

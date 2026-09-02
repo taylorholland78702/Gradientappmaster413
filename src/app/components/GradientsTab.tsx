@@ -48,6 +48,7 @@ export interface GradientsTabProps {
   hatchLayers: number; setHatchLayers: (v: number) => void;
   hatchSpacing: number; setHatchSpacing: (v: number) => void;
   hatchResponse: number; setHatchResponse: (v: number) => void;
+  hatchSpeed: number; setHatchSpeed: (v: number) => void;
 
   // Caustics
   causticsBrightness: number; setCausticsBrightness: (v: number) => void;
@@ -216,7 +217,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
     stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse,
-    hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse,
+    hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchSpeed, setHatchSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
     marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
@@ -536,6 +537,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Layers', value: hatchLayers, set: setHatchLayers, min: 1, max: 4, step: 1 },
               { label: 'Spacing', value: hatchSpacing, set: setHatchSpacing, min: 3, max: 40, step: 1 },
               { label: 'Response', value: hatchResponse, set: setHatchResponse, min: 0, max: 1, step: 0.05 },
+              { label: 'Speed', value: hatchSpeed, set: setHatchSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
