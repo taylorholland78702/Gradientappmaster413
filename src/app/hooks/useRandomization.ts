@@ -31,6 +31,36 @@ const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   stack: ['Stack'], hatch: ['Hatch'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
+
+// These gradient types draw a handful of small bright elements on an
+// otherwise black-filled canvas (points/trails, particles, bolts, bursts)
+// rather than a continuous full-frame field. Stacking multiple
+// "neighborhood average" or brightness-threshold effects on top of content
+// that sparse compounds — each one dilutes the already-mostly-black frame
+// a bit further — and a shuffle can land on a combination that washes the
+// whole thing down to a single flat color (verified: zero pixel variance
+// across the entire canvas from Pixelate+Duotone stacked on Particles via
+// the unprotected "Shuffle Effects" path below). Single effects (even
+// heavy ones) left it dim-but-visible in testing; it was stacks of 3+ that
+// tipped it over. Shared by feelingLucky (the main Shuffle/Auto Shuffle/
+// Feeling Lucky path) and randomizeEffects (the standalone "Shuffle
+// Effects" button) — the latter used to have none of this protection at
+// all, which is what actually reproduced the flat-color result.
+const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning'];
+const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
+// Oil Paint/Brush Strokes/Impasto average a neighborhood of pixels — on a
+// frame that's 95%+ black to start with, that average is just black,
+// regardless of how the strength/size sliders land. Duotone and Pixelate
+// aren't neighborhood-averaging, but collapse just as badly for a
+// different reason: Duotone recolors by a single luminance threshold, and
+// Pixelate coarsens into large blocks — on sparse content, nearly every
+// sample (or every block) lands on the same "mostly black" side, so
+// either one alone can turn the whole canvas into one flat color instead
+// of the intended two-tone or blocky look. Unlike the distortion effects
+// (fisheye/chromatic/vhs), no slider value makes any of these five behave
+// reasonably on sparse content, so they're excluded outright rather than
+// just count-limited.
+const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto', 'duotone', 'pixelate'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
 // resolution-scaling curve derived from it) now live in
 // constants/effectCost.ts, shared with EffectsTab.tsx's manual Multi-FX
@@ -494,8 +524,16 @@ export function useRandomization(params: RandomizationParams) {
     // Randomly select 1-8 effects from the full effect list (previously a
     // stale hardcoded subset that excluded every effect added after it was
     // written — ALL_EFFECTS is the single source of truth for what exists).
-    const numEffects = Math.floor(Math.random() * 8) + 1;
-    const shuffled = [...ALL_EFFECTS].sort(() => Math.random() - 0.5);
+    // Same sparse-content-gradient protection as feelingLucky below — this
+    // button used to have none at all, which is what actually reproduced
+    // the flat-single-color result (Pixelate+Duotone stacked on Particles,
+    // verified via pixel sampling to have zero variance across the whole
+    // canvas).
+    const sparseGradient = isSparseContentGradient(gradientType);
+    const pool = sparseGradient ? ALL_EFFECTS.filter(e => !CONTENT_ERASERS.includes(e)) : ALL_EFFECTS;
+    const maxEffects = sparseGradient ? 2 : 8;
+    const numEffects = Math.floor(Math.random() * maxEffects) + 1;
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const selectedEffects = shuffled.slice(0, numEffects);
 
     setActiveEffects(selectedEffects);
@@ -509,7 +547,7 @@ export function useRandomization(params: RandomizationParams) {
     // etc.) stayed wherever they last were, so repeated shuffles looked
     // identical apart from which effects were on.
     randomizeUncoveredParams();
-  }, [saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier]);
+  }, [gradientType, saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier]);
   // Optional overrides let feelingLucky pass the gradient/effects it JUST
   // picked in this same call — without them, this closes over gradientType/
   // activeEffects from the render that triggered it, which is the state
@@ -583,25 +621,6 @@ export function useRandomization(params: RandomizationParams) {
     saveCurrentState();
 
     const audioActive = isAudioEnabled && isAudioReactive;
-
-    // These gradient types draw a handful of small bright elements on an
-    // otherwise black-filled canvas (points/trails, particles, bolts,
-    // bursts) rather than a continuous full-frame field. Stacking multiple
-    // "neighborhood average" or heavy-distortion effects on top of content
-    // that sparse compounds — each one dilutes the already-mostly-black
-    // frame a bit further — and a shuffle can land on a combination that
-    // washes the whole thing down to indistinguishable-from-solid-black.
-    // Single effects (even heavy ones) left it dim-but-visible in testing;
-    // it was the stack of 3+ that tipped it over.
-    const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning'];
-    const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
-    // Oil Paint/Brush Strokes/Impasto all work by averaging a neighborhood
-    // of pixels — on a frame that's 95%+ black to start with, that neighborhood
-    // average is just black, regardless of how the strength/size sliders land.
-    // Unlike the distortion effects (fisheye/chromatic/vhs), no slider value
-    // makes these behave reasonably on sparse content, so they're excluded
-    // outright rather than just count-limited.
-    const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto'];
 
     // If no gradient type is selected, select a random one
     let currentGradientType = gradientType;
