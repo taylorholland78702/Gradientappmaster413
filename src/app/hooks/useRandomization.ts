@@ -584,6 +584,25 @@ export function useRandomization(params: RandomizationParams) {
 
     const audioActive = isAudioEnabled && isAudioReactive;
 
+    // These gradient types draw a handful of small bright elements on an
+    // otherwise black-filled canvas (points/trails, particles, bolts,
+    // bursts) rather than a continuous full-frame field. Stacking multiple
+    // "neighborhood average" or heavy-distortion effects on top of content
+    // that sparse compounds — each one dilutes the already-mostly-black
+    // frame a bit further — and a shuffle can land on a combination that
+    // washes the whole thing down to indistinguishable-from-solid-black.
+    // Single effects (even heavy ones) left it dim-but-visible in testing;
+    // it was the stack of 3+ that tipped it over.
+    const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning'];
+    const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
+    // Oil Paint/Brush Strokes/Impasto all work by averaging a neighborhood
+    // of pixels — on a frame that's 95%+ black to start with, that neighborhood
+    // average is just black, regardless of how the strength/size sliders land.
+    // Unlike the distortion effects (fisheye/chromatic/vhs), no slider value
+    // makes these behave reasonably on sparse content, so they're excluded
+    // outright rather than just count-limited.
+    const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto'];
+
     // If no gradient type is selected, select a random one
     let currentGradientType = gradientType;
     if (currentGradientType === null) {
@@ -660,10 +679,14 @@ export function useRandomization(params: RandomizationParams) {
       const keepEffectsCount = Math.floor(baseEffects.length * blendFactor);
       const keptEffects = baseEffects.slice(0, keepEffectsCount);
       
-      // Add some random effects
-      const additionalEffects = Math.floor(Math.random() * 3);
+      // Add some random effects — capped to at most 1 (instead of up to 3)
+      // and excluding the content-erasers when the base result's gradient
+      // is sparse-content, same reasoning as the full-random branch below.
+      const sparseBlend = isSparseContentGradient(targetGradientType);
+      const additionalEffectsPool = sparseBlend ? ALL_EFFECTS.filter(e => !CONTENT_ERASERS.includes(e)) : ALL_EFFECTS;
+      const additionalEffects = Math.floor(Math.random() * (sparseBlend ? 2 : 3));
       for (let i = 0; i < additionalEffects; i++) {
-        const randomEffect = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
+        const randomEffect = additionalEffectsPool[Math.floor(Math.random() * additionalEffectsPool.length)];
         if (!keptEffects.includes(randomEffect)) {
           keptEffects.push(randomEffect);
         }
@@ -747,13 +770,15 @@ export function useRandomization(params: RandomizationParams) {
       setGradientType(randomGradient);
       finalGradientType = randomGradient;
 
+      const sparseGradient = isSparseContentGradient(randomGradient);
+
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
       // Heavy shape-changers mask the gradient entirely; only allow them stacked with a light effect.
       const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'fisheye', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
       // When audio is active, prefer effects that visibly react to audio
-      const LIGHT_FX: EffectType[] = audioActive
-        ? AUDIO_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
-        : ALL_EFFECTS.filter(e => !SHAPE_CHANGERS.includes(e as EffectType));
+      const LIGHT_FX: EffectType[] = (audioActive ? AUDIO_EFFECTS : ALL_EFFECTS)
+        .filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
+        .filter(e => !(sparseGradient && CONTENT_ERASERS.includes(e as EffectType)));
       // Roll a total COST budget (not a raw effect count), n is spent in
       // cost-units (see EFFECT_COST above) rather than one unit per effect.
       // A budget that lands on a couple of heavy effects (chromatic-trails,
@@ -771,7 +796,10 @@ export function useRandomization(params: RandomizationParams) {
       // effects were picked — a shuffle topping out around 2-3 in
       // practice despite the cap already being higher).
       const MIN_SHUFFLE_EFFECTS = 2;
-      const MAX_SHUFFLE_EFFECTS = 5;
+      // Capped tighter for sparse-content gradients (particles/attractor/
+      // fireworks/lightning) — even "light" effects compound when stacked
+      // 3+ deep on a frame that's mostly black to start with.
+      const MAX_SHUFFLE_EFFECTS = sparseGradient ? 2 : 5;
       const costBudget = 9 + Math.floor(((Math.random() + Math.random()) / 2) * 10);
       const selectedEffects: EffectType[] = [];
       let spentCost = 0;
