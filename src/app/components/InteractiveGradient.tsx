@@ -1674,7 +1674,7 @@ export function InteractiveGradient() {
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
     setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength, setCrtIntensity, setCrtScanlineSpacing,
-    setNoiseType, setNoiseWarp, setRadialSizeScale, setVignetteSoftness, setWaveDistortionRotation,
+    setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
