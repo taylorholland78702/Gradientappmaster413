@@ -260,6 +260,14 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
 // conveniently never fires in the tab that made the write, so no echo
 // filtering is needed. Read once at module load — the URL flag never
 // changes mid-session.
+type AutoShuffleScope = 'all' | 'gradient' | 'effects' | 'colors';
+const AUTO_SHUFFLE_SCOPES: { id: AutoShuffleScope; label: string; hint: string }[] = [
+  { id: 'all', label: 'All', hint: 'A full remix each time' },
+  { id: 'gradient', label: 'Gradient', hint: 'Only swap the gradient' },
+  { id: 'effects', label: 'Effects', hint: 'Only reshuffle the effects' },
+  { id: 'colors', label: 'Colors', hint: 'Only roll a new palette' },
+];
+
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
 // Standalone playback: a ?display=1&preset=<encoded> link carries its own
 // frozen preset instead of depending on a live controller tab to broadcast
@@ -1896,6 +1904,16 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
+  const [autoShuffleScope, setAutoShuffleScopeState] = useState<AutoShuffleScope>(() => {
+    try {
+      const saved = localStorage.getItem('autoShuffleScope');
+      return AUTO_SHUFFLE_SCOPES.some(o => o.id === saved) ? (saved as AutoShuffleScope) : 'all';
+    } catch { return 'all'; }
+  });
+  const setAutoShuffleScope = (scope: AutoShuffleScope) => {
+    setAutoShuffleScopeState(scope);
+    try { localStorage.setItem('autoShuffleScope', scope); } catch { /* storage unavailable: the choice just won't persist */ }
+  };
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -2025,6 +2043,20 @@ export function InteractiveGradient() {
             aria-label="Auto Shuffle interval in seconds"
           />
         </div>
+        <div className="flex gap-1" role="group" aria-label="What Auto Shuffle changes">
+          {AUTO_SHUFFLE_SCOPES.map(o => (
+            <button
+              key={o.id}
+              onClick={() => setAutoShuffleScope(o.id)}
+              aria-pressed={autoShuffleScope === o.id}
+              title={o.hint}
+              className="flex-1 py-1 text-[10px] transition-all"
+              style={autoShuffleScope === o.id
+                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
+                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+            >{o.label}</button>
+          ))}
+        </div>
         <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
           {[5, 15, 60, 300].map(sec => (
             <button
@@ -2055,10 +2087,28 @@ export function InteractiveGradient() {
   // the next instead of the ~2s ease used for a manual nudge/remix.
   const isAutoShuffleOnRef = useRef(false);
   useEffect(() => { isAutoShuffleOnRef.current = isAutoShuffleOn; }, [isAutoShuffleOn]);
+  // What each Auto Shuffle tick changes: everything (a full remix), or just the
+  // gradient, the effects or the colors. Read through a ref so changing the scope
+  // doesn't restart the timer.
+  const autoShuffleScopeRef = useRef(autoShuffleScope);
+  autoShuffleScopeRef.current = autoShuffleScope;
+  const autoShuffleActionsRef = useRef({ shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors });
+  autoShuffleActionsRef.current = { shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors };
+  const runAutoShuffleTick = () => {
+    const a = autoShuffleActionsRef.current;
+    switch (autoShuffleScopeRef.current) {
+      case 'gradient': a.shuffleGradientType(); break;
+      case 'effects': a.randomizeEffects(); break;
+      case 'colors': a.saveCurrentState(); a.setTargetColors(gradientColorsRef.current.map(() => a.randomColor())); break;
+      default: evolveWithFactorRef.current(1);
+    }
+  };
+  const runAutoShuffleTickRef = useRef(runAutoShuffleTick);
+  runAutoShuffleTickRef.current = runAutoShuffleTick;
   useEffect(() => {
     if (!isAutoShuffleOn || isNewPresetPending) return;
-    evolveWithFactorRef.current(1);
-    const id = setInterval(() => evolveWithFactorRef.current(1), autoShuffleIntervalSec * 1000);
+    runAutoShuffleTickRef.current();
+    const id = setInterval(() => runAutoShuffleTickRef.current(), autoShuffleIntervalSec * 1000);
     return () => clearInterval(id);
   }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending]);
 

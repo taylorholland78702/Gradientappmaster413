@@ -1,4 +1,4 @@
-import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
@@ -66,6 +66,19 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
   forwardedRef
 ) {
   const drawerRef = useRef<HTMLDivElement>(null);
+  // The 1.3x scale below is a transform, which grows what you can scroll to but not
+  // the wrapper's layout height — and the sticky title only stays pinned inside that
+  // wrapper's layout box, so it let go partway down a long list. Adding the scaled
+  // growth as bottom margin makes the wrapper as tall as it looks.
+  const scaledRef = useRef<HTMLDivElement>(null);
+  const [scaleGrowth, setScaleGrowth] = useState(0);
+  useEffect(() => {
+    const el = scaledRef.current;
+    if (!el || isMobile || typeof ResizeObserver === 'undefined') { setScaleGrowth(0); return; }
+    const ro = new ResizeObserver(() => setScaleGrowth(el.offsetHeight * (DESKTOP_DRAWER_SCALE - 1)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isMobile, activeTab]);
   // Exposes the scrollable root so InteractiveGradient.tsx can attach its
   // existing manual touch-drag-scroll workaround (iOS Safari quirk — see
   // that effect's own comment) to whichever element actually scrolls now
@@ -99,11 +112,22 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           : 'flex-shrink-0 h-full pointer-events-auto bg-black/75 rounded-none overflow-y-auto overflow-x-hidden'
       }
     >
+    {/* The title lives OUTSIDE the scaled wrapper: a sticky element inside a
+        transformed one is positioned in unscaled coordinates, so it drifted off the
+        top by 30% of however far you'd scrolled. Sized by hand to match what the
+        scale would have made it. */}
+    <div
+      className="flex items-center justify-center sticky top-0 bg-black/75 border-b border-white/50 z-10"
+      style={isMobile ? { padding: '6px 12px' } : { padding: `${6 * DESKTOP_DRAWER_SCALE}px ${12 * DESKTOP_DRAWER_SCALE}px` }}
+    >
+      <span className="text-white/90 font-semibold" style={{ fontSize: isMobile ? 15 : 15 * DESKTOP_DRAWER_SCALE }}>{TAB_LABELS[activeTab]}</span>
+    </div>
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
         above. Mobile renders this content directly at natural size. */}
     <div
+      ref={scaledRef}
       className={isMobile ? '' : 'origin-top-left'}
-      style={!isMobile ? { transform: `scale(${DESKTOP_DRAWER_SCALE})`, width: DESKTOP_DRAWER_CONTENT_W } : undefined}
+      style={!isMobile ? { transform: `scale(${DESKTOP_DRAWER_SCALE})`, width: DESKTOP_DRAWER_CONTENT_W, marginBottom: scaleGrowth } : undefined}
     >
       {/* No close button — repressing the tab's own rail icon (a toggle,
           see ControlRail's tab buttons) is the only way to close a drawer
@@ -111,10 +135,6 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           Compact fixed padding now (was a much taller box sized to match
           the wordmark's 3-line stack height for vertical-center alignment
           — traded away in favor of a drastically tighter header). */}
-      <div className="flex items-center justify-center px-3 py-1.5 sticky top-0 bg-black/75 border-b border-white/50 z-10">
-        <span className="text-white/90 text-[15px] font-semibold">{TAB_LABELS[activeTab]}</span>
-      </div>
-
       <div className="flex flex-col gap-[6px] px-1.5 pb-2">
         {/* `as any` on every spread below: tabProps/audioState/audioActions
             are intentionally loosely typed (see the props comment above) —
