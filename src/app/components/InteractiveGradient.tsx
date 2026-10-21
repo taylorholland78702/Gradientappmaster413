@@ -36,7 +36,7 @@ import {
   DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
   ID_MIGRATIONS, migrateId, migrateIds,
   WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
-  ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES,
+  ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
 import { totalCost, resolutionForEffectCost, costOf, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
@@ -1375,6 +1375,28 @@ export function InteractiveGradient() {
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
+  // Shared clock for the styled-field gradients (drawStyleFieldGL.ts). Gated exactly
+  // like the older gradients' clocks above — it only advances while auto mode, VCR
+  // playback or the mic is on, so pausing freezes these too (and editing a slider
+  // while paused no longer makes the pattern jump) — and scaled by the playback speed
+  // and the Speed the last frame drew with. Lives in the anim-values ref rather than
+  // state, like gridRotation: advancing it must not re-render the panel tree 60x/sec.
+  // Real elapsed time (not a fixed per-tick step) so a throttled timer can't slow it.
+  useEffect(() => {
+    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
+    let last = performance.now();
+    const id = setInterval(() => {
+      const now = performance.now();
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (!STYLE_FIELD_GRADIENT_TYPES.includes(gradientTypeRef.current as GradientType)) return;
+      if (!isAutoModeRef.current && !isVCRPlayingRef.current && !isMicActiveRef.current) return;
+      const av = animValuesRef.current;
+      av.fieldAnimTime += dt * vcrPlaybackSpeedRef.current * av.fieldSpeedLive;
+    }, 16);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
@@ -1587,13 +1609,14 @@ export function InteractiveGradient() {
   // Randomize all colors
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
   // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
-  // doesn't to their defaults so a look always lands the same way. Undoable like
-  // any other palette change. A palette the same length as the current one eases
-  // in; a different length snaps (see setColorsInstant for why a length change
-  // can't ease).
-  const applyGradientLook = useCallback((look: GradientLook) => {
-    saveCurrentState();
-    const colors = look.colors.map(hexToRgb);
+  // doesn't to their defaults so a look always lands the same way. A palette the
+  // same length as the current one eases in; a different length snaps (see
+  // setColorsInstant for why a length change can't ease) — Shuffle sidesteps that
+  // by passing `colorsOverride`, the look's palette resampled to the current
+  // length. No undo snapshot here: callers that want one take it themselves
+  // (the chips below; Shuffle already does).
+  const applyLookValues = useCallback((look: GradientLook, colorsOverride?: ColorRGB[]) => {
+    const colors = colorsOverride ?? look.colors.map(hexToRgb);
     if (colors.length === gradientColorsRef.current.length) setTargetColors(colors);
     else setColorsInstant(colors);
     setFieldScale(look.scale ?? LOOK_DEFAULTS.scale);
@@ -1635,7 +1658,13 @@ export function InteractiveGradient() {
         setters[key](value);
       }
     }
-  }, [saveCurrentState, setColorsInstant]);
+  }, [setColorsInstant]);
+
+  // What a Look chip does: the same, but undoable.
+  const applyGradientLook = useCallback((look: GradientLook) => {
+    saveCurrentState();
+    applyLookValues(look);
+  }, [saveCurrentState, applyLookValues]);
 
   const randomizeAllColors = useCallback(() => {
     saveCurrentState();
@@ -1739,7 +1768,7 @@ export function InteractiveGradient() {
     setMeshWireframeGridSize, setMeshWireframeJitter, setMeshWireframeLineWidth,
     setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
-    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed, setPaletteStops, setPaletteBias, setPaletteSharp,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed, setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -2083,6 +2112,7 @@ export function InteractiveGradient() {
       if (typeof v.causticsAnimTime === 'number') av.causticsAnimTime = v.causticsAnimTime;
       if (typeof v.lavaAnimTime === 'number') av.lavaAnimTime = v.lavaAnimTime;
       if (typeof v.marbleAnimTime === 'number') av.marbleAnimTime = v.marbleAnimTime;
+      if (typeof v.fieldAnimTime === 'number') av.fieldAnimTime = v.fieldAnimTime;
       if (typeof v.metaballAnimTime === 'number') av.metaballAnimTime = v.metaballAnimTime;
       if (typeof v.flowAnimTime === 'number') av.flowAnimTime = v.flowAnimTime;
       if (typeof v.liquidAnimTime === 'number') av.liquidAnimTime = v.liquidAnimTime;

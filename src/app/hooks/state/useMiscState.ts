@@ -14,6 +14,10 @@ export function useMiscState() {
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0, tilingAnimTime: 0, hatchAnimTime: 0,
     noiseAnimTime: 0, radialAnimTime: 0,
     waveInterferenceAnimTime: 0, meshWireframeAnimTime: 0,
+    // Shared clock for the styled-field gradients (drawStyleFieldGL.ts) — gated and
+    // speed-scaled like every other gradient's, not free-running. fieldSpeedLive is the
+    // modulated Speed useCanvasDraw last drew with, so audio-bound Speed still steers it.
+    fieldAnimTime: 0, fieldSpeedLive: 1,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
     // gridRotation/radarSweepAngle: same ref-primary treatment as the anim
     // times above — the main loop writes these directly every frame now

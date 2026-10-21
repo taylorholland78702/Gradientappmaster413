@@ -648,21 +648,6 @@ export function detectStyleFieldGLSupport(): boolean {
 }
 export const hasStyleFieldFailed = (id: string): boolean => failedStyles.has(id);
 
-// Animation clock. Lives here (not in per-gradient React state like the older
-// gradients' *AnimTime values) because it is a single monotonic counter shared
-// by every style — only one is ever on screen, and the shared Speed control is
-// folded in as the time is accumulated so changing it never makes the picture
-// jump.
-let clock = 0;
-let lastNow = 0;
-function advanceClock(speed: number): number {
-  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  const dt = lastNow === 0 ? 0 : Math.min(0.1, (now - lastNow) / 1000);
-  lastNow = now;
-  clock += dt * speed;
-  return clock;
-}
-
 function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram {
   if (programsGL !== gl) {
     programs.clear();
@@ -679,7 +664,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldSpeed,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -694,7 +679,9 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   }
 
   const audio = !!(isAudioEnabled && isAudioReactive);
-  const time = advanceClock(Math.max(0, fieldSpeed ?? 1));
+  // The app-driven clock (InteractiveGradient.tsx): frozen while paused, scaled by the
+  // playback speed and this gradient's Speed, and synced to Display windows.
+  const time = fieldAnimTime ?? 0;
   const scale = 3 * (fieldScale ?? 1) / Math.max(0.05, zoom ?? 1);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);

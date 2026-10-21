@@ -4,8 +4,9 @@ import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FEELING_LUCKY_GRADIENT_TYPES, FULL_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
 import { pickRandomEmojiSet } from '../components/InteractiveGradient';
-import { hslToRgb, rgbToHsl } from '../utils/color';
+import { hslToRgb, rgbToHsl, hexToRgb } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
+import { GRADIENT_LOOKS } from '../constants/gradientLooks';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
@@ -54,7 +55,9 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 // Feeling Lucky path) and randomizeEffects (the standalone "Shuffle
 // Effects" button) — the latter used to have none of this protection at
 // all, which is what actually reproduced the flat-color result.
-const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning'];
+// The dark-ground styled gradients (a thin ring / beam / bokeh discs on near-black)
+// are sparse in the same way: posterising or smearing them leaves a flat field.
+const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'light-beam', 'edge-glow', 'bokeh'];
 const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
 // Oil Paint/Brush Strokes/Impasto average a neighborhood of pixels — on a
 // frame that's 95%+ black to start with, that average is just black,
@@ -124,6 +127,7 @@ export function useRandomization(params: RandomizationParams) {
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
+    setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -895,6 +899,22 @@ export function useRandomization(params: RandomizationParams) {
     // that function) so Shuffle Gradient and Shuffle Effects share it too,
     // instead of only the main Remix button.
     randomizeUncoveredParams();
+    // Palette shaping (stop positions / Bias / Sharpness) isn't randomized, so
+    // clear whatever the last shuffle or Look left behind. Then, most of the
+    // time, land on one of the gradient's curated Looks — they're the combos
+    // known to read well, and the resampled palette keeps Auto Shuffle easing
+    // instead of snapping when the Look has a different colour count.
+    if (!usePreferences) {
+      setPaletteStops(null);
+      setPaletteBias(0.5);
+      setPaletteSharp(0);
+      const looks = finalGradientType ? GRADIENT_LOOKS[finalGradientType] : undefined;
+      if (looks?.length && Math.random() < 0.65) {
+        const look = looks[Math.floor(Math.random() * looks.length)];
+        const lookColors = look.colors.map(hexToRgb);
+        applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
+      }
+    }
     // Remix randomizes every gradient/effect slider already — extend that to
     // the Audio panel too, but only when audio is actually engaged, so a
     // Remix on a silent canvas doesn't reshuffle sensitivity/beat-sync
@@ -902,7 +922,7 @@ export function useRandomization(params: RandomizationParams) {
     if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }

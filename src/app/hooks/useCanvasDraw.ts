@@ -294,6 +294,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const causticsAnimTime = av.causticsAnimTime;
     const lavaAnimTime = av.lavaAnimTime;
     const marbleAnimTime = av.marbleAnimTime;
+    const fieldAnimTime = av.fieldAnimTime;
     const metaballAnimTime = av.metaballAnimTime;
     const flowAnimTime = av.flowAnimTime;
     const attractorAnimTime = av.attractorAnimTime;
@@ -537,7 +538,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
 
     const drawCtx: Record<string, any> = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
-      auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
+      fieldAnimTime, auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
       flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime, hatchAnimTime, noiseAnimTime, radialAnimTime,
       voronoiAnimTime, flowerAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
@@ -553,6 +554,9 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
       applyAudioBindings(drawCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
     }
+    // The styled-field clock (advanced in InteractiveGradient.tsx) scales its rate by
+    // the Speed this frame actually drew with, so an audio binding on Speed steers it.
+    if (typeof drawCtx.fieldSpeed === 'number') av.fieldSpeedLive = Math.max(0, drawCtx.fieldSpeed);
 
     // Computed once per frame, not once per active effect — every binding
     // always reads off the same unmodified `params`, so re-deriving this
