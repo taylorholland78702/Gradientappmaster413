@@ -2,17 +2,19 @@ import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useR
 import { ColorTab } from './ColorTab';
 import { GradientsTab } from './GradientsTab';
 import { EffectsTab } from './EffectsTab';
+import { DrawTab } from './DrawTab';
 
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
 
-type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
+type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'draw' | 'presets';
 
 const TAB_LABELS: Record<TabId, string> = {
   gradients: 'Gradients',
   effects: 'Effects',
   audio: 'Audio',
   color: 'Color',
+  draw: 'Draw',
   presets: 'Presets',
 };
 
@@ -146,6 +148,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
         {activeTab === 'color' && <ColorTab {...(tabProps as any)} />}
         {activeTab === 'gradients' && <GradientsTab {...(tabProps as any)} />}
         {activeTab === 'effects' && <EffectsTab {...(tabProps as any)} />}
+        {activeTab === 'draw' && <DrawTab {...(tabProps as any)} />}
         {activeTab === 'audio' && (
           <Suspense fallback={null}>
             <AudioPanel state={audioState as any} actions={audioActions as any} />

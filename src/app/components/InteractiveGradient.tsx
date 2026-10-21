@@ -17,7 +17,7 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, PencilSimple, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -1970,6 +1970,8 @@ export function InteractiveGradient() {
   const setDrawSoftness = (v: number) => { setDrawSoftnessState(v); drawSettings.softness = v; };
   const setDrawFadeSec = (v: number) => { setDrawFadeSecState(v); drawSettings.fadeMs = v * 1000; };
   const isPaintingRef = useRef(false);
+  // Opening the Draw tab turns Draw on: that's why you opened it.
+  useEffect(() => { if (activeTab === 'draw') setDrawEnabled(true); }, [activeTab]);
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
@@ -3390,7 +3392,7 @@ export function InteractiveGradient() {
   };
   const handlePaintDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawEnabledRef.current) return;
-    if (activeTab) setActiveTab(null);
+    // The drawer stays open while painting (it docks beside the canvas), so the brush can be tuned mid-stroke.
     isPaintingRef.current = true;
     e.currentTarget.setPointerCapture(e.pointerId);
     endStroke();
@@ -3850,6 +3852,10 @@ export function InteractiveGradient() {
         case 'c': case 'C':
           e.preventDefault();
           setActiveTab(prev => prev === 'color' ? null : 'color');
+          break;
+        case 'b': case 'B':
+          e.preventDefault();
+          setActiveTab(prev => prev === 'draw' ? null : 'draw');
           break;
         case 'p': case 'P':
           e.preventDefault();
@@ -4546,6 +4552,7 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
+                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><PencilSimple weight="regular" className="w-4 h-4 shrink-0" /> Draw — paint on the canvas with strokes that fade away</span><Kbd label="B" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
               </div>
 

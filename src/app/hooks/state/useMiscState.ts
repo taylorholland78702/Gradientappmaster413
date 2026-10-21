@@ -91,7 +91,7 @@ export function useMiscState() {
   });
   const [isGradientsOpen, setIsGradientsOpen] = useState(false);
   const [isEffectsOpen, setIsEffectsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'presets' | null>(null);
+  const [activeTab, setActiveTab] = useState<'color' | 'gradients' | 'effects' | 'audio' | 'draw' | 'presets' | null>(null);
   const [isAIColorPickerOpen, setIsAIColorPickerOpen] = useState(false);
   const [isKeywordHelpOpen, setIsKeywordHelpOpen] = useState(false);
   const [concentricRingWidth, setConcentricRingWidth] = useState(100);
