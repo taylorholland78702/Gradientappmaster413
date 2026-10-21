@@ -6,7 +6,7 @@
 // _registry.ts's wrapper only calls this for 'helix' and always uses the
 // CPU path otherwise. Falls back to the CPU implementation if WebGL2
 // isn't available or this throws.
-import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -22,6 +22,7 @@ uniform float uBassPulse;
 uniform float uMaxDist;
 uniform vec3 uColors[${MAX_FIELD_COLORS}];
 uniform int uColorCount;
+${BLEND_COLORS_GLSL}
 in vec2 vUv;
 out vec4 outColor;
 
@@ -42,7 +43,7 @@ void main() {
   int colorIdx = int(floor(colorPos));
   float colorFrac = colorPos - float(colorIdx);
   int colorIdx2 = min(colorIdx + 1, uColorCount - 1);
-  vec3 color = mix(uColors[colorIdx], uColors[colorIdx2], colorFrac);
+  vec3 color = blendColors(uColors[colorIdx], uColors[colorIdx2], colorFrac);
 
   float radialBoost = 1.0 + uBassPulse * (1.0 - dist / uMaxDist) * 0.8;
   outColor = vec4(min(vec3(1.0), color * radialBoost), 1.0);
@@ -104,6 +105,7 @@ function renderWindmillHelixStage(gl: WebGL2RenderingContext, outputFramebuffer:
   gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), u.maxDist);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), u.colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), u.colorCount);
+  setBlendUniform(gl, program);
   drawFieldFullscreen(gl);
 }
 

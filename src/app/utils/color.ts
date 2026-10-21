@@ -79,3 +79,88 @@ export function adjustPalette(colors: ColorRGB[], adjust: PaletteAdjust): ColorR
     };
   });
 }
+
+// How a gradient interpolates between two adjacent palette colors. 'srgb' is
+// the plain per-channel lerp every gradient used before this setting existed
+// (and stays the default, so existing looks and presets are unchanged).
+// 'oklab' blends in a perceptually uniform space, which avoids the dim, grey
+// midpoints a straight sRGB lerp produces between saturated colors (blue →
+// yellow passing through grey). 'oklch' does the same but travels around the
+// hue wheel instead of cutting across it, so transitions stay vivid.
+export type ColorBlend = 'srgb' | 'oklab' | 'oklch';
+export const COLOR_BLEND_MODES: ColorBlend[] = ['srgb', 'oklab', 'oklch'];
+
+// Set once per frame from the draw params (useCanvasDraw) rather than threaded
+// through every gradient's draw function — ~15 interpolation sites across the
+// CPU and WebGL paths all need the same answer, and only one gradient is ever
+// drawing at a time.
+let activeColorBlend: ColorBlend = 'srgb';
+export const setActiveColorBlend = (mode: ColorBlend | undefined) => { activeColorBlend = mode ?? 'srgb'; };
+export const getActiveColorBlend = (): ColorBlend => activeColorBlend;
+// Matches `uBlendMode` in the GLSL (glShared's blendColorsGLSL).
+export const colorBlendIndex = (mode: ColorBlend): number => (mode === 'oklab' ? 1 : mode === 'oklch' ? 2 : 0);
+
+const srgbToLinear = (v: number): number => {
+  const c = v / 255;
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+};
+const linearToSrgb = (v: number): number => {
+  const c = v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+  return Math.max(0, Math.min(255, c * 255));
+};
+
+type Lab = [number, number, number];
+
+// Björn Ottosson's OKLab: https://bottosson.github.io/posts/oklab/
+function rgbToOklab(r: number, g: number, b: number): Lab {
+  const lr = srgbToLinear(r), lg = srgbToLinear(g), lb = srgbToLinear(b);
+  const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
+  const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
+  const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+
+function oklabToRgb(L: number, a: number, b: number): ColorRGB {
+  const l = Math.pow(L + 0.3963377774 * a + 0.2158037573 * b, 3);
+  const m = Math.pow(L - 0.1055613458 * a - 0.0638541728 * b, 3);
+  const s = Math.pow(L - 0.0894841775 * a - 1.291485548 * b, 3);
+  return {
+    r: linearToSrgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+  };
+}
+
+// Below this chroma a color is effectively grey and its hue angle is noise —
+// borrow the other endpoint's hue instead so grey → color doesn't swing
+// through the whole wheel.
+const ACHROMATIC_CHROMA = 0.004;
+
+// Interpolates between two palette colors by `t` (0-1) in the given space
+// (defaults to the frame's active mode). The 'srgb' path is bit-for-bit the
+// lerp the call sites used to inline, so switching the default is a no-op.
+export function blendRgb(c1: ColorRGB, c2: ColorRGB, t: number, mode: ColorBlend = activeColorBlend): ColorRGB {
+  if (mode === 'srgb') {
+    return { r: c1.r + (c2.r - c1.r) * t, g: c1.g + (c2.g - c1.g) * t, b: c1.b + (c2.b - c1.b) * t };
+  }
+  const [L1, a1, b1] = rgbToOklab(c1.r, c1.g, c1.b);
+  const [L2, a2, b2] = rgbToOklab(c2.r, c2.g, c2.b);
+  if (mode === 'oklab') {
+    return oklabToRgb(L1 + (L2 - L1) * t, a1 + (a2 - a1) * t, b1 + (b2 - b1) * t);
+  }
+  const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
+  let h1 = Math.atan2(b1, a1), h2 = Math.atan2(b2, a2);
+  if (C1 < ACHROMATIC_CHROMA) h1 = h2;
+  else if (C2 < ACHROMATIC_CHROMA) h2 = h1;
+  let dh = h2 - h1;
+  if (dh > Math.PI) dh -= 2 * Math.PI;
+  else if (dh < -Math.PI) dh += 2 * Math.PI;
+  const L = L1 + (L2 - L1) * t;
+  const C = C1 + (C2 - C1) * t;
+  const h = h1 + dh * t;
+  return oklabToRgb(L, C * Math.cos(h), C * Math.sin(h));
+}

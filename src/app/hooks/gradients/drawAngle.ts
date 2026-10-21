@@ -1,4 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import { blendRgb, getActiveColorBlend } from '../../utils/color';
 
 export function drawAngle(P: any): CanvasGradient | undefined {
   const {
@@ -261,9 +262,10 @@ export function drawAngle(P: any): CanvasGradient | undefined {
               // solid color with a hard cut at the boundary — a pinwheel
               // instead of a smooth conic sweep.
               const frac = angleHardEdge ? 0 : colorFrac;
-              angleData[idx] = color1.r + (color2.r - color1.r) * frac;
-              angleData[idx + 1] = color1.g + (color2.g - color1.g) * frac;
-              angleData[idx + 2] = color1.b + (color2.b - color1.b) * frac;
+              const mixed = getActiveColorBlend() === 'srgb' ? null : blendRgb(color1, color2, frac);
+              angleData[idx] = mixed ? mixed.r : color1.r + (color2.r - color1.r) * frac;
+              angleData[idx + 1] = mixed ? mixed.g : color1.g + (color2.g - color1.g) * frac;
+              angleData[idx + 2] = mixed ? mixed.b : color1.b + (color2.b - color1.b) * frac;
               angleData[idx + 3] = 255;
             }
           }

@@ -12,6 +12,8 @@
 // ctx.drawImage — identical handoff to the CPU path's putLowResImageData,
 // just with a GPU-rendered source image instead of a JS-computed ImageData.
 
+import { colorBlendIndex, getActiveColorBlend } from '../../utils/color';
+
 export const MAX_FIELD_COLORS = 12;
 
 // vUv is top-down (0,0 = top-left, matching the CPU loops' row-major (x, y)
@@ -41,6 +43,69 @@ float jsMod(float x, float m) {
   return x - trunc(x / m) * m;
 }`;
 
+// GLSL twin of color.ts's blendRgb — interpolates two palette colors in
+// sRGB (0, the plain mix() every shader used before), OKLab (1), or OKLCH
+// (2, hue travels the short way round the wheel). Splice into any shader
+// that lerps between palette stops, and call blendColors() in place of mix().
+// uBlendMode is uploaded from the frame's active mode (see setColorUniforms /
+// setBlendUniform).
+export const BLEND_COLORS_GLSL = `
+uniform int uBlendMode; // 0 sRGB, 1 OKLab, 2 OKLCH
+vec3 srgbToLinear(vec3 c) {
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+vec3 linearToSrgb(vec3 c) {
+  c = clamp(c, 0.0, 1.0);
+  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+}
+vec3 rgbToOklab(vec3 rgb) {
+  vec3 c = srgbToLinear(rgb);
+  float l = pow(max(0.4122214708 * c.r + 0.5363325363 * c.g + 0.0514459929 * c.b, 0.0), 1.0 / 3.0);
+  float m = pow(max(0.2119034982 * c.r + 0.6806995451 * c.g + 0.1073969566 * c.b, 0.0), 1.0 / 3.0);
+  float s = pow(max(0.0883024619 * c.r + 0.2817188376 * c.g + 0.6299787005 * c.b, 0.0), 1.0 / 3.0);
+  return vec3(
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s);
+}
+vec3 oklabToRgb(vec3 lab) {
+  float l = lab.x + 0.3963377774 * lab.y + 0.2158037573 * lab.z;
+  float m = lab.x - 0.1055613458 * lab.y - 0.0638541728 * lab.z;
+  float s = lab.x - 0.0894841775 * lab.y - 1.291485548 * lab.z;
+  l = l * l * l; m = m * m * m; s = s * s * s;
+  return linearToSrgb(vec3(
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s));
+}
+float safeHue(vec2 ab) {
+  return dot(ab, ab) < 1e-10 ? 0.0 : atan(ab.y, ab.x);
+}
+vec3 blendColors(vec3 a, vec3 b, float t) {
+  if (uBlendMode == 0) return mix(a, b, t);
+  vec3 la = rgbToOklab(a);
+  vec3 lb = rgbToOklab(b);
+  if (uBlendMode == 1) return oklabToRgb(mix(la, lb, t));
+  const float PI = 3.14159265359;
+  float c1 = length(la.yz);
+  float c2 = length(lb.yz);
+  float h1 = safeHue(la.yz);
+  float h2 = safeHue(lb.yz);
+  if (c1 < 0.004) h1 = h2;
+  else if (c2 < 0.004) h2 = h1;
+  float dh = h2 - h1;
+  if (dh > PI) dh -= 2.0 * PI;
+  else if (dh < -PI) dh += 2.0 * PI;
+  float L = mix(la.x, lb.x, t);
+  float C = mix(c1, c2, t);
+  float h = h1 + dh * t;
+  return oklabToRgb(vec3(L, C * cos(h), C * sin(h)));
+}`;
+
+export function setBlendUniform(gl: WebGL2RenderingContext, program: WebGLProgram) {
+  gl.uniform1i(gl.getUniformLocation(program, 'uBlendMode'), colorBlendIndex(getActiveColorBlend()));
+}
+
 // Ports fieldCurve.ts's applyFieldContrast + mapValueToColor/getMappedColor
 // verbatim to GLSL — same power-curve contrast reshape and linear/banded/
 // cyclic palette lookup used by every CPU gradient's getMappedColor call,
@@ -54,6 +119,7 @@ uniform int uPaletteMode; // 0 linear, 1 banded, 2 cyclic
 uniform float uBands;
 uniform vec3 uColors[${maxColors}];
 uniform int uColorCount;
+${BLEND_COLORS_GLSL}
 
 float applyFieldContrast(float t, float amount) {
   if (amount == 1.0) return t;
@@ -77,7 +143,7 @@ vec3 mapValueToColor(float t) {
   int idx = int(floor(pos));
   float frac = pos - float(idx);
   int idx2 = min(idx + 1, uColorCount - 1);
-  return mix(uColors[idx], uColors[idx2], frac);
+  return blendColors(uColors[idx], uColors[idx2], frac);
 }
 
 vec3 getMappedColor(float t) {
@@ -166,6 +232,7 @@ export function setColorUniforms(
   gl.uniform1f(gl.getUniformLocation(program, 'uBands'), paletteBands);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), colorCount);
+  setBlendUniform(gl, program);
 }
 
 // Feature-detects what these field shaders need: a WebGL2 context and

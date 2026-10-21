@@ -9,6 +9,7 @@
 // memoized), _registry.ts falls back to the CPU implementation for the
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
+import { BLEND_COLORS_GLSL, setBlendUniform } from './glShared';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -96,6 +97,7 @@ uniform int uPaletteMode;
 uniform float uBands;
 uniform vec3 uColors[${MAX_COLORS}];
 uniform int uColorCount;
+${BLEND_COLORS_GLSL}
 in vec2 vUv;
 out vec4 outColor;
 
@@ -124,7 +126,7 @@ void main() {
   int idx = int(floor(pos));
   float frac = pos - float(idx);
   int idx2 = min(idx + 1, uColorCount - 1);
-  vec3 color = mix(uColors[idx], uColors[idx2], frac);
+  vec3 color = blendColors(uColors[idx], uColors[idx2], frac);
   outColor = vec4(color, 1.0);
 }`;
 
@@ -414,6 +416,7 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
   gl.uniform1f(gl.getUniformLocation(st.colorProgram, 'uBands'), paletteBands);
   gl.uniform3fv(gl.getUniformLocation(st.colorProgram, 'uColors'), colorArr);
   gl.uniform1i(gl.getUniformLocation(st.colorProgram, 'uColorCount'), colorCount);
+  setBlendUniform(gl, st.colorProgram);
   drawFullscreen(gl);
 
   // Same smoothing/blur upscale as the CPU path (drawReactionDiffusion.ts:349-352)

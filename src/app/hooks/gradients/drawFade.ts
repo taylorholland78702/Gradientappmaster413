@@ -1,4 +1,5 @@
 import { applyFieldContrast } from '../../utils/fieldCurve';
+import { blendRgb } from '../../utils/color';
 
 export function drawFade(P: any): CanvasGradient | undefined {
   const {
@@ -243,9 +244,10 @@ export function drawFade(P: any): CanvasGradient | undefined {
             const next = gradientColors[nextIndex] || current;
             if (!current) return gradient;
 
-            const lr = Math.round(current.r + (next.r - current.r) * lightBlend);
-            const lg = Math.round(current.g + (next.g - current.g) * lightBlend);
-            const lb = Math.round(current.b + (next.b - current.b) * lightBlend);
+            const lightMix = blendRgb(current, next, lightBlend);
+            const lr = Math.round(lightMix.r);
+            const lg = Math.round(lightMix.g);
+            const lb = Math.round(lightMix.b);
 
             ctx.fillStyle = `rgb(${lr}, ${lg}, ${lb})`;
             ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -278,9 +280,10 @@ export function drawFade(P: any): CanvasGradient | undefined {
           const nextColor = gradientColors[nextColorIndex];
           if (!currentColor || !nextColor) return gradient;
 
-          const r = Math.round(currentColor.r + (nextColor.r - currentColor.r) * blendAmount);
-          const g = Math.round(currentColor.g + (nextColor.g - currentColor.g) * blendAmount);
-          const b = Math.round(currentColor.b + (nextColor.b - currentColor.b) * blendAmount);
+          const fadeMix = blendRgb(currentColor, nextColor, blendAmount);
+          const r = Math.round(fadeMix.r);
+          const g = Math.round(fadeMix.g);
+          const b = Math.round(fadeMix.b);
 
           if (gradientColors.length >= 2 && fadeDirection !== 0) {
             const fadeRad = fadeDirection * Math.PI / 180;

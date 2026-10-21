@@ -1,3 +1,4 @@
+import { blendRgb } from '../../utils/color';
 export function drawAurora(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -244,9 +245,10 @@ export function drawAurora(P: any): CanvasGradient | undefined {
               const nextColorIdx = ((colorIdx + 1) % gradientColors.length + gradientColors.length) % gradientColors.length;
               const nextColor = gradientColors[nextColorIdx] || color;
               const blend = (Math.sin(nx * Math.PI * 2 + auroraTime * 0.3 + b) * 0.5 + 0.5);
-              const mixR = Math.round(color.r + (nextColor.r - color.r) * blend);
-              const mixG = Math.round(color.g + (nextColor.g - color.g) * blend);
-              const mixB = Math.round(color.b + (nextColor.b - color.b) * blend);
+              const bandMix = blendRgb(color, nextColor, blend);
+              const mixR = Math.round(bandMix.r);
+              const mixG = Math.round(bandMix.g);
+              const mixB = Math.round(bandMix.b);
               const grad = ctx.createLinearGradient(x, cy - bandHeight * 0.5, x, cy + bandHeight * 0.5);
               const alpha = Math.min(1, (0.55 + Math.abs(wave) * 0.3) * auroraAlphaBoost);
               grad.addColorStop(0, `rgba(${mixR},${mixG},${mixB},0)`);

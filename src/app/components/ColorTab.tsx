@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
-import { rgbToHex, hexToRgb } from '../utils/color';
+import { rgbToHex, hexToRgb, type ColorBlend } from '../utils/color';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
 // swatch row from growing unboundedly if someone just holds down +.
@@ -22,12 +22,21 @@ export interface ColorTabProps {
   setPaletteBrightness: (v: number) => void;
   paletteContrast: number;
   setPaletteContrast: (v: number) => void;
+  colorBlend: ColorBlend;
+  setColorBlend: (v: ColorBlend) => void;
 }
+
+const COLOR_BLEND_OPTIONS: { value: ColorBlend; label: string; hint: string }[] = [
+  { value: 'srgb', label: 'sRGB', hint: 'Straight per-channel blend — the classic look' },
+  { value: 'oklab', label: 'OKLab', hint: 'Perceptual blend — no muddy grey midpoints between saturated colors' },
+  { value: 'oklch', label: 'OKLCH', hint: 'Perceptual blend that travels around the hue wheel — vivid transitions' },
+];
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
   saveCurrentState, setTargetColors, setColorsInstant, gradientColors, randomColor,
   paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
   paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
+  colorBlend, setColorBlend,
 }) => {
   const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
@@ -122,6 +131,23 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
             >Reset</button>
           </div>
         )}
+
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-[10px] text-white w-20 shrink-0">Blend:</label>
+          <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Color blend space">
+            {COLOR_BLEND_OPTIONS.map(({ value, label, hint }) => (
+              <button
+                key={value}
+                onClick={() => setColorBlend(value)}
+                aria-pressed={colorBlend === value}
+                title={hint}
+                className={`flex-1 text-[10px] py-1 transition-all ${
+                  colorBlend === value ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
+                }`}
+              >{label}</button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">

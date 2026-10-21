@@ -1,5 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import { blendRgb, getActiveColorBlend } from '../../utils/color';
 export function drawRadialBurst(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -265,9 +266,10 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
                   continue;
                 }
 
-                const r = color1.r + (color2.r - color1.r) * colorFrac;
-                const g = color1.g + (color2.g - color1.g) * colorFrac;
-                const b = color1.b + (color2.b - color1.b) * colorFrac;
+                const mixed = getActiveColorBlend() === 'srgb' ? null : blendRgb(color1, color2, colorFrac);
+                const r = mixed ? mixed.r : color1.r + (color2.r - color1.r) * colorFrac;
+                const g = mixed ? mixed.g : color1.g + (color2.g - color1.g) * colorFrac;
+                const b = mixed ? mixed.b : color1.b + (color2.b - color1.b) * colorFrac;
 
                 radarData[idx] = r * brightness;
                 radarData[idx + 1] = g * brightness;

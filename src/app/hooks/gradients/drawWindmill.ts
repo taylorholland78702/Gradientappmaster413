@@ -1,5 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import { blendRgb, getActiveColorBlend } from '../../utils/color';
 export function drawWindmill(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -264,9 +265,10 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
                 }
 
                 const radialBoost = 1 + conicalBassPulse * (1 - dist / conicalMaxDist) * 0.8;
-                spiralData[pixelIndex]     = Math.min(255, Math.round((color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
-                spiralData[pixelIndex + 1] = Math.min(255, Math.round((color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
-                spiralData[pixelIndex + 2] = Math.min(255, Math.round((color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
+                const mixed = getActiveColorBlend() === 'srgb' ? null : blendRgb(color1, color2, colorFrac);
+                spiralData[pixelIndex]     = Math.min(255, Math.round((mixed ? mixed.r : color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
+                spiralData[pixelIndex + 1] = Math.min(255, Math.round((mixed ? mixed.g : color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
+                spiralData[pixelIndex + 2] = Math.min(255, Math.round((mixed ? mixed.b : color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
                 spiralData[pixelIndex + 3] = 255;
               }
             }
@@ -311,9 +313,7 @@ export function drawWindmill(P: any): CanvasGradient | undefined {
             const nextColor = gradientColors[nextColorIndex];
             if (!color || !nextColor) continue;
 
-            const r = color.r + (nextColor.r - color.r) * localT;
-            const g = color.g + (nextColor.g - color.g) * localT;
-            const b = color.b + (nextColor.b - color.b) * localT;
+            const { r, g, b } = blendRgb(color, nextColor, localT);
 
             ctx.save();
             ctx.translate(centerX, centerY);

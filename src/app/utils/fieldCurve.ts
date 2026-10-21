@@ -1,3 +1,5 @@
+import { blendRgb } from './color';
+
 export interface RGB {
   r: number;
   g: number;
@@ -41,11 +43,7 @@ export function mapValueToColor(t: number, colors: RGB[], mode: PaletteMode, ban
   const frac = pos - idx;
   const c1 = colors[idx] || colors[0] || { r: 255, g: 255, b: 255 };
   const c2 = colors[Math.min(idx + 1, n - 1)] || c1;
-  return {
-    r: c1.r + (c2.r - c1.r) * frac,
-    g: c1.g + (c2.g - c1.g) * frac,
-    b: c1.b + (c2.b - c1.b) * frac,
-  };
+  return blendRgb(c1, c2, frac);
 }
 
 // Convenience wrapper combining both steps for the common case of "reshape
