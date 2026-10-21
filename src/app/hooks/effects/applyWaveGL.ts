@@ -12,6 +12,9 @@
 // land positive); GLSL's `mod()` is already floor-mod (always non-negative
 // for a positive divisor), so a single `mod()` call reproduces the same
 // wrap exactly.
+// The wrap is the same; the sampling is not -- see the note in the shader. The
+// CPU path still snaps to whole pixels, so on a device without WebGL2 Wave looks
+// the way it always did.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
 
@@ -31,9 +34,14 @@ void main() {
   float waveOffset = sin((fp.y * cosA + fp.x * sinA) * 0.05 * uFreqMult) * uStrength;
   float sourceX = fp.x + waveOffset * cosA;
   float sourceY = fp.y + waveOffset * sinA;
-  float wrappedX = mod(floor(sourceX), uSize.x);
-  float wrappedY = mod(floor(sourceY), uSize.y);
-  vec2 suv = (vec2(wrappedX, wrappedY) + 0.5) / uSize;
+  // Continuous (sub-pixel) sampling. The CPU version snaps the source position
+  // to a whole display pixel -- its only option, since it indexes an ImageData --
+  // and this shader used to copy that with floor() plus a +0.5 texel center,
+  // which made every display pixel a flat block however finely the frame was
+  // rendered (a 2x canvas looked 1x). The texture is LINEAR-filtered, so just
+  // wrapping the continuous coordinate lets the render resolution show through;
+  // at 1x it differs from the snapped result only by sub-pixel interpolation.
+  vec2 suv = mod(vec2(sourceX, sourceY), uSize) / uSize;
   outColor = vec4(texture(uTex, suv).rgb, 1.0);
 }`;
 
