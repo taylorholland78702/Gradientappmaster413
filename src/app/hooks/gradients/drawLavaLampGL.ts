@@ -7,7 +7,7 @@
 // half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform, HEAVY_FIELD_PIXEL_BUDGET } from './glShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_BLOBS = 12;
@@ -114,12 +114,8 @@ export function drawLavaLampGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = beginFieldRender(P, HEAVY_FIELD_PIXEL_BUDGET);
-  try {
-    renderLavaLampStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
-  } finally {
-    endFieldRender();
-  }
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderLavaLampStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

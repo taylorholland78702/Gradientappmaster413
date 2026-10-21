@@ -10,7 +10,7 @@
 // half-res one.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform, HEAVY_FIELD_PIXEL_BUDGET } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
@@ -137,12 +137,8 @@ export function drawMarbleGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = beginFieldRender(P, HEAVY_FIELD_PIXEL_BUDGET);
-  try {
-    renderMarbleStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
-  } finally {
-    endFieldRender();
-  }
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderMarbleStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

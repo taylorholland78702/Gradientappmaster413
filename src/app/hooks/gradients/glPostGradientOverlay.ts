@@ -18,7 +18,7 @@
 // density and intensity, different (but equally random-looking) pixels.
 // Depth layer's math ports over exactly: it was already a deterministic
 // radial gradient + screen blend, both trivial in a shader.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen } from './glShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, setSizeUniform } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const OVERLAY_FRAG_SRC = `#version 300 es
@@ -122,7 +122,7 @@ function renderOverlayStage(
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.uniform1i(gl.getUniformLocation(program, 'uTex'), 0);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform1f(gl.getUniformLocation(program, 'uShimmerFraction'), p.shimmerFraction);
   gl.uniform1f(gl.getUniformLocation(program, 'uShimmerLevel'), p.shimmerLevel);
   gl.uniform1f(gl.getUniformLocation(program, 'uTrebleLevel'), p.trebleLevel);

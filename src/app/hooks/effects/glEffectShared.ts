@@ -11,6 +11,7 @@
 // (see gradients/glShared.ts) — texture(uTex, vUv) samples correctly with
 // no flip needed.
 import { getSharedFieldGL } from '../gradients/glShared';
+export { setSizeUniform } from '../gradients/glShared';
 
 export const FULLSCREEN_VERT_SRC = `#version 300 es
 const vec2 verts[3] = vec2[3](vec2(-1.0,-1.0), vec2(3.0,-1.0), vec2(-1.0,3.0));
@@ -59,6 +60,8 @@ export function linkProgram(gl: WebGL2RenderingContext, vertSrc: string, fragSrc
 // (and the ping-pong framebuffers in glEffectPipeline.ts) can now only be
 // chained across gradient <-> effect stages because both sides render into
 // the same context.
+// `width`/`height` are the display size; the canvas comes back at the frame's
+// render size (see beginGLFrame in gradients/glShared.ts).
 export function getSharedEffectGL(width: number, height: number): { gl: WebGL2RenderingContext; canvas: HTMLCanvasElement } {
   return getSharedFieldGL(width, height);
 }

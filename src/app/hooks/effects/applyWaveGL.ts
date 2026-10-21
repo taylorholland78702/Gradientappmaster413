@@ -12,7 +12,7 @@
 // land positive); GLSL's `mod()` is already floor-mod (always non-negative
 // for a positive divisor), so a single `mod()` call reproduces the same
 // wrap exactly.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport } from './glEffectShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
 
 const WAVE_FRAG_SRC = `#version 300 es
@@ -71,7 +71,7 @@ function renderWaveStage(
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.uniform1i(gl.getUniformLocation(program, 'uTex'), 0);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform1f(gl.getUniformLocation(program, 'uAngleRad'), u.angleRad);
   gl.uniform1f(gl.getUniformLocation(program, 'uFreqMult'), u.freqMult);
   gl.uniform1f(gl.getUniformLocation(program, 'uStrength'), u.strength);

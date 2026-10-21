@@ -8,7 +8,7 @@
 // per-pixel cost gap between CPU and GPU is much larger here than the
 // "1 sample = cheap" framing suggested. Ported as part of closing the
 // remaining smoothness gap against Brik's shader-only pipeline.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport } from './glEffectShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
 
 const LIQUID_FRAG_SRC = `#version 300 es
@@ -64,7 +64,7 @@ function renderLiquidStage(
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.uniform1i(gl.getUniformLocation(liquidProgram, 'uTex'), 0);
-  gl.uniform2f(gl.getUniformLocation(liquidProgram, 'uSize'), width, height);
+  setSizeUniform(gl, liquidProgram, width, height);
   gl.uniform1f(gl.getUniformLocation(liquidProgram, 'uScale'), scale);
   gl.uniform1f(gl.getUniformLocation(liquidProgram, 'uTime'), time);
   gl.uniform1f(gl.getUniformLocation(liquidProgram, 'uStrength'), strength);

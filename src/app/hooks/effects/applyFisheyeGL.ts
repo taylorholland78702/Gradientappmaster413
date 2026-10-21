@@ -14,7 +14,7 @@
 // falls outside the image; this samples with CLAMP_TO_EDGE instead, which
 // repeats the nearest edge pixel rather than leaving a transparent gap —
 // a standard, less visually jarring way to handle the same boundary case.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport } from './glEffectShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
 
 const FISHEYE_FRAG_SRC = `#version 300 es
@@ -68,7 +68,7 @@ function renderFisheyeStage(
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.uniform1i(gl.getUniformLocation(fisheyeProgram, 'uTex'), 0);
-  gl.uniform2f(gl.getUniformLocation(fisheyeProgram, 'uSize'), width, height);
+  setSizeUniform(gl, fisheyeProgram, width, height);
   gl.uniform2f(gl.getUniformLocation(fisheyeProgram, 'uCenter'), centerX, centerY);
   gl.uniform1f(gl.getUniformLocation(fisheyeProgram, 'uRadius'), radius);
   gl.uniform1f(gl.getUniformLocation(fisheyeProgram, 'uStrength'), strength);

@@ -12,7 +12,7 @@
 // (glEffectShared.ts's uploadCanvasTexture), not generate its own field.
 // _registry.ts-equivalent (effectRegistry.ts's applyBlurAuto) falls back
 // to the CPU implementation if WebGL2 isn't available or this throws.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport } from './glEffectShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
 
 const ZOOM_STEPS = 10;
@@ -95,7 +95,7 @@ function renderRadialStage(gl: WebGL2RenderingContext, inputTexture: WebGLTextur
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, inputTexture);
   gl.uniform1i(gl.getUniformLocation(radialProgram, 'uTex'), 0);
-  gl.uniform2f(gl.getUniformLocation(radialProgram, 'uSize'), width, height);
+  setSizeUniform(gl, radialProgram, width, height);
   gl.uniform1f(gl.getUniformLocation(radialProgram, 'uSweep'), sweep);
   drawFullscreen(gl);
 }

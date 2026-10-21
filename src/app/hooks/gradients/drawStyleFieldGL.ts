@@ -17,7 +17,7 @@
 // gradients each have one). On a device without WebGL2 these fall back to the
 // existing CPU Noise gradient — see _registry.ts — which is a graceful
 // degrade rather than a blank canvas.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
@@ -684,37 +684,33 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
 
-  const { gl, canvas: glCanvas } = beginFieldRender(P);
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  let program: WebGLProgram;
   try {
-    let program: WebGLProgram;
-    try {
-      program = getProgram(gl, id);
-    } catch (err) {
-      failedStyles.add(id);
-      throw err;
-    }
-
-    const audio = !!(isAudioEnabled && isAudioReactive);
-    const time = advanceClock(Math.max(0, fieldSpeed ?? 1));
-    const scale = 3 * (fieldScale ?? 1) / Math.max(0.05, zoom ?? 1);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-    gl.useProgram(program);
-    setSizeUniform(gl, program, glCanvas.width, glCanvas.height);
-    gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
-    gl.uniform1f(gl.getUniformLocation(program, 'uScale'), scale);
-    gl.uniform1f(gl.getUniformLocation(program, 'uTime'), time);
-    // structuralSeed spans 0-1e6; wrapped so the hash noise keeps float precision.
-    gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
-    gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
-    gl.uniform1f(gl.getUniformLocation(program, 'uMids'), audio ? Math.min(1, audioMidsLevel / 5) : 0);
-    gl.uniform1f(gl.getUniformLocation(program, 'uTreble'), audio ? Math.min(1, audioTrebleLevel / 5) : 0);
-    setColorUniforms(gl, program, gradientColors, fieldContrast, paletteMode, paletteBands);
-    drawFieldFullscreen(gl);
-  } finally {
-    endFieldRender();
+    program = getProgram(gl, id);
+  } catch (err) {
+    failedStyles.add(id);
+    throw err;
   }
+
+  const audio = !!(isAudioEnabled && isAudioReactive);
+  const time = advanceClock(Math.max(0, fieldSpeed ?? 1));
+  const scale = 3 * (fieldScale ?? 1) / Math.max(0.05, zoom ?? 1);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+  gl.useProgram(program);
+  setSizeUniform(gl, program, glCanvas.width, glCanvas.height);
+  gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), centerX, centerY);
+  gl.uniform1f(gl.getUniformLocation(program, 'uScale'), scale);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTime'), time);
+  // structuralSeed spans 0-1e6; wrapped so the hash noise keeps float precision.
+  gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
+  gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
+  gl.uniform1f(gl.getUniformLocation(program, 'uMids'), audio ? Math.min(1, audioMidsLevel / 5) : 0);
+  gl.uniform1f(gl.getUniformLocation(program, 'uTreble'), audio ? Math.min(1, audioTrebleLevel / 5) : 0);
+  setColorUniforms(gl, program, gradientColors, fieldContrast, paletteMode, paletteBands);
+  drawFieldFullscreen(gl);
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

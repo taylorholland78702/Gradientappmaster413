@@ -9,7 +9,7 @@
 // this matches that simpler path instead.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform, HEAVY_FIELD_PIXEL_BUDGET } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
@@ -153,12 +153,8 @@ export function drawNoiseGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = beginFieldRender(P, HEAVY_FIELD_PIXEL_BUDGET);
-  try {
-    renderNoiseStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
-  } finally {
-    endFieldRender();
-  }
+  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
+  renderNoiseStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
 
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;

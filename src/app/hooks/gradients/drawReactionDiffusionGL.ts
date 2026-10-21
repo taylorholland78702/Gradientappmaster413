@@ -9,7 +9,7 @@
 // memoized), _registry.ts falls back to the CPU implementation for the
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
-import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms, fieldRenderDims } from './glShared';
+import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms, frameRenderSize } from './glShared';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -423,7 +423,7 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
   }
   // The color pass (unlike the sim) renders at the main canvas's real resolution
   // instead of the sim grid's, so the smoothed field is dithered and drawn 1:1.
-  const { w: outW, h: outH } = fieldRenderDims(P);
+  const { w: outW, h: outH } = frameRenderSize(displayWidth, displayHeight);
   if (st.canvas.width !== outW) st.canvas.width = outW;
   if (st.canvas.height !== outH) st.canvas.height = outH;
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);

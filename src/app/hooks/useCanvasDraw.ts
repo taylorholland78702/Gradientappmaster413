@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
+import { beginGLFrame } from './gradients/glShared';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -361,6 +362,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // which shrinks the CSS coordinate space and moves everything toward (0,0).
     ctx.resetTransform();
     ctx.scale(effectiveResolutionMultiplier, effectiveResolutionMultiplier);
+
+    // Fix this frame's GL render size (the canvas's backing resolution, scaled
+    // down only if the budget or adaptive quality says so) before anything draws
+    // — every GL gradient/effect stage reads it, so they all agree and nothing
+    // resizes the shared GL canvas mid-frame. See beginGLFrame in glShared.ts.
+    beginGLFrame({ canvasWidth: canvas.width, canvasHeight: canvas.height, displayWidth, displayHeight, gradientType });
 
     // putImageData ignores ctx transforms, so route through drawImage to respect DPR scale
     const putScaledImageData = (imgData: ImageData, dx = 0, dy = 0) => {

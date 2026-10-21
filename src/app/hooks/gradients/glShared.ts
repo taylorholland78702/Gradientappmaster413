@@ -263,51 +263,42 @@ export function linkProgram(gl: WebGL2RenderingContext, vertSrc: string, fragSrc
 let sharedCanvas: HTMLCanvasElement | null = null;
 let sharedGL: WebGL2RenderingContext | null = null;
 
+// `width`/`height` are the DISPLAY size callers have always passed; the canvas
+// actually comes back at the frame's render size (see beginGLFrame above).
 export function getSharedFieldGL(width: number, height: number): { gl: WebGL2RenderingContext; canvas: HTMLCanvasElement } {
   if (!sharedCanvas || !sharedGL) {
     sharedCanvas = document.createElement('canvas');
     sharedGL = sharedCanvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false }) as WebGL2RenderingContext;
   }
-  const w = Math.max(1, width), h = Math.max(1, height);
+  const w = Math.max(1, Math.round(width * frameScaleX)), h = Math.max(1, Math.round(height * frameScaleY));
   if (sharedCanvas.width !== w) sharedCanvas.width = w;
   if (sharedCanvas.height !== h) sharedCanvas.height = h;
   return { gl: sharedGL, canvas: sharedCanvas };
 }
 
 // ---------------------------------------------------------------------------
-// Full-resolution rendering for the standalone field gradients
+// Full-resolution rendering for everything that runs on the shared GL canvas
 //
-// These gradients used to render into a canvas the size of the display in CSS
-// pixels and let drawImage stretch it over the main canvas, whose backing
-// store is display size x resolution multiplier (so 2x on a Retina screen).
-// That left them rendered at a quarter of the pixels the screen actually has.
+// The GL gradients and GL effects used to render into a canvas the size of the
+// display in CSS pixels and let drawImage stretch it over the main canvas,
+// whose backing store is display size x resolution multiplier (2x on a Retina
+// screen) -- a quarter of the pixels the screen actually has.
 //
-// beginFieldRender renders at the main canvas's real backing resolution
-// instead, but keeps every shader coordinate in display (CSS) pixels: the
-// viewport is the backing size while uSize (via setSizeUniform) still carries
-// the display size, so `vUv * uSize` simply lands on finer sub-pixel positions
-// and every center, radius and scale the shaders were written against keeps
-// its meaning. The look is unchanged; the sampling is just denser.
+// useCanvasDraw now calls beginGLFrame once per frame; from then on
+// getSharedFieldGL hands back a canvas at the frame's render size (the main
+// canvas's backing resolution, possibly scaled down -- see below) no matter
+// what size its caller asked for. Callers keep passing the display size and
+// keep working in display (CSS) pixels: setSizeUniform still reports the
+// display size as uSize while the viewport is the finer render size, so
+// `vUv * uSize` just lands on sub-pixel positions and every center, radius,
+// blur distance and scale a shader was written against keeps its meaning. The
+// look is unchanged; the sampling is denser.
 //
-// It uses a context of its own rather than the shared effect canvas: the GL
-// effect pipeline resizes that canvas to display size every frame, and a
-// gradient drawing at backing size on the same canvas would force a
-// reallocation of the drawing buffer (and the pipeline's ping-pong targets)
-// twice per frame whenever a gradient and a GL effect were both active.
+// It is one canvas and one context for gradient AND effect stages on purpose:
+// the effect pipeline chains them through shared ping-pong textures, which
+// can't cross contexts, and a single size per frame means nothing ever resizes
+// the drawing buffer mid-frame.
 // ---------------------------------------------------------------------------
-let hiResCanvas: HTMLCanvasElement | null = null;
-let hiResGL: WebGL2RenderingContext | null = null;
-
-export function getHiResFieldGL(width: number, height: number): { gl: WebGL2RenderingContext; canvas: HTMLCanvasElement } {
-  if (!hiResCanvas || !hiResGL) {
-    hiResCanvas = document.createElement('canvas');
-    hiResGL = hiResCanvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false }) as WebGL2RenderingContext;
-  }
-  const w = Math.max(1, Math.round(width)), h = Math.max(1, Math.round(height));
-  if (hiResCanvas.width !== w) hiResCanvas.width = w;
-  if (hiResCanvas.height !== h) hiResCanvas.height = h;
-  return { gl: hiResGL, canvas: hiResCanvas };
-}
 
 // Per-frame fragment budgets. A Retina display is ~5M pixels, which light
 // shaders handle easily but the iteration-heavy ones (Julia, Caustics, ...)
@@ -316,20 +307,20 @@ export function getHiResFieldGL(width: number, height: number): { gl: WebGL2Rend
 // upscaled by the final drawImage.
 export const FIELD_PIXEL_BUDGET = 4_200_000;
 export const HEAVY_FIELD_PIXEL_BUDGET = 2_600_000;
+const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp']);
 
-let logicalFieldSize: { w: number; h: number } | null = null;
-
-// The render-target size a standalone field gradient should use: the main
-// canvas's backing size, scaled down uniformly if it exceeds `budget` pixels.
-export function fieldRenderDims(P: any, budget: number = FIELD_PIXEL_BUDGET): { w: number; h: number } { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const { canvas, displayWidth, displayHeight } = P;
-  let w = canvas.width > 0 ? canvas.width : displayWidth;
-  let h = canvas.height > 0 ? canvas.height : displayHeight;
+// The render-target size for a frame: the main canvas's backing size, scaled
+// down uniformly if it exceeds `budget` pixels, but never below the display
+// size (nor below the canvas itself when that is smaller, as it is when effects
+// scale resolution down).
+export function fieldRenderDims(
+  canvasWidth: number, canvasHeight: number, displayWidth: number, displayHeight: number, budget: number = FIELD_PIXEL_BUDGET,
+): { w: number; h: number } {
+  let w = canvasWidth > 0 ? canvasWidth : displayWidth;
+  let h = canvasHeight > 0 ? canvasHeight : displayHeight;
   const px = w * h;
   if (px > budget) {
     const k = Math.sqrt(budget / px);
-    // Not below the display size (nor below the canvas itself if it is already
-    // smaller than the display, as it is when effects scale resolution down).
     w = Math.max(Math.min(displayWidth, w), Math.round(w * k));
     h = Math.max(Math.min(displayHeight, h), Math.round(h * k));
   }
@@ -338,48 +329,59 @@ export function fieldRenderDims(P: any, budget: number = FIELD_PIXEL_BUDGET): { 
 
 // One quality controller per gradient type (only one is ever on screen, but a
 // heavy gradient's learned level shouldn't be forgotten when you flip to a
-// light one and back — that would replay the slow first second every time). The
-// frame interval each watches is the whole frame's (gradient + effects), since
-// that is what decides whether the page feels smooth. Switching gradients
-// resets the interval clock so the gap between them isn't read as a slow frame.
-const fieldQualityByGradient = new Map<string, QualityController>();
-let lastFieldFrameT = 0;
-let lastFieldKey: string | null = null;
+// light one and back -- that would replay a slow stretch every time). The frame
+// interval each watches is the whole frame's (gradient + effects), since that
+// is what decides whether the page feels smooth.
+const frameQualityByGradient = new Map<string, QualityController>();
+let lastFrameT = 0;
+let lastFrameKey: string | null = null;
+let frameScaleX = 1;
+let frameScaleY = 1;
+let frameLogicalSize: { w: number; h: number } | null = null;
 
-export function beginFieldRender(P: any, budget: number = FIELD_PIXEL_BUDGET): { gl: WebGL2RenderingContext; canvas: HTMLCanvasElement } { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function beginGLFrame(args: {
+  canvasWidth: number; canvasHeight: number; displayWidth: number; displayHeight: number; gradientType?: string | null;
+}) {
+  const { canvasWidth, canvasHeight, displayWidth, displayHeight } = args;
+  const key = String(args.gradientType ?? '');
   const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  const key = String(P.gradientType ?? '');
-  if (key !== lastFieldKey) {
-    lastFieldKey = key;
-    lastFieldFrameT = 0;
+  // Switching gradients resets the interval clock so the gap between them isn't
+  // read as one slow frame.
+  if (key !== lastFrameKey) {
+    lastFrameKey = key;
+    lastFrameT = 0;
   }
-  let quality = fieldQualityByGradient.get(key);
+  let quality = frameQualityByGradient.get(key);
   if (!quality) {
     quality = createQualityController();
-    fieldQualityByGradient.set(key, quality);
+    frameQualityByGradient.set(key, quality);
   }
-  const scale = quality.update(lastFieldFrameT ? now - lastFieldFrameT : 0);
-  lastFieldFrameT = now;
+  const scale = quality.update(lastFrameT ? now - lastFrameT : 0);
+  lastFrameT = now;
 
-  const { displayWidth, displayHeight } = P;
-  const full = fieldRenderDims(P, budget);
+  const budget = HEAVY_GRADIENTS.has(key) ? HEAVY_FIELD_PIXEL_BUDGET : FIELD_PIXEL_BUDGET;
+  const full = fieldRenderDims(canvasWidth, canvasHeight, displayWidth, displayHeight, budget);
   // Scale the full target down, but never below the display's CSS-pixel size
-  // (or the canvas itself when that is smaller) — the floor is the old behavior.
+  // (or the canvas itself when that is smaller) -- the floor is the old behavior.
   const minW = Math.min(displayWidth, full.w), minH = Math.min(displayHeight, full.h);
   const w = Math.max(minW, Math.round(full.w * scale));
   const h = Math.max(minH, Math.round(full.h * scale));
-  logicalFieldSize = { w: displayWidth, h: displayHeight };
-  return getHiResFieldGL(w, h);
-}
-export function endFieldRender() {
-  logicalFieldSize = null;
+  frameScaleX = displayWidth > 0 ? w / displayWidth : 1;
+  frameScaleY = displayHeight > 0 ? h / displayHeight : 1;
+  frameLogicalSize = { w: displayWidth, h: displayHeight };
 }
 
-// Sets uSize. During a beginFieldRender..endFieldRender span it is the display
-// size regardless of the actual render target; everywhere else (the GL effect
-// pipeline's gradient stages) it is the target size, exactly as before.
+// The current frame's render size for a given display size (display size itself
+// if beginGLFrame hasn't run).
+export function frameRenderSize(displayWidth: number, displayHeight: number): { w: number; h: number } {
+  return { w: Math.max(1, Math.round(displayWidth * frameScaleX)), h: Math.max(1, Math.round(displayHeight * frameScaleY)) };
+}
+
+// Sets uSize to the display size during a frame (regardless of the actual render
+// target), so shader math written in CSS pixels keeps working at any render
+// scale; outside a frame it is the target size, as before.
 export function setSizeUniform(gl: WebGL2RenderingContext, program: WebGLProgram, width: number, height: number) {
-  const s = logicalFieldSize;
+  const s = frameLogicalSize;
   gl.uniform2f(gl.getUniformLocation(program, 'uSize'), s ? s.w : width, s ? s.h : height);
 }
 
