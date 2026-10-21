@@ -211,6 +211,21 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Retro', colors: ['#ff6b6b', '#ffd166', '#06d6a0', '#118ab2'], scale: 1.2 },
     { name: 'Dusk', colors: ['#0f0c29', '#302b63', '#6a5acd', '#c8b6ff'], speed: 0.7 },
   ],
+  soft: [
+    { name: 'Cotton', colors: ['#ffd6e8', '#d6e8ff', '#fff4c9', '#d9f5e0'] },
+    { name: 'Dawn Haze', colors: ['#f6c1d0', '#f9d7b5', '#c9d6f5', '#e6d4f5'], speed: 0.7 },
+    { name: 'Mist', colors: ['#cfd9e6', '#e6eef5', '#d6e4e0', '#eef0f5'], speed: 0.6 },
+  ],
+  duo: [
+    { name: 'Sunset Duo', colors: ['#ff5e62', '#ffb36b'] },
+    { name: 'Ocean Duo', colors: ['#0b3d91', '#2de1c2'] },
+    { name: 'Violet Duo', colors: ['#3a1c71', '#ffaf7b'], speed: 0.8 },
+  ],
+  sheen: [
+    { name: 'Satin', colors: ['#2a1b3d', '#6b4a9f', '#c9a8ff', '#fff2ff'] },
+    { name: 'Champagne', colors: ['#3a2a18', '#a8864a', '#e8d29a', '#fff8e6'] },
+    { name: 'Steel', colors: ['#10161c', '#3a4a5a', '#8fa3b5', '#e8f0f7'], speed: 0.8 },
+  ],
   // ---- Older gradients ----
   angle: [
     { name: 'Prism', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'] },

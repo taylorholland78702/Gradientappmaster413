@@ -3105,7 +3105,9 @@ export function InteractiveGradient() {
       } else if (gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
         setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 60)));
       } else {
-        const numColorsToChange = Math.floor(Math.random() * 2) + 2;
+        // Capped at the palette size: with 2 colors, asking for 3 distinct indices never
+        // finishes, and the loop below froze the whole page.
+        const numColorsToChange = Math.min(gradientColors.length, Math.floor(Math.random() * 2) + 2);
         const indicesToChange = new Set<number>();
         while (indicesToChange.size < numColorsToChange) {
           indicesToChange.add(Math.floor(Math.random() * gradientColors.length));

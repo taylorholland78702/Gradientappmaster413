@@ -42,4 +42,7 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   iridescent: [{ label: 'Swirl', hint: 'Scale of the oil-slick swirls' }, { label: 'Film', hint: 'How many color cycles the film runs through' }],
   embers: [{ label: 'Ember size', hint: 'Size of the glowing sparks' }, { label: 'Density', hint: 'How many sparks' }],
   bands: [{ label: 'Waviness', hint: 'How much the bands undulate' }, { label: 'Softness', hint: 'How soft the edges between bands are' }],
+  soft: [{ label: 'Spread', hint: 'How large the soft clouds are' }, { label: 'Contrast', hint: 'How far the colors separate' }],
+  duo: [{ label: 'Tilt', hint: 'Direction the two colors fade along' }, { label: 'Wobble', hint: 'How wavy the boundary between them is' }],
+  sheen: [{ label: 'Streak', hint: 'How long and brushed the streaks are' }, { label: 'Gloss', hint: 'Strength of the highlight bands' }],
 };

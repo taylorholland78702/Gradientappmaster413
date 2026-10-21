@@ -33,7 +33,7 @@ const FAMILY: Record<StyleFieldId, Family> = {
   waves: 'bands', ribbon: 'bands', strands: 'bands', bands: 'bands', plasma: 'bands',
   smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field',
   nebula: 'field', prism: 'field', raindrops: 'field', holographic: 'field', 'halftone-screen': 'field',
-  drape: 'field', 'flow-mesh': 'field', iridescent: 'field',
+  drape: 'field', 'flow-mesh': 'field', iridescent: 'field', soft: 'field', duo: 'field', sheen: 'field',
 };
 
 // Light intensity (0..~1.2) for the dark-ground looks, at plane position (x, y),
@@ -141,6 +141,10 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
     case 'mesh': case 'flow-mesh': case 'drape': case 'glass': case 'mercury': {
       const wx = fbm(x * 0.55 + t * 0.05, y * 0.55), wy = fbm(x * 0.55 + 4, y * 0.55 - t * 0.04);
       return clamp01(fbm(x * 0.5 + wx * 1.5, y * 0.5 + wy * 1.5 + t * 0.03) * 1.15);
+    }
+    case 'duo': {
+      const s = (x * 0.62 + y * 0.78) * 0.38 + 0.18 * Math.sin(x * 0.8 + t * 0.12) + 0.12 * Math.sin(y * 1.1 - t * 0.09);
+      return smooth(clamp01((s + 1) / 2));
     }
     case 'holographic': case 'iridescent':
       return (fbm(x * 0.6 + t * 0.03, y * 0.6 - t * 0.02) * 2.2 + (x * 0.2 + y * 0.35) + t * 0.04) % 1;

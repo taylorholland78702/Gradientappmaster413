@@ -24,7 +24,8 @@ export type StyleFieldId =
   | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen'
   | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'plasma' | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands';
+  | 'plasma' | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands'
+  | 'soft' | 'duo' | 'sheen';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -744,6 +745,47 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(a, b, e);
 }`;
 
+// Very diffuse pastel haze: large, slow clouds with no dark gaps, so colors melt
+// into each other.
+const SOFT = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = p * 0.32 * uA;
+  float f = fbm3(q + vec2(t * 0.020, -t * 0.015));
+  float g = fbm3(q * 1.2 + 4.0 + f * 1.1 - t * 0.010);
+  float k = clamp(0.5 + (g - 0.5) * 1.7 * uB + uBass * 0.05, 0.0, 1.0);
+  vec3 col = getMappedColor(k);
+  return mix(vec3(luma(col)), col, 0.92);
+}`;
+
+// Exactly two colors, the palette's first and last, fading across a tilted,
+// gently waving boundary.
+const DUO = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  // cpos(), not p: p carries the structural-seed offset, which would swamp a plain linear fade.
+  vec2 c = cpos();
+  float ang = 0.9 + (uA - 1.0) * 0.8 + 0.25 * sin(t * 0.07);
+  float s = dot(c, vec2(cos(ang), sin(ang))) * 0.55;
+  s += (0.18 * sin(c.x * 0.8 + t * 0.12) + 0.12 * sin(c.y * 1.1 - t * 0.09)) * uB;
+  s += uBass * 0.08;
+  float k = smoothstep(-1.0, 1.0, s);
+  // 0.985 rather than 1.0: in the cyclic palette mode t = 1 wraps back to the first color.
+  return blendColors(getMappedColor(0.0), getMappedColor(0.985), k);
+}`;
+
+// Brushed satin: streaky stretched noise with broad highlight bands sweeping
+// across it.
+const SHEEN = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float h = fbm3(vec2(p.x * 0.30 / uA, p.y * 0.55) + t * 0.015);
+  float band = dot(p, vec2(0.94, 0.34)) * 0.5 + h * 1.5 + t * 0.05;
+  float sheenL = pow(0.5 + 0.5 * sin(band * 2.2), 3.0);
+  vec3 base = getMappedColor(clamp(0.18 + 0.55 * h, 0.0, 1.0));
+  vec3 hi = getMappedColor(0.95);
+  vec3 col = mix(base, hi, sheenL * 0.55 * uB);
+  col += sheenL * sheenL * 0.10 * uB * (1.0 + uTreble * 0.5);
+  return col * (0.82 + 0.28 * h);
+}`;
+
 const STYLE_BODIES: Record<StyleFieldId, string> = {
   smoke: SMOKE,
   glass: GLASS,
@@ -773,6 +815,9 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   iridescent: IRIDESCENT,
   embers: EMBERS,
   bands: BANDS,
+  soft: SOFT,
+  duo: DUO,
+  sheen: SHEEN,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];
