@@ -14,6 +14,10 @@ export function useFieldMappingState() {
   // gradient, not just the scalar-field ones this hook is otherwise for, but
   // it sits next to paletteMode since both are "how the palette is sampled."
   const [colorBlend, setColorBlend] = useState<ColorBlend>('srgb');
+  // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...
+  // — see drawStyleFieldGL.ts), which have no per-style sliders of their own.
+  const [fieldScale, setFieldScale] = useState(1);
+  const [fieldSpeed, setFieldSpeed] = useState(1);
 
   return {
     fieldContrast,
@@ -24,5 +28,9 @@ export function useFieldMappingState() {
     setPaletteBands,
     colorBlend,
     setColorBlend,
+    fieldScale,
+    setFieldScale,
+    fieldSpeed,
+    setFieldSpeed,
   };
 }

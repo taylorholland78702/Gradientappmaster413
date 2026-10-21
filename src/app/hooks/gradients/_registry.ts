@@ -33,6 +33,7 @@ import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
 import { drawWaveInterference } from './drawWaveInterference';
 import { drawMeshWireframe } from './drawMeshWireframe';
+import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type StyleFieldId } from './drawStyleFieldGL';
 
 // Lazily code-split the heaviest, least-often-selected gradients (large
 // simulation-based implementations that are rarely anyone's first pick —
@@ -247,34 +248,61 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
   return drawWindmill(P);
 }
 
+// The styled-field gradients (Smoke, Glass, Mesh, ...) are WebGL-only. With
+// no WebGL2, or if a style's shader won't compile on this device, they fall
+// back to the CPU Noise gradient — still animated and palette-driven — rather
+// than leaving the canvas blank.
+function styleFieldAuto(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (!hasStyleFieldFailed(id) && detectStyleFieldGLSupport()) {
+    try {
+      return drawStyleFieldGL(id, P);
+    } catch (err) {
+      console.error(`WebGL ${id} failed, falling back to CPU Noise:`, err);
+    }
+  }
+  return drawNoise(P);
+}
+
 // Alphabetical by id — keep new entries sorted in.
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'angle': drawAngleAuto,
   'attractor': drawAttractorLazy,
   'aurora': drawAurora,
   'caustics': drawCausticsAuto,
+  'contour': (P) => styleFieldAuto('contour', P),
   'fade': drawFade,
   'fireworks': drawFireworksLazy,
   'flower': drawFlower,
+  'glass': (P) => styleFieldAuto('glass', P),
   'grid': drawGrid,
+  'halftone-screen': (P) => styleFieldAuto('halftone-screen', P),
   'hatch': drawHatch,
+  'holographic': (P) => styleFieldAuto('holographic', P),
   'julia': drawJuliaAuto,
   'lava-lamp': drawLavaLampAuto,
   'lightning': drawLightningLazy,
   'marble': drawMarbleAuto,
+  'mercury': (P) => styleFieldAuto('mercury', P),
+  'mesh': (P) => styleFieldAuto('mesh', P),
   'mesh-wireframe': drawMeshWireframe,
   'metaballs': drawMetaballsAuto,
+  'nebula': (P) => styleFieldAuto('nebula', P),
   'noise': drawNoiseAuto,
   'particles': drawParticlesLazy,
+  'prism': (P) => styleFieldAuto('prism', P),
   'radial': drawRadial,
   'radial-burst': drawRadialBurstAuto,
+  'raindrops': (P) => styleFieldAuto('raindrops', P),
   'reaction-diffusion': drawReactionDiffusionLazy,
   'shapes': drawShapes,
+  'smoke': (P) => styleFieldAuto('smoke', P),
   'stack': drawStack,
   'tiling': drawTilingAuto,
   'topographic': drawTopographicAuto,
   'truchet': drawTruchet,
+  'tunnel': (P) => styleFieldAuto('tunnel', P),
   'voronoi': drawVoronoiAuto,
   'wave-interference': drawWaveInterference,
+  'waves': (P) => styleFieldAuto('waves', P),
   'windmill': drawWindmillAuto,
 };

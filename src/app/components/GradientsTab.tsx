@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type GradientType, FULL_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 
 export interface GradientsTabProps {
   gradientType: GradientType;
@@ -126,6 +126,10 @@ export interface GradientsTabProps {
   paletteMode: 'linear' | 'banded' | 'cyclic'; setPaletteMode: (v: 'linear' | 'banded' | 'cyclic') => void;
   paletteBands: number; setPaletteBands: (v: number) => void;
 
+  // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...)
+  fieldScale: number; setFieldScale: (v: number) => void;
+  fieldSpeed: number; setFieldSpeed: (v: number) => void;
+
   // Wave Interference
   waveInterferenceSourceCount: number; setWaveInterferenceSourceCount: (v: number) => void;
   waveInterferenceFrequency: number; setWaveInterferenceFrequency: (v: number) => void;
@@ -235,6 +239,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -579,6 +584,25 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
               { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
+              <div key={label} className="flex items-center justify-between">
+                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+                <div className="flex items-center gap-1 flex-1 ml-2">
+                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
+                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Styled-field gradients (Smoke, Glass, Mesh, ...) — one shared Scale/Speed pair */}
+        {STYLE_FIELD_GRADIENT_TYPES.includes(gradientType) && (
+          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {renderFieldMappingRows()}
+            {[
+              { label: 'Scale', value: fieldScale, set: setFieldScale, min: 0.3, max: 3, step: 0.05 },
+              { label: 'Speed', value: fieldSpeed, set: setFieldSpeed, min: 0, max: 3, step: 0.05 },
+            ].map(({ label, value, set, min, max, step }) => (
               <div key={label} className="flex items-center justify-between">
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">

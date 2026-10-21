@@ -112,7 +112,7 @@ export function useRandomization(params: RandomizationParams) {
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
-    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount,
+    setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -353,6 +353,9 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast(Math.random() * 2.7 + 0.3);                        // 0.3–3
     setPaletteMode((['linear', 'banded', 'cyclic'] as const)[Math.floor(Math.random() * 3)]);
     setPaletteBands(Math.floor(Math.random() * 15) + 2);                // 2–16
+    // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, ...).
+    setFieldScale(Math.random() * 1.2 + 0.6);                           // 0.6–1.8
+    setFieldSpeed(Math.random() * 1.1 + 0.5);                           // 0.5–1.6
 
     // Invert effect
     setInvertAmount(Math.random());                                     // 0–1

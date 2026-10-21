@@ -50,10 +50,22 @@ void main() {
     freq *= 2.1;
     amp *= 0.5;
   }
-  float vein = sin(nx2 * uVeinFreq * uVeinBoost + turb * uTurbulence * uTurbBoost + uTime * 0.1) * 0.5 + 0.5;
-  float tVal = jsMod(vein + uColorShift, 1.0);
+  float phase = nx2 * uVeinFreq * uVeinBoost + turb * uTurbulence * uTurbBoost + uTime * 0.1;
+  float vein = sin(phase) * 0.5 + 0.5;
+  // Real marble is a soft ground cut by crisp, hair-thin veins — the soft
+  // banding above alone reads as zebra stripes. Add a ridged primary vein
+  // that follows the same turbulence (so it stays glued to the banding) and a
+  // finer cross-vein at a different angle, then a faint polished-stone sheen.
+  // Everything is gated on the same Vein Freq / Turbulence sliders, so existing
+  // settings keep their character; the CPU fallback (drawMarble.ts) is the
+  // plain banded look.
+  float thin = pow(1.0 - abs(sin(phase * 0.5 + turb * 0.6 + 1.3)), 7.0);
+  float fine = pow(1.0 - abs(sin((nx2 * 0.7 + ny2 * 1.1) * uVeinFreq * 1.7 + turb * uTurbulence * 1.4 + 4.0)), 16.0);
+  float tVal = jsMod(vein * 0.8 + thin * 0.2 + uColorShift, 1.0);
   vec3 color = getMappedColor(tVal);
-  outColor = vec4(color, 1.0);
+  float sheen = pow(0.5 + 0.5 * sin(nx2 * 0.8 - ny2 * 0.6 + turb * 0.5 + uTime * 0.05), 8.0) * 0.10;
+  color += thin * 0.07 + fine * 0.22 + sheen;
+  outColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;
