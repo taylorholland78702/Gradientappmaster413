@@ -7,7 +7,7 @@
 // half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_BALLS = 14;
@@ -22,6 +22,7 @@ uniform int uBallCount;
 uniform vec3 uBalls[${MAX_BALLS}]; // x, y, r
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${colorMappingGLSL()}
 
 void main() {
@@ -37,7 +38,7 @@ void main() {
   float tVal = (1.0 - 1.0 / (1.0 + field * 0.6)) * (1.0 - uColorShift) + uColorShift;
   vec3 mapped = getMappedColor(tVal);
   float brightness = min(1.0, field * 0.9);
-  outColor = vec4(mapped * brightness, 1.0);
+  outColor = vec4(antiBand(mapped * brightness), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

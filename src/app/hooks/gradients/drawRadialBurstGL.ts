@@ -7,7 +7,7 @@
 // only calls this for 'sweep' and always uses the CPU path otherwise.
 // Falls back to the CPU implementation if WebGL2 isn't available or this
 // throws.
-import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -23,6 +23,7 @@ uniform int uColorCount;
 ${BLEND_COLORS_GLSL}
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 
 void main() {
   vec2 fp = vUv * uSize;
@@ -46,7 +47,7 @@ void main() {
   int colorIdx2 = min(colorIdx + 1, uColorCount - 1);
   vec3 color = blendColors(uColors[colorIdx], uColors[colorIdx2], colorFrac);
 
-  outColor = vec4(color * brightness, 1.0);
+  outColor = vec4(antiBand(color * brightness), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

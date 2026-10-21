@@ -106,6 +106,38 @@ export function setBlendUniform(gl: WebGL2RenderingContext, program: WebGLProgra
   gl.uniform1i(gl.getUniformLocation(program, 'uBlendMode'), colorBlendIndex(getActiveColorBlend()));
 }
 
+// Anti-banding dither. A screen shows 256 levels per channel, so a slow
+// gradient quantizes into flat strips with a one-level jump at each edge, and
+// the eye picks the edges out. Adding a tiny random offset (up to +/-1 level,
+// triangular distribution, independent per channel) BEFORE the value is
+// rounded to 8 bits trades those strips for noise too fine to see. The
+// amplitude fades to zero at exactly 0 and 1 so flat black/white stay clean,
+// and the noise is a pure function of the pixel position, so it is static
+// (no shimmer) and identical frame to frame. Call it on the final color.
+export const DITHER_GLSL = `
+uint ditherHash(uint x) {
+  x ^= x >> 16;
+  x *= 0x7feb352dU;
+  x ^= x >> 15;
+  x *= 0x846ca68bU;
+  x ^= x >> 16;
+  return x;
+}
+float ditherUnit(uint h) { return float(h >> 8) * (1.0 / 16777216.0); }
+vec3 antiBand(vec3 c) {
+  uvec2 px = uvec2(gl_FragCoord.xy);
+  uint h0 = ditherHash(px.x + ditherHash(px.y + 0x68e31da4U));
+  uint h1 = ditherHash(h0 ^ 0x9e3779b9U);
+  uint h2 = ditherHash(h1 + 0x85ebca6bU);
+  uint h3 = ditherHash(h2 ^ 0xc2b2ae35U);
+  uint h4 = ditherHash(h3 + 0x27d4eb2fU);
+  uint h5 = ditherHash(h4 ^ 0x165667b1U);
+  vec3 n = vec3(ditherUnit(h0), ditherUnit(h1), ditherUnit(h2))
+         + vec3(ditherUnit(h3), ditherUnit(h4), ditherUnit(h5)) - 1.0;
+  vec3 a = clamp(min(c, 1.0 - c) * 255.0, 0.0, 1.0);
+  return clamp(c + n * a / 255.0, 0.0, 1.0);
+}`;
+
 // Ports fieldCurve.ts's applyFieldContrast + mapValueToColor/getMappedColor
 // verbatim to GLSL — same power-curve contrast reshape and linear/banded/
 // cyclic palette lookup used by every CPU gradient's getMappedColor call,

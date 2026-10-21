@@ -1,5 +1,6 @@
 import { applyFieldContrast } from '../../utils/fieldCurve';
 import { blendRgb } from '../../utils/color';
+import { fillLinearGL } from './drawCanvasGradientGL';
 
 export function drawFade(P: any): CanvasGradient | undefined {
   const {
@@ -285,6 +286,7 @@ export function drawFade(P: any): CanvasGradient | undefined {
           const g = Math.round(fadeMix.g);
           const b = Math.round(fadeMix.b);
 
+          let fadeFilledGL = false;
           if (gradientColors.length >= 2 && fadeDirection !== 0) {
             const fadeRad = fadeDirection * Math.PI / 180;
             const fadeCx = displayWidth / 2, fadeCy = displayHeight / 2;
@@ -293,14 +295,21 @@ export function drawFade(P: any): CanvasGradient | undefined {
             const fy0 = fadeCy - Math.sin(fadeRad) * fadeHalfDiag;
             const fx1 = fadeCx + Math.cos(fadeRad) * fadeHalfDiag;
             const fy1 = fadeCy + Math.sin(fadeRad) * fadeHalfDiag;
-            const fadeLinGrad = ctx.createLinearGradient(fx0, fy0, fx1, fy1);
-            fadeLinGrad.addColorStop(0, `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`);
-            fadeLinGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
-            ctx.fillStyle = fadeLinGrad;
+            // A two-stop ramp across the whole frame is the most band-prone fill
+            // in the app (at most |delta| levels spread over a thousand-plus
+            // pixels), so it goes through the dithered WebGL fill; the native
+            // gradient below is the no-WebGL fallback.
+            fadeFilledGL = fillLinearGL(P, fx0, fy0, fx1, fy1, [currentColor, nextColor]);
+            if (!fadeFilledGL) {
+              const fadeLinGrad = ctx.createLinearGradient(fx0, fy0, fx1, fy1);
+              fadeLinGrad.addColorStop(0, `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`);
+              fadeLinGrad.addColorStop(1, `rgb(${nextColor.r}, ${nextColor.g}, ${nextColor.b})`);
+              ctx.fillStyle = fadeLinGrad;
+            }
           } else {
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
           }
-          ctx.fillRect(0, 0, displayWidth, displayHeight);
+          if (!fadeFilledGL) ctx.fillRect(0, 0, displayWidth, displayHeight);
 
           // Mids: radial pulse from center
           if (fadeAudioActive && audioMidsLevel > 0.05) {

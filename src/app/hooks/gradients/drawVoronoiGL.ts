@@ -9,7 +9,7 @@
 // path's half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_SEEDS = 48;
@@ -26,6 +26,7 @@ uniform vec2 uSeedPos[${MAX_SEEDS}];
 uniform vec3 uSeedColor[${MAX_SEEDS}];
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 
 void main() {
   vec2 fp = vUv * uSize;
@@ -42,7 +43,7 @@ void main() {
   float vdx = fp.x - uCenter.x, vdy = fp.y - uCenter.y;
   float vDist = sqrt(vdx * vdx + vdy * vdy);
   float vBoost = 1.0 + uBassPulse * (1.0 - vDist / uMaxDist) * 0.9;
-  outColor = vec4(min(vec3(1.0), nearestColor * vBoost), 1.0);
+  outColor = vec4(antiBand(min(vec3(1.0), nearestColor * vBoost)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

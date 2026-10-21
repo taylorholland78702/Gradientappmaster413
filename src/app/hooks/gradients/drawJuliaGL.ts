@@ -7,7 +7,7 @@
 // detail, not just faster.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_ITER = 120;
@@ -23,6 +23,7 @@ uniform float uSinR;
 uniform int uMaxIter;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${JS_MOD_GLSL}
 ${colorMappingGLSL()}
 
@@ -51,7 +52,7 @@ void main() {
     float smoothIter = float(iter) + 1.0 - nu;
     t = abs(jsMod(smoothIter / float(uMaxIter), 1.0));
   }
-  outColor = vec4(getMappedColor(t), 1.0);
+  outColor = vec4(antiBand(getMappedColor(t)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

@@ -15,7 +15,7 @@
 // gradients each have one). On a device without WebGL2 these fall back to the
 // existing CPU Noise gradient — see _registry.ts — which is a graceful
 // degrade rather than a blank canvas.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
@@ -39,6 +39,7 @@ uniform float uMids;
 uniform float uTreble;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${JS_MOD_GLSL}
 ${colorMappingGLSL()}
 
@@ -96,7 +97,7 @@ const MAIN = `
 void main() {
   vec2 fp = vUv * uSize;
   vec2 p = (fp - uCenter) / uSize.y * uScale + vec2(uSeed * 1.7, uSeed * 2.3);
-  outColor = vec4(clamp(shade(p, vUv, uTime), 0.0, 1.0), 1.0);
+  outColor = vec4(antiBand(clamp(shade(p, vUv, uTime), 0.0, 1.0)), 1.0);
 }`;
 
 // Domain-warped fractal noise (the "warp the warp" construction) — wispy,

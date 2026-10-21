@@ -12,7 +12,7 @@
 // continuous field, just sampled finer.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -30,6 +30,7 @@ uniform float uLightFloor;
 uniform float uColorShift;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${JS_MOD_GLSL}
 ${colorMappingGLSL()}
 
@@ -43,7 +44,7 @@ void main() {
   float v = min(1.0, pow(abs(w1 + w2 + w3) / 3.0, uBrightnessExp) + uLightFloor);
   float tVal = jsMod(sin(v * 3.14159265359) * 0.5 + 0.5 + uColorShift, 1.0);
   vec3 c1 = getMappedColor(tVal);
-  outColor = vec4(min(vec3(1.0), c1 * (0.3 + v * 0.7)), 1.0);
+  outColor = vec4(antiBand(min(vec3(1.0), c1 * (0.3 + v * 0.7))), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

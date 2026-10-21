@@ -10,7 +10,7 @@
 // half-res one.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
@@ -33,6 +33,7 @@ uniform float uTurbBoost;
 uniform float uColorShift;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${JS_MOD_GLSL}
 ${colorMappingGLSL()}
 
@@ -65,7 +66,7 @@ void main() {
   vec3 color = getMappedColor(tVal);
   float sheen = pow(0.5 + 0.5 * sin(nx2 * 0.8 - ny2 * 0.6 + turb * 0.5 + uTime * 0.05), 8.0) * 0.10;
   color += thin * 0.07 + fine * 0.22 + sheen;
-  outColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+  outColor = vec4(antiBand(clamp(color, 0.0, 1.0)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

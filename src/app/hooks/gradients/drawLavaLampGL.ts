@@ -7,7 +7,7 @@
 // half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_BLOBS = 12;
@@ -23,6 +23,7 @@ uniform vec3 uBlobs[${MAX_BLOBS}]; // x, y, r
 uniform vec3 uBlobColors[${MAX_BLOBS}];
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 
 void main() {
   vec2 fp = vUv * uSize;
@@ -42,7 +43,7 @@ void main() {
   float t = clamp((field - 0.7) * 3.0, 0.0, 1.0);
   float brightness = (t > 0.0 ? 1.0 : min(1.0, field * 0.3)) * uBrightBoost;
   vec3 color = colorW > 0.0 ? colorSum / colorW : vec3(0.0);
-  outColor = vec4(min(vec3(1.0), color * brightness), 1.0);
+  outColor = vec4(antiBand(min(vec3(1.0), color * brightness)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

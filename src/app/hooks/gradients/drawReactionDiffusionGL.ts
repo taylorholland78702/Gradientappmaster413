@@ -9,7 +9,7 @@
 // memoized), _registry.ts falls back to the CPU implementation for the
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
-import { BLEND_COLORS_GLSL, setBlendUniform } from './glShared';
+import { BLEND_COLORS_GLSL, DITHER_GLSL, setBlendUniform } from './glShared';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -98,6 +98,7 @@ uniform float uBands;
 uniform vec3 uColors[${MAX_COLORS}];
 uniform int uColorCount;
 ${BLEND_COLORS_GLSL}
+${DITHER_GLSL}
 in vec2 vUv;
 out vec4 outColor;
 
@@ -127,7 +128,7 @@ void main() {
   float frac = pos - float(idx);
   int idx2 = min(idx + 1, uColorCount - 1);
   vec3 color = blendColors(uColors[idx], uColors[idx2], frac);
-  outColor = vec4(color, 1.0);
+  outColor = vec4(antiBand(color), 1.0);
 }`;
 
 function compileShader(gl: WebGL2RenderingContext, type: number, src: string): WebGLShader {

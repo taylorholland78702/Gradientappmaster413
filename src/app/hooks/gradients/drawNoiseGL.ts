@@ -9,7 +9,7 @@
 // this matches that simpler path instead.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
@@ -32,6 +32,7 @@ uniform int uColorCount;
 ${BLEND_COLORS_GLSL}
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 
 void main() {
   vec2 fp = vUv * uSize;
@@ -85,7 +86,7 @@ void main() {
   float radialPulse = uBassBoost * (1.0 - dist / uMaxDist) * 0.8;
   float boost = 1.0 + radialPulse;
 
-  outColor = vec4(min(vec3(1.0), color * boost), 1.0);
+  outColor = vec4(antiBand(min(vec3(1.0), color * boost)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

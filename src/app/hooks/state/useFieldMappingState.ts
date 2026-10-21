@@ -10,10 +10,11 @@ export function useFieldMappingState() {
   const [fieldContrast, setFieldContrast] = useState(1);
   const [paletteMode, setPaletteMode] = useState<'linear' | 'banded' | 'cyclic'>('linear');
   const [paletteBands, setPaletteBands] = useState(5);
-  // How adjacent palette colors blend (sRGB/OKLab/OKLCH) — applies to every
+  // How adjacent palette colors blend (sRGB/OKLab/OKLCH) — OKLab by default,
+  // so a fresh session gets even, non-muddy transitions; applies to every
   // gradient, not just the scalar-field ones this hook is otherwise for, but
   // it sits next to paletteMode since both are "how the palette is sampled."
-  const [colorBlend, setColorBlend] = useState<ColorBlend>('srgb');
+  const [colorBlend, setColorBlend] = useState<ColorBlend>('oklab');
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...
   // — see drawStyleFieldGL.ts), which have no per-style sliders of their own.
   const [fieldScale, setFieldScale] = useState(1);

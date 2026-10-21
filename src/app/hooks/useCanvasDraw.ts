@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { adjustPalette, setActiveColorBlend } from '../utils/color';
+import { adjustPalette, setActiveColorBlend, shiftHueByTreble } from '../utils/color';
+import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -702,10 +703,21 @@ export function useCanvasDraw(params: CanvasDrawParams) {
           // either self-draws its own stops or returns undefined above —
           // so radialHardEdge is the only per-type flag that needs reading
           // here.
-          addGradientStops(gradient, renderColors, drawCtx.radialHardEdge);
-
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, displayWidth, displayHeight);
+          // Radial (the only gradient on this path) is filled by a dithered
+          // WebGL shader when it can be — the native canvas gradient bands
+          // badly on a slow ramp. Hard Edge keeps the native path, whose
+          // duplicate-stop trick the shader doesn't implement.
+          let radialFilledGL = false;
+          if (gradientType === 'radial' && drawCtx.radialGeometry && !drawCtx.radialHardEdge) {
+            const treble = isAudioEnabled && isAudioReactive ? audioTrebleLevel : 0;
+            const stopColors = treble > 0 ? renderColors.map((c) => shiftHueByTreble(c, treble)) : renderColors;
+            radialFilledGL = fillRadialGL(drawCtx, drawCtx.radialGeometry, stopColors);
+          }
+          if (!radialFilledGL) {
+            addGradientStops(gradient, renderColors, drawCtx.radialHardEdge);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+          }
         }
       }
 

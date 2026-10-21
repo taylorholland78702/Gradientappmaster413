@@ -164,3 +164,48 @@ export function blendRgb(c1: ColorRGB, c2: ColorRGB, t: number, mode: ColorBlend
   const h = h1 + dh * t;
   return oklabToRgb(L, C * Math.cos(h), C * Math.sin(h));
 }
+
+// Treble-driven hue rotation applied to a palette color when audio reactivity
+// is on — shared by the canvas-gradient path (addGradientStops) and the
+// WebGL Radial port, so both react to treble identically.
+export function shiftHueByTreble(color: ColorRGB, trebleLevel: number): ColorRGB {
+  const r = color.r / 255;
+  const g = color.g / 255;
+  const b = color.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+
+  h = (h + trebleLevel / 360) % 1;
+
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+
+  let newR, newG, newB;
+  if (s === 0) {
+    newR = newG = newB = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    newR = hue2rgb(p, q, h + 1 / 3);
+    newG = hue2rgb(p, q, h);
+    newB = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  return { r: Math.round(newR * 255), g: Math.round(newG * 255), b: Math.round(newB * 255) };
+}

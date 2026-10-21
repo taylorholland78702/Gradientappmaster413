@@ -9,7 +9,7 @@
 // them from P.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -24,6 +24,7 @@ uniform float uSinR;
 uniform float uRowOffset;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${colorMappingGLSL()}
 
 void main() {
@@ -56,7 +57,7 @@ void main() {
     1.0
   ) / 4.0 + 0.5;
 
-  outColor = vec4(getMappedColor(value), 1.0);
+  outColor = vec4(antiBand(getMappedColor(value)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;

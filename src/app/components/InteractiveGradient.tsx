@@ -27,7 +27,7 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
-import { hslToRgb } from '../utils/color';
+import { hslToRgb, shiftHueByTreble } from '../utils/color';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -2293,57 +2293,8 @@ export function InteractiveGradient() {
     // Apply hue shift if audio is reactive
     const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioTrebleLevel > 0;
     
-    const applyHueShift = (color: ColorRGB): ColorRGB => {
-      if (!shouldApplyHueShift) return color;
-      
-      // Convert RGB to HSL
-      const r = color.r / 255;
-      const g = color.g / 255;
-      const b = color.b / 255;
-      
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h = 0;
-      const l = (max + min) / 2;
-      const d = max - min;
-      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-      
-      if (d !== 0) {
-        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        else if (max === g) h = ((b - r) / d + 2) / 6;
-        else h = ((r - g) / d + 4) / 6;
-      }
-      
-      // Apply hue shift (in 0-1 range)
-      h = (h + audioTrebleLevel / 360) % 1;
-      
-      // Convert back to RGB
-      const hue2rgb = (p: number, q: number, t: number) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-        return p;
-      };
-      
-      let newR, newG, newB;
-      if (s === 0) {
-        newR = newG = newB = l;
-      } else {
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        newR = hue2rgb(p, q, h + 1/3);
-        newG = hue2rgb(p, q, h);
-        newB = hue2rgb(p, q, h - 1/3);
-      }
-      
-      return {
-        r: Math.round(newR * 255),
-        g: Math.round(newG * 255),
-        b: Math.round(newB * 255)
-      };
-    };
+    const applyHueShift = (color: ColorRGB): ColorRGB =>
+      shouldApplyHueShift ? shiftHueByTreble(color, audioTrebleLevel) : color;
     
     if (count === 1) {
       const shifted = applyHueShift(validColors[0]);

@@ -228,5 +228,9 @@ export function drawRadial(P: any): CanvasGradient | undefined {
           const radialCenterY = (displayHeight * angleCenterY) / 100 + radialOrbitY;
           const radialRadius = Math.max(0, Math.min(displayWidth, displayHeight) / 2 * radialScale);
           gradient = ctx.createRadialGradient(radialCenterX, radialCenterY, 0, radialCenterX, radialCenterY, radialRadius);
+          // Lets useCanvasDraw fill this as a dithered WebGL gradient instead of the
+          // native one (see drawCanvasGradientGL.ts); the CanvasGradient above
+          // stays as the fallback and for Hard Edge, which GL doesn't do.
+          P.radialGeometry = { cx: radialCenterX, cy: radialCenterY, radius: radialRadius };
   return gradient;
 }

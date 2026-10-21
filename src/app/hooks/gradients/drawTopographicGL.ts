@@ -4,7 +4,7 @@
 // of the CPU path's half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -19,6 +19,7 @@ uniform float uSeedY;
 uniform float uColorShift;
 in vec2 vUv;
 out vec4 outColor;
+${DITHER_GLSL}
 ${JS_MOD_GLSL}
 ${colorMappingGLSL()}
 
@@ -45,7 +46,7 @@ void main() {
     mapped *= (1.0 - lineMix * 0.85);
   }
 
-  outColor = vec4(clamp(mapped, 0.0, 1.0), 1.0);
+  outColor = vec4(antiBand(clamp(mapped, 0.0, 1.0)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;
