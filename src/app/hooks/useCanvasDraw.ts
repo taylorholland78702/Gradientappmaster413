@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
-import { beginGLFrame } from './gradients/glShared';
+import { beginGLFrame, setGLExportMode } from './gradients/glShared';
 import { resolveModulationKey } from '../constants/modulatableParams';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
@@ -197,6 +197,10 @@ export type CanvasDrawParams = Record<string, any>;
 // hook's useEffect depends on it exactly as it did before extraction —
 // preserves the original memoization/redraw-trigger timing exactly rather
 // than reconstructing a ~150-item dependency array by hand).
+// Set by a high-resolution export to force the next frames to render at this
+// canvas-pixels-per-CSS-pixel ratio; 0 means normal rendering.
+export const exportRender = { multiplier: 0 };
+
 export function useCanvasDraw(params: CanvasDrawParams) {
   const {
     isMobile,
@@ -346,9 +350,16 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // has meaningfully less headroom for the same per-pixel effect cost.
     const MAX_CANVAS_PIXELS = isMobile ? 1_500_000 : 2_500_000;
     const rawPixels = displayWidth * displayHeight * resolutionMultiplier * resolutionMultiplier;
-    const effectiveResolutionMultiplier = rawPixels > MAX_CANVAS_PIXELS
-      ? Math.max(0.75, resolutionMultiplier * Math.sqrt(MAX_CANVAS_PIXELS / rawPixels))
-      : resolutionMultiplier;
+    // A high-resolution export (exportAsPNG in InteractiveGradient) sets
+    // exportRender.multiplier for the few frames it takes to render and grab the
+    // image; it bypasses the budget above on purpose.
+    const exporting = exportRender.multiplier > 0;
+    const effectiveResolutionMultiplier = exporting
+      ? exportRender.multiplier
+      : rawPixels > MAX_CANVAS_PIXELS
+        ? Math.max(0.75, resolutionMultiplier * Math.sqrt(MAX_CANVAS_PIXELS / rawPixels))
+        : resolutionMultiplier;
+    setGLExportMode(exporting);
     const targetWidth = displayWidth * effectiveResolutionMultiplier;
     const targetHeight = displayHeight * effectiveResolutionMultiplier;
     // Assigning canvas.width/height forces a full reallocation + clear of the backing

@@ -339,6 +339,11 @@ let frameScaleX = 1;
 let frameScaleY = 1;
 let frameLogicalSize: { w: number; h: number } | null = null;
 
+// While a high-resolution export is rendering, every field gradient draws at the
+// canvas's full backing size: no pixel budget and no adaptive downscale.
+let glExportMode = false;
+export function setGLExportMode(on: boolean) { glExportMode = on; }
+
 export function beginGLFrame(args: {
   canvasWidth: number; canvasHeight: number; displayWidth: number; displayHeight: number; gradientType?: string | null;
 }) {
@@ -356,10 +361,10 @@ export function beginGLFrame(args: {
     quality = createQualityController();
     frameQualityByGradient.set(key, quality);
   }
-  const scale = quality.update(lastFrameT ? now - lastFrameT : 0);
+  const scale = glExportMode ? 1 : quality.update(lastFrameT ? now - lastFrameT : 0);
   lastFrameT = now;
 
-  const budget = HEAVY_GRADIENTS.has(key) ? HEAVY_FIELD_PIXEL_BUDGET : FIELD_PIXEL_BUDGET;
+  const budget = glExportMode ? Number.POSITIVE_INFINITY : HEAVY_GRADIENTS.has(key) ? HEAVY_FIELD_PIXEL_BUDGET : FIELD_PIXEL_BUDGET;
   const full = fieldRenderDims(canvasWidth, canvasHeight, displayWidth, displayHeight, budget);
   // Scale the full target down, but never below the display's CSS-pixel size
   // (or the canvas itself when that is smaller) -- the floor is the old behavior.

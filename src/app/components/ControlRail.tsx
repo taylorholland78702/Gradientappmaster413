@@ -24,6 +24,7 @@ export interface ControlRailProps {
   autoShufflePopoverAnchor: unknown;
   setAutoShufflePopoverAnchor: (v: null) => void;
   openAutoShufflePopover: (triggerEl?: HTMLElement | null) => void;
+  openExportPopover: (triggerEl?: HTMLElement | null) => void;
 
   // Export
   exportAsPNG: () => void;
@@ -92,7 +93,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const {
     isMobile, onWordmarkClick,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
-    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover,
+    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
     isRecording, isEncoding, encodingProgress, toggleVCRRecording,
@@ -278,9 +279,9 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         )}
       </button>
       <button
-        onClick={exportAsPNG}
+        onClick={(e) => openExportPopover(e.currentTarget)}
         className={`${railBtnBase} text-white hover:bg-white/15`}
-        title="Save PNG (S)"
+        title="Save PNG — size and aspect (S saves right away)"
         aria-label="Save PNG"
       >
         <Camera weight="regular" className={iconCls} />

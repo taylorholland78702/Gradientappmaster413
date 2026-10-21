@@ -30,7 +30,7 @@ import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
-import { useCanvasDraw } from '../hooks/useCanvasDraw';
+import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
 import {
   type ColorRGB, type GradientType, type EffectType,
   DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
@@ -260,6 +260,27 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
 // conveniently never fires in the tab that made the write, so no echo
 // filtering is needed. Read once at module load — the URL flag never
 // changes mid-session.
+// Save PNG options. Size is the exported image's long edge; Aspect crops the
+// center of what's on screen to that shape ('screen' keeps the window's own).
+type ExportSize = 'screen' | '1080' | '4k' | '8k';
+type ExportAspect = 'screen' | '1:1' | '4:5' | '16:9' | '9:16';
+const EXPORT_SIZES: { id: ExportSize; label: string; longEdge: number }[] = [
+  { id: 'screen', label: 'Screen', longEdge: 0 },
+  { id: '1080', label: '1080p', longEdge: 1920 },
+  { id: '4k', label: '4K', longEdge: 3840 },
+  { id: '8k', label: '8K', longEdge: 7680 },
+];
+const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[] = [
+  { id: 'screen', label: 'Screen', ratio: 0 },
+  { id: '1:1', label: '1:1', ratio: 1 },
+  { id: '4:5', label: '4:5', ratio: 4 / 5 },
+  { id: '16:9', label: '16:9', ratio: 16 / 9 },
+  { id: '9:16', label: '9:16', ratio: 9 / 16 },
+];
+// Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
+const EXPORT_MAX_EDGE = 8192;
+const EXPORT_MAX_PIXELS = 40_000_000;
+
 type AutoShuffleScope = 'all' | 'gradient' | 'effects' | 'colors';
 const AUTO_SHUFFLE_SCOPES: { id: AutoShuffleScope; label: string; hint: string }[] = [
   { id: 'all', label: 'All', hint: 'A full remix each time' },
@@ -1914,6 +1935,18 @@ export function InteractiveGradient() {
     setAutoShuffleScopeState(scope);
     try { localStorage.setItem('autoShuffleScope', scope); } catch { /* storage unavailable: the choice just won't persist */ }
   };
+  const [exportSize, setExportSizeState] = useState<ExportSize>(() => {
+    try { const v = localStorage.getItem('exportSize'); return EXPORT_SIZES.some(o => o.id === v) ? (v as ExportSize) : 'screen'; } catch { return 'screen'; }
+  });
+  const [exportAspect, setExportAspectState] = useState<ExportAspect>(() => {
+    try { const v = localStorage.getItem('exportAspect'); return EXPORT_ASPECTS.some(o => o.id === v) ? (v as ExportAspect) : 'screen'; } catch { return 'screen'; }
+  });
+  const setExportSize = (v: ExportSize) => { setExportSizeState(v); try { localStorage.setItem('exportSize', v); } catch { /* not persisted */ } };
+  const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
+  const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
+  exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
+  // Which popout the shared anchor below is showing.
+  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -1925,7 +1958,8 @@ export function InteractiveGradient() {
   // mobile opens it flush above the (bottom-docked) panel at full width
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
-  const openAutoShufflePopover = (triggerEl?: HTMLElement | null) => {
+  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' = 'autoShuffle') => {
+    setPopoverMode(mode);
     // Its own popout now — opening it closes whatever tab drawer/About
     // panel happened to be open instead of stacking on top of it.
     setActiveTab(null);
@@ -1944,8 +1978,15 @@ export function InteractiveGradient() {
       // content is a toggle and one interval slider, not a full panel's
       // worth of controls, so there's no reason to match the drawer's width.
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
-      setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 168 });
+      // The export popout is tall and its button sits near the bottom of the rail, so
+      // it grows upward from the button's bottom edge instead of downward off-screen.
+      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 200 });
+      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 168 });
     }
+  };
+  const openExportPopover = (triggerEl?: HTMLElement | null) => {
+    if (autoShufflePopoverAnchor && popoverMode === 'export') setAutoShufflePopoverAnchor(null);
+    else openAutoShufflePopover(triggerEl, 'export');
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
   // closes whatever tab drawer/Auto Shuffle popover happened to be open
@@ -2007,6 +2048,36 @@ export function InteractiveGradient() {
           border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
+        {popoverMode === 'export' ? (<>
+        <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save PNG</span>
+        {([
+          { label: 'Size', options: EXPORT_SIZES, value: exportSize, set: setExportSize, hint: 'Long edge of the saved image. Re-renders the artwork at that size.' },
+          { label: 'Aspect', options: EXPORT_ASPECTS, value: exportAspect, set: setExportAspect, hint: 'Crops the center of what you see to this shape.' },
+        ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void; hint: string }[]).map(g => (
+          <div key={g.label} className="flex flex-col gap-1" title={g.hint}>
+            <span className="text-[10px] text-white/60">{g.label}</span>
+            <div className="flex flex-wrap gap-1" role="group" aria-label={`Export ${g.label.toLowerCase()}`}>
+              {g.options.map(o => (
+                <button
+                  key={o.id}
+                  onClick={() => g.set(o.id as never)}
+                  aria-pressed={g.value === o.id}
+                  className="px-2 py-1 text-[10px] transition-all"
+                  style={g.value === o.id
+                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
+                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+                >{o.label}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <button
+          onClick={() => { exportAsPNG(); setAutoShufflePopoverAnchor(null); }}
+          className="py-1.5 text-[11px] font-semibold transition-all"
+          style={{ backgroundColor: '#ffffff', color: '#000000' }}
+        >Save PNG</button>
+        <p className="text-[10px] text-white/50">The S key saves with these settings.</p>
+        </>) : (<>
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
           <button
@@ -2071,6 +2142,7 @@ export function InteractiveGradient() {
           ))}
         </div>
         <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+        </>)}
       </div>,
       document.body,
     );
@@ -3331,22 +3403,62 @@ export function InteractiveGradient() {
     }, 'image/jpeg', 0.95);
   }, []);
 
-  // Export gradient as PNG
-  const exportAsPNG = useCallback(() => {
+  // Export gradient as PNG. With a size picked, the artwork is re-rendered at that
+  // size (full-resolution gradients, no pixel budget) for a few frames, the
+  // wanted region is copied out, and normal rendering resumes. Effects that keep
+  // history between frames (Feedback, Chromatic Trails, Slit-Scan) restart when
+  // the canvas changes size, so they come out as a fresh frame.
+  const isExportingRef = useRef(false);
+  const exportAsPNG = useCallback(async () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Convert canvas to PNG and download
-    canvas.toBlob((blob) => {
+    if (!canvas || isExportingRef.current) return;
+    isExportingRef.current = true;
+    const { size, aspect } = exportSettingsRef.current;
+    const cssW = canvas.clientWidth || canvas.width;
+    const cssH = canvas.clientHeight || canvas.height;
+    // The region to keep, in CSS pixels, centered.
+    const ratio = EXPORT_ASPECTS.find(a => a.id === aspect)?.ratio ?? 0;
+    let cropW = cssW, cropH = cssH;
+    if (ratio > 0) {
+      if (cssW / cssH > ratio) cropW = cssH * ratio; else cropH = cssW / ratio;
+    }
+    const longEdge = EXPORT_SIZES.find(o => o.id === size)?.longEdge ?? 0;
+    const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
+    try {
+      if (longEdge > 0) {
+        const want = longEdge / Math.max(cropW, cropH);
+        const mult = Math.min(want, EXPORT_MAX_EDGE / Math.max(cssW, cssH), Math.sqrt(EXPORT_MAX_PIXELS / (cssW * cssH)));
+        exportRender.multiplier = mult;
+        drawParamsDirtyRef.current = true;
+        // Wait for the canvas to actually reach that size, then two more frames so
+        // the render at that size is on it.
+        for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
+        await nextFrame();
+        await nextFrame();
+      }
+      const k = canvas.width / cssW;
+      const outW = Math.max(1, Math.round(cropW * k));
+      const outH = Math.max(1, Math.round(cropH * k));
+      const out = document.createElement('canvas');
+      out.width = outW;
+      out.height = outH;
+      const octx = out.getContext('2d');
+      if (!octx) return;
+      octx.drawImage(canvas, Math.round((canvas.width - outW) / 2), Math.round((canvas.height - outH) / 2), outW, outH, 0, 0, outW, outH);
+      const blob = await new Promise<Blob | null>(r => out.toBlob(r, 'image/png'));
       if (blob) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `gradient-${Date.now()}.png`;
+        link.download = `gradient-${outW}x${outH}-${Date.now()}.png`;
         link.click();
         URL.revokeObjectURL(url);
       }
-    }, 'image/png');
+    } finally {
+      exportRender.multiplier = 0;
+      drawParamsDirtyRef.current = true;
+      isExportingRef.current = false;
+    }
   }, []);
 
   // Export animated GIF
@@ -4022,6 +4134,7 @@ export function InteractiveGradient() {
           autoShufflePopoverAnchor={autoShufflePopoverAnchor}
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
+          openExportPopover={openExportPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}
@@ -4069,6 +4182,7 @@ export function InteractiveGradient() {
           autoShufflePopoverAnchor={autoShufflePopoverAnchor}
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
+          openExportPopover={openExportPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}
