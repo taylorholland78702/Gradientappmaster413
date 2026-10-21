@@ -46,6 +46,8 @@ uniform float uTreble;
 // gradient's original look, and what each one does is specific to the gradient.
 uniform float uA;
 uniform float uB;
+uniform float uExposure;
+uniform int uTone;
 in vec2 vUv;
 out vec4 outColor;
 ${DITHER_GLSL}
@@ -99,6 +101,18 @@ float fbm3(vec2 p) {
   }
   return v;
 }
+// Exposure (in stops) then an optional tone curve, applied to the shaded color before
+// it is clamped for output — so colors a shader pushes above 1.0 (hot cores,
+// highlights) roll off instead of clipping flat. Off with 0 EV is the old plain clamp.
+vec3 finish(vec3 c) {
+  c = max(c, vec3(0.0)) * exp2(uExposure);
+  if (uTone == 1) {
+    c = (c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14);
+  } else if (uTone == 2) {
+    c = (1.0 - exp(-1.5 * c)) / (1.0 - exp(-1.5));
+  }
+  return clamp(c, 0.0, 1.0);
+}
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 
 // Centered, aspect-correct, zoom-scaled position WITHOUT the structural-seed
@@ -124,7 +138,7 @@ const MAIN = `
 void main() {
   vec2 fp = vUv * uSize;
   vec2 p = (fp - uCenter) / uSize.y * uScale + vec2(uSeed * 1.7, uSeed * 2.3);
-  outColor = vec4(antiBand(clamp(shade(p, vUv, uTime), 0.0, 1.0)), 1.0);
+  outColor = vec4(antiBand(finish(shade(p, vUv, uTime))), 1.0);
 }`;
 
 // Domain-warped fractal noise (the "warp the warp" construction) — wispy,
@@ -781,7 +795,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -811,6 +825,8 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   // structuralSeed spans 0-1e6; wrapped so the hash noise keeps float precision.
   gl.uniform1f(gl.getUniformLocation(program, 'uA'), fieldShapeA ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uB'), fieldShapeB ?? 1);
+  gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), fieldExposure ?? 0);
+  gl.uniform1i(gl.getUniformLocation(program, 'uTone'), fieldTone === 'aces' ? 1 : fieldTone === 'soft' ? 2 : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uMids'), audio ? Math.min(1, audioMidsLevel / 5) : 0);

@@ -28,6 +28,9 @@ export function useFieldMappingState() {
   const [fieldSpeed, setFieldSpeed] = useState(1);
   // The two shape sliders each styled gradient has (constants/styleShapeControls.ts),
   // kept per gradient id as [A, B] so switching away and back keeps them; 1 = original look.
+  // Exposure (stops) and tone curve applied by the styled-field shaders before output.
+  const [fieldExposure, setFieldExposure] = useState(0);
+  const [fieldTone, setFieldTone] = useState<'off' | 'aces' | 'soft'>('off');
   const [fieldShapes, setFieldShapes] = useState<Record<string, [number, number]>>({});
 
   return {
@@ -51,5 +54,9 @@ export function useFieldMappingState() {
     setFieldSpeed,
     fieldShapes,
     setFieldShapes,
+    fieldExposure,
+    setFieldExposure,
+    fieldTone,
+    setFieldTone,
   };
 }
