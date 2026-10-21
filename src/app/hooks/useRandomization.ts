@@ -39,7 +39,7 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
   eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
   'flow-mesh': ['Flow Mesh'], plasma: ['Plasma'], ribbon: ['Ribbon'], strands: ['Strands'], iridescent: ['Iridescent'],
-  embers: ['Embers'], bands: ['Bands'], soft: ['Soft'], duo: ['Duo'], sheen: ['Sheen'],
+  embers: ['Embers'], bands: ['Bands'], soft: ['Soft'], sheen: ['Sheen'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 

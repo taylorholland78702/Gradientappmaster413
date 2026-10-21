@@ -25,7 +25,7 @@ export type StyleFieldId =
   | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
   | 'plasma' | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands'
-  | 'soft' | 'duo' | 'sheen';
+  | 'soft' | 'sheen';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -757,21 +757,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(vec3(luma(col)), col, 0.92);
 }`;
 
-// Exactly two colors, the palette's first and last, fading across a tilted,
-// gently waving boundary.
-const DUO = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  // cpos(), not p: p carries the structural-seed offset, which would swamp a plain linear fade.
-  vec2 c = cpos();
-  float ang = 0.9 + (uA - 1.0) * 0.8 + 0.25 * sin(t * 0.07);
-  float s = dot(c, vec2(cos(ang), sin(ang))) * 0.55;
-  s += (0.18 * sin(c.x * 0.8 + t * 0.12) + 0.12 * sin(c.y * 1.1 - t * 0.09)) * uB;
-  s += uBass * 0.08;
-  float k = smoothstep(-1.0, 1.0, s);
-  // 0.985 rather than 1.0: in the cyclic palette mode t = 1 wraps back to the first color.
-  return blendColors(getMappedColor(0.0), getMappedColor(0.985), k);
-}`;
-
 // Brushed satin: streaky stretched noise with broad highlight bands sweeping
 // across it.
 const SHEEN = `
@@ -816,7 +801,6 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   embers: EMBERS,
   bands: BANDS,
   soft: SOFT,
-  duo: DUO,
   sheen: SHEEN,
 };
 

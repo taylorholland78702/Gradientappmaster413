@@ -3,6 +3,7 @@ import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/
 import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { hexToRgb } from '../utils/color';
+import { BRUSHES, type BrushKind } from '../utils/drawStrokes';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
@@ -147,6 +148,7 @@ export interface GradientsTabProps {
   applyGradientLook: (look: GradientLook) => void;
   gradientColors: ColorRGB[];
   drawEnabled: boolean; setDrawEnabled: (v: boolean) => void;
+  drawBrush: BrushKind; setDrawBrush: (v: BrushKind) => void;
   drawSize: number; setDrawSize: (v: number) => void;
   drawSoftness: number; setDrawSoftness: (v: number) => void;
   drawFadeSec: number; setDrawFadeSec: (v: number) => void;
@@ -265,7 +267,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
     fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, gradientColors, structuralSeed, setStructuralSeed,
-    drawEnabled, setDrawEnabled, drawSize, setDrawSize, drawSoftness, setDrawSoftness, drawFadeSec, setDrawFadeSec, drawColorIndex, setDrawColorIndex, clearDabs,
+    drawEnabled, setDrawEnabled, drawBrush, setDrawBrush, drawSize, setDrawSize, drawSoftness, setDrawSoftness, drawFadeSec, setDrawFadeSec, drawColorIndex, setDrawColorIndex, clearDabs,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -490,11 +492,22 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
           {drawEnabled && (
             <>
+              <div className="flex flex-wrap gap-1" role="group" aria-label="Brush">
+                {BRUSHES.map(b => (
+                  <button
+                    key={b.id}
+                    onClick={() => setDrawBrush(b.id)}
+                    aria-pressed={drawBrush === b.id}
+                    title={b.hint}
+                    className={`px-2 py-1 text-[10px] border transition-all ${drawBrush === b.id ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                  >{b.label}</button>
+                ))}
+              </div>
               {([
                 { label: 'Size', value: drawSize, set: setDrawSize, min: 10, max: 200, step: 5, hint: 'Brush radius in pixels (a pen\u2019s pressure scales it)' },
                 { label: 'Softness', value: drawSoftness, set: setDrawSoftness, min: 0, max: 1, step: 0.05, hint: 'Hard-edged disc to soft glow' },
                 { label: 'Fade', value: drawFadeSec, set: setDrawFadeSec, min: 0.5, max: 20, step: 0.5, hint: 'Seconds for a stroke to dissolve' },
-              ] as const).map(r => (
+              ] as const).filter(r => r.label !== 'Softness' || BRUSHES.find(b => b.id === drawBrush)?.usesSoftness).map(r => (
                 <div key={r.label} className="flex items-center justify-between" title={r.hint}>
                   <label className="text-[10px] text-white w-20 shrink-0">{r.label}:</label>
                   <div className="flex items-center gap-1 flex-1 ml-2">

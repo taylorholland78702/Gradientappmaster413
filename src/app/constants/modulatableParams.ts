@@ -70,8 +70,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'ditherScale', label: 'Dither Scale', category: 'Dither', min: 1.0, max: 8.0 },
   { key: 'drapeScale', label: 'Drape Scale', category: 'Drape', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'drapeSpeed', label: 'Drape Speed', category: 'Drape', min: 0.0, max: 3.0, target: 'fieldSpeed' },
-  { key: 'duoScale', label: 'Duo Scale', category: 'Duo', min: 0.3, max: 3.0, target: 'fieldScale' },
-  { key: 'duoSpeed', label: 'Duo Speed', category: 'Duo', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'duotoneIntensity', label: 'Duotone Intensity', category: 'Duotone', min: 0.0, max: 1.0 },
   { key: 'eclipseScale', label: 'Eclipse Scale', category: 'Eclipse', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'eclipseSpeed', label: 'Eclipse Speed', category: 'Eclipse', min: 0.0, max: 3.0, target: 'fieldSpeed' },

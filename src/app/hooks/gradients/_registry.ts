@@ -298,7 +298,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'embers': (P) => styleFieldAuto('embers', P),
   'bands': (P) => styleFieldAuto('bands', P),
   'soft': (P) => styleFieldAuto('soft', P),
-  'duo': (P) => styleFieldAuto('duo', P),
   'sheen': (P) => styleFieldAuto('sheen', P),
   'mesh': (P) => styleFieldAuto('mesh', P),
   'mesh-wireframe': drawMeshWireframe,

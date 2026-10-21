@@ -7,19 +7,30 @@ import type { ColorRGB } from '../constants/gradientEffects';
 // falls to 0 over the fade time. Kept outside React: it changes every pointer
 // event and every frame, and nothing in the UI needs to re-render for it.
 
-interface Dab { x: number; y: number; r: number; born: number; color: ColorRGB }
+export type BrushKind = 'soft' | 'glow' | 'spray' | 'ribbon' | 'chalk' | 'dots';
+export const BRUSHES: { id: BrushKind; label: string; hint: string; usesSoftness: boolean }[] = [
+  { id: 'soft', label: 'Soft', hint: 'Round brush, hard to feathered', usesSoftness: true },
+  { id: 'glow', label: 'Glow', hint: 'Light that adds up where strokes overlap', usesSoftness: true },
+  { id: 'spray', label: 'Spray', hint: 'A scatter of fine specks, like a spray can', usesSoftness: false },
+  { id: 'ribbon', label: 'Ribbon', hint: 'Flat angled nib, like calligraphy', usesSoftness: true },
+  { id: 'chalk', label: 'Chalk', hint: 'Gritty, broken edge', usesSoftness: false },
+  { id: 'dots', label: 'Dots', hint: 'Separate round dots along the path', usesSoftness: false },
+];
+
+interface Dab { x: number; y: number; r: number; born: number; color: ColorRGB; kind: BrushKind }
 
 const MAX_DABS = 2500;
 let dabs: Dab[] = [];
 
-export const drawSettings = { fadeMs: 4000, softness: 0.6 };
+export const drawSettings: { fadeMs: number; softness: number; brush: BrushKind } = { fadeMs: 4000, softness: 0.6, brush: 'soft' };
 
 let last: { x: number; y: number; pressure: number } | null = null;
 let colorPhase = 0;
+let carry = 0;
 
 export const hasLiveDabs = () => dabs.length > 0;
 export const clearDabs = () => { dabs = []; last = null; };
-export const endStroke = () => { last = null; };
+export const endStroke = () => { last = null; carry = 0; };
 
 export interface StrokeOptions {
   canvasW: number;
@@ -34,6 +45,7 @@ export interface StrokeOptions {
 // Adds the dabs between the previous pointer position and this one. Pressure is
 // 0..1 (a mouse should pass 1): it scales the brush between 35% and 100%.
 export function addStrokePoint(nx: number, ny: number, pressure: number, o: StrokeOptions) {
+  const kind = drawSettings.brush;
   const radiusFor = (p: number) => o.sizePx * (0.35 + 0.65 * Math.max(0, Math.min(1, p)));
   const px = nx * o.canvasW, py = ny * o.canvasH;
   const colorFor = () => {
@@ -42,24 +54,43 @@ export function addStrokePoint(nx: number, ny: number, pressure: number, o: Stro
     const ph = colorPhase % 2;
     return o.colorAt(ph > 1 ? 2 - ph : ph);
   };
+  // One brush stamp at a point. Spray scatters many tiny specks around it instead.
+  const stamp = (x: number, y: number, r: number) => {
+    if (kind === 'spray') {
+      const count = Math.max(3, Math.round(r * 0.35));
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const d = Math.sqrt(Math.random()) * r;
+        dabs.push({ x: x + (Math.cos(a) * d) / o.canvasW, y: y + (Math.sin(a) * d) / o.canvasH, r: 1 + Math.random() * 1.8, born: o.now, color: colorFor(), kind });
+      }
+    } else {
+      dabs.push({ x, y, r, born: o.now, color: colorFor(), kind });
+    }
+  };
+  // How far apart stamps sit: tight for continuous brushes, wide for dots.
+  const spacingFor = (r: number) => (kind === 'dots' ? Math.max(8, r * 3.1) : kind === 'spray' ? Math.max(3, r * 0.5) : kind === 'glow' ? Math.max(3, r * 0.5) : Math.max(2, r * 0.3));
   if (!last) {
-    dabs.push({ x: nx, y: ny, r: radiusFor(pressure), born: o.now, color: colorFor() });
+    stamp(nx, ny, radiusFor(pressure));
+    carry = 0;
   } else {
+    // Walk the segment, stamping each time the brush has traveled `step`. The leftover
+    // distance carries into the next pointer event, so the spacing stays even however
+    // fast or slow the pointer reports (matters most for Dots, whose gaps are visible).
     const lx = last.x * o.canvasW, ly = last.y * o.canvasH;
     const dist = Math.hypot(px - lx, py - ly);
     const r0 = radiusFor(last.pressure), r1 = radiusFor(pressure);
-    const step = Math.max(2, Math.min(r0, r1) * 0.3);
-    const n = Math.max(1, Math.ceil(dist / step));
-    for (let i = 1; i <= n; i++) {
-      const t = i / n;
-      colorPhase += (dist / n) / (o.sizePx * 10);
-      dabs.push({
-        x: (lx + (px - lx) * t) / o.canvasW,
-        y: (ly + (py - ly) * t) / o.canvasH,
-        r: r0 + (r1 - r0) * t,
-        born: o.now,
-        color: colorFor(),
-      });
+    let pos = 0;
+    while (true) {
+      const t0 = dist > 0 ? pos / dist : 1;
+      const r = r0 + (r1 - r0) * Math.min(1, t0);
+      const step = spacingFor(r);
+      const need = step - carry;
+      if (pos + need > dist) { carry += dist - pos; break; }
+      pos += need;
+      carry = 0;
+      const t = dist > 0 ? pos / dist : 1;
+      colorPhase += step / (o.sizePx * 10);
+      stamp((lx + (px - lx) * t) / o.canvasW, (ly + (py - ly) * t) / o.canvasH, r0 + (r1 - r0) * t);
     }
   }
   last = { x: nx, y: ny, pressure };
@@ -70,14 +101,15 @@ export function addStrokePoint(nx: number, ny: number, pressure: number, o: Stro
 // building a radial gradient for every dab every frame.
 const sprites = new Map<string, HTMLCanvasElement>();
 const SPRITE = 64;
-function spriteFor(c: ColorRGB, softness: number): HTMLCanvasElement {
+function spriteFor(c: ColorRGB, softness: number, kind: BrushKind): HTMLCanvasElement {
   const q = (v: number) => Math.min(255, (Math.round(v / 8) * 8));
   const rq = q(c.r), gq = q(c.g), bq = q(c.b);
-  const sq = Math.round(softness * 10);
-  const key = `${rq},${gq},${bq},${sq}`;
+  // Brushes that don't expose Softness use a fixed edge, so they share sprites.
+  const sq = kind === 'glow' ? 10 : kind === 'soft' || kind === 'ribbon' ? Math.round(softness * 10) : kind === 'spray' || kind === 'dots' ? 0 : 3;
+  const key = `${kind},${rq},${gq},${bq},${sq}`;
   let s = sprites.get(key);
   if (!s) {
-    if (sprites.size > 400) sprites.clear();
+    if (sprites.size > 500) sprites.clear();
     s = document.createElement('canvas');
     s.width = s.height = SPRITE;
     const g = s.getContext('2d')!;
@@ -88,6 +120,16 @@ function spriteFor(c: ColorRGB, softness: number): HTMLCanvasElement {
     grad.addColorStop(1, `rgba(${rq},${gq},${bq},0)`);
     g.fillStyle = grad;
     g.fillRect(0, 0, SPRITE, SPRITE);
+    if (kind === 'chalk') {
+      // Knock a deterministic scatter of holes out of a near-hard disc for a gritty edge.
+      g.globalCompositeOperation = 'destination-out';
+      let seed = 1234567;
+      const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+      for (let i = 0; i < 260; i++) {
+        g.globalAlpha = 0.35 + rnd() * 0.65;
+        g.fillRect(rnd() * SPRITE, rnd() * SPRITE, 1 + rnd() * 3, 1 + rnd() * 3);
+      }
+    }
     sprites.set(key, s);
   }
   return s;
@@ -101,13 +143,28 @@ export function renderDabs(ctx: CanvasRenderingContext2D, w: number, h: number, 
   while (keepFrom < dabs.length && now - dabs[keepFrom].born >= fade) keepFrom++;
   if (keepFrom > 0) dabs.splice(0, keepFrom);
   ctx.save();
+  let currentOp: GlobalCompositeOperation = 'source-over';
   for (const d of dabs) {
     const u = (now - d.born) / fade;
     const alpha = Math.pow(1 - u, 1.4);
     if (alpha <= 0.004) continue;
-    ctx.globalAlpha = alpha;
-    const size = d.r * 2;
-    ctx.drawImage(spriteFor(d.color, drawSettings.softness), d.x * w - d.r, d.y * h - d.r, size, size);
+    const op: GlobalCompositeOperation = d.kind === 'glow' ? 'lighter' : 'source-over';
+    if (op !== currentOp) { ctx.globalCompositeOperation = op; currentOp = op; }
+    ctx.globalAlpha = d.kind === 'glow' ? alpha * 0.16 : alpha;
+    const sprite = spriteFor(d.color, drawSettings.softness, d.kind);
+    const cx = d.x * w, cy = d.y * h;
+    if (d.kind === 'ribbon') {
+      // A flat nib held at a fixed angle: a long thin ellipse.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.8);
+      ctx.drawImage(sprite, -d.r, -d.r * 0.28, d.r * 2, d.r * 0.56);
+      ctx.restore();
+    } else if (d.kind === 'glow') {
+      ctx.drawImage(sprite, cx - d.r * 1.3, cy - d.r * 1.3, d.r * 2.6, d.r * 2.6);
+    } else {
+      ctx.drawImage(sprite, cx - d.r, cy - d.r, d.r * 2, d.r * 2);
+    }
   }
   ctx.restore();
 }

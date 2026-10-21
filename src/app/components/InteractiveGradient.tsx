@@ -31,7 +31,7 @@ import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, paletteSegme
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
-import { addStrokePoint, clearDabs, endStroke, hasLiveDabs, drawSettings } from '../utils/drawStrokes';
+import { addStrokePoint, clearDabs, endStroke, hasLiveDabs, drawSettings, type BrushKind } from '../utils/drawStrokes';
 import {
   type ColorRGB, type GradientType, type EffectType,
   DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
@@ -1965,6 +1965,8 @@ export function InteractiveGradient() {
   drawSizeRef.current = drawSize;
   const drawColorIndexRef = useRef(-1);
   drawColorIndexRef.current = drawColorIndex;
+  const [drawBrush, setDrawBrushState] = useState<BrushKind>('soft');
+  const setDrawBrush = (v: BrushKind) => { setDrawBrushState(v); drawSettings.brush = v; };
   const setDrawSoftness = (v: number) => { setDrawSoftnessState(v); drawSettings.softness = v; };
   const setDrawFadeSec = (v: number) => { setDrawFadeSecState(v); drawSettings.fadeMs = v * 1000; };
   const isPaintingRef = useRef(false);
@@ -4065,7 +4067,7 @@ export function InteractiveGradient() {
   const controlDrawerTabProps = {
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, structuralSeed, setStructuralSeed,
-    drawEnabled, setDrawEnabled, drawSize, setDrawSize, drawSoftness, setDrawSoftness, drawFadeSec, setDrawFadeSec, drawColorIndex, setDrawColorIndex, clearDabs,
+    drawEnabled, setDrawEnabled, drawBrush, setDrawBrush, drawSize, setDrawSize, drawSoftness, setDrawSoftness, drawFadeSec, setDrawFadeSec, drawColorIndex, setDrawColorIndex, clearDabs,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
