@@ -56,11 +56,14 @@ const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTEN
 // Pixelate coarsens into large blocks — on sparse content, nearly every
 // sample (or every block) lands on the same "mostly black" side, so
 // either one alone can turn the whole canvas into one flat color instead
-// of the intended two-tone or blocky look. Unlike the distortion effects
-// (fisheye/chromatic/vhs), no slider value makes any of these five behave
-// reasonably on sparse content, so they're excluded outright rather than
-// just count-limited.
-const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto', 'duotone', 'pixelate'];
+// of the intended two-tone or blocky look. Slit-Scan fails by smearing: it
+// streaks each column/row through a history of frames, and with only a
+// handful of small bright elements to smear (plus a second effect like Wave
+// stacked on top) a shuffle landed on Particles + Slit-Scan + Wave and came
+// out as one flat color. Unlike the distortion effects (fisheye/chromatic/
+// vhs), no slider value makes any of these six behave reasonably on sparse
+// content, so they're excluded outright rather than just count-limited.
+const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto', 'duotone', 'pixelate', 'slit-scan'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
 // resolution-scaling curve derived from it) now live in
 // constants/effectCost.ts, shared with EffectsTab.tsx's manual Multi-FX
