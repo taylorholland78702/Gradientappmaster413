@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame } from './gradients/glShared';
+import { resolveModulationKey } from '../constants/modulatableParams';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -111,10 +112,11 @@ function getScratchOffscreen(key: string, width: number, height: number): Offscr
 // spread the caller built it with.
 function applyAudioBindings(target: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
   for (const binding of bindings) {
-    const base = target[binding.param];
+    const key = resolveModulationKey(binding.param);
+    const base = target[key];
     if (typeof base !== 'number') continue;
     const level = levels[binding.band as keyof typeof levels] ?? 0;
-    target[binding.param] = base + level * binding.amount;
+    target[key] = base + level * binding.amount;
   }
 }
 
@@ -129,10 +131,13 @@ function applyAudioBindings(target: Record<string, any>, bindings: { param: stri
 function computeAudioBoundOverrides(base: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
   const overrides: Record<string, number> = {};
   for (const binding of bindings) {
-    const value = base[binding.param];
+    const key = resolveModulationKey(binding.param);
+    const value = base[key];
     if (typeof value !== 'number') continue;
     const level = levels[binding.band as keyof typeof levels] ?? 0;
-    overrides[binding.param] = value + level * binding.amount;
+    // Several entries can share one target (every styled gradient's Scale ->
+    // fieldScale); their contributions stack on the same base value.
+    overrides[key] = (overrides[key] ?? value) + level * binding.amount;
   }
   return overrides;
 }

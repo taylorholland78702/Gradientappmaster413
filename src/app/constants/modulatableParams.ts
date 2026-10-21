@@ -17,6 +17,13 @@ export interface ModulatableParam {
   category: string;
   min: number;
   max: number;
+  // The key actually read off the draw context, when it differs from `key`.
+  // The styled-field gradients (Smoke, Glass, ...) all share one Scale and one
+  // Speed slider (fieldScale/fieldSpeed), but each lists its own entries here
+  // so the picker shows them under the gradient's name; `key` stays unique per
+  // entry (it identifies the binding and the <option>) while `target` points
+  // every one of them at the shared value. See resolveModulationKey.
+  target?: string;
 }
 
 export const MODULATABLE_PARAMS: ModulatableParam[] = [
@@ -41,6 +48,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'blurMotionAmount', label: 'Blur Motion Amount', category: 'Blur', min: 1.0, max: 50.0 },
   { key: 'blurMotionDirection', label: 'Blur Motion Direction', category: 'Blur', min: 0.0, max: 360.0 },
   { key: 'blurRadialAmount', label: 'Blur Radial Amount', category: 'Blur', min: 1.0, max: 50.0 },
+  { key: 'bokehScale', label: 'Bokeh Scale', category: 'Bokeh', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'bokehSpeed', label: 'Bokeh Speed', category: 'Bokeh', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'crtIntensity', label: 'Cathode Intensity', category: 'Cathode', min: 0.0, max: 1.0 },
   { key: 'crtScanlineSpacing', label: 'Cathode Scanlines', category: 'Cathode', min: 1.0, max: 6.0 },
   { key: 'causticsBrightness', label: 'Caustics Brightness', category: 'Caustics', min: 0.5, max: 5.0 },
@@ -49,11 +58,21 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'chromaticTrailsOffset', label: 'Chromatic Trails Offset', category: 'Chroma Trails', min: 1.0, max: 30.0 },
   { key: 'chromaticAngle', label: 'Chromatic Angle', category: 'Chromatic', min: 0.0, max: 360.0 },
   { key: 'chromaticOffset', label: 'Chromatic Offset', category: 'Chromatic', min: 1.0, max: 200.0 },
+  { key: 'contourScale', label: 'Contour Scale', category: 'Contour', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'contourSpeed', label: 'Contour Speed', category: 'Contour', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'curtainsScale', label: 'Curtains Scale', category: 'Curtains', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'curtainsSpeed', label: 'Curtains Speed', category: 'Curtains', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'dadaPanels', label: 'Dada Panels', category: 'Dada', min: 2.0, max: 8.0 },
   { key: 'dadaChaos', label: 'Dada Chaos', category: 'Dada', min: 0.0, max: 1.0 },
   { key: 'ditherLevels', label: 'Dither Levels', category: 'Dither', min: 2.0, max: 16.0 },
   { key: 'ditherScale', label: 'Dither Scale', category: 'Dither', min: 1.0, max: 8.0 },
+  { key: 'drapeScale', label: 'Drape Scale', category: 'Drape', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'drapeSpeed', label: 'Drape Speed', category: 'Drape', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'duotoneIntensity', label: 'Duotone Intensity', category: 'Duotone', min: 0.0, max: 1.0 },
+  { key: 'eclipseScale', label: 'Eclipse Scale', category: 'Eclipse', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'eclipseSpeed', label: 'Eclipse Speed', category: 'Eclipse', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'edgeGlowScale', label: 'Edge Glow Scale', category: 'Edge Glow', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'edgeGlowSpeed', label: 'Edge Glow Speed', category: 'Edge Glow', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'emojiRotateSpeed', label: 'Emoji Rotate Speed', category: 'Emoji', min: 0.0, max: 180.0 },
   { key: 'emojiSize', label: 'Emoji Size', category: 'Emoji', min: 10.0, max: 60.0 },
   { key: 'emojiSizeVariation', label: 'Emoji Size Variation', category: 'Emoji', min: 0.0, max: 100.0 },
@@ -70,9 +89,13 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'flowScale', label: 'Flow Scale', category: 'Flow Field', min: 0.5, max: 10.0 },
   { key: 'flowSpeed', label: 'Flow Speed', category: 'Flow Field', min: 0.1, max: 5.0 },
   { key: 'flowThickness', label: 'Flow Thickness', category: 'Flow Field', min: 0.5, max: 6.0 },
+  { key: 'flowMeshScale', label: 'Flow Mesh Scale', category: 'Flow Mesh', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'flowMeshSpeed', label: 'Flow Mesh Speed', category: 'Flow Mesh', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'flowerCircles', label: 'Flower Circles', category: 'Flower', min: 1.0, max: 12.0 },
   { key: 'flowerScale', label: 'Flower Scale', category: 'Flower', min: 0.1, max: 3.0 },
   { key: 'flowerSpread', label: 'Flower Spread', category: 'Flower', min: 0.3, max: 2.5 },
+  { key: 'glassScale', label: 'Glass Scale', category: 'Glass', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'glassSpeed', label: 'Glass Speed', category: 'Glass', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'dustCrackleIntensity', label: 'Dust Crackle Intensity', category: 'Grain', min: 0.0, max: 1.0 },
   { key: 'gessoWhiteness', label: 'Gesso Whiteness', category: 'Gesso', min: 0.0, max: 0.94 },
   { key: 'gessoTexture', label: 'Gesso Texture', category: 'Gesso', min: 0.0, max: 1.0 },
@@ -88,6 +111,18 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'gridSides', label: 'Grid Sides', category: 'Grid Effect', min: 1.0, max: 10.0 },
   { key: 'gridVariation', label: 'Grid Variation', category: 'Grid Effect', min: 0.0, max: 1.0 },
   { key: 'gridShapeSize', label: 'Grid Shape Size', category: 'Grid Effect', min: 1.0, max: 100.0 },
+  { key: 'halftoneScreenScale', label: 'Halftone (Gradient) Scale', category: 'Halftone (Gradient)', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'halftoneScreenSpeed', label: 'Halftone (Gradient) Speed', category: 'Halftone (Gradient)', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'holographicScale', label: 'Holographic Scale', category: 'Holographic', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'holographicSpeed', label: 'Holographic Speed', category: 'Holographic', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'lightBeamScale', label: 'Light Beam Scale', category: 'Light Beam', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'lightBeamSpeed', label: 'Light Beam Speed', category: 'Light Beam', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'mercuryScale', label: 'Mercury Scale', category: 'Mercury', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'mercurySpeed', label: 'Mercury Speed', category: 'Mercury', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'meshScale', label: 'Mesh Scale', category: 'Mesh', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'meshSpeed', label: 'Mesh Speed', category: 'Mesh', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'nebulaScale', label: 'Nebula Scale', category: 'Nebula', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'nebulaSpeed', label: 'Nebula Speed', category: 'Nebula', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'polygon2Sides', label: 'Radials', category: 'Polar Grid', min: 1.0, max: 24.0 },
   { key: 'halftoneSize', label: 'Halftone Size', category: 'Halftone', min: 2.0, max: 200.0 },
   { key: 'halftoneVariation', label: 'Halftone Variation', category: 'Halftone', min: 0.0, max: 1.0 },
@@ -138,6 +173,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'photoOpacity', label: 'Photo Opacity', category: 'Photo', min: 0.0, max: 100.0 },
   { key: 'pixelSize', label: 'Pixel Size', category: 'Pixelate', min: 5.0, max: 200.0 },
   { key: 'posterizeLevels', label: 'Posterize Levels', category: 'Posterize', min: 2.0, max: 16.0 },
+  { key: 'prismScale', label: 'Prism Scale', category: 'Prism', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'prismSpeed', label: 'Prism Speed', category: 'Prism', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'radarBeamWidth', label: 'Radar Beam Width', category: 'Radar', min: 1.0, max: 90.0 },
   { key: 'radarFadeLength', label: 'Radar Fade Length', category: 'Radar', min: 10.0, max: 180.0 },
   { key: 'radialSizeScale', label: 'Radial Size Scale', category: 'Radial', min: 0.25, max: 4.0 },
@@ -145,6 +182,10 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'radialBurstCount', label: 'Radial Burst Count', category: 'Radial Burst', min: 3.0, max: 16.0 },
   { key: 'radialBurstSize', label: 'Radial Burst Size', category: 'Radial Burst', min: 10.0, max: 200.0 },
   { key: 'radialBurstSpread', label: 'Radial Burst Spread', category: 'Radial Burst', min: 10.0, max: 100.0 },
+  { key: 'raindropsScale', label: 'Raindrops Scale', category: 'Raindrops', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'raindropsSpeed', label: 'Raindrops Speed', category: 'Raindrops', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'raysScale', label: 'Rays Scale', category: 'Rays', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'raysSpeed', label: 'Rays Speed', category: 'Rays', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'reactionDiffusionFeed', label: 'Reaction Diffusion Feed', category: 'Reaction-Diffusion', min: 0.02, max: 0.08 },
   { key: 'reactionDiffusionKill', label: 'Reaction Diffusion Kill', category: 'Reaction-Diffusion', min: 0.04, max: 0.07 },
   { key: 'reactionDiffusionSpeed', label: 'Reaction Diffusion Speed', category: 'Reaction-Diffusion', min: 0.2, max: 3.0 },
@@ -152,6 +193,10 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'concentricRingWidth', label: 'Concentric Ring Width', category: 'Shapes', min: 10.0, max: 300.0 },
   { key: 'shapesCount', label: 'Shapes Count', category: 'Shapes', min: 1.0, max: 50.0 },
   { key: 'shapesSides', label: 'Shapes Sides', category: 'Shapes', min: 1.0, max: 10.0 },
+  { key: 'smokeScale', label: 'Smoke Scale', category: 'Smoke', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'smokeSpeed', label: 'Smoke Speed', category: 'Smoke', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'spectralScale', label: 'Spectral Scale', category: 'Spectral', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'spectralSpeed', label: 'Spectral Speed', category: 'Spectral', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'stackCount', label: 'Stack Count', category: 'Stack', min: 2.0, max: 40.0 },
   { key: 'stackGap', label: 'Stack Gap', category: 'Stack', min: 0.0, max: 0.8 },
   { key: 'stackWidth', label: 'Stack Width', category: 'Stack', min: 0.1, max: 2.0 },
@@ -177,12 +222,16 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'truchetVariation', label: 'Truchet Variation', category: 'Truchet', min: 0.0, max: 1.0 },
   { key: 'turrellSpeed', label: 'Light Speed', category: 'Light', min: 0.1, max: 2.0 },
   { key: 'turrellGlow', label: 'Light Glow', category: 'Light', min: 0.0, max: 1.0 },
+  { key: 'tunnelScale', label: 'Tunnel Scale', category: 'Tunnel', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'tunnelSpeed', label: 'Tunnel Speed', category: 'Tunnel', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'vhsGlitchIntensity', label: 'VHS Glitch Intensity', category: 'VHS', min: 0.0, max: 1.0 },
   { key: 'vhsJitterAmount', label: 'VHS Jitter Amount', category: 'VHS', min: 50.0, max: 400.0 },
   { key: 'vignetteSoftness', label: 'Vignette Softness', category: 'Vignette', min: 0.0, max: 100.0 },
   { key: 'vignetteStrength', label: 'Vignette Strength', category: 'Vignette', min: 0.0, max: 1.0 },
   { key: 'voronoiCellCount', label: 'Voronoi Cell Count', category: 'Voronoi', min: 3.0, max: 30.0 },
   { key: 'voronoiDistortion', label: 'Voronoi Distortion', category: 'Voronoi', min: 0.0, max: 100.0 },
+  { key: 'vortexScale', label: 'Vortex Scale', category: 'Vortex', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'vortexSpeed', label: 'Vortex Speed', category: 'Vortex', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'watercolorBleed', label: 'Watercolor Bleed', category: 'Watercolor', min: 0.0, max: 10.0 },
   { key: 'watercolorGrain', label: 'Watercolor Grain', category: 'Watercolor', min: 0.0, max: 1.0 },
   { key: 'waveDistortionRotation', label: 'Wave Distortion Rotation', category: 'Wave', min: 0.0, max: 360.0 },
@@ -190,6 +239,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'waveInterferenceSourceCount', label: 'Wave Interference Source Count', category: 'Wave Interference', min: 2.0, max: 8.0 },
   { key: 'waveInterferenceFrequency', label: 'Wave Interference Frequency', category: 'Wave Interference', min: 1.0, max: 20.0 },
   { key: 'waveInterferenceSpeed', label: 'Wave Interference Speed', category: 'Wave Interference', min: 0.1, max: 5.0 },
+  { key: 'wavesScale', label: 'Waves Scale', category: 'Waves', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'wavesSpeed', label: 'Waves Speed', category: 'Waves', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'windmillRotations', label: 'Windmill Rotations', category: 'Windmill', min: 1.0, max: 10.0 },
   { key: 'windmillThickness', label: 'Windmill Thickness', category: 'Windmill', min: 5.0, max: 100.0 },
   { key: 'windmillTightness', label: 'Windmill Tightness', category: 'Windmill', min: 1.0, max: 20.0 },
@@ -211,3 +262,10 @@ export const MODULATABLE_PARAMS_BY_CATEGORY: { category: string; params: Modulat
   return groups;
 })();
 
+
+// The draw-context key a modulation param actually drives: itself, unless the
+// entry declares a shared `target` (see ModulatableParam.target).
+const TARGET_BY_KEY: Record<string, string> = Object.fromEntries(
+  MODULATABLE_PARAMS.filter((p) => p.target).map((p) => [p.key, p.target as string]),
+);
+export const resolveModulationKey = (key: string): string => TARGET_BY_KEY[key] ?? key;

@@ -20,15 +20,23 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // Not every id has an entry — freeform/linear/mesh no longer exist, and
 // photo has a modulatable category but is excluded elsewhere from random
 // pools since it's a no-op with no uploaded image.
-const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
+export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
-  voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], waves: ['Waves'], windmill: ['Windmill', 'Helix'],
+  voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], windmill: ['Windmill', 'Helix'],
   stack: ['Stack'], hatch: ['Hatch'],
+  // Styled-field gradients (drawStyleFieldGL.ts): each has its own Scale/Speed
+  // entries in MODULATABLE_PARAMS under its display name ('Halftone (Gradient)'
+  // is disambiguated from the Halftone effect's category).
+  contour: ['Contour'], glass: ['Glass'], 'halftone-screen': ['Halftone (Gradient)'], holographic: ['Holographic'],
+  mercury: ['Mercury'], mesh: ['Mesh'], nebula: ['Nebula'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
+  tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
+  eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
+  'flow-mesh': ['Flow Mesh'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
