@@ -28,7 +28,7 @@ import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
-import { LOOK_DEFAULTS, type GradientLook } from '../constants/gradientLooks';
+import { LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -1603,6 +1603,38 @@ export function InteractiveGradient() {
     setFieldContrast(look.contrast ?? LOOK_DEFAULTS.contrast);
     setPaletteStops(null);
     if (look.blend) setColorBlend(look.blend);
+    // The gradient's own sliders/modes. Only what the look lists is touched.
+    if (look.params) {
+      const setters: Record<LookParamKey, (v: any) => void> = { // eslint-disable-line @typescript-eslint/no-explicit-any
+        auroraBandCount: setAuroraBandCount, auroraBandHeight: setAuroraBandHeight, auroraWaveSpeed: setAuroraWaveSpeed,
+        causticsBrightness: setCausticsBrightness, causticsScale: setCausticsScale,
+        lavaBlobCount: setLavaBlobCount, lavaBlobSize: setLavaBlobSize, lavaSpeed: setLavaSpeed,
+        marbleVeinFreq: setMarbleVeinFreq, marbleTurbulence: setMarbleTurbulence, marbleOctaves: setMarbleOctaves,
+        metaballCount: setMetaballCount, metaballSize: setMetaballSize, metaballSpeed: setMetaballSpeed,
+        noiseScale: setNoiseScale, noiseOctaves: setNoiseOctaves, noiseWarp: setNoiseWarp, noiseSpeed: setNoiseSpeed, noiseType: setNoiseType,
+        topographicScale: setTopographicScale, topographicBands: setTopographicBands, topographicLineWidth: setTopographicLineWidth,
+        juliaReal: setJuliaReal, juliaImaginary: setJuliaImaginary, juliaZoom: setJuliaZoom, juliaIterations: setJuliaIterations,
+        tilingSize: setTilingSize, tilingSymmetry: setTilingSymmetry, tilingComplexity: setTilingComplexity, tilingRotation: setTilingRotation,
+        reactionDiffusionFeed: setReactionDiffusionFeed, reactionDiffusionKill: setReactionDiffusionKill, reactionDiffusionSpeed: setReactionDiffusionSpeed,
+        waveInterferenceSourceCount: setWaveInterferenceSourceCount, waveInterferenceFrequency: setWaveInterferenceFrequency, waveInterferenceSpeed: setWaveInterferenceSpeed,
+        meshWireframeGridSize: setMeshWireframeGridSize, meshWireframeJitter: setMeshWireframeJitter, meshWireframeLineWidth: setMeshWireframeLineWidth,
+        voronoiCellCount: setVoronoiCellCount, voronoiDistortion: setVoronoiDistortion,
+        radialSizeScale: setRadialSizeScale, radialSpeed: setRadialSpeed,
+        radialBurstMode: setRadialBurstMode, radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,
+        windmillMode: setWindmillMode, helixTurns: setHelixTurns, helixTightness: setHelixTightness,
+        fadeDirection: setFadeDirection, angleStartOffset: setAngleStartOffset,
+        flowerCircles: setFlowerCircles, flowerScale: setFlowerScale, flowerSpread: setFlowerSpread,
+        gridRows: setGridRows, gridColumns: setGridColumns, shapesCount: setShapesCount, shapesSides: setShapesSides,
+        stackCount: setStackCount, stackGap: setStackGap, stackWidth: setStackWidth, stackLength: setStackLength, stackResponse: setStackResponse,
+        hatchLayers: setHatchLayers, hatchSpacing: setHatchSpacing, hatchResponse: setHatchResponse, hatchSpeed: setHatchSpeed,
+        truchetSize: setTruchetSize, truchetVariation: setTruchetVariation, truchetThickness: setTruchetThickness,
+        particlesCount: setParticlesCount, particlesSize: setParticlesSize, particlesSpeed: setParticlesSpeed, particlesTrail: setParticlesTrail, particlesGravity: setParticlesGravity,
+        attractorPointCount: setAttractorPointCount, attractorSpeed: setAttractorSpeed, attractorScale: setAttractorScale,
+      };
+      for (const [key, value] of Object.entries(look.params) as [LookParamKey, number | string][]) {
+        setters[key](value);
+      }
+    }
   }, [saveCurrentState, setColorsInstant]);
 
   const randomizeAllColors = useCallback(() => {

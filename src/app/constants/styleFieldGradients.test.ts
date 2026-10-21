@@ -5,6 +5,7 @@ import {
 } from './gradientEffects';
 import { STYLE_FIELD_IDS } from '../hooks/gradients/drawStyleFieldGL';
 import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
+import { GRADIENT_LOOKS, LOOK_PARAM_KEYS } from './gradientLooks';
 import { GRADIENT_MOD_CATEGORY } from '../hooks/useRandomization';
 
 // The styled-field gradients are declared in two places that must agree: the
@@ -55,24 +56,22 @@ describe('styled-field gradients', () => {
   });
 });
 
-import { GRADIENT_LOOKS } from './gradientLooks';
-
 describe('per-gradient looks', () => {
-  it('every styled gradient has at least three looks', () => {
-    for (const id of STYLE_FIELD_GRADIENT_TYPES) {
+  it('every gradient has at least three looks', () => {
+    for (const id of FULL_GRADIENT_TYPES) {
       expect(GRADIENT_LOOKS[id]?.length ?? 0, id).toBeGreaterThanOrEqual(3);
     }
   });
 
-  it('only styled gradients have looks, with unique names per gradient', () => {
+  it('only real gradients have looks, with unique names per gradient', () => {
     for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
-      expect(STYLE_FIELD_GRADIENT_TYPES as string[], id).toContain(id);
+      expect(FULL_GRADIENT_TYPES as string[], id).toContain(id);
       const names = (looks ?? []).map((l) => l.name);
       expect(new Set(names).size, id).toBe(names.length);
     }
   });
 
-  it('palettes are valid hex colors within the app palette limits, and values stay in slider range', () => {
+  it('palettes are valid hex colors within the app palette limits, and shared values stay in slider range', () => {
     for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
       for (const l of looks ?? []) {
         const where = `${id}/${l.name}`;
@@ -83,6 +82,38 @@ describe('per-gradient looks', () => {
         if (l.speed !== undefined) { expect(l.speed, where).toBeGreaterThanOrEqual(0); expect(l.speed, where).toBeLessThanOrEqual(3); }
         if (l.bias !== undefined) { expect(l.bias, where).toBeGreaterThanOrEqual(0); expect(l.bias, where).toBeLessThanOrEqual(1); }
         if (l.sharp !== undefined) { expect(l.sharp, where).toBeGreaterThanOrEqual(0); expect(l.sharp, where).toBeLessThanOrEqual(1); }
+      }
+    }
+  });
+
+  it("a look's own settings are supported keys and stay inside that slider's range", () => {
+    const range = new Map(MODULATABLE_PARAMS.filter((p) => !p.target).map((p) => [p.key, p]));
+    const supported = new Set<string>(LOOK_PARAM_KEYS);
+    let checked = 0;
+    for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
+      for (const l of looks ?? []) {
+        for (const [key, value] of Object.entries(l.params ?? {})) {
+          const where = `${id}/${l.name}/${key}`;
+          expect(supported.has(key), where).toBe(true);
+          const meta = range.get(key);
+          if (typeof value === 'number' && meta) {
+            checked++;
+            expect(value, where).toBeGreaterThanOrEqual(meta.min);
+            expect(value, where).toBeLessThanOrEqual(meta.max);
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+  });
+
+  it('mode switches only use values the mode accepts', () => {
+    const allowed: Record<string, string[]> = { noiseType: ['smooth', 'ridged'], windmillMode: ['blades', 'helix'], radialBurstMode: ['burst', 'sweep'] };
+    for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
+      for (const l of looks ?? []) {
+        for (const [key, value] of Object.entries(l.params ?? {})) {
+          if (allowed[key]) expect(allowed[key], `${id}/${l.name}/${key}`).toContain(value);
+        }
       }
     }
   });

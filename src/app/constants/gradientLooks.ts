@@ -1,15 +1,48 @@
-// Named "Looks" for the styled-field gradients (drawStyleFieldGL.ts): a few
-// hand-tuned starting points per gradient, each a palette plus the shared
-// Scale/Speed and — where the look wants it — Bias, Sharpness, Contrast and
-// Blend. A look is just a bundle of values pushed into the same state the
-// sliders drive; nothing about it is stored afterward, so tweaking any control
-// after applying one simply moves on from it.
+// Named "Looks" for every gradient: a few hand-tuned starting points each, a
+// palette plus — where the look wants it — the shared Scale/Speed, Bias,
+// Sharpness, Contrast and Blend, and (for the gradients with sliders of their
+// own) a few of those sliders via `params`. A look is just a bundle of values
+// pushed into the same state the controls drive; nothing about it is stored
+// afterward, so tweaking any control after applying one simply moves on from it.
 //
 // The dark single-light gradients (Light Beam, Edge Glow, Curtains, Eclipse,
 // Rays, Vortex) treat the palette's FIRST color as the near-black ground and
 // climb through the rest toward a hot core, so their looks all start dark.
 import type { ColorBlend } from '../utils/color';
 import type { GradientType } from './gradientEffects';
+
+// The gradient-specific sliders (and mode switches) a look may set via `params`.
+// Every key must have a matching setter in applyGradientLook
+// (InteractiveGradient.tsx); numeric ones are range-checked in tests against the
+// same limits as the sliders themselves.
+export const LOOK_PARAM_KEYS = [
+  'auroraBandCount', 'auroraBandHeight', 'auroraWaveSpeed',
+  'causticsBrightness', 'causticsScale',
+  'lavaBlobCount', 'lavaBlobSize', 'lavaSpeed',
+  'marbleVeinFreq', 'marbleTurbulence', 'marbleOctaves',
+  'metaballCount', 'metaballSize', 'metaballSpeed',
+  'noiseScale', 'noiseOctaves', 'noiseWarp', 'noiseSpeed', 'noiseType',
+  'topographicScale', 'topographicBands', 'topographicLineWidth',
+  'juliaReal', 'juliaImaginary', 'juliaZoom', 'juliaIterations',
+  'tilingSize', 'tilingSymmetry', 'tilingComplexity', 'tilingRotation',
+  'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
+  'waveInterferenceSourceCount', 'waveInterferenceFrequency', 'waveInterferenceSpeed',
+  'meshWireframeGridSize', 'meshWireframeJitter', 'meshWireframeLineWidth',
+  'voronoiCellCount', 'voronoiDistortion',
+  'radialSizeScale', 'radialSpeed',
+  'radialBurstMode', 'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
+  'windmillMode', 'helixTurns', 'helixTightness',
+  'fadeDirection', 'angleStartOffset',
+  'flowerCircles', 'flowerScale', 'flowerSpread',
+  'gridRows', 'gridColumns', 'shapesCount', 'shapesSides',
+  'stackCount', 'stackGap', 'stackWidth', 'stackLength', 'stackResponse',
+  'hatchLayers', 'hatchSpacing', 'hatchResponse', 'hatchSpeed',
+  'truchetSize', 'truchetVariation', 'truchetThickness',
+  'particlesCount', 'particlesSize', 'particlesSpeed', 'particlesTrail', 'particlesGravity',
+  'attractorPointCount', 'attractorSpeed', 'attractorScale',
+] as const;
+export type LookParamKey = (typeof LOOK_PARAM_KEYS)[number];
+export type LookParams = Partial<Record<LookParamKey, number | string>>;
 
 export interface GradientLook {
   name: string;
@@ -23,6 +56,9 @@ export interface GradientLook {
   contrast?: number;
   // Left alone (the user's choice) when omitted.
   blend?: ColorBlend;
+  // The gradient's own sliders/modes. Unlike the shared fields above, anything
+  // not listed is left where it is (there is no single default to reset to).
+  params?: LookParams;
 }
 
 // What a look resets any field it doesn't mention to, so applying one always
@@ -30,6 +66,7 @@ export interface GradientLook {
 export const LOOK_DEFAULTS = { scale: 1, speed: 1, bias: 0.5, sharp: 0, contrast: 1 } as const;
 
 export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
+  // ---- Styled-field gradients (drawStyleFieldGL.ts) ----
   smoke: [
     { name: 'Ink', colors: ['#05060f', '#1b1b4a', '#4a3f9f', '#b9a8ff'] },
     { name: 'Ember Smoke', colors: ['#0a0504', '#5a1608', '#e0521c', '#ffd9a8'], speed: 0.8 },
@@ -143,5 +180,136 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Ember Flow', colors: ['#ff7a45', '#ff3d6a', '#8a2cbf', '#ffb86b'] },
     { name: 'Aqua Folds', colors: ['#0aa4c9', '#2de1b5', '#7a8cff', '#c5f3ff'], speed: 0.8 },
     { name: 'Lilac Satin', colors: ['#b8a0ff', '#e0b8ff', '#ffd1f0', '#9ec5ff'], speed: 0.6 },
+  ],
+  // ---- Older gradients ----
+  angle: [
+    { name: 'Prism', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'] },
+    { name: 'Dusk Sweep', colors: ['#1a0b2e', '#7b2cbf', '#ff5fa8', '#ffb86b'], params: { angleStartOffset: 40 } },
+    { name: 'Ocean Cone', colors: ['#031a2e', '#0b5c8a', '#37b6d9', '#e6f9ff'], params: { angleStartOffset: 200 } },
+  ],
+  radial: [
+    { name: 'Sunburst', colors: ['#fff1b8', '#ffb347', '#ff5e62', '#6a1b9a'], params: { radialSizeScale: 1.3 } },
+    { name: 'Moonlight', colors: ['#02030c', '#1b2a5a', '#7aa2ff', '#f2f6ff'], params: { radialSizeScale: 0.9 } },
+    { name: 'Peach Glow', colors: ['#ffe0d0', '#ffb6a0', '#ff8fa3', '#c06c9c'], params: { radialSizeScale: 1.6 } },
+  ],
+  fade: [
+    { name: 'Dawn', colors: ['#1b1b3a', '#7a4fa8', '#ff9a8b', '#ffe3b3'], params: { fadeDirection: 70 } },
+    { name: 'Mint Sherbet', colors: ['#c8f7e4', '#9be7ff', '#d6b3ff', '#ffd1e8'], params: { fadeDirection: 120 } },
+    { name: 'Ink Wash', colors: ['#0a0a12', '#2a2a4a', '#6a6a9a', '#c8c8e8'], params: { fadeDirection: 20 } },
+  ],
+  noise: [
+    { name: 'Soft Clouds', colors: ['#dfeaff', '#b9d2ff', '#e8d8ff', '#fff0f6'], params: { noiseType: 'smooth', noiseScale: 120, noiseOctaves: 3, noiseWarp: 0.3 } },
+    { name: 'Lava Ridge', colors: ['#1a0200', '#a1220b', '#ff7a1a', '#ffe9a8'], params: { noiseType: 'ridged', noiseScale: 70, noiseOctaves: 5, noiseWarp: 0.6 } },
+    { name: 'Deep Sea', colors: ['#001428', '#044f7a', '#13a3c4', '#a8f0ff'], params: { noiseType: 'smooth', noiseScale: 160, noiseOctaves: 4, noiseWarp: 0.45 } },
+  ],
+  marble: [
+    { name: 'Carrara', colors: ['#f4f4f2', '#cfcfd0', '#8c8c92', '#2a2a30'], params: { marbleVeinFreq: 3, marbleTurbulence: 2.5, marbleOctaves: 6 } },
+    { name: 'Ink Marble', colors: ['#05050a', '#1a1a3a', '#5a5a9a', '#e0e0ff'], params: { marbleVeinFreq: 5, marbleTurbulence: 3.5, marbleOctaves: 5 } },
+    { name: 'Rose Quartz', colors: ['#ffe3ec', '#f6b3c8', '#d98aa9', '#fff6f9'], params: { marbleVeinFreq: 2, marbleTurbulence: 1.5, marbleOctaves: 4 } },
+  ],
+  caustics: [
+    { name: 'Pool', colors: ['#00253a', '#0a6a99', '#37c3e8', '#e6fcff'], params: { causticsBrightness: 2.5, causticsScale: 6 } },
+    { name: 'Molten Gold', colors: ['#1a1000', '#7a4a00', '#e0a200', '#fff4c2'], params: { causticsBrightness: 3, causticsScale: 4 } },
+    { name: 'Lagoon Light', colors: ['#02131a', '#0e5a66', '#2fd0b8', '#e9fff8'], params: { causticsBrightness: 2, causticsScale: 8 } },
+  ],
+  julia: [
+    { name: 'Frost Set', colors: ['#02101f', '#0b4a7a', '#7ad7ff', '#ffffff'], params: { juliaReal: -0.7, juliaImaginary: 0.27, juliaZoom: 1 } },
+    { name: 'Ember Set', colors: ['#0a0200', '#7a1a05', '#ff7a1a', '#ffe9a8'], params: { juliaReal: -0.4, juliaImaginary: 0.6, juliaIterations: 80 } },
+    { name: 'Orchid Set', colors: ['#0a0214', '#4a1a73', '#c05cff', '#ffe0ff'], params: { juliaReal: 0.285, juliaImaginary: 0.01, juliaZoom: 1.2 } },
+  ],
+  'lava-lamp': [
+    { name: 'Classic', colors: ['#2a0a3a', '#ff3d81', '#ffb347', '#fff1b8'], params: { lavaBlobCount: 6, lavaBlobSize: 0.2 } },
+    { name: 'Toxic', colors: ['#001a0a', '#0b6b2a', '#7aff3d', '#e8ffd0'], params: { lavaBlobCount: 8, lavaBlobSize: 0.15 } },
+    { name: 'Mono Wax', colors: ['#0a0a0a', '#4a4a4a', '#9a9a9a', '#f2f2f2'], params: { lavaBlobCount: 5, lavaBlobSize: 0.25 } },
+  ],
+  metaballs: [
+    { name: 'Plasma Cells', colors: ['#0a0030', '#5a00d4', '#ff2bd6', '#ffe14d'], params: { metaballCount: 8, metaballSize: 0.18 } },
+    { name: 'Mercury Drops', colors: ['#0a0a0f', '#6b7280', '#e5e7eb', '#ffffff'], params: { metaballCount: 6, metaballSize: 0.2 } },
+    { name: 'Citrus', colors: ['#ff7a00', '#ffb300', '#ffe14d', '#a8e000'], params: { metaballCount: 10, metaballSize: 0.14 } },
+  ],
+  topographic: [
+    { name: 'Survey', colors: ['#06121f', '#0e3a5c', '#2fa3c7', '#e6fbff'], params: { topographicBands: 14, topographicLineWidth: 0.04 } },
+    { name: 'Paper', colors: ['#efe7d6', '#c9b99a', '#8a7552', '#3d3224'], params: { topographicBands: 18, topographicLineWidth: 0.03 } },
+    { name: 'Neon Topo', colors: ['#08000f', '#5a00a8', '#ff2bd6', '#ffe14d'], params: { topographicBands: 10, topographicLineWidth: 0.06 } },
+  ],
+  voronoi: [
+    { name: 'Stained Glass', colors: ['#1a2a6c', '#b21f1f', '#fdbb2d', '#22c1c3'], params: { voronoiCellCount: 14, voronoiDistortion: 10 } },
+    { name: 'Honeycomb', colors: ['#ffd166', '#f4a261', '#e76f51', '#264653'], params: { voronoiCellCount: 22, voronoiDistortion: 2 } },
+    { name: 'Cracked Earth', colors: ['#2b1d12', '#6b4a2e', '#b08457', '#e8d5b0'], params: { voronoiCellCount: 12, voronoiDistortion: 40 } },
+  ],
+  tiling: [
+    { name: 'Mandala', colors: ['#0a0214', '#7a2cbf', '#ff5fa8', '#ffd27a'], params: { tilingSymmetry: 8, tilingComplexity: 5, tilingSize: 120 } },
+    { name: 'Kaleido Tile', colors: ['#001a2e', '#0b5c8a', '#37d9b6', '#fff2a8'], params: { tilingSymmetry: 6, tilingComplexity: 3 } },
+    { name: 'Quilt', colors: ['#ffd6e8', '#d6f0ff', '#fff3c9', '#d9ffd6'], params: { tilingSymmetry: 4, tilingComplexity: 2, tilingSize: 80 } },
+  ],
+  windmill: [
+    { name: 'Pinwheel', colors: ['#ff3b3b', '#ffd23b', '#3b8aff', '#ffffff'], params: { windmillMode: 'blades' } },
+    { name: 'Helix Neon', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { windmillMode: 'helix', helixTurns: 8, helixTightness: 0.8 } },
+    { name: 'Calm Spiral', colors: ['#e6f0ff', '#9bb8e8', '#5b7fc0', '#223a6a'], params: { windmillMode: 'helix', helixTurns: 4, helixTightness: 0.4 } },
+  ],
+  'radial-burst': [
+    { name: 'Starburst', colors: ['#fff1b8', '#ffb347', '#ff5e62', '#6a1b9a'], params: { radialBurstMode: 'burst', radialBurstCount: 10 } },
+    { name: 'Radar', colors: ['#00130a', '#0b6b2a', '#38d96e', '#eaffef'], params: { radialBurstMode: 'sweep' } },
+    { name: 'Neon Pinwheel', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { radialBurstMode: 'burst', radialBurstCount: 12, radialBurstSpread: 60 } },
+  ],
+  'reaction-diffusion': [
+    { name: 'Coral', colors: ['#05121c', '#0b5a6b', '#ff7a6a', '#fff1e0'], params: { reactionDiffusionFeed: 0.055, reactionDiffusionKill: 0.062 } },
+    { name: 'Spots', colors: ['#0a0a14', '#2a2a5a', '#8a8aff', '#f0f0ff'], params: { reactionDiffusionFeed: 0.035, reactionDiffusionKill: 0.065 } },
+    { name: 'Labyrinth', colors: ['#1a0a00', '#7a3d00', '#e0a200', '#fff4c2'], params: { reactionDiffusionFeed: 0.029, reactionDiffusionKill: 0.057 } },
+  ],
+  'wave-interference': [
+    { name: 'Pond', colors: ['#02131a', '#0b5a6b', '#27c3e0', '#e6ffff'], params: { waveInterferenceSourceCount: 4, waveInterferenceFrequency: 8 } },
+    { name: 'Moire', colors: ['#fafafa', '#222222', '#fafafa', '#222222'], params: { waveInterferenceSourceCount: 5, waveInterferenceFrequency: 14 } },
+    { name: 'Sunset Ripples', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { waveInterferenceSourceCount: 3, waveInterferenceFrequency: 6 } },
+  ],
+  'mesh-wireframe': [
+    { name: 'Blueprint', colors: ['#02244a', '#0a4d9a', '#6fb3ff', '#e6f2ff'], params: { meshWireframeGridSize: 12, meshWireframeJitter: 0.2, meshWireframeLineWidth: 1 } },
+    { name: 'Neon Net', colors: ['#05000f', '#ff2bd6', '#2bffe4', '#ffffff'], params: { meshWireframeGridSize: 18, meshWireframeJitter: 0.5, meshWireframeLineWidth: 0.75 } },
+    { name: 'Paper Mesh', colors: ['#f1ebe0', '#d8cdb6', '#a89878', '#5a4a32'], params: { meshWireframeGridSize: 8, meshWireframeJitter: 0.3, meshWireframeLineWidth: 1.5 } },
+  ],
+  aurora: [
+    { name: 'Northern Lights', colors: ['#02110f', '#0b6b4a', '#38d996', '#7a5cff'], params: { auroraBandCount: 5, auroraBandHeight: 2 } },
+    { name: 'Polar Pink', colors: ['#0a0214', '#7a2cbf', '#ff5fa8', '#ffd27a'], params: { auroraBandCount: 4, auroraBandHeight: 1.5 } },
+    { name: 'Teal Veil', colors: ['#001a1f', '#06606b', '#27e0c0', '#e0fff8'], params: { auroraBandCount: 8, auroraWaveSpeed: 0.6 } },
+  ],
+  grid: [
+    { name: 'Pixel Candy', colors: ['#ff9ecb', '#9ed8ff', '#fff09e', '#b6f2b0'], params: { gridRows: 10, gridColumns: 14 } },
+    { name: 'Midnight Cells', colors: ['#05070f', '#1a2650', '#3b52a8', '#9fb0ff'], params: { gridRows: 8, gridColumns: 12 } },
+    { name: 'Warm Tiles', colors: ['#ffe3cf', '#f6b49b', '#e8907f', '#c0605a'], params: { gridRows: 6, gridColumns: 8 } },
+  ],
+  shapes: [
+    { name: 'Confetti', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], params: { shapesCount: 30, shapesSides: 3 } },
+    { name: 'Midnight Rings', colors: ['#05070f', '#1a2650', '#3b52a8', '#9fb0ff'], params: { shapesCount: 12, shapesSides: 8 } },
+    { name: 'Sorbet Blocks', colors: ['#ffd6e8', '#d6f0ff', '#fff3c9', '#d9ffd6'], params: { shapesCount: 18, shapesSides: 4 } },
+  ],
+  stack: [
+    { name: 'Ribbon Stack', colors: ['#0b3d91', '#1e88e5', '#4fc3f7', '#e1f5fe'], params: { stackCount: 20 } },
+    { name: 'Sunset Stack', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { stackCount: 12, stackGap: 0.2 } },
+    { name: 'Mono Stack', colors: ['#0a0a0a', '#4a4a4a', '#9a9a9a', '#f2f2f2'], params: { stackCount: 30 } },
+  ],
+  hatch: [
+    { name: 'Ink Hatch', colors: ['#f4f0e6', '#222222', '#c04a3a'], params: { hatchLayers: 3, hatchSpacing: 8 } },
+    { name: 'Blueprint Hatch', colors: ['#02244a', '#6fb3ff', '#e6f2ff'], params: { hatchLayers: 2, hatchSpacing: 12 } },
+    { name: 'Warm Pencil', colors: ['#fff6e0', '#c9a36b', '#7a4a2a'], params: { hatchLayers: 4, hatchSpacing: 6 } },
+  ],
+  truchet: [
+    { name: 'Maze', colors: ['#05070f', '#e6f2ff'], params: { truchetSize: 40, truchetThickness: 4 } },
+    { name: 'Candy Weave', colors: ['#ff9ecb', '#9ed8ff', '#fff09e', '#b6f2b0'], params: { truchetSize: 60, truchetThickness: 8 } },
+    { name: 'Gold Lattice', colors: ['#1a1000', '#e0a200', '#fff4c2'], params: { truchetSize: 30, truchetThickness: 3 } },
+  ],
+  flower: [
+    { name: 'Daisy', colors: ['#fff6a8', '#ffd23b', '#ffffff', '#ff9ecb'], params: { flowerCircles: 6 } },
+    { name: 'Lotus', colors: ['#2b0a3d', '#a33a8f', '#ff9ecb', '#ffe3ef'], params: { flowerCircles: 8, flowerSpread: 1.2 } },
+    { name: 'Sun Bloom', colors: ['#2a0a00', '#a1220b', '#ff7a1a', '#ffe9a8'], params: { flowerCircles: 10 } },
+  ],
+  attractor: [
+    { name: 'Neon Orbit', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { attractorPointCount: 8 } },
+    { name: 'Gold Dust', colors: ['#0a0600', '#7a4a00', '#e0a200', '#fff1b8'], params: { attractorPointCount: 12, attractorScale: 1.2 } },
+    { name: 'Ice Trails', colors: ['#02101f', '#0b4a7a', '#7ad7ff', '#ffffff'], params: { attractorPointCount: 6 } },
+  ],
+  particles: [
+    { name: 'Fireflies', colors: ['#02040d', '#ffe66d', '#9bff7a', '#ffffff'], params: { particlesCount: 120, particlesSize: 2 } },
+    { name: 'Embers', colors: ['#0a0200', '#ff4d1a', '#ffb347', '#fff1b8'], params: { particlesCount: 200, particlesGravity: 0.4 } },
+    { name: 'Snowfall', colors: ['#0a1428', '#9fb8d9', '#e6f0ff', '#ffffff'], params: { particlesCount: 150, particlesSize: 3 } },
   ],
 };
