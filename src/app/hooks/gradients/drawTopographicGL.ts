@@ -4,7 +4,7 @@
 // of the CPU path's half-res-then-upscale compromise.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -85,7 +85,7 @@ function renderTopographicStage(gl: WebGL2RenderingContext, outputFramebuffer: W
   gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
   gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform1f(gl.getUniformLocation(program, 'uScale'), u.scale);
   gl.uniform1f(gl.getUniformLocation(program, 'uTopoBands'), u.topoBands);
   gl.uniform1f(gl.getUniformLocation(program, 'uLineWidth'), u.lineWidth);
@@ -102,8 +102,12 @@ export function drawTopographicGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  renderTopographicStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  const { gl, canvas: glCanvas } = beginFieldRender(P);
+  try {
+    renderTopographicStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  } finally {
+    endFieldRender();
+  }
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

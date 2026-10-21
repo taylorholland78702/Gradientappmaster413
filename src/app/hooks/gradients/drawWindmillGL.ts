@@ -6,7 +6,7 @@
 // _registry.ts's wrapper only calls this for 'helix' and always uses the
 // CPU path otherwise. Falls back to the CPU implementation if WebGL2
 // isn't available or this throws.
-import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -90,7 +90,7 @@ function renderWindmillHelixStage(gl: WebGL2RenderingContext, outputFramebuffer:
   gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
   gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
   gl.uniform1f(gl.getUniformLocation(program, 'uTightness'), u.tightness);
   gl.uniform1f(gl.getUniformLocation(program, 'uTurns'), u.turns);
@@ -110,8 +110,12 @@ export function drawWindmillHelixGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  renderWindmillHelixStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  const { gl, canvas: glCanvas } = beginFieldRender(P);
+  try {
+    renderWindmillHelixStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  } finally {
+    endFieldRender();
+  }
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

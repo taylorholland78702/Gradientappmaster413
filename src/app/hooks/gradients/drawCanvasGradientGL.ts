@@ -13,7 +13,7 @@
 //
 // Both entry points return false when WebGL2 is unavailable or the shader
 // fails, and the caller keeps its native-gradient path as the fallback.
-import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, BLEND_COLORS_GLSL, DITHER_GLSL, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, setPaletteMapUniforms } from './glShared';
+import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, BLEND_COLORS_GLSL, DITHER_GLSL, linkProgram, drawFieldFullscreen, getHiResFieldGL, detectFieldGLSupport, setPaletteMapUniforms } from './glShared';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -55,7 +55,7 @@ function fillGL(P: any, spec: Spec, colors: RGB[]): boolean { // eslint-disable-
   const { canvas, ctx, displayWidth, displayHeight } = P;
   if (canvas.width === 0 || canvas.height === 0) return false;
   try {
-    const { gl, canvas: glCanvas } = getSharedFieldGL(canvas.width, canvas.height);
+    const { gl, canvas: glCanvas } = getHiResFieldGL(canvas.width, canvas.height);
     if (!program || programGL !== gl) {
       program = linkProgram(gl, FULLSCREEN_VERT_SRC, FRAG_SRC);
       programGL = gl;

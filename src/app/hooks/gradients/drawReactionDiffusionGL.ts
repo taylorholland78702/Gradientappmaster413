@@ -9,7 +9,7 @@
 // memoized), _registry.ts falls back to the CPU implementation for the
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
-import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms } from './glShared';
+import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms, fieldRenderDims } from './glShared';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -110,8 +110,29 @@ float applyFieldContrast(float t, float amount) {
   return clamp(shaped + 0.5, 0.0, 1.0);
 }
 
+// The sim grid is only 220x140, so it is magnified a few times over on screen.
+// Plain nearest sampling shows blocks and plain bilinear shows diamond-shaped
+// creases at every texel, so this blends the four surrounding texels with a
+// quintic smootherstep weight (continuous in value, slope and curvature).
+// Done by hand with texelFetch because the state textures are float RGBA32F
+// with NEAREST filtering, which the sim itself relies on.
+float sampleSmooth(vec2 uv) {
+  ivec2 sz = textureSize(uState, 0);
+  vec2 p = uv * vec2(sz) - 0.5;
+  vec2 i = floor(p);
+  vec2 f = p - i;
+  f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  ivec2 i0 = clamp(ivec2(i), ivec2(0), sz - 1);
+  ivec2 i1 = clamp(ivec2(i) + 1, ivec2(0), sz - 1);
+  float a = texelFetch(uState, i0, 0).g;
+  float b = texelFetch(uState, ivec2(i1.x, i0.y), 0).g;
+  float c = texelFetch(uState, ivec2(i0.x, i1.y), 0).g;
+  float d = texelFetch(uState, i1, 0).g;
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
 void main() {
-  float v = texture(uState, vUv).g;
+  float v = sampleSmooth(vUv);
   float t = clamp(v * 3.0, 0.0, 1.0);
   float shaped = applyFieldContrast(t, uContrast);
   float tt = mod(mod(shaped, 1.0) + 1.0, 1.0);
@@ -400,8 +421,13 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
     colorArr[i * 3 + 1] = colors[i].g / 255;
     colorArr[i * 3 + 2] = colors[i].b / 255;
   }
+  // The color pass (unlike the sim) renders at the main canvas's real resolution
+  // instead of the sim grid's, so the smoothed field is dithered and drawn 1:1.
+  const { w: outW, h: outH } = fieldRenderDims(P);
+  if (st.canvas.width !== outW) st.canvas.width = outW;
+  if (st.canvas.height !== outH) st.canvas.height = outH;
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, RD_W, RD_H);
+  gl.viewport(0, 0, outW, outH);
   gl.useProgram(st.colorProgram);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, texOf(st.current));
@@ -415,12 +441,11 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
   setPaletteMapUniforms(gl, st.colorProgram, colorCount);
   drawFullscreen(gl);
 
-  // Same smoothing/blur upscale as the CPU path (drawReactionDiffusion.ts:349-352)
-  // — the sim grid is coarse relative to display resolution either way.
+  // No canvas blur any more (the CPU path still has one, drawReactionDiffusion.ts):
+  // the shader already interpolates the coarse sim grid smoothly, and a
+  // full-frame ctx.filter blur is far more expensive than it was worth.
   ctx.imageSmoothingEnabled = true;
-  ctx.filter = 'blur(1.5px)';
-  ctx.drawImage(st.canvas, 0, 0, RD_W, RD_H, 0, 0, displayWidth, displayHeight);
-  ctx.filter = 'none';
+  ctx.drawImage(st.canvas, 0, 0, outW, outH, 0, 0, displayWidth, displayHeight);
 
   return gradient;
 }

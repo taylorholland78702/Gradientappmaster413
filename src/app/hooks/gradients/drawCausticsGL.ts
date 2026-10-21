@@ -12,7 +12,7 @@
 // continuous field, just sampled finer.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform, HEAVY_FIELD_PIXEL_BUDGET } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -91,7 +91,7 @@ function renderCausticsStage(gl: WebGL2RenderingContext, outputFramebuffer: WebG
   gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
   gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
   gl.uniform2f(gl.getUniformLocation(program, 'uScale'), u.scaleX, u.scaleY);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeedX'), u.seedX);
@@ -111,8 +111,12 @@ export function drawCausticsGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  renderCausticsStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  const { gl, canvas: glCanvas } = beginFieldRender(P, HEAVY_FIELD_PIXEL_BUDGET);
+  try {
+    renderCausticsStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  } finally {
+    endFieldRender();
+  }
 
   ctx.fillStyle = '#000814';
   ctx.fillRect(0, 0, displayWidth, displayHeight);

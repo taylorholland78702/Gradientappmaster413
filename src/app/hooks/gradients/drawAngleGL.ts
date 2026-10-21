@@ -6,7 +6,7 @@
 // palette-mode step), matching the CPU path exactly.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, detectFieldGLSupport, DITHER_GLSL, beginFieldRender, endFieldRender, setSizeUniform } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -73,7 +73,7 @@ function renderAngleStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFr
   gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
   gl.viewport(0, 0, width, height);
   gl.useProgram(program);
-  gl.uniform2f(gl.getUniformLocation(program, 'uSize'), width, height);
+  setSizeUniform(gl, program, width, height);
   gl.uniform2f(gl.getUniformLocation(program, 'uCenter'), u.centerX, u.centerY);
   gl.uniform1f(gl.getUniformLocation(program, 'uZoom'), u.zoom);
   gl.uniform1f(gl.getUniformLocation(program, 'uStartAngle'), u.startAngle);
@@ -88,8 +88,12 @@ export function drawAngleGL(P: any): CanvasGradient | undefined {
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
 
-  const { gl, canvas: glCanvas } = getSharedFieldGL(displayWidth, displayHeight);
-  renderAngleStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  const { gl, canvas: glCanvas } = beginFieldRender(P);
+  try {
+    renderAngleStage(gl, null, glCanvas.width, glCanvas.height, deriveUniforms(P));
+  } finally {
+    endFieldRender();
+  }
 
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
   return gradient;
