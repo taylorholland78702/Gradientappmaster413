@@ -36,4 +36,10 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   spectral: [{ label: 'Distance', hint: 'How far the arc sits from the corner' }, { label: 'Spread', hint: 'Width of the rainbow band' }],
   drape: [{ label: 'Depth', hint: 'How deep the folds are' }, { label: 'Sheen', hint: 'Strength of the satin highlight' }],
   'flow-mesh': [{ label: 'Flow', hint: 'How strongly the flow bends the colors' }, { label: 'Silk', hint: 'Strength of the satin folds' }],
+  plasma: [{ label: 'Detail', hint: 'How finely the plasma is cut' }, { label: 'Contrast', hint: 'How sharply the colors swing' }],
+  ribbon: [{ label: 'Width', hint: 'Width of the ribbon' }, { label: 'Twist', hint: 'How much the color twists along it' }],
+  strands: [{ label: 'Spacing', hint: 'Gap between strands' }, { label: 'Thickness', hint: 'Thickness of each strand' }],
+  iridescent: [{ label: 'Swirl', hint: 'Scale of the oil-slick swirls' }, { label: 'Film', hint: 'How many color cycles the film runs through' }],
+  embers: [{ label: 'Ember size', hint: 'Size of the glowing sparks' }, { label: 'Density', hint: 'How many sparks' }],
+  bands: [{ label: 'Waviness', hint: 'How much the bands undulate' }, { label: 'Softness', hint: 'How soft the edges between bands are' }],
 };

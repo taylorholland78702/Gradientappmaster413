@@ -24,7 +24,7 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // pools since it's a no-op with no uploaded image.
 export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
-  fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'], iridescent: ['General'],
+  fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
@@ -38,7 +38,8 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   mercury: ['Mercury'], mesh: ['Mesh'], nebula: ['Nebula'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
   tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
   eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
-  'flow-mesh': ['Flow Mesh'],
+  'flow-mesh': ['Flow Mesh'], plasma: ['Plasma'], ribbon: ['Ribbon'], strands: ['Strands'], iridescent: ['Iridescent'],
+  embers: ['Embers'], bands: ['Bands'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
@@ -58,7 +59,7 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 // all, which is what actually reproduced the flat-color result.
 // The dark-ground styled gradients (a thin ring / beam / bokeh discs on near-black)
 // are sparse in the same way: posterising or smearing them leaves a flat field.
-const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'light-beam', 'edge-glow', 'bokeh'];
+const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'light-beam', 'edge-glow', 'bokeh', 'embers'];
 const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
 // Oil Paint/Brush Strokes/Impasto average a neighborhood of pixels — on a
 // frame that's 95%+ black to start with, that average is just black,

@@ -23,7 +23,8 @@ export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
   | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen'
   | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
-  | 'vortex' | 'spectral' | 'drape' | 'flow-mesh';
+  | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
+  | 'plasma' | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -611,6 +612,112 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(vec3(luma(col)), col, 1.15);
 }`;
 
+
+// Classic demoscene plasma: four interfering sine fields summed and fed through
+// a sine so the palette swings back and forth without a seam.
+const PLASMA = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = p * 1.2 * uA;
+  float v = sin(q.x * 1.6 + t * 0.35);
+  v += sin(q.y * 1.3 + t * 0.28);
+  v += sin((q.x + q.y) * 1.1 + t * 0.22);
+  v += sin(length(q + vec2(sin(t * 0.17), cos(t * 0.13)) * 1.5) * 2.2 - t * 0.4);
+  float k = 0.5 + 0.5 * sin(v * 0.9 * uB + uBass * 0.6);
+  return getMappedColor(k);
+}`;
+
+// One wide ribbon bending across the frame, shaded across its width with the
+// palette twisting along its length.
+const RIBBON = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float y = p.y * 0.9 + 0.55 * sin(p.x * 0.8 + t * 0.22) + 0.25 * sin(p.x * 1.9 - t * 0.31);
+  float w = 0.55 * uA;
+  float d = abs(y) / w;
+  float body = 1.0 - smoothstep(0.86, 1.0, d);
+  float shade = 1.0 - d * d;
+  float k = 0.5 + 0.5 * sin(p.x * 0.9 + y * 3.0 * uB + t * 0.3);
+  vec3 bg = getMappedColor(0.0) * 0.30;
+  vec3 col = getMappedColor(k) * (0.55 + 0.75 * shade);
+  col += pow(max(shade, 0.0), 6.0) * 0.18 * (1.0 + uTreble * 0.5);
+  return mix(bg, col, body);
+}`;
+
+// A bundle of thin flowing lines, each its own palette color, added together
+// over a dark ground so crossings glow.
+const STRANDS = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec3 col = getMappedColor(0.0) * 0.20;
+  for (int i = 0; i < 14; i++) {
+    float fi = float(i);
+    float y = p.y * 1.3 + (fi - 6.5) * 0.18 * uA
+      + 0.35 * sin(p.x * (0.7 + fi * 0.05) + t * (0.2 + fi * 0.02) + fi)
+      + 0.10 * sin(p.x * 2.3 - t * 0.3 + fi * 1.7)
+      + uBass * 0.04 * sin(fi + t);
+    float line = smoothstep(0.034 * uB, 0.0, abs(y));
+    col += getMappedColor(fract(fi / 14.0 + 0.03 * t)) * line * 0.85;
+  }
+  return col;
+}`;
+
+// Oil on water: a slowly shifting film whose color comes from the palette
+// sampled at a different phase for each of R, G and B, triangle-folded so there
+// is no seam where the palette wraps.
+const IRIDESCENT = `
+float tri(float x) { return abs(fract(x) * 2.0 - 1.0); }
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float h = fbm3(p * 0.6 * uA + vec2(t * 0.03, -t * 0.02));
+  float film = h * 3.0 * uB + dot(p, vec2(0.20, 0.35)) + t * 0.04 + uBass * 0.08;
+  vec3 col = vec3(
+    getMappedColor(tri(film)).r,
+    getMappedColor(tri(film + 0.33)).g,
+    getMappedColor(tri(film + 0.66)).b);
+  col = mix(vec3(luma(col)), col, 1.30);
+  return col * (0.80 + 0.30 * h);
+}`;
+
+// Sparks drifting up out of a glowing floor: three depth layers of tiny, flickering
+// points over near-black.
+const EMBERS = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  vec3 acc = getMappedColor(0.0) * 0.08;
+  acc += getMappedColor(0.35) * 0.28 * pow(max(uv.y, 0.0), 3.0);
+  for (int L = 0; L < 3; L++) {
+    float fl = float(L);
+    vec2 q = c * (1.1 + 0.7 * fl) * uB;
+    q.y -= t * (0.25 + 0.12 * fl);
+    q += fl * 5.7;
+    vec2 id = floor(q);
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec2 cell = id + vec2(float(i), float(j));
+        vec2 rnd = hash22(cell + fl * 17.0);
+        vec2 cc = cell + 0.2 + 0.6 * rnd + vec2(0.25 * sin(t * 0.7 + rnd.x * 6.28), 0.0);
+        float d = length(q - cc);
+        float r = (0.05 + 0.07 * rnd.y) * uA;
+        float flick = 0.6 + 0.4 * sin(t * 2.0 + rnd.x * 40.0);
+        float g = exp(-pow(d / r, 2.0)) * flick * step(0.35, rnd.x);
+        acc += getMappedColor(0.55 + 0.45 * rnd.y) * g * 1.35 * (1.0 + uTreble * 0.5);
+      }
+    }
+  }
+  return acc;
+}`;
+
+// Soft-edged horizontal color bands whose boundaries undulate.
+const BANDS = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float w = p.y * 0.8 + (0.25 * sin(p.x * 0.9 + t * 0.2) + 0.12 * sin(p.x * 2.1 - t * 0.27 + p.y)) * uA;
+  float N = 6.0;
+  float s = (0.5 + 0.5 * sin(w * 1.4 + t * 0.05 + uBass * 0.4)) * N;
+  float id = floor(s);
+  float f = fract(s);
+  float e = smoothstep(1.0 - 0.12 * uB, 1.0, f);
+  vec3 a = getMappedColor(clamp(id / (N - 1.0), 0.0, 1.0));
+  vec3 b = getMappedColor(clamp((id + 1.0) / (N - 1.0), 0.0, 1.0));
+  return mix(a, b, e);
+}`;
+
 const STYLE_BODIES: Record<StyleFieldId, string> = {
   smoke: SMOKE,
   glass: GLASS,
@@ -634,6 +741,12 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   spectral: SPECTRAL,
   drape: DRAPE,
   'flow-mesh': FLOW_MESH,
+  plasma: PLASMA,
+  ribbon: RIBBON,
+  strands: STRANDS,
+  iridescent: IRIDESCENT,
+  embers: EMBERS,
+  bands: BANDS,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];

@@ -181,6 +181,36 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Aqua Folds', colors: ['#0aa4c9', '#2de1b5', '#7a8cff', '#c5f3ff'], speed: 0.8 },
     { name: 'Lilac Satin', colors: ['#b8a0ff', '#e0b8ff', '#ffd1f0', '#9ec5ff'], speed: 0.6 },
   ],
+  plasma: [
+    { name: 'Lava Lamp', colors: ['#2a0a3a', '#d4145a', '#ff7a18', '#ffe259'] },
+    { name: 'Acid', colors: ['#031a0f', '#12ff8a', '#d4ff3a', '#ff3ad4'], speed: 1.3 },
+    { name: 'Deep Sea', colors: ['#021428', '#0b4f8a', '#2ac4d8', '#c9fff4'], speed: 0.7 },
+  ],
+  ribbon: [
+    { name: 'Satin', colors: ['#1b1030', '#6a3fd0', '#ff7ac8', '#ffe3f1'] },
+    { name: 'Gold Leaf', colors: ['#2a1a06', '#9a6a12', '#f1c24a', '#fff2c4'], speed: 0.8 },
+    { name: 'Glacier', colors: ['#dff3ff', '#8fd0ff', '#4a8be0', '#1a2f6a'] },
+  ],
+  strands: [
+    { name: 'Silk Threads', colors: ['#080612', '#7a5af0', '#ff8ad8', '#ffe8f4'] },
+    { name: 'Copper Wire', colors: ['#0c0603', '#8a3a12', '#e8913a', '#ffe0b0'], speed: 0.8 },
+    { name: 'Neon Rain', colors: ['#02030c', '#00e5ff', '#7a5cff', '#ff4fd8'], speed: 1.2 },
+  ],
+  iridescent: [
+    { name: 'Oil Slick', colors: ['#10102a', '#2a7a8a', '#b04ad0', '#e8c84a'] },
+    { name: 'Soap Film', colors: ['#e8f0ff', '#ffd6f0', '#c9ffe8', '#d6d6ff'], scale: 0.8 },
+    { name: 'Beetle', colors: ['#021a12', '#0a6a4a', '#3ad8a0', '#d0ff4a'], speed: 0.8 },
+  ],
+  embers: [
+    { name: 'Campfire', colors: ['#120300', '#7a1b00', '#ff6a1f', '#ffe2a0'] },
+    { name: 'Blue Flame', colors: ['#020614', '#0a2f8a', '#2a8aff', '#d6f0ff'], speed: 0.8 },
+    { name: 'Forge', colors: ['#0a0200', '#a01800', '#ff9a1f', '#ffffff'], speed: 1.3 },
+  ],
+  bands: [
+    { name: 'Sunset Stripes', colors: ['#2b1055', '#c33764', '#ff7b54', '#ffd479'] },
+    { name: 'Retro', colors: ['#ff6b6b', '#ffd166', '#06d6a0', '#118ab2'], scale: 1.2 },
+    { name: 'Dusk', colors: ['#0f0c29', '#302b63', '#6a5acd', '#c8b6ff'], speed: 0.7 },
+  ],
   // ---- Older gradients ----
   angle: [
     { name: 'Prism', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'] },
