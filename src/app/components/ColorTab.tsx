@@ -4,6 +4,7 @@ import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb, hslToRgb, samplePalette, type ColorBlend } from '../utils/color';
 import { PALETTE_PRESETS, type PalettePreset } from '../constants/palettePresets';
 import { WAV_MOODS } from '../constants/gradientEffects';
+import { extractPalette } from '../utils/extractPalette';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
@@ -95,6 +96,39 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setPaletteStops(null);
   };
 
+  // Pulls the dominant colors out of a picked image — as many as the palette has
+  // now — so a photo's mood can become the gradient. Read on a 64px copy; the
+  // image never leaves the browser.
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const [imageError, setImageError] = React.useState<string | null>(null);
+  const paletteFromImage = (file: File | undefined) => {
+    if (!file) return;
+    setImageError(null);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const side = 64;
+        const c = document.createElement('canvas');
+        c.width = side; c.height = side;
+        const x = c.getContext('2d', { willReadFrequently: true });
+        if (!x) throw new Error('no canvas');
+        x.drawImage(img, 0, 0, side, side);
+        const colors = extractPalette(x.getImageData(0, 0, side, side).data, gradientColors.length);
+        if (colors.length === 0) throw new Error('empty');
+        saveCurrentState();
+        setColorsInstant(colors);
+        setPaletteStops(null);
+      } catch {
+        setImageError('Couldn\u2019t read colors from that image.');
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => { setImageError('That file isn\u2019t an image the browser can open.'); URL.revokeObjectURL(url); };
+    img.src = url;
+  };
+
   const applyPalettePreset = (preset: PalettePreset) => {
     saveCurrentState();
     const colors = preset.colors.map(hexToRgb);
@@ -138,6 +172,13 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
             </button>
           ))}
         </div>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { paletteFromImage(e.target.files?.[0]); e.target.value = ''; }} />
+        <button
+          onClick={() => fileRef.current?.click()}
+          title="Use the dominant colors of an image as the palette"
+          className="mt-1 px-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+        >From image…</button>
+        {imageError && <p role="alert" className="mt-1 text-[10px] text-red-300">{imageError}</p>}
       </div>
 
       <div className="w-full pt-2.5">

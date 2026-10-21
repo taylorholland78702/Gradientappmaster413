@@ -1,3 +1,4 @@
+import { EFFECT_LOOKS } from '../constants/effectLooks';
 import React, { useMemo, useState } from 'react';
 import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
@@ -244,6 +245,22 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
               className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
+          </div>
+          {/* Looks — a few effects that work well together, set up in one tap. */}
+          <div className="flex flex-wrap gap-1 px-1.5 py-1.5 border-b border-white/50" role="group" aria-label="Effect looks">
+            {EFFECT_LOOKS.map(look => {
+              const active = isMultiFxMode && activeEffects.length === look.effects.length
+                && look.effects.every(e => activeEffects.includes(e));
+              return (
+                <button
+                  key={look.name}
+                  onClick={() => { setIsMultiFxMode(true); setActiveEffects(look.effects); }}
+                  aria-pressed={active}
+                  title={look.hint}
+                  className={`px-2 py-0.5 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                >{look.name}</button>
+              );
+            })}
           </div>
           {(() => {
             // Derived from the single per-effect registry (constants/effectRegistry.ts)

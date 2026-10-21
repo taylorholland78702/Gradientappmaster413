@@ -28,7 +28,7 @@ import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
-import { LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
+import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -3562,6 +3562,9 @@ export function InteractiveGradient() {
     };
   }, []);
 
+  // Which Look the L key lands on next, per press (not tied to which chip is highlighted).
+  const lookIndexRef = useRef(-1);
+
   // Global hotkeys. Bare letters (no Cmd/Ctrl/Alt) so nothing collides with
   // browser shortcuts; suppressed while typing in any text field so letters
   // like "g" or "f" still type normally there.
@@ -3670,6 +3673,15 @@ export function InteractiveGradient() {
           e.preventDefault();
           setIsMultiFxMode(prev => !prev);
           break;
+        case 'l': case 'L': {
+          // Step through the current gradient's Looks (Shift goes back).
+          const looks = GRADIENT_LOOKS[gradientTypeRef.current as GradientType];
+          if (!looks?.length) break;
+          e.preventDefault();
+          lookIndexRef.current = (lookIndexRef.current + (e.shiftKey ? looks.length - 1 : 1)) % looks.length;
+          applyGradientLook(looks[lookIndexRef.current]);
+          break;
+        }
         case '?':
           e.preventDefault();
           setIsAboutOpen(prev => !prev);
@@ -3692,7 +3704,7 @@ export function InteractiveGradient() {
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
     isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
-    autoShufflePopoverAnchor, setAutoShufflePopoverAnchor,
+    autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -4303,6 +4315,7 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="Shift+R" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Next / previous Look for the current gradient</span><Kbd label="L" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
                 <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
