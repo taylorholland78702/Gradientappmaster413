@@ -7,6 +7,7 @@ import { pickRandomEmojiSet } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl, hexToRgb } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { GRADIENT_LOOKS } from '../constants/gradientLooks';
+import { STYLE_SHAPE_CONTROLS } from '../constants/styleShapeControls';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
@@ -127,7 +128,7 @@ export function useRandomization(params: RandomizationParams) {
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
-    setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues,
+    setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -908,6 +909,10 @@ export function useRandomization(params: RandomizationParams) {
       // New pattern layout too — Seed now has a visible control, and a shuffle
       // that kept the old one would hand back the same cells/veins every time.
       setStructuralSeed(Math.floor(Math.random() * 1000000));
+      // Fresh shape sliders for the gradient it landed on (they're kept per gradient).
+      const shape = () => Math.round((0.7 + Math.random() * 0.9) * 20) / 20;
+      setFieldShapes(finalGradientType && STYLE_SHAPE_CONTROLS[finalGradientType]
+        ? { [finalGradientType]: [shape(), shape()] } : {});
       setPaletteStops(null);
       setPaletteBias(0.5);
       setPaletteSharp(0);
@@ -925,7 +930,7 @@ export function useRandomization(params: RandomizationParams) {
     if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp, setStructuralSeed]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp, setStructuralSeed, setFieldShapes]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }

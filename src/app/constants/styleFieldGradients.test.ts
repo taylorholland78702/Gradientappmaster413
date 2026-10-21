@@ -7,6 +7,7 @@ import { STYLE_FIELD_IDS } from '../hooks/gradients/drawStyleFieldGL';
 import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
 import { GRADIENT_LOOKS, LOOK_PARAM_KEYS } from './gradientLooks';
 import { GRADIENT_MOD_CATEGORY } from '../hooks/useRandomization';
+import { STYLE_SHAPE_CONTROLS } from './styleShapeControls';
 
 // The styled-field gradients are declared in two places that must agree: the
 // shader bodies in drawStyleFieldGL.ts and the UI/randomization lists in
@@ -144,6 +145,16 @@ describe('quick-bind keys', () => {
       const id = t.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
       expect(keys.has(`${id}Scale`), t).toBe(true);
       expect(keys.has(`${id}Speed`), t).toBe(true);
+    }
+  });
+});
+
+describe('shape controls', () => {
+  it('every styled gradient labels both of its shape sliders', () => {
+    for (const t of STYLE_FIELD_GRADIENT_TYPES) {
+      const c = STYLE_SHAPE_CONTROLS[t];
+      expect(c, t).toBeDefined();
+      expect(c![0].label && c![1].label, t).toBeTruthy();
     }
   });
 });

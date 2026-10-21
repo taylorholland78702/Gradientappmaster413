@@ -3,6 +3,7 @@ import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/
 import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, GRADIENT_GROUPS, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { hexToRgb } from '../utils/color';
+import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
 // older ones that read it), so a Seed control means something for them.
@@ -138,6 +139,8 @@ export interface GradientsTabProps {
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...)
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
+  fieldShapeA: number; setFieldShapeA: (v: number) => void;
+  fieldShapeB: number; setFieldShapeB: (v: number) => void;
   // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
   applyGradientLook: (look: GradientLook) => void;
   gradientColors: ColorRGB[];
@@ -253,7 +256,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, applyGradientLook, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, applyGradientLook, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -715,8 +718,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Scale', value: fieldScale, set: setFieldScale, min: 0.3, max: 3, step: 0.05 },
               { label: 'Speed', value: fieldSpeed, set: setFieldSpeed, min: 0, max: 3, step: 0.05 },
-            ].map(({ label, value, set, min, max, step }) => (
-              <div key={label} className="flex items-center justify-between">
+              // Two extra sliders specific to the gradient (constants/styleShapeControls.ts).
+              ...((STYLE_SHAPE_CONTROLS[gradientType] ?? []).map((c, i) => ({
+                label: c.label, hint: c.hint,
+                value: i === 0 ? fieldShapeA : fieldShapeB, set: i === 0 ? setFieldShapeA : setFieldShapeB,
+                min: SHAPE_MIN, max: SHAPE_MAX, step: 0.05,
+              }))),
+            ].map(({ label, value, set, min, max, step, hint }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string }) => (
+              <div key={label} className="flex items-center justify-between" title={hint}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />

@@ -495,7 +495,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           await ffmpeg.exec(outputArgs);
 
           const data = await ffmpeg.readFile('out.mp4') as Uint8Array;
-          const blob = new Blob([data], { type: 'video/mp4' });
+          const blob = new Blob([data as BlobPart], { type: 'video/mp4' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;

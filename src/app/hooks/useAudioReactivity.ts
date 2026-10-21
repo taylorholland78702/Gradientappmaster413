@@ -182,7 +182,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   const liveBassSmoothedRef = useRef(0);
   const liveMidsSmoothedRef = useRef(0);
   const liveTrebleSmoothedRef = useRef(0);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const subBassBeatPulseRef = useRef(0);
   const subBassPrevRef = useRef(0);

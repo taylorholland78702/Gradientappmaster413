@@ -1,8 +1,9 @@
 import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
-import { rgbToHex, hexToRgb, samplePalette, type ColorBlend } from '../utils/color';
+import { rgbToHex, hexToRgb, hslToRgb, samplePalette, type ColorBlend } from '../utils/color';
 import { PALETTE_PRESETS, type PalettePreset } from '../constants/palettePresets';
+import { WAV_MOODS } from '../constants/gradientEffects';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
@@ -78,6 +79,22 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setPaletteStops(null);
   };
 
+  // A fresh palette in a mood's hue/saturation/lightness ranges, dark to light.
+  // Always newly rolled, so tapping a mood twice gives two takes on it.
+  const applyMood = (mood: (typeof WAV_MOODS)[number]) => {
+    saveCurrentState();
+    const n = gradientColors.length;
+    const next = Array.from({ length: n }, (_, i) => {
+      const t = n === 1 ? 0.5 : i / (n - 1);
+      const hue = (mood.hues[i % mood.hues.length] + (Math.random() - 0.5) * 24 + 360) % 360;
+      const sat = mood.sat[0] + Math.random() * (mood.sat[1] - mood.sat[0]);
+      const lit = mood.lit[0] + t * (mood.lit[1] - mood.lit[0]);
+      return hslToRgb(hue, sat, lit);
+    });
+    setTargetColors(next);
+    setPaletteStops(null);
+  };
+
   const applyPalettePreset = (preset: PalettePreset) => {
     saveCurrentState();
     const colors = preset.colors.map(hexToRgb);
@@ -119,6 +136,20 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               <span aria-hidden="true" className="block w-6 h-3 border border-white/20" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
               {p.name}
             </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full pt-2.5">
+        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Moods</label>
+        <div className="flex flex-wrap gap-1">
+          {WAV_MOODS.map(m => (
+            <button
+              key={m.name}
+              onClick={() => applyMood(m)}
+              title={`A new ${m.name} palette`}
+              className="px-2 py-1 text-[10px] capitalize text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+            >{m.name}</button>
           ))}
         </div>
       </div>

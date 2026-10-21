@@ -26,6 +26,9 @@ export function useFieldMappingState() {
   // — see drawStyleFieldGL.ts), which have no per-style sliders of their own.
   const [fieldScale, setFieldScale] = useState(1);
   const [fieldSpeed, setFieldSpeed] = useState(1);
+  // The two shape sliders each styled gradient has (constants/styleShapeControls.ts),
+  // kept per gradient id as [A, B] so switching away and back keeps them; 1 = original look.
+  const [fieldShapes, setFieldShapes] = useState<Record<string, [number, number]>>({});
 
   return {
     fieldContrast,
@@ -46,5 +49,7 @@ export function useFieldMappingState() {
     setFieldScale,
     fieldSpeed,
     setFieldSpeed,
+    fieldShapes,
+    setFieldShapes,
   };
 }

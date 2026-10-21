@@ -41,6 +41,10 @@ uniform float uSeed;
 uniform float uBass;
 uniform float uMids;
 uniform float uTreble;
+// The two per-gradient shape sliders (constants/styleShapeControls.ts): 1.0 is the
+// gradient's original look, and what each one does is specific to the gradient.
+uniform float uA;
+uniform float uB;
 in vec2 vUv;
 out vec4 outColor;
 ${DITHER_GLSL}
@@ -127,9 +131,9 @@ void main() {
 const SMOKE = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 q = vec2(fbm(p + vec2(0.0, t * 0.10)), fbm(p + vec2(5.2, 1.3) - t * 0.08));
-  vec2 r = vec2(fbm(p + 3.6 * q + vec2(1.7, 9.2) + 0.12 * t), fbm(p + 3.6 * q + vec2(8.3, 2.8) - 0.10 * t));
-  float f = fbm(p + 3.2 * r);
-  float v = smoothstep(0.12, 0.88, f + 0.30 * length(q) - 0.10 + uBass * 0.12);
+  vec2 r = vec2(fbm(p + 3.6 * uA * q + vec2(1.7, 9.2) + 0.12 * t), fbm(p + 3.6 * uA * q + vec2(8.3, 2.8) - 0.10 * t));
+  float f = fbm(p + 3.2 * uA * r);
+  float v = smoothstep(0.12, 0.88, f + 0.30 * length(q) - 0.10 + (uB - 1.0) * 0.25 + uBass * 0.12);
   vec3 col = getMappedColor(v);
   // Thin, dark gaps between the wisps sell the volume.
   col *= mix(0.45, 1.0, smoothstep(0.0, 0.55, v));
@@ -148,7 +152,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float e = 0.03;
   float h = glassH(p, t);
   vec2 g = vec2(glassH(p + vec2(e, 0.0), t) - h, glassH(p + vec2(0.0, e), t) - h) / e;
-  vec3 n = normalize(vec3(-g * 0.95, 1.0));
+  vec3 n = normalize(vec3(-g * 0.95 * uA, 1.0));
   vec3 L = normalize(vec3(-0.45, 0.65, 0.65));
   vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
   float spec = pow(max(dot(n, H), 0.0), 60.0);
@@ -158,7 +162,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec3 base = getMappedColor(clamp(k, 0.0, 1.0));
   vec3 bent = getMappedColor(clamp(k + 0.55 * n.x - 0.4 * n.y, 0.0, 1.0));
   vec3 col = mix(base, bent, 0.7) * (0.55 + 0.5 * n.z);
-  col += spec * (0.4 + uTreble * 0.4) + broad + fres * 0.12;
+  col += (spec * (0.4 + uTreble * 0.4) + broad) * uB + fres * 0.12;
   return col;
 }`;
 
@@ -177,10 +181,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
     float fi = float(i);
     vec2 h = hash22(vec2(fi * 7.13, 3.7 + uSeed * 0.01));
     vec2 c = vec2(0.5 * asp, 0.5) + vec2(
-      sin(t * (0.10 + 0.16 * h.x) + fi * 2.399 + h.y * 6.28) * 0.46 * asp,
-      cos(t * (0.12 + 0.14 * h.y) + fi * 1.731 + h.x * 6.28) * 0.46);
+      sin(t * (0.10 + 0.16 * h.x) + fi * 2.399 + h.y * 6.28) * 0.46 * uB * asp,
+      cos(t * (0.12 + 0.14 * h.y) + fi * 1.731 + h.x * 6.28) * 0.46 * uB);
     float d = length(q - c);
-    float w = pow(1.0 / (d * d + 0.015), 1.55);
+    float w = pow(1.0 / (d * d + 0.015 * uA * uA), 1.55);
     w *= 1.0 + 0.5 * uBass * step(0.5, fract(fi * 0.5));
     vec3 col = uColors[i];
     acc += w * (uBlendMode == 0 ? col : rgbToOklab(col));
@@ -202,14 +206,14 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float e = 0.02;
   float h = mercH(p, t);
   vec2 g = vec2(mercH(p + vec2(e, 0.0), t) - h, mercH(p + vec2(0.0, e), t) - h) / e;
-  vec3 n = normalize(vec3(-g * 0.7, 1.0));
+  vec3 n = normalize(vec3(-g * 0.7 * uA, 1.0));
   float env = 0.5 + 0.5 * sin(dot(n.xy, vec2(2.7, 1.9)) * 2.6 + h * 3.4);
   env = pow(env, 1.5);
   vec3 H = normalize(normalize(vec3(-0.4, 0.55, 0.75)) + vec3(0.0, 0.0, 1.0));
   float spec = pow(max(dot(n, H), 0.0), 110.0);
   vec3 col = getMappedColor(clamp(env, 0.0, 1.0));
   col *= 0.42 + 0.95 * env + uBass * 0.15;
-  return col + spec * 0.85;
+  return col + spec * 0.85 * uB;
 }`;
 
 // Elevation-style isolines over a flowing height field: dim palette fill,
@@ -218,11 +222,11 @@ const CONTOUR = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 w = vec2(fbm3(p * 0.5 + t * 0.03), fbm3(p * 0.5 - 5.0 - t * 0.025));
   float f = fbm3(p * 0.45 + w * 1.3 + vec2(0.0, t * 0.02));
-  float levels = 14.0;
+  float levels = 14.0 * uA;
   float x = f * levels;
   float fw = max(fwidth(x), 1e-4);
   float d = abs(fract(x - 0.5) - 0.5) / fw;
-  float line = 1.0 - smoothstep(0.0, 1.3, d);
+  float line = 1.0 - smoothstep(0.0, 1.3 * uB, d);
   float major = 1.0 - smoothstep(0.0, 1.9, abs(fract(x / 5.0 - 0.5) - 0.5) * 5.0 / fw);
   vec3 fill = getMappedColor(clamp(f * 1.25 - 0.1, 0.0, 1.0));
   vec3 ink = getMappedColor(fract(f * 1.25 + 0.5));
@@ -240,8 +244,8 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float r = max(length(q), 0.02);
   float a = atan(q.y, q.x);
   float depth = 1.0 / (r * uScale * 0.45);
-  float z = depth * 1.15 + t * 0.7;
-  float twist = a / TAU * 8.0 + depth * 0.18 + sin(t * 0.2) * 0.4;
+  float z = depth * 1.15 * uB + t * 0.7;
+  float twist = a / TAU * 8.0 + (depth * 0.18 + sin(t * 0.2) * 0.4) * uA;
   float rings = smoothstep(0.30, 0.50, abs(fract(z) - 0.5));
   float spokes = smoothstep(0.38, 0.5, abs(fract(twist) - 0.5));
   float v = fract(z * 0.5 + twist * 0.08);
@@ -259,7 +263,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float n1 = fbm(p * 0.8 + t * 0.02);
   vec2 w = vec2(fbm(p + 3.0 + t * 0.04), fbm(p - 4.0 - t * 0.03));
   float n2 = fbm(p * 1.25 + w * 1.7);
-  float cloud = smoothstep(0.45, 1.05, n2 * 1.2 + n1 * 0.30 + uBass * 0.08);
+  float cloud = smoothstep(0.45, 1.05, n2 * 1.2 + n1 * 0.30 + (uA - 1.0) * 0.25 + uBass * 0.08);
   float core = pow(cloud, 3.0);
   vec3 void_ = getMappedColor(0.0) * 0.18;
   vec3 col = mix(void_, getMappedColor(clamp(cloud * 0.7 + 0.05, 0.0, 1.0)), smoothstep(0.0, 0.7, cloud));
@@ -268,7 +272,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 g = floor(p * 16.0);
   float h = hash21(g);
   vec2 f = fract(p * 16.0) - 0.5 - (hash22(g) - 0.5) * 0.6;
-  float star = smoothstep(0.085, 0.0, length(f)) * step(0.935, h) * (0.55 + 0.45 * sin(t * 2.0 + h * 40.0));
+  float star = smoothstep(0.085, 0.0, length(f)) * step(1.0 - 0.065 * uB, h) * (0.55 + 0.45 * sin(t * 2.0 + h * 40.0));
   return col + star * (1.0 - 0.6 * cloud);
 }`;
 
@@ -278,14 +282,14 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 const PRISM = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 dir = vec2(cos(0.55), sin(0.55));
-  float s = dot(p, dir) * 3.4 + sin(p.y * 1.7 + t * 0.18) * 0.9 + sin(p.x * 1.2 - t * 0.12) * 0.7;
+  float s = dot(p, dir) * 3.4 * uA + sin(p.y * 1.7 + t * 0.18) * 0.9 + sin(p.x * 1.2 - t * 0.12) * 0.7;
   float id = floor(s);
   float local = fract(s);
   float base = hash21(vec2(id, 3.1)) * 0.7 + t * 0.03;
   float k = base + local * 0.45;
-  vec3 c0 = getMappedColor(fract(k - 0.07));
+  vec3 c0 = getMappedColor(fract(k - 0.07 * uB));
   vec3 c1 = getMappedColor(fract(k));
-  vec3 c2 = getMappedColor(fract(k + 0.07));
+  vec3 c2 = getMappedColor(fract(k + 0.07 * uB));
   vec3 col = vec3(c0.r, c1.g, c2.b);
   col *= 0.62 + 0.6 * (1.0 - local);
   float edge = smoothstep(0.035, 0.0, min(local, 1.0 - local));
@@ -297,7 +301,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 // into a height field whose slope refracts the palette beneath.
 const RAINDROPS = `
 float ripples(vec2 p, float t) {
-  vec2 sp = p * 2.6;
+  vec2 sp = p * 2.6 * uB;
   vec2 id = floor(sp);
   float h = 0.0;
   for (int j = -1; j <= 1; j++) {
@@ -305,7 +309,7 @@ float ripples(vec2 p, float t) {
       vec2 cell = id + vec2(float(i), float(j));
       vec2 rnd = hash22(cell);
       vec2 c = cell + 0.15 + 0.7 * rnd;
-      float ph = fract(t * 0.26 * (0.6 + rnd.x * 0.8) + rnd.y);
+      float ph = fract(t * 0.26 * uA * (0.6 + rnd.x * 0.8) + rnd.y);
       float d = length(sp - c);
       float r = ph * 1.0;
       float env = exp(-pow((d - r) * 4.5, 2.0)) * (1.0 - ph) * (1.0 - ph);
@@ -335,12 +339,12 @@ const HOLOGRAPHIC = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   float h = fbm3(p * 0.5 + vec2(t * 0.04, -t * 0.03));
   float h2 = fbm3(p * 1.3 - t * 0.05);
-  float film = h * 2.2 + h2 * 0.6 + dot(p, vec2(0.35, 0.5)) * 0.9 + t * 0.05 + uBass * 0.1;
+  float film = (h * 2.2 + h2 * 0.6 + dot(p, vec2(0.35, 0.5)) * 0.9) * uA + t * 0.05 + uBass * 0.1;
   vec3 col = vec3(
     getMappedColor(fract(film)).r,
     getMappedColor(fract(film + 0.09)).g,
     getMappedColor(fract(film + 0.18)).b);
-  float sp = pow(max(0.0, sin(film * 12.566 + h2 * 6.0)), 10.0) * 0.38;
+  float sp = pow(max(0.0, sin(film * 12.566 + h2 * 6.0)), 10.0) * 0.38 * uB;
   float l = luma(col);
   col = mix(vec3(l), col, 1.18);
   return col + sp;
@@ -354,10 +358,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   for (int i = 0; i < 8; i++) {
     float fi = float(i);
     float y = p.y * 1.1 + (fi - 3.5) * 0.30
-      + 0.30 * sin(p.x * (0.95 + fi * 0.09) + t * (0.26 + fi * 0.04) + fi * 1.3)
+      + 0.30 * uA * sin(p.x * (0.95 + fi * 0.09) + t * (0.26 + fi * 0.04) + fi * 1.3)
       + 0.09 * sin(p.x * 2.4 - t * 0.33 + fi * 2.1)
       + uBass * 0.05 * sin(fi + t);
-    float thick = 0.62;
+    float thick = 0.62 * uB;
     float cover = smoothstep(0.0, 0.014, y) * (1.0 - smoothstep(thick - 0.05, thick, y));
     float k = clamp(y / thick, 0.0, 1.0);
     vec3 band = getMappedColor(fract(fi / 8.0 + 0.04 * t + 0.12 * k));
@@ -371,7 +375,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 // field — the printed-halftone look, colored from the palette.
 const HALFTONE = `
 vec3 shade(vec2 p, vec2 uv, float t) {
-  float cell = 0.105;
+  float cell = 0.105 * uA;
   float c45 = 0.70710678;
   vec2 r = vec2(c45 * p.x + c45 * p.y, -c45 * p.x + c45 * p.y);
   vec2 gp = r / cell;
@@ -381,7 +385,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float tone = fbm(centerP * 0.55 + vec2(t * 0.03, -t * 0.02)) * 1.25
              + 0.35 * sin(centerP.x * 0.9 + t * 0.3) * sin(centerP.y * 0.8 - t * 0.2) + uBass * 0.1;
   tone = smoothstep(0.12, 0.9, clamp(tone, 0.0, 1.0));
-  float rad = sqrt(tone) * 0.54;
+  float rad = sqrt(tone) * 0.54 * uB;
   float d = length(f);
   float aa = max(fwidth(d), 1e-3);
   float dotMask = 1.0 - smoothstep(rad - aa, rad + aa, d);
@@ -397,13 +401,13 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 const LIGHT_BEAM = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
-  float ang = 0.78 + 0.10 * sin(t * 0.14);
+  float ang = 0.78 + (uB - 1.0) * 0.6 + 0.10 * sin(t * 0.14);
   vec2 dir = vec2(cos(ang), sin(ang));
   vec2 src = vec2(-2.4, -2.2);
   vec2 d = c - src;
   float along = dot(d, dir);
   float perp = d.x * dir.y - d.y * dir.x;
-  float width = 0.30 + 0.20 * max(along, 0.0);
+  float width = (0.30 + 0.20 * max(along, 0.0)) * uA;
   float core = exp(-pow(perp / width, 2.0)) * smoothstep(0.0, 1.2, along);
   float streak = 0.72 + 0.28 * vnoise(vec2(perp * 5.0 / width, along * 0.5 - t * 0.18));
   float fall = exp(-max(along - 1.5, 0.0) * 0.16);
@@ -417,8 +421,8 @@ const EDGE_GLOW = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
   float fromBottom = 1.0 - uv.y;
-  float wob = (fbm3(vec2(c.x * 0.9, t * 0.10)) - 0.45) * 0.30;
-  float reach = 0.44 + uBass * 0.10;
+  float wob = (fbm3(vec2(c.x * 0.9, t * 0.10)) - 0.45) * 0.30 * uB;
+  float reach = (0.44 + uBass * 0.10) * uA;
   // The +0.2 keeps the crest's zero point below the frame so the glow never
   // clips to a flat saturated band at the very edge.
   float I = exp(-pow(max(fromBottom + wob + 0.2, 0.0) / reach, 1.35));
@@ -432,12 +436,12 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 const CURTAINS = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
-  float x = c.x * 1.1;
+  float x = c.x * 1.1 * uA;
   float f1 = 0.5 + 0.5 * sin(x * 2.2 + 1.5 * sin(x * 1.1 + t * 0.15) + t * 0.20);
   float f2 = 0.5 + 0.5 * sin(x * 4.6 - t * 0.25 + 2.0 * fbm3(vec2(x * 0.8, t * 0.05)));
   float fold = mix(f1, f2, 0.30);
   float fromBottom = 1.0 - uv.y;
-  float crest = 0.55 + 0.80 * fold + uBass * 0.15;
+  float crest = (0.55 + 0.80 * fold + uBass * 0.15) * uB;
   float I = (0.30 + 0.70 * fold) * smoothstep(crest, 0.0, fromBottom) * 0.70;
   I += 0.10 * vnoise(vec2(x * 16.0, t * 0.3)) * smoothstep(0.9, 0.0, fromBottom);
   I += 0.14 * exp(-pow(fromBottom / 0.22, 1.5));
@@ -451,10 +455,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
   float r = length(c);
   float a = atan(c.y, c.x);
-  float R = 0.82 + uBass * 0.05;
+  float R = (0.82 + uBass * 0.05) * uA;
   float side = 0.62 + 0.38 * cos(a - t * 0.12 - 0.8);
-  float ring = exp(-pow((r - R) / 0.075, 2.0));
-  float halo = exp(-max(r - R, 0.0) * 2.1) * 0.55 * smoothstep(R - 0.10, R + 0.05, r);
+  float ring = exp(-pow((r - R) / (0.075 * uB), 2.0));
+  float halo = exp(-max(r - R, 0.0) * 2.1 / uB) * 0.55 * smoothstep(R - 0.10, R + 0.05, r);
   float rays = 0.88 + 0.12 * sin(a * 11.0 + t * 0.3 + 3.0 * vnoise(vec2(a * 2.0, t * 0.1)));
   float I = (ring * 1.15 + halo * rays) * side;
   float inner = smoothstep(R - 0.02, R - 0.25, r) * 0.05;
@@ -469,10 +473,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
   float r = length(c);
   float a = atan(c.y, c.x);
-  float spokes = 0.5 + 0.5 * sin(a * 14.0 + t * 0.28 + 2.0 * vnoise(vec2(a * 3.0, t * 0.2)));
+  float spokes = 0.5 + 0.5 * sin(a * floor(14.0 * uA + 0.5) + t * 0.28 + 2.0 * vnoise(vec2(a * 3.0, t * 0.2)));
   float grain = vnoise(vec2(a * 22.0, t * 0.15 + r * 0.4));
   float ray = pow(mix(spokes, grain, 0.5), 2.0);
-  float reach = smoothstep(0.15, 1.8, r);
+  float reach = smoothstep(0.15, 1.8 * uB, r);
   float I = (0.10 + 0.55 * reach) * (0.55 + 0.75 * ray) + 0.28 * uv.y + uBass * 0.12 * reach;
   return lightRamp(I);
 }`;
@@ -485,7 +489,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec3 acc = getMappedColor(0.0) * 0.10;
   for (int L = 0; L < 3; L++) {
     float fl = float(L);
-    float sz = 0.85 + 0.75 * fl;
+    float sz = (0.85 + 0.75 * fl) / uB;
     vec2 q = c / sz + vec2(t * 0.022 * (1.0 + fl), t * 0.016) + fl * 7.3;
     vec2 id = floor(q);
     for (int j = -1; j <= 1; j++) {
@@ -493,7 +497,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
         vec2 cell = id + vec2(float(i), float(j));
         vec2 rnd = hash22(cell + fl * 13.0);
         vec2 cc = cell + 0.2 + 0.6 * rnd + 0.15 * vec2(sin(t * 0.2 + rnd.x * 6.28), cos(t * 0.17 + rnd.y * 6.28));
-        float rad = 0.17 + 0.21 * hash21(cell * 1.7 + fl);
+        float rad = (0.17 + 0.21 * hash21(cell * 1.7 + fl)) * uA;
         float d = length(q - cc);
         float disc = smoothstep(rad, rad * 0.80, d);
         float rim = smoothstep(rad * 0.68, rad, d) * smoothstep(rad + 0.025, rad, d);
@@ -515,10 +519,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float rot = 0.30 + 0.14 * sin(t * 0.12);
   float cs = cos(rot), sn = sin(rot);
   vec2 q = vec2(cs * c.x + sn * c.y, -sn * c.x + cs * c.y);
-  q.y *= 1.75;
+  q.y *= 1.75 * uB;
   float r = length(q);
   float a = atan(q.y, q.x);
-  float R = 1.32 + uBass * 0.07;
+  float R = (1.32 + uBass * 0.07) * uA;
   float ring = exp(-pow((r - R) / 0.12, 2.0));
   float inner = exp(-pow((r - R * 0.80) / 0.055, 2.0)) * 0.50;
   float hot = pow(0.5 + 0.5 * cos(a * 2.0 - t * 0.5 + 0.8 * sin(t * 0.2)), 2.5);
@@ -536,8 +540,8 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
   vec2 corner = vec2(-2.2, -1.7) + 0.12 * vec2(sin(t * 0.13), cos(t * 0.17));
   float d = length(c - corner);
-  float D = 2.45 + 0.20 * sin(t * 0.18) + uBass * 0.12;
-  float band = exp(-pow((d - D) / 0.95, 2.0));
+  float D = (2.45 + 0.20 * sin(t * 0.18) + uBass * 0.12) * uA;
+  float band = exp(-pow((d - D) / (0.95 * uB), 2.0));
   float ph = (d - D) * 0.42 + 0.5 + t * 0.02;
   vec3 spec = vec3(
     getMappedColor(fract(ph - 0.07)).r,
@@ -562,7 +566,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float e = 0.03;
   float h = drapeH(p, t);
   vec2 g = vec2(drapeH(p + vec2(e, 0.0), t) - h, drapeH(p + vec2(0.0, e), t) - h) / e;
-  vec3 n = normalize(vec3(-g * 0.85, 1.0));
+  vec3 n = normalize(vec3(-g * 0.85 * uA, 1.0));
   vec3 L = normalize(vec3(-0.55, -0.45, 0.7));
   float diff = dot(n, L);
   // Shade within a narrow slice of the palette (so folds read as light and
@@ -571,7 +575,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float k = drift + 0.55 * (diff - 0.66) + 0.05 * h + uBass * 0.05;
   vec3 col = getMappedColor(clamp(k, 0.0, 1.0));
   vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
-  float sheen = pow(max(dot(n, H), 0.0), 22.0) * 0.20;
+  float sheen = pow(max(dot(n, H), 0.0), 22.0) * 0.20 * uB;
   return col * (0.80 + 0.30 * diff) + sheen;
 }`;
 
@@ -583,7 +587,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float asp = uSize.x / uSize.y;
   vec2 q = (uv - 0.5) * vec2(asp, 1.0) / max(uScale * 0.33, 0.05) + 0.5 * vec2(asp, 1.0);
   vec2 flow = vec2(fbm3(q * 1.1 + vec2(t * 0.05, 0.0)), fbm3(q * 1.1 + vec2(4.0, -t * 0.04))) - 0.5;
-  vec2 w = q + flow * 0.85;
+  vec2 w = q + flow * 0.85 * uA;
   vec3 acc = vec3(0.0);
   float wsum = 0.0;
   for (int i = 0; i < ${12}; i++) {
@@ -603,7 +607,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   vec3 base = uBlendMode == 0 ? acc : oklabToRgb(acc);
   float fold = fbm3(w * 1.5 + vec2(t * 0.03, 0.0)) * 5.5 + t * 0.2;
   float sat = pow(0.5 + 0.5 * sin(fold), 4.0);
-  vec3 col = base * (0.82 + 0.30 * sat) + sat * 0.14 * (1.0 + uBass * 0.5);
+  vec3 col = base * (0.82 + 0.30 * sat * uB) + sat * 0.14 * uB * (1.0 + uBass * 0.5);
   return mix(vec3(luma(col)), col, 1.15);
 }`;
 
@@ -664,7 +668,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -692,6 +696,8 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   gl.uniform1f(gl.getUniformLocation(program, 'uScale'), scale);
   gl.uniform1f(gl.getUniformLocation(program, 'uTime'), time);
   // structuralSeed spans 0-1e6; wrapped so the hash noise keeps float precision.
+  gl.uniform1f(gl.getUniformLocation(program, 'uA'), fieldShapeA ?? 1);
+  gl.uniform1f(gl.getUniformLocation(program, 'uB'), fieldShapeB ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uMids'), audio ? Math.min(1, audioMidsLevel / 5) : 0);
