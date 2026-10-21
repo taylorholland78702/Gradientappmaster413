@@ -255,15 +255,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   // Custom Style Presets — user-saved snapshots of the current live
   // settings, persisted locally (see saveCustomPresets above).
   const [customPresets, setCustomPresets] = useState<CustomAudioStylePreset[]>(() => loadCustomPresets());
-  // No blank/placeholder option in the dropdown (see below), so a native
-  // <select> always shows some real option — defaulting to whatever's
-  // alphabetically first. Matching that here keeps this state in sync with
-  // what's actually displayed without needing an onChange to fire first;
-  // it does NOT apply that preset's settings, just labels the dropdown
-  // consistently with its own default rendering.
-  const [selectedPresetName, setSelectedPresetName] = useState(
-    () => [...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name))[0]?.name ?? ''
-  );
+  // Which preset chip is lit. Empty until one is picked (or Shuffle Audio lands on one):
+  // nothing is applied on load, so no chip should claim to be.
+  const [selectedPresetName, setSelectedPresetName] = useState('');
   const [isNamingPreset, setIsNamingPreset] = useState(false);
   const [presetNameDraft, setPresetNameDraft] = useState('');
 
@@ -332,8 +326,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     }
   };
 
-  const handleStylePresetSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const name = e.target.value;
+  const handleStylePresetPick = (name: string) => {
     setSelectedPresetName(name);
     const preset = AUDIO_STYLE_PRESETS.find(p => p.name === name) ?? customPresets.find(p => p.name === name);
     if (preset) applyStylePreset(preset);
@@ -462,26 +455,34 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 curated and read-only; anything the user saves shows up
                 under Custom, with Update/Delete once selected. Shuffle
                 sits inline as an icon-only button, top-right. */}
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedPresetName}
-                onChange={handleStylePresetSelect}
-                title="Apply a curated starting point for a kind of audio/music"
-                className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
-              >
-                <optgroup label="Built-in">
-                  {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                    <option key={preset.name} value={preset.name} title={preset.title}>{preset.name}</option>
+            <div className="flex flex-col gap-1">
+              <div className="flex flex-wrap gap-1" role="group" aria-label="Built-in style presets">
+                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => handleStylePresetPick(preset.name)}
+                    aria-pressed={selectedPresetName === preset.name}
+                    title={preset.title}
+                    className={`px-2 py-1 text-[10px] border transition-all ${selectedPresetName === preset.name ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                  >{preset.name}</button>
+                ))}
+              </div>
+              {customPresets.length > 0 && (
+                <div className="flex flex-wrap gap-1 items-center" role="group" aria-label="Your saved style presets">
+                  <span className="text-[10px] text-white/50">Yours</span>
+                  {[...customPresets].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
+                    <button
+                      key={preset.name}
+                      onClick={() => handleStylePresetPick(preset.name)}
+                      aria-pressed={selectedPresetName === preset.name}
+                      className={`px-2 py-1 text-[10px] border transition-all ${selectedPresetName === preset.name ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                    >{preset.name}</button>
                   ))}
-                </optgroup>
-                {customPresets.length > 0 && (
-                  <optgroup label="Custom">
-                    {[...customPresets].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                      <option key={preset.name} value={preset.name}>{preset.name}</option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex-1 text-[10px] text-white/60">Style</span>
               {selectedCustomPreset ? (
                 <>
                   <button
