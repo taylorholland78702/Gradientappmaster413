@@ -465,6 +465,36 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
           </div>
         )}
+        {/* Finishing — exposure in stops, then a tone curve. Every gradient has it: the
+            styled ones apply it inside their shaders, the rest through a GPU pass right
+            after the gradient is drawn. */}
+        <div className="w-full flex flex-col gap-2 px-1.5 py-1">
+          <div className="flex items-center justify-between" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve">
+            <label className="text-[10px] text-white w-20 shrink-0">Exposure:</label>
+            <div className="flex items-center gap-1 flex-1 ml-2">
+              <input type="range" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Number(e.target.value))} className="flex-1" />
+              <input type="number" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Math.max(-2, Math.min(2, Number(e.target.value) || 0)))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] text-white w-20 shrink-0">Tone:</label>
+            <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Tone mapping">
+              {([
+                { id: 'off', label: 'Off', hint: 'Plain clamp — the original look' },
+                { id: 'aces', label: 'ACES', hint: 'Filmic curve: deeper contrast, bright areas roll off instead of clipping' },
+                { id: 'soft', label: 'Soft', hint: 'Gentle shoulder: lifts shadows a little and compresses highlights' },
+              ] as const).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setFieldTone(t.id)}
+                  aria-pressed={fieldTone === t.id}
+                  title={t.hint}
+                  className={`flex-1 text-[10px] py-1 transition-all ${fieldTone === t.id ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                >{t.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
         {/* Seed — the pattern-structure number the gradients above hash into their
             layout (cell positions, vein paths, blob phases). Audio drops bump it, and
             it's saved with presets, but until now there was no way to see or set it. */}
@@ -710,33 +740,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 </div>
               </div>
             ))}
-            {/* Finishing: exposure in stops, then a tone curve, applied inside the shader
-                before the color is clamped for output. */}
-            <div className="flex items-center justify-between" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve">
-              <label className="text-[10px] text-white w-20 shrink-0">Exposure:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Number(e.target.value))} className="flex-1" />
-                <input type="number" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Math.max(-2, Math.min(2, Number(e.target.value) || 0)))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white w-20 shrink-0">Tone:</label>
-              <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Tone mapping">
-                {([
-                  { id: 'off', label: 'Off', hint: 'Plain clamp — the original look' },
-                  { id: 'aces', label: 'ACES', hint: 'Filmic curve: deeper contrast, bright areas roll off instead of clipping' },
-                  { id: 'soft', label: 'Soft', hint: 'Gentle shoulder: lifts shadows a little and compresses highlights' },
-                ] as const).map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setFieldTone(t.id)}
-                    aria-pressed={fieldTone === t.id}
-                    title={t.hint}
-                    className={`flex-1 text-[10px] py-1 transition-all ${fieldTone === t.id ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
-                  >{t.label}</button>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 

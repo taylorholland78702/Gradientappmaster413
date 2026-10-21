@@ -637,7 +637,10 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   v += sin((q.x + q.y) * 1.1 + t * 0.22);
   v += sin(length(q + vec2(sin(t * 0.17), cos(t * 0.13)) * 1.5) * 2.2 - t * 0.4);
   float k = 0.5 + 0.5 * sin(v * 0.9 * uB + uBass * 0.6);
-  return getMappedColor(k);
+  // Push toward the palette's ends: a plain sine spends most of its time near the
+  // middle, which averages a varied palette into one muddy tone.
+  k = mix(k, smoothstep(0.05, 0.95, k), 0.5);
+  return getMappedColor(k) * (0.88 + 0.24 * sin(v * 0.5 + t * 0.1));
 }`;
 
 // One wide ribbon bending across the frame, shaded across its width with the
@@ -694,24 +697,33 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 const EMBERS = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   vec2 c = cpos();
-  vec3 acc = getMappedColor(0.0) * 0.08;
-  acc += getMappedColor(0.35) * 0.28 * pow(max(uv.y, 0.0), 3.0);
+  // uv.y is 1 at the bottom of the frame: heat is highest there and fades as sparks rise.
+  float heat = clamp(uv.y, 0.0, 1.0);
+  vec3 acc = getMappedColor(0.0) * 0.07;
+  acc += getMappedColor(0.30) * 0.34 * pow(heat, 3.2);
   for (int L = 0; L < 3; L++) {
     float fl = float(L);
-    vec2 q = c * (1.1 + 0.7 * fl) * uB;
-    q.y -= t * (0.25 + 0.12 * fl);
+    vec2 q = c * (1.5 + 0.9 * fl) * uB;
+    q.y -= t * (0.30 + 0.16 * fl);
     q += fl * 5.7;
     vec2 id = floor(q);
     for (int j = -1; j <= 1; j++) {
       for (int i = -1; i <= 1; i++) {
         vec2 cell = id + vec2(float(i), float(j));
         vec2 rnd = hash22(cell + fl * 17.0);
-        vec2 cc = cell + 0.2 + 0.6 * rnd + vec2(0.25 * sin(t * 0.7 + rnd.x * 6.28), 0.0);
-        float d = length(q - cc);
-        float r = (0.05 + 0.07 * rnd.y) * uA;
-        float flick = 0.6 + 0.4 * sin(t * 2.0 + rnd.x * 40.0);
-        float g = exp(-pow(d / r, 2.0)) * flick * step(0.35, rnd.x);
-        acc += getMappedColor(0.55 + 0.45 * rnd.y) * g * 1.35 * (1.0 + uTreble * 0.5);
+        if (rnd.x < 0.42) continue;
+        vec2 cc = cell + 0.2 + 0.6 * rnd + vec2(0.22 * sin(t * 0.8 + rnd.x * 6.28 + q.y * 0.6), 0.0);
+        vec2 dv = q - cc;
+        // Stretched along the rise so each spark leaves a short streak.
+        float d = length(vec2(dv.x, dv.y * 0.55));
+        float r = (0.035 + 0.045 * rnd.y) * uA;
+        float flick = 0.55 + 0.45 * sin(t * 2.4 + rnd.x * 40.0);
+        float core = exp(-pow(d / r, 2.0));
+        float halo = 0.22 * exp(-pow(d / (r * 3.2), 2.0));
+        float life = 0.35 + 0.65 * heat;
+        // Hot, bright sparks low in the frame cool toward the palette's early colors as they rise.
+        vec3 sc = getMappedColor(clamp(0.30 + 0.65 * (heat * 0.75 + rnd.y * 0.25), 0.0, 1.0));
+        acc += sc * (core * 1.5 + halo) * flick * life * (1.0 + uTreble * 0.5);
       }
     }
   }

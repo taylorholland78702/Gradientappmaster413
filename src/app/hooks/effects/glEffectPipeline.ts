@@ -76,8 +76,11 @@ export function runGLEffectChain(
   ctx: CanvasRenderingContext2D,
   displayWidth: number,
   displayHeight: number,
+  // A run of one stage normally isn't worth pipelining (a lone effect already
+  // pays one upload and one blit); the tone pass has no standalone path, so it asks for 1.
+  minStages = 2,
 ): boolean {
-  if (stages.length < 2) return false;
+  if (stages.length < minStages) return false;
   try {
     const { gl, canvas: glCanvas } = getSharedEffectGL(displayWidth, displayHeight);
     const [targetA, targetB] = getPingPongTargets(gl, glCanvas.width, glCanvas.height);
