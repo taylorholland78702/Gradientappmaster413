@@ -9,10 +9,13 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
 
 // One-click starting points for common audio/music styles — set the base
 // response shape (sensitivity, per-band multipliers, beat-sync, FX on
-// beat); deliberately leaves Modulation bindings untouched since those are
-// a more advanced, user-curated layer on top of this base shape.
+// beat). Modulation bindings are optional: the built-ins leave them
+// untouched (bindings are keyed to a specific gradient's sliders, so a
+// shipped set would do nothing on most gradients), while presets the user
+// saves capture their bindings and put them back when applied.
 interface AudioStylePreset {
   name: string;
+  bindings?: Omit<AudioBinding, 'id'>[];
   title: string;
   masterSensitivity: number;
   autoGainEnabled: boolean;
@@ -29,6 +32,14 @@ interface AudioStylePreset {
   contrastBeatEnabled: boolean;
   paletteBeatEnabled: boolean;
 }
+
+// One-tap bindings for the active gradient's shared Scale / Speed.
+const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBinding['band']; amount: number }[] = [
+  { label: 'Scale ← Bass', target: 'scale', band: 'sub', amount: 0.6 },
+  { label: 'Scale ← Energy', target: 'scale', band: 'energy', amount: 0.5 },
+  { label: 'Speed ← Mids', target: 'speed', band: 'mids', amount: 1 },
+  { label: 'Speed ← Treble', target: 'speed', band: 'treble', amount: 1.2 },
+];
 
 const AUDIO_STYLE_PRESETS: AudioStylePreset[] = [
   {
@@ -185,6 +196,8 @@ export interface AudioPanelState {
   contrastBeatEnabled: boolean;
   paletteBeatEnabled: boolean;
   audioBindings: AudioBinding[];
+  // The active gradient's own Scale/Speed modulation keys (styled gradients), for the quick-bind chips.
+  quickBindKeys: { scale: string; speed: string } | null;
 }
 
 export interface AudioPanelActions {
@@ -228,7 +241,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
-    audioBindings,
+    audioBindings, quickBindKeys,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
   } = state;
 
@@ -264,6 +277,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     subBassMultiplier, bassMultiplier, midsMultiplier, trebleMultiplier,
     subBassBeatSync, bassBeatSync, midsBeatSync, trebleBeatSync,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+    bindings: audioBindings.map(({ param, band, amount }) => ({ param, band, amount })),
   });
 
   const confirmSaveNewPreset = () => {
@@ -311,6 +325,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setShakeBeatEnabled(preset.shakeBeatEnabled);
     setContrastBeatEnabled(preset.contrastBeatEnabled);
     setPaletteBeatEnabled(preset.paletteBeatEnabled);
+    // Presets saved before bindings were captured have none stored, and keep
+    // whatever is bound now; an explicit (even empty) list replaces it.
+    if (preset.bindings) {
+      setAudioBindings(preset.bindings.map(b => ({ ...b, id: `${Date.now()}-${Math.random()}` })));
+    }
   };
 
   const handleStylePresetSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -648,6 +667,30 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                  every entry in MODULATABLE_PARAMS works without a bind-icon
                  on each individual slider row. */
               <div className="flex flex-col gap-2">
+                {quickBindKeys && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-white/60">Quick bind for this gradient</span>
+                    <div className="flex flex-wrap gap-1">
+                      {QUICK_BINDS.map(q => {
+                        const param = quickBindKeys[q.target];
+                        const existing = audioBindings.find(b => b.param === param && b.band === q.band);
+                        return (
+                          <button
+                            key={q.label}
+                            onClick={() => setAudioBindings(prev => existing
+                              ? prev.filter(x => x.id !== existing.id)
+                              : [...prev, { id: `${Date.now()}-${Math.random()}`, param, band: q.band, amount: q.amount }])}
+                            aria-pressed={!!existing}
+                            title={`${existing ? 'Remove' : 'Add'} a binding: ${q.label}`}
+                            className={`px-2 py-1 text-[10px] border transition-all ${existing ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                          >
+                            {q.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {audioBindings.length > 0 && (
                   <div className="flex flex-col gap-2 mb-1">
                     {audioBindings.map((b) => {

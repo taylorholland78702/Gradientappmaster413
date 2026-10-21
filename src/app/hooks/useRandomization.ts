@@ -905,6 +905,9 @@ export function useRandomization(params: RandomizationParams) {
     // known to read well, and the resampled palette keeps Auto Shuffle easing
     // instead of snapping when the Look has a different colour count.
     if (!usePreferences) {
+      // New pattern layout too — Seed now has a visible control, and a shuffle
+      // that kept the old one would hand back the same cells/veins every time.
+      setStructuralSeed(Math.floor(Math.random() * 1000000));
       setPaletteStops(null);
       setPaletteBias(0.5);
       setPaletteSharp(0);
@@ -922,7 +925,7 @@ export function useRandomization(params: RandomizationParams) {
     if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp, setStructuralSeed]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }

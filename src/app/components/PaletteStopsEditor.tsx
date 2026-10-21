@@ -22,6 +22,20 @@ export interface PaletteStopsEditorProps {
   onBeforeChange?: () => void;
 }
 
+// One-tap shapes for where the stops sit and how hard the blends are. Easing
+// curves bunch the colors toward one end; the blend chips set Sharpness.
+const STOP_EASES: { label: string; hint: string; f: (t: number) => number }[] = [
+  { label: 'Even', hint: 'Evenly spaced', f: t => t },
+  { label: 'Ease in', hint: 'Colors bunch toward the start', f: t => t * t },
+  { label: 'Ease out', hint: 'Colors bunch toward the end', f: t => 1 - (1 - t) * (1 - t) },
+  { label: 'Ease in-out', hint: 'Colors bunch toward both ends', f: t => t * t * (3 - 2 * t) },
+];
+const BLEND_SHAPES: { label: string; hint: string; sharp: number }[] = [
+  { label: 'Soft', hint: 'Smooth blends (Sharpness 0)', sharp: 0 },
+  { label: 'Crisp', hint: 'Tighter transitions (Sharpness 0.6)', sharp: 0.6 },
+  { label: 'Banded', hint: 'Hard bands (Sharpness 1)', sharp: 1 },
+];
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
@@ -76,6 +90,16 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
     setSharp(DEFAULT_PALETTE_SHARP);
   };
 
+  const easeStops = (f: (t: number) => number) => {
+    onBeforeChange?.();
+    setStops(n < 2 ? null : Array.from({ length: n }, (_, i) => f(i / (n - 1))));
+  };
+  const matchesEase = (f: (t: number) => number) =>
+    n >= 2 && current.every((v, i) => Math.abs(v - f(i / (n - 1))) < 0.005);
+
+  const chip = (active: boolean) =>
+    `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`;
+
   const sliderRow = (label: string, value: number, set: (v: number) => void, hint: string) => (
     <div className="flex items-center justify-between" title={hint}>
       <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
@@ -118,6 +142,23 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
             />
           ))}
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1 px-2 mt-1" role="group" aria-label="Stop spacing">
+        {STOP_EASES.map(e => (
+          <button key={e.label} onClick={() => easeStops(e.f)} aria-pressed={matchesEase(e.f)} title={e.hint} className={chip(matchesEase(e.f))}>{e.label}</button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-1 px-2 mt-1" role="group" aria-label="Blend hardness">
+        {BLEND_SHAPES.map(b => (
+          <button
+            key={b.label}
+            onClick={() => { onBeforeChange?.(); setSharp(b.sharp); }}
+            aria-pressed={Math.abs(sharp - b.sharp) < 0.02}
+            title={b.hint}
+            className={chip(Math.abs(sharp - b.sharp) < 0.02)}
+          >{b.label}</button>
+        ))}
       </div>
 
       <div className="flex flex-col gap-2 mt-1">

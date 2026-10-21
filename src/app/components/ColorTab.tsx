@@ -1,13 +1,15 @@
 import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
-import { rgbToHex, hexToRgb, type ColorBlend } from '../utils/color';
+import { rgbToHex, hexToRgb, samplePalette, type ColorBlend } from '../utils/color';
+import { PALETTE_PRESETS, type PalettePreset } from '../constants/palettePresets';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
 // swatch row from growing unboundedly if someone just holds down +.
 const MIN_PALETTE_COLORS = 2;
 const MAX_PALETTE_COLORS = 10;
+const COUNT_CHOICES = [2, 3, 4, 5, 6];
 
 export interface ColorTabProps {
   saveCurrentState: () => void;
@@ -67,6 +69,25 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setColorsInstant([...gradientColors, randomColor()]);
   };
 
+  // Re-cut the current ramp into n evenly spaced colors, so changing the count
+  // keeps the palette's overall look instead of adding or dropping arbitrary ones.
+  const resampleTo = (n: number) => {
+    if (n === gradientColors.length) return;
+    saveCurrentState();
+    setColorsInstant(samplePalette(gradientColors, paletteStops, paletteBias, paletteSharp, colorBlend, n));
+    setPaletteStops(null);
+  };
+
+  const applyPalettePreset = (preset: PalettePreset) => {
+    saveCurrentState();
+    const colors = preset.colors.map(hexToRgb);
+    const n = gradientColors.length;
+    // Same length eases in; a different length is re-cut to fit and snaps (see setSwatch).
+    if (n === colors.length) setTargetColors(colors);
+    else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
+    setPaletteStops(null);
+  };
+
   const removeSwatch = (index: number) => {
     if (gradientColors.length <= MIN_PALETTE_COLORS) return;
     saveCurrentState();
@@ -84,6 +105,38 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         title="Shuffle Colors"
         aria-label="Shuffle Colors"
       ><Shuffle weight="regular" className="w-4 h-4" /></button>
+
+      <div className="w-full pt-2.5">
+        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palettes</label>
+        <div className="flex flex-wrap gap-1">
+          {PALETTE_PRESETS.map(p => (
+            <button
+              key={p.name}
+              onClick={() => applyPalettePreset(p)}
+              title={`Use the ${p.name} palette`}
+              className="flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+            >
+              <span aria-hidden="true" className="block w-6 h-3 border border-white/20" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
+              {p.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full pt-2.5">
+        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Colors</label>
+        <div className="flex gap-1" role="group" aria-label="Number of palette colors">
+          {COUNT_CHOICES.map(n => (
+            <button
+              key={n}
+              onClick={() => resampleTo(n)}
+              aria-pressed={gradientColors.length === n}
+              title={`Re-cut the palette to ${n} colors`}
+              className={`flex-1 text-[10px] py-1 transition-all ${gradientColors.length === n ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+            >{n}</button>
+          ))}
+        </div>
+      </div>
 
       {/* Manual swatch picker — one native color input per palette stop,
           bound directly to gradientColors[i] (rgbToHex/hexToRgb in

@@ -2012,6 +2012,19 @@ export function InteractiveGradient() {
             aria-label="Auto Shuffle interval in seconds"
           />
         </div>
+        <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
+          {[5, 15, 60, 300].map(sec => (
+            <button
+              key={sec}
+              onClick={() => setAutoShuffleIntervalSec(sec)}
+              aria-pressed={autoShuffleIntervalSec === sec}
+              className="flex-1 py-1 text-[10px] transition-all"
+              style={autoShuffleIntervalSec === sec
+                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
+                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+            >{formatAutoShuffleInterval(sec)}</button>
+          ))}
+        </div>
         <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
       </div>,
       document.body,
@@ -3786,7 +3799,7 @@ export function InteractiveGradient() {
   // useSnapshot.ts/useRandomization.ts already use for this exact problem.
   const controlDrawerTabProps = {
     // Color
-    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook,
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, structuralSeed, setStructuralSeed,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
@@ -3891,6 +3904,11 @@ export function InteractiveGradient() {
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
     audioBindings,
+    quickBindKeys: (() => {
+      // Styled gradients register '<camelId>Scale' / '<camelId>Speed' in MODULATABLE_PARAMS.
+      const id = gradientType.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+      return STYLE_FIELD_GRADIENT_TYPES.includes(gradientType) ? { scale: `${id}Scale`, speed: `${id}Speed` } : null;
+    })(),
   };
   const audioPanelActions = {
     setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,

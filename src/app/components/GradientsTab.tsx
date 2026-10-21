@@ -1,7 +1,15 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, GRADIENT_GROUPS, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
+import { hexToRgb } from '../utils/color';
+
+// Gradients whose layout hashes structuralSeed (the styled field shaders plus the
+// older ones that read it), so a Seed control means something for them.
+// A function, not a module constant: the import cycle through InteractiveGradient
+// can evaluate this file before gradientEffects has finished.
+const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic', 'wave-interference', 'mesh-wireframe'];
+const usesSeed = (t: GradientType) => SEEDED_EXTRA.includes(t) || STYLE_FIELD_GRADIENT_TYPES.includes(t);
 
 export interface GradientsTabProps {
   gradientType: GradientType;
@@ -132,6 +140,9 @@ export interface GradientsTabProps {
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
   // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
   applyGradientLook: (look: GradientLook) => void;
+  gradientColors: ColorRGB[];
+  structuralSeed: number;
+  setStructuralSeed: (v: number) => void;
 
   // Wave Interference
   waveInterferenceSourceCount: number; setWaveInterferenceSourceCount: (v: number) => void;
@@ -242,7 +253,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, applyGradientLook,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, applyGradientLook, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -334,6 +345,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     </div>
   );
 
+  const [gradientFilter, setGradientFilter] = React.useState('all');
+  // Most recently selected first, newest 8; kept for the session only.
+  const [recentGradients, setRecentGradients] = React.useState<GradientType[]>([]);
+  React.useEffect(() => {
+    setRecentGradients(prev => [gradientType, ...prev.filter(t => t !== gradientType)].slice(0, 8));
+  }, [gradientType]);
+
   return (
     <>
 
@@ -348,12 +366,28 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             title="Shuffle Gradient Type"
             aria-label="Shuffle Gradient Type"
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
+          {/* Filter chips — the flat list is 49 long; narrow it by feel, or to the
+              ones used most recently. The selected gradient stays reachable by
+              clearing the filter. */}
+          <div className="flex flex-wrap gap-1 px-1.5 py-1.5 border-b border-white/50" role="group" aria-label="Filter gradients">
+            {[{ id: 'all', label: 'All' }, { id: 'recent', label: 'Recent' }, ...GRADIENT_GROUPS].map(g => (
+              <button
+                key={g.id}
+                onClick={() => setGradientFilter(g.id)}
+                aria-pressed={gradientFilter === g.id}
+                className={`px-2 py-0.5 text-[10px] border transition-all ${gradientFilter === g.id ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+              >{g.label}</button>
+            ))}
+          </div>
           {(() => {
             const COLS = 2;
-            const rows = Math.ceil(FULL_GRADIENT_TYPES.length / COLS);
+            const shown: GradientType[] = gradientFilter === 'all' ? FULL_GRADIENT_TYPES
+              : gradientFilter === 'recent' ? recentGradients.filter(t => FULL_GRADIENT_TYPES.includes(t))
+              : (GRADIENT_GROUPS.find(g => g.id === gradientFilter)?.types ?? FULL_GRADIENT_TYPES);
+            const rows = Math.max(1, Math.ceil(shown.length / COLS));
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
-                {FULL_GRADIENT_TYPES.map((type, i) => {
+                {shown.map((type, i) => {
                   const columnIndex = Math.floor(i / rows);
                   const isLastColumn = columnIndex === COLS - 1;
                   return (
@@ -374,6 +408,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </div>
             );
           })()}
+          {gradientFilter === 'recent' && recentGradients.length === 0 && (
+            <p className="px-1.5 py-2 text-[10px] text-white/50">Gradients you pick show up here.</p>
+          )}
         </div>
 
         {/* Auto-rotate direction — shared across most gradient types
@@ -409,12 +446,31 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-1 px-1.5 py-1">
             <label className="text-[10px] text-white/80 font-medium">Looks</label>
             <div className="flex flex-wrap gap-1">
-              {GRADIENT_LOOKS[gradientType]!.map((look) => (
+              {(() => {
+                // A Look reads as active while the palette is near its colors. Auto
+                // color drifts the palette slowly, so it's the closest Look within a
+                // loose tolerance rather than an exact match.
+                const looks = GRADIENT_LOOKS[gradientType]!;
+                const distance = (look: GradientLook) => {
+                  if (look.colors.length !== gradientColors.length) return Infinity;
+                  let sum = 0;
+                  look.colors.forEach((hex, i) => {
+                    const c = hexToRgb(hex), g = gradientColors[i];
+                    sum += Math.abs(c.r - g.r) + Math.abs(c.g - g.g) + Math.abs(c.b - g.b);
+                  });
+                  return sum / (look.colors.length * 3);
+                };
+                const best = looks.reduce((a, l) => (distance(l) < distance(a) ? l : a), looks[0]);
+                const activeLook = distance(best) < 45 ? best : null;
+                return looks.map((look) => {
+                const active = look === activeLook;
+                return (
                 <button
                   key={look.name}
                   onClick={() => applyGradientLook(look)}
+                  aria-pressed={active}
                   title={`Apply the ${look.name} look — sets the palette and its settings`}
-                  className="flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+                  className={`flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
                 >
                   <span
                     aria-hidden="true"
@@ -423,8 +479,37 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   />
                   {look.name}
                 </button>
-              ))}
+                );
+                });
+              })()}
             </div>
+          </div>
+        )}
+        {/* Seed — the pattern-structure number the gradients above hash into their
+            layout (cell positions, vein paths, blob phases). Audio drops bump it, and
+            it's saved with presets, but until now there was no way to see or set it. */}
+        {usesSeed(gradientType) && (
+          <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
+            <label htmlFor="structural-seed" className="text-[10px] text-white">Seed:</label>
+            <input
+              id="structural-seed"
+              type="number"
+              min={0}
+              max={999999}
+              value={Math.round(structuralSeed)}
+              onChange={(e) => {
+                const v = Math.floor(Number(e.target.value));
+                if (Number.isFinite(v)) setStructuralSeed(Math.min(999999, Math.max(0, v)));
+              }}
+              className="flex-1 min-w-0 px-1.5 py-0.5 text-[10px] text-white bg-black/25 border border-white/15 tabular-nums"
+            />
+            <button
+              onClick={() => setStructuralSeed(Math.floor(Math.random() * 1000000))}
+              title="Roll a new pattern layout"
+              className="px-2 py-0.5 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+            >
+              Reroll
+            </button>
           </div>
         )}
         {gradientType === 'grid' && (
