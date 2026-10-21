@@ -192,13 +192,3 @@ export const AUDIO_GRADIENTS: GradientType[] = ['angle', 'attractor', 'aurora', 
 // rather than type-dependent — see the NO_DRAG_TYPES.includes(...) call
 // site, which adds that check inline.
 export const NO_DRAG_TYPES = ['windmill', 'flower', 'tiling'];
-
-// Groups for the Gradients tab's filter chips. Every FULL_GRADIENT_TYPES entry
-// belongs to exactly one (enforced by a test), so adding a gradient means
-// picking its group here.
-export const GRADIENT_GROUPS: { id: string; label: string; types: GradientType[] }[] = [
-  { id: 'glow', label: 'Glow', types: ['aurora', 'bokeh', 'curtains', 'eclipse', 'edge-glow', 'embers', 'light-beam', 'nebula', 'rays', 'spectral', 'tunnel', 'vortex'] },
-  { id: 'soft', label: 'Soft', types: ['angle', 'drape', 'fade', 'flow-mesh', 'glass', 'holographic', 'iridescent', 'marble', 'mercury', 'mesh', 'noise', 'plasma', 'prism', 'radial', 'ribbon', 'smoke', 'strands', 'waves'] },
-  { id: 'motion', label: 'Motion', types: ['attractor', 'caustics', 'lava-lamp', 'metaballs', 'particles', 'raindrops'] },
-  { id: 'pattern', label: 'Pattern', types: ['bands', 'contour', 'flower', 'grid', 'halftone-screen', 'hatch', 'julia', 'mesh-wireframe', 'radial-burst', 'reaction-diffusion', 'shapes', 'stack', 'tiling', 'topographic', 'truchet', 'voronoi', 'wave-interference', 'windmill'] },
-];

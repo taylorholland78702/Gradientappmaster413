@@ -145,11 +145,29 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     setColorsInstant(gradientColors.filter((_, i) => i !== index));
   };
 
+  const [startFrom, setStartFrom] = React.useState<'palettes' | 'moods' | 'image'>('palettes');
+
+  const adjustRows: { label: string; value: number; set: (v: number) => void; min: number; max: number }[] = [
+    { label: 'Hue', value: paletteHue, set: setPaletteHue, min: -180, max: 180 },
+    { label: 'Saturation', value: paletteSaturation, set: setPaletteSaturation, min: 30, max: 200 },
+    // Brightness/Contrast ranges narrowed from ±100 — adjustPalette's math
+    // compounds the two (contrast scales the brightness offset too), so pushing
+    // both toward the same sign near ±100 blew the whole palette out to solid
+    // black/white well before either slider hit its own end. ±25 keeps real
+    // range of motion while staying inside the region where a varied palette
+    // never fully clips (see adjustPalette's own defensive clamp).
+    { label: 'Brightness', value: paletteBrightness, set: setPaletteBrightness, min: -25, max: 25 },
+    { label: 'Contrast', value: paletteContrast, set: setPaletteContrast, min: -25, max: 25 },
+  ];
+
+  const chip = (active: boolean) =>
+    `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`;
+
   return (
     <>
       {/* Icon-only, full-width, same treatment as the Gradients tab's own
-          Shuffle button (border-b doubling as the divider before Palette
-          below it). No separate Play/Pause auto-color toggle any more. */}
+          Shuffle button (border-b doubling as the divider before the first
+          section below it). */}
       <button
         onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
         className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
@@ -157,67 +175,23 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         aria-label="Shuffle Colors"
       ><Shuffle weight="regular" className="w-4 h-4" /></button>
 
-      <div className="w-full pt-2.5">
-        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palettes</label>
-        <div className="flex flex-wrap gap-1">
-          {PALETTE_PRESETS.map(p => (
-            <button
-              key={p.name}
-              onClick={() => applyPalettePreset(p)}
-              title={`Use the ${p.name} palette`}
-              className="flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
-            >
-              <span aria-hidden="true" className="block w-6 h-3 border border-white/20" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
-              {p.name}
-            </button>
-          ))}
+      {/* Your palette: the swatches themselves (one native color input each,
+          bound to gradientColors[i]) and how many there are. */}
+      <section className="w-full px-1.5 flex flex-col gap-2" aria-label="Palette">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] text-white/80 font-medium">Palette</h3>
+          <div className="flex gap-0.5" role="group" aria-label="Number of palette colors">
+            {COUNT_CHOICES.map(n => (
+              <button
+                key={n}
+                onClick={() => resampleTo(n)}
+                aria-pressed={gradientColors.length === n}
+                title={`Re-cut the palette to ${n} colors`}
+                className={`w-5 h-5 text-[10px] transition-all ${gradientColors.length === n ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+              >{n}</button>
+            ))}
+          </div>
         </div>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { paletteFromImage(e.target.files?.[0]); e.target.value = ''; }} />
-        <button
-          onClick={() => fileRef.current?.click()}
-          title="Use the dominant colors of an image as the palette"
-          className="mt-1 px-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
-        >From image…</button>
-        {imageError && <p role="alert" className="mt-1 text-[10px] text-red-300">{imageError}</p>}
-      </div>
-
-      <div className="w-full pt-2.5">
-        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Moods</label>
-        <div className="flex flex-wrap gap-1">
-          {WAV_MOODS.map(m => (
-            <button
-              key={m.name}
-              onClick={() => applyMood(m)}
-              title={`A new ${m.name} palette`}
-              className="px-2 py-1 text-[10px] capitalize text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
-            >{m.name}</button>
-          ))}
-        </div>
-      </div>
-
-      <div className="w-full pt-2.5">
-        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Colors</label>
-        <div className="flex gap-1" role="group" aria-label="Number of palette colors">
-          {COUNT_CHOICES.map(n => (
-            <button
-              key={n}
-              onClick={() => resampleTo(n)}
-              aria-pressed={gradientColors.length === n}
-              title={`Re-cut the palette to ${n} colors`}
-              className={`flex-1 text-[10px] py-1 transition-all ${gradientColors.length === n ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
-            >{n}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* Manual swatch picker — one native color input per palette stop,
-          bound directly to gradientColors[i] (rgbToHex/hexToRgb in
-          utils/color.ts). The only way to set an exact color before this;
-          Shuffle only randomizes and Adjustments only shifts the whole
-          palette uniformly. Square (not rounded) and small so a full
-          palette fits inside the drawer without wrapping awkwardly. */}
-      <div className="w-full pt-2.5">
-        <label className="text-[10px] text-white/80 font-medium block mb-1.5">Palette</label>
         <div className="flex flex-wrap gap-1">
           {gradientColors.map((c, i) => (
             <div key={i} className="relative">
@@ -249,7 +223,64 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
             ><Plus weight="bold" className="w-3 h-3" /></button>
           )}
         </div>
-      </div>
+      </section>
+
+      {/* Ways to fill the palette: curated sets, a fresh take on a mood, or a
+          photo's colors. One at a time so the tab isn't a wall of chips. */}
+      <section className="w-full px-1.5 pt-2.5 border-t border-white/15 flex flex-col gap-2" aria-label="Start from">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] text-white/80 font-medium">Start from</h3>
+          <div className="flex gap-0.5" role="group" aria-label="Palette source">
+            {([['palettes', 'Palettes'], ['moods', 'Moods'], ['image', 'Image']] as const).map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setStartFrom(id)}
+                aria-pressed={startFrom === id}
+                className={`px-1.5 h-5 text-[10px] transition-all ${startFrom === id ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+              >{label}</button>
+            ))}
+          </div>
+        </div>
+        {startFrom === 'palettes' && (
+          <div className="grid grid-cols-2 gap-1">
+            {PALETTE_PRESETS.map(p => (
+              <button
+                key={p.name}
+                onClick={() => applyPalettePreset(p)}
+                title={`Use the ${p.name} palette`}
+                className="flex flex-col gap-1 p-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all text-left"
+              >
+                <span aria-hidden="true" className="block w-full h-3" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
+                {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {startFrom === 'moods' && (
+          <div className="flex flex-wrap gap-1">
+            {WAV_MOODS.map(m => (
+              <button
+                key={m.name}
+                onClick={() => applyMood(m)}
+                title={`A new ${m.name} palette — tap again for another take`}
+                className="px-2 py-1 text-[10px] capitalize text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+              >{m.name}</button>
+            ))}
+          </div>
+        )}
+        {startFrom === 'image' && (
+          <div className="flex flex-col gap-1">
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { paletteFromImage(e.target.files?.[0]); e.target.value = ''; }} />
+            <button
+              onClick={() => fileRef.current?.click()}
+              title="Use the dominant colors of an image as the palette"
+              className="px-2 py-2 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+            >Choose an image…</button>
+            <p className="text-[10px] text-white/50">Takes {gradientColors.length} dominant colors, dark to light. The image stays on your device.</p>
+            {imageError && <p role="alert" className="text-[10px] text-red-300">{imageError}</p>}
+          </div>
+        )}
+      </section>
 
       {/* Where each color sits along the ramp, plus Bias/Sharpness — a global
           reshaping of how every gradient samples the palette (see
@@ -266,76 +297,42 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         onBeforeChange={saveCurrentState}
       />
 
-      {/* Palette-wide adjustments — applied to the whole gradientColors
-          array at a single point (see adjustPalette in utils/color.ts),
-          so these work the same regardless of whether the palette came
-          from a theme/color keyword, shuffle, or manual pin edits. */}
-      <div className="w-full pt-2">
-        {isPaletteAdjusted && (
-          <div className="flex items-center justify-end mb-1.5">
+      {/* Blend space, then palette-wide adjustments — applied to the whole
+          gradientColors array at a single point (see adjustPalette in
+          utils/color.ts), so they work the same however the palette arrived. */}
+      <section className="w-full px-1.5 pt-2.5 border-t border-white/15 flex flex-col gap-2" aria-label="Blend and adjust">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] text-white/80 font-medium">Blend &amp; adjust</h3>
+          {isPaletteAdjusted && (
             <button
               onClick={() => { setPaletteHue(0); setPaletteSaturation(100); setPaletteBrightness(0); setPaletteContrast(0); }}
               className="text-[10px] text-white/50 hover:text-white transition-all"
             >Reset</button>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-[10px] text-white w-20 shrink-0">Blend:</label>
-          <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Color blend space">
-            {COLOR_BLEND_OPTIONS.map(({ value, label, hint }) => (
-              <button
-                key={value}
-                onClick={() => setColorBlend(value)}
-                aria-pressed={colorBlend === value}
-                title={hint}
-                className={`flex-1 text-[10px] py-1 transition-all ${
-                  colorBlend === value ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                }`}
-              >{label}</button>
-            ))}
-          </div>
+          )}
         </div>
-
+        <div className="flex gap-1" role="group" aria-label="Color blend space">
+          {COLOR_BLEND_OPTIONS.map(({ value, label, hint }) => (
+            <button
+              key={value}
+              onClick={() => setColorBlend(value)}
+              aria-pressed={colorBlend === value}
+              title={hint}
+              className={`flex-1 text-[10px] py-1 transition-all ${colorBlend === value ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+            >{label}</button>
+          ))}
+        </div>
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white w-20 shrink-0">Hue:</label>
-            <div className="flex items-center gap-1 flex-1 ml-2">
-              <input type="range" min="-180" max="180" value={paletteHue} onChange={(e) => setPaletteHue(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="-180" max="180" value={paletteHue} onChange={(e) => setPaletteHue(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+          {adjustRows.map(({ label, value, set, min, max }) => (
+            <div key={label} className="flex items-center justify-between">
+              <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min={min} max={max} value={value} onChange={(e) => set(Number(e.target.value))} className="flex-1" />
+                <input type="number" min={min} max={max} value={value} onChange={(e) => set(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white w-20 shrink-0">Saturation:</label>
-            <div className="flex items-center gap-1 flex-1 ml-2">
-              <input type="range" min="30" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="30" max="200" value={paletteSaturation} onChange={(e) => setPaletteSaturation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
-          </div>
-          {/* Brightness/Contrast ranges narrowed from ±100 — adjustPalette's
-              math compounds the two (contrast scales the brightness offset
-              too), so pushing both toward the same sign near ±100 blew the
-              whole palette out to solid black/white well before either
-              slider hit its own end. ±25 keeps real range of motion while
-              staying inside the region where a varied palette never fully
-              clips (see adjustPalette's own defensive clamp for the hard
-              floor/ceiling regardless of how a value got set). */}
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white w-20 shrink-0">Brightness:</label>
-            <div className="flex items-center gap-1 flex-1 ml-2">
-              <input type="range" min="-25" max="25" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="-25" max="25" value={paletteBrightness} onChange={(e) => setPaletteBrightness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
-            <div className="flex items-center gap-1 flex-1 ml-2">
-              <input type="range" min="-25" max="25" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="-25" max="25" value={paletteContrast} onChange={(e) => setPaletteContrast(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
     </>
   );
 };

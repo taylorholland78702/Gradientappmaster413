@@ -26,9 +26,9 @@ export interface PaletteStopsEditorProps {
 // curves bunch the colors toward one end; the blend chips set Sharpness.
 const STOP_EASES: { label: string; hint: string; f: (t: number) => number }[] = [
   { label: 'Even', hint: 'Evenly spaced', f: t => t },
-  { label: 'Ease in', hint: 'Colors bunch toward the start', f: t => t * t },
-  { label: 'Ease out', hint: 'Colors bunch toward the end', f: t => 1 - (1 - t) * (1 - t) },
-  { label: 'Ease in-out', hint: 'Colors bunch toward both ends', f: t => t * t * (3 - 2 * t) },
+  { label: 'In', hint: 'Ease in — colors bunch toward the start', f: t => t * t },
+  { label: 'Out', hint: 'Ease out — colors bunch toward the end', f: t => 1 - (1 - t) * (1 - t) },
+  { label: 'In-out', hint: 'Ease in-out — colors bunch toward both ends', f: t => t * t * (3 - 2 * t) },
 ];
 const BLEND_SHAPES: { label: string; hint: string; sharp: number }[] = [
   { label: 'Soft', hint: 'Smooth blends (Sharpness 0)', sharp: 0 },
@@ -111,9 +111,9 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   );
 
   return (
-    <div className="w-full pt-2.5">
+    <section className="w-full px-1.5 pt-2.5 border-t border-white/15" aria-label="Ramp">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-[10px] text-white/80 font-medium">Stops</label>
+        <h3 className="text-[10px] text-white/80 font-medium">Ramp</h3>
         {!isDefault && (
           <button onClick={reset} className="text-[10px] text-white/50 hover:text-white transition-all">Reset</button>
         )}
@@ -121,7 +121,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
 
       {/* Live preview of the exact ramp (Blend, Bias and Sharpness included),
           with one draggable handle per palette color underneath. */}
-      <div className="px-2">
+      <div className="px-[7px]">
         <div className="h-4 w-full border border-white/20" style={{ background }} aria-hidden="true" />
         <div ref={trackRef} className="relative h-5 w-full touch-none select-none">
           {current.map((pos, i) => (
@@ -144,12 +144,12 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1 px-2 mt-1" role="group" aria-label="Stop spacing">
+      <div className="flex flex-wrap gap-1 mt-1.5" role="group" aria-label="Stop spacing">
         {STOP_EASES.map(e => (
           <button key={e.label} onClick={() => easeStops(e.f)} aria-pressed={matchesEase(e.f)} title={e.hint} className={chip(matchesEase(e.f))}>{e.label}</button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-1 px-2 mt-1" role="group" aria-label="Blend hardness">
+      <div className="flex flex-wrap gap-1 mt-1" role="group" aria-label="Blend hardness">
         {BLEND_SHAPES.map(b => (
           <button
             key={b.label}
@@ -165,7 +165,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
         {sliderRow('Bias', bias, setBias, 'Slides the midpoint — higher gives more of the later colors, lower more of the earlier ones')}
         {sliderRow('Sharpness', sharp, setSharp, 'Tightens the blend between neighboring colors toward hard bands')}
       </div>
-    </div>
+    </section>
   );
 };
 

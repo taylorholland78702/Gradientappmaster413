@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, GRADIENT_GROUPS, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { hexToRgb } from '../utils/color';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
@@ -350,13 +350,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     </div>
   );
 
-  const [gradientFilter, setGradientFilter] = React.useState('all');
-  // Most recently selected first, newest 8; kept for the session only.
-  const [recentGradients, setRecentGradients] = React.useState<GradientType[]>([]);
-  React.useEffect(() => {
-    setRecentGradients(prev => [gradientType, ...prev.filter(t => t !== gradientType)].slice(0, 8));
-  }, [gradientType]);
-
   return (
     <>
 
@@ -371,25 +364,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             title="Shuffle Gradient Type"
             aria-label="Shuffle Gradient Type"
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
-          {/* Filter chips — the flat list is 49 long; narrow it by feel, or to the
-              ones used most recently. The selected gradient stays reachable by
-              clearing the filter. */}
-          <div className="flex flex-wrap gap-1 px-1.5 py-1.5 border-b border-white/50" role="group" aria-label="Filter gradients">
-            {[{ id: 'all', label: 'All' }, { id: 'recent', label: 'Recent' }, ...GRADIENT_GROUPS].map(g => (
-              <button
-                key={g.id}
-                onClick={() => setGradientFilter(g.id)}
-                aria-pressed={gradientFilter === g.id}
-                className={`px-2 py-0.5 text-[10px] border transition-all ${gradientFilter === g.id ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
-              >{g.label}</button>
-            ))}
-          </div>
           {(() => {
             const COLS = 2;
-            const shown: GradientType[] = gradientFilter === 'all' ? FULL_GRADIENT_TYPES
-              : gradientFilter === 'recent' ? recentGradients.filter(t => FULL_GRADIENT_TYPES.includes(t))
-              : (GRADIENT_GROUPS.find(g => g.id === gradientFilter)?.types ?? FULL_GRADIENT_TYPES);
-            const rows = Math.max(1, Math.ceil(shown.length / COLS));
+            const shown = FULL_GRADIENT_TYPES;
+            const rows = Math.ceil(shown.length / COLS);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
                 {shown.map((type, i) => {
@@ -413,9 +391,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </div>
             );
           })()}
-          {gradientFilter === 'recent' && recentGradients.length === 0 && (
-            <p className="px-1.5 py-2 text-[10px] text-white/50">Gradients you pick show up here.</p>
-          )}
         </div>
 
         {/* Auto-rotate direction — shared across most gradient types

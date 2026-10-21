@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES, AUDIO_GRADIENTS,
-  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_GROUPS,
+  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES,
 } from './gradientEffects';
 import { STYLE_FIELD_IDS } from '../hooks/gradients/drawStyleFieldGL';
 import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
@@ -127,14 +127,6 @@ describe('per-gradient looks', () => {
     for (const id of ['light-beam', 'edge-glow', 'curtains', 'eclipse', 'rays', 'vortex'] as const) {
       for (const l of GRADIENT_LOOKS[id] ?? []) expect(lum(l.colors[0]), `${id}/${l.name}`).toBeLessThan(0.1);
     }
-  });
-});
-
-describe('gradient filter groups', () => {
-  it('every selectable gradient is in exactly one group', () => {
-    const all = GRADIENT_GROUPS.flatMap(g => g.types);
-    expect(new Set(all).size).toBe(all.length);
-    expect([...all].sort()).toEqual([...FULL_GRADIENT_TYPES].sort());
   });
 });
 
