@@ -1,5 +1,7 @@
 // A family of WebGL2 "styled field" gradients — Smoke, Glass, Mesh, Mercury,
-// Contour, Tunnel, Nebula, Prism, Raindrops, Holographic, Waves, Halftone.
+// Contour, Tunnel, Nebula, Prism, Raindrops, Holographic, Waves, Halftone, and
+// the dark single-light looks (Light Beam, Edge Glow, Curtains, Eclipse, Rays,
+// Bokeh).
 // Each is a pure function of (position, time) rendered in one fragment pass
 // and colored through the shared palette machinery in glShared.ts
 // (getMappedColor: Contrast, Palette Mode/Bands, and the sRGB/OKLab/OKLCH
@@ -19,7 +21,8 @@ import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFi
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
-  | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen';
+  | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen'
+  | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -91,6 +94,24 @@ float fbm3(vec2 p) {
   return v;
 }
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+
+// Centered, aspect-correct, zoom-scaled position WITHOUT the structural-seed
+// offset that shade()'s p carries. The radial looks (Eclipse, Rays, Bokeh) use
+// this so their center follows the drag-to-move center instead of wandering
+// off with the seed.
+vec2 cpos() { return (vUv * uSize - uCenter) / uSize.y * uScale; }
+
+// Turns a 0..1+ light intensity into color for the dark, single-light looks:
+// near-black ground (the palette's first color, heavily darkened) rising
+// through the palette as intensity grows, with a hot near-white core at the
+// very top. Intensity above 1 is allowed and just burns toward white.
+vec3 lightRamp(float I) {
+  I = max(I, 0.0);
+  vec3 deep = getMappedColor(0.0) * 0.10;
+  vec3 c = getMappedColor(clamp(0.12 + 0.88 * I, 0.0, 1.0));
+  float k = smoothstep(0.0, 0.8, I);
+  return mix(deep, c, k) * (0.30 + 0.70 * smoothstep(0.0, 1.0, I)) + pow(clamp(I, 0.0, 1.5), 4.0) * 0.22;
+}
 `;
 
 const MAIN = `
@@ -368,6 +389,122 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(paper, ink, dotMask);
 }`;
 
+
+// A shaft of light from an off-screen source: a cone whose width grows with
+// distance, streaked by drifting noise across its width and fading with
+// distance, over a faint ambient wash.
+const LIGHT_BEAM = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float ang = 0.78 + 0.10 * sin(t * 0.14);
+  vec2 dir = vec2(cos(ang), sin(ang));
+  vec2 src = vec2(-2.4, -2.2);
+  vec2 d = c - src;
+  float along = dot(d, dir);
+  float perp = d.x * dir.y - d.y * dir.x;
+  float width = 0.30 + 0.20 * max(along, 0.0);
+  float core = exp(-pow(perp / width, 2.0)) * smoothstep(0.0, 1.2, along);
+  float streak = 0.72 + 0.28 * vnoise(vec2(perp * 5.0 / width, along * 0.5 - t * 0.18));
+  float fall = exp(-max(along - 1.5, 0.0) * 0.16);
+  float I = core * streak * fall * 1.15 * (1.0 + uBass * 0.45);
+  float halo = 0.10 * exp(-max(along, 0.0) * 0.12) * exp(-pow(perp / (width * 3.0), 2.0));
+  return lightRamp(I + halo);
+}`;
+
+// A glow welling up from the bottom edge, its crest rippled by slow noise.
+const EDGE_GLOW = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float fromBottom = 1.0 - uv.y;
+  float wob = (fbm3(vec2(c.x * 0.9, t * 0.10)) - 0.45) * 0.30;
+  float reach = 0.44 + uBass * 0.10;
+  // The +0.2 keeps the crest's zero point below the frame so the glow never
+  // clips to a flat saturated band at the very edge.
+  float I = exp(-pow(max(fromBottom + wob + 0.2, 0.0) / reach, 1.35));
+  I *= 0.88 + 0.12 * sin(c.x * 3.0 + t * 0.4);
+  I += 0.10 * exp(-pow(uv.y / 0.30, 1.6));
+  return lightRamp(I);
+}`;
+
+// Vertical folds of light rising from the bottom: two interfering sine
+// harmonics set where each fold crests, with fine vertical grain.
+const CURTAINS = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float x = c.x * 1.1;
+  float f1 = 0.5 + 0.5 * sin(x * 2.2 + 1.5 * sin(x * 1.1 + t * 0.15) + t * 0.20);
+  float f2 = 0.5 + 0.5 * sin(x * 4.6 - t * 0.25 + 2.0 * fbm3(vec2(x * 0.8, t * 0.05)));
+  float fold = mix(f1, f2, 0.30);
+  float fromBottom = 1.0 - uv.y;
+  float crest = 0.55 + 0.80 * fold + uBass * 0.15;
+  float I = (0.30 + 0.70 * fold) * smoothstep(crest, 0.0, fromBottom) * 0.70;
+  I += 0.10 * vnoise(vec2(x * 16.0, t * 0.3)) * smoothstep(0.9, 0.0, fromBottom);
+  I += 0.14 * exp(-pow(fromBottom / 0.22, 1.5));
+  return lightRamp(I);
+}`;
+
+// A dark disc ringed by a bright corona that swells brighter on one side and
+// slowly turns, with a soft halo bleeding outward.
+const ECLIPSE = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float r = length(c);
+  float a = atan(c.y, c.x);
+  float R = 0.82 + uBass * 0.05;
+  float side = 0.62 + 0.38 * cos(a - t * 0.12 - 0.8);
+  float ring = exp(-pow((r - R) / 0.075, 2.0));
+  float halo = exp(-max(r - R, 0.0) * 2.1) * 0.55 * smoothstep(R - 0.10, R + 0.05, r);
+  float rays = 0.88 + 0.12 * sin(a * 11.0 + t * 0.3 + 3.0 * vnoise(vec2(a * 2.0, t * 0.1)));
+  float I = (ring * 1.15 + halo * rays) * side;
+  float inner = smoothstep(R - 0.02, R - 0.25, r) * 0.05;
+  return lightRamp(I + inner);
+}`;
+
+// Light fanning out of a dark center: angular spokes (a coarse sine warped by
+// noise, plus a fine grain) darkening toward the middle, over a soft vertical
+// wash.
+const RAYS = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float r = length(c);
+  float a = atan(c.y, c.x);
+  float spokes = 0.5 + 0.5 * sin(a * 14.0 + t * 0.28 + 2.0 * vnoise(vec2(a * 3.0, t * 0.2)));
+  float grain = vnoise(vec2(a * 22.0, t * 0.15 + r * 0.4));
+  float ray = pow(mix(spokes, grain, 0.5), 2.0);
+  float reach = smoothstep(0.15, 1.8, r);
+  float I = (0.10 + 0.55 * reach) * (0.55 + 0.75 * ray) + 0.28 * uv.y + uBass * 0.12 * reach;
+  return lightRamp(I);
+}`;
+
+// Out-of-focus lights: three depth layers of soft discs drifting at different
+// speeds, each with a faintly brighter rim, additively blended over near-black.
+const BOKEH = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  vec3 acc = getMappedColor(0.0) * 0.10;
+  for (int L = 0; L < 3; L++) {
+    float fl = float(L);
+    float sz = 0.85 + 0.75 * fl;
+    vec2 q = c / sz + vec2(t * 0.022 * (1.0 + fl), t * 0.016) + fl * 7.3;
+    vec2 id = floor(q);
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec2 cell = id + vec2(float(i), float(j));
+        vec2 rnd = hash22(cell + fl * 13.0);
+        vec2 cc = cell + 0.2 + 0.6 * rnd + 0.15 * vec2(sin(t * 0.2 + rnd.x * 6.28), cos(t * 0.17 + rnd.y * 6.28));
+        float rad = 0.17 + 0.21 * hash21(cell * 1.7 + fl);
+        float d = length(q - cc);
+        float disc = smoothstep(rad, rad * 0.80, d);
+        float rim = smoothstep(rad * 0.68, rad, d) * smoothstep(rad + 0.025, rad, d);
+        float a = (0.42 + 0.50 * hash21(cell * 3.1)) * (1.0 - 0.20 * fl) * (1.0 + uBass * 0.5);
+        vec3 dc = getMappedColor(fract(hash21(cell * 5.3) * 0.9 + 0.05 * fl));
+        acc += dc * 1.25 * (disc * 0.55 + rim * 0.65) * a;
+      }
+    }
+  }
+  return acc;
+}`;
+
 const STYLE_BODIES: Record<StyleFieldId, string> = {
   smoke: SMOKE,
   glass: GLASS,
@@ -381,6 +518,12 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   holographic: HOLOGRAPHIC,
   waves: WAVES,
   'halftone-screen': HALFTONE,
+  'light-beam': LIGHT_BEAM,
+  'edge-glow': EDGE_GLOW,
+  curtains: CURTAINS,
+  eclipse: ECLIPSE,
+  rays: RAYS,
+  bokeh: BOKEH,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];
