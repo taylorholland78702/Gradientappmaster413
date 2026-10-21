@@ -1,7 +1,7 @@
 // A family of WebGL2 "styled field" gradients — Smoke, Glass, Mesh, Mercury,
 // Contour, Tunnel, Nebula, Prism, Raindrops, Holographic, Waves, Halftone, and
 // the dark single-light looks (Light Beam, Edge Glow, Curtains, Eclipse, Rays,
-// Bokeh).
+// Bokeh), plus Vortex, Spectral, Drape and Flow Mesh.
 // Each is a pure function of (position, time) rendered in one fragment pass
 // and colored through the shared palette machinery in glShared.ts
 // (getMappedColor: Contrast, Palette Mode/Bands, and the sRGB/OKLab/OKLCH
@@ -22,7 +22,8 @@ import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFi
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
   | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen'
-  | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh';
+  | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
+  | 'vortex' | 'spectral' | 'drape' | 'flow-mesh';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -505,6 +506,107 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return acc;
 }`;
 
+// A tilted glowing ring on black — an orbit seen at an angle — with bright
+// hotspots circling it, a thinner inner ring running the other way, and a soft
+// halo.
+const VORTEX = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  float rot = 0.30 + 0.14 * sin(t * 0.12);
+  float cs = cos(rot), sn = sin(rot);
+  vec2 q = vec2(cs * c.x + sn * c.y, -sn * c.x + cs * c.y);
+  q.y *= 1.75;
+  float r = length(q);
+  float a = atan(q.y, q.x);
+  float R = 1.32 + uBass * 0.07;
+  float ring = exp(-pow((r - R) / 0.12, 2.0));
+  float inner = exp(-pow((r - R * 0.80) / 0.055, 2.0)) * 0.50;
+  float hot = pow(0.5 + 0.5 * cos(a * 2.0 - t * 0.5 + 0.8 * sin(t * 0.2)), 2.5);
+  float hot2 = pow(0.5 + 0.5 * cos(a * 3.0 + t * 0.35), 3.0);
+  float halo = exp(-abs(r - R) * 2.0) * 0.30;
+  float I = ring * (0.28 + 0.95 * hot) + inner * (0.35 + 0.65 * hot2) + halo * (0.45 + 0.55 * hot);
+  return lightRamp(I);
+}`;
+
+// A rainbow dispersion arc sweeping out of a corner over a flat base: the
+// palette is sampled at a different position for each of R, G and B, so the arc
+// fringes like light split by glass.
+const SPECTRAL = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 c = cpos();
+  vec2 corner = vec2(-2.2, -1.7) + 0.12 * vec2(sin(t * 0.13), cos(t * 0.17));
+  float d = length(c - corner);
+  float D = 2.45 + 0.20 * sin(t * 0.18) + uBass * 0.12;
+  float band = exp(-pow((d - D) / 0.95, 2.0));
+  float ph = (d - D) * 0.42 + 0.5 + t * 0.02;
+  vec3 spec = vec3(
+    getMappedColor(fract(ph - 0.07)).r,
+    getMappedColor(fract(ph)).g,
+    getMappedColor(fract(ph + 0.07)).b);
+  vec3 base = getMappedColor(0.55) * 0.62;
+  float inner = smoothstep(D, D - 1.8, d) * 0.28;
+  vec3 col = mix(base, spec * 1.1, band);
+  return col + inner * getMappedColor(0.85) * 0.35;
+}`;
+
+// Soft fabric folds: a height field of crossing diagonal swells, lit from one
+// corner, mapped through the palette from shadow to highlight.
+const DRAPE = `
+float drapeH(vec2 p, float t) {
+  vec2 q = p * 0.75;
+  float h = 0.65 * sin(dot(q, vec2(0.9, 0.5)) * 1.7 + t * 0.16 + 1.1 * sin(dot(q, vec2(-0.3, 0.9)) * 1.1 - t * 0.10));
+  h += 0.22 * sin(dot(q, vec2(0.6, -0.8)) * 2.6 - t * 0.20 + 0.7 * fbm3(q * 0.5 + t * 0.03));
+  return h;
+}
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float e = 0.03;
+  float h = drapeH(p, t);
+  vec2 g = vec2(drapeH(p + vec2(e, 0.0), t) - h, drapeH(p + vec2(0.0, e), t) - h) / e;
+  vec3 n = normalize(vec3(-g * 0.85, 1.0));
+  vec3 L = normalize(vec3(-0.55, -0.45, 0.7));
+  float diff = dot(n, L);
+  // Shade within a narrow slice of the palette (so folds read as light and
+  // shadow, not as a rainbow), with the slice itself drifting slowly across it.
+  float drift = 0.5 + 0.22 * sin(t * 0.07 + dot(p, vec2(0.25, 0.15)));
+  float k = drift + 0.55 * (diff - 0.66) + 0.05 * h + uBass * 0.05;
+  vec3 col = getMappedColor(clamp(k, 0.0, 1.0));
+  vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
+  float sheen = pow(max(dot(n, H), 0.0), 22.0) * 0.20;
+  return col * (0.80 + 0.30 * diff) + sheen;
+}`;
+
+// A mesh gradient (one drifting color blob per palette color) whose lookup
+// coordinates are pushed around by a slow flow field, with a satin sheen
+// riding over the folds — like silk stretched over colored light.
+const FLOW_MESH = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  float asp = uSize.x / uSize.y;
+  vec2 q = (uv - 0.5) * vec2(asp, 1.0) / max(uScale * 0.33, 0.05) + 0.5 * vec2(asp, 1.0);
+  vec2 flow = vec2(fbm3(q * 1.1 + vec2(t * 0.05, 0.0)), fbm3(q * 1.1 + vec2(4.0, -t * 0.04))) - 0.5;
+  vec2 w = q + flow * 0.85;
+  vec3 acc = vec3(0.0);
+  float wsum = 0.0;
+  for (int i = 0; i < ${12}; i++) {
+    if (i >= uColorCount) break;
+    float fi = float(i);
+    vec2 h = hash22(vec2(fi * 7.13, 3.7 + uSeed * 0.01));
+    vec2 c = vec2(0.5 * asp, 0.5) + vec2(
+      sin(t * (0.09 + 0.14 * h.x) + fi * 2.399 + h.y * 6.28) * 0.46 * asp,
+      cos(t * (0.11 + 0.12 * h.y) + fi * 1.731 + h.x * 6.28) * 0.46);
+    float d = length(w - c);
+    float wt = pow(1.0 / (d * d + 0.012), 1.9);
+    vec3 col = uColors[i];
+    acc += wt * (uBlendMode == 0 ? col : rgbToOklab(col));
+    wsum += wt;
+  }
+  acc /= max(wsum, 1e-5);
+  vec3 base = uBlendMode == 0 ? acc : oklabToRgb(acc);
+  float fold = fbm3(w * 1.5 + vec2(t * 0.03, 0.0)) * 5.5 + t * 0.2;
+  float sat = pow(0.5 + 0.5 * sin(fold), 4.0);
+  vec3 col = base * (0.82 + 0.30 * sat) + sat * 0.14 * (1.0 + uBass * 0.5);
+  return mix(vec3(luma(col)), col, 1.15);
+}`;
+
 const STYLE_BODIES: Record<StyleFieldId, string> = {
   smoke: SMOKE,
   glass: GLASS,
@@ -524,6 +626,10 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   eclipse: ECLIPSE,
   rays: RAYS,
   bokeh: BOKEH,
+  vortex: VORTEX,
+  spectral: SPECTRAL,
+  drape: DRAPE,
+  'flow-mesh': FLOW_MESH,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];
