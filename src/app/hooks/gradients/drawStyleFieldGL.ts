@@ -651,8 +651,8 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float shade = 1.0 - d * d;
   float k = 0.5 + 0.5 * sin(p.x * 0.9 + y * 3.0 * uB + t * 0.3);
   vec3 bg = getMappedColor(0.0) * 0.30;
-  vec3 col = getMappedColor(k) * (0.55 + 0.75 * shade);
-  col += pow(max(shade, 0.0), 6.0) * 0.18 * (1.0 + uTreble * 0.5);
+  vec3 col = getMappedColor(k) * (0.50 + 0.50 * shade);
+  col += pow(max(shade, 0.0), 6.0) * 0.07 * (1.0 + uTreble * 0.5);
   return mix(bg, col, body);
 }`;
 
@@ -683,9 +683,9 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float film = h * 3.0 * uB + dot(p, vec2(0.20, 0.35)) + t * 0.04 + uBass * 0.08;
   vec3 col = vec3(
     getMappedColor(tri(film)).r,
-    getMappedColor(tri(film + 0.33)).g,
-    getMappedColor(tri(film + 0.66)).b);
-  col = mix(vec3(luma(col)), col, 1.30);
+    getMappedColor(tri(film + 0.10)).g,
+    getMappedColor(tri(film + 0.20)).b);
+  col = mix(vec3(luma(col)), col, 1.12);
   return col * (0.80 + 0.30 * h);
 }`;
 
@@ -723,7 +723,7 @@ const BANDS = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   float w = p.y * 0.8 + (0.25 * sin(p.x * 0.9 + t * 0.2) + 0.12 * sin(p.x * 2.1 - t * 0.27 + p.y)) * uA;
   float N = 6.0;
-  float s = (0.5 + 0.5 * sin(w * 1.4 + t * 0.05 + uBass * 0.4)) * N;
+  float s = abs(fract(w * 0.24 + t * 0.012 + uBass * 0.05) * 2.0 - 1.0) * N;
   float id = floor(s);
   float f = fract(s);
   float e = smoothstep(1.0 - 0.12 * uB, 1.0, f);

@@ -281,6 +281,9 @@ const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[] = [
 const EXPORT_MAX_EDGE = 8192;
 const EXPORT_MAX_PIXELS = 40_000_000;
 
+// Matches ControlDrawer's desktop scale, so popouts read at the same type size as the tabs.
+const POPOVER_SCALE = 1.3;
+
 type AutoShuffleScope = 'all' | 'gradient' | 'effects' | 'colors';
 const AUTO_SHUFFLE_SCOPES: { id: AutoShuffleScope; label: string; hint: string }[] = [
   { id: 'all', label: 'All', hint: 'A full remix each time' },
@@ -1961,6 +1964,9 @@ export function InteractiveGradient() {
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
   const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' = 'autoShuffle') => {
+    // Pressing the button of the popout that's already open closes it (the other
+    // button's popout swaps in instead of just closing).
+    if (autoShufflePopoverAnchor && popoverMode === mode) { setAutoShufflePopoverAnchor(null); return; }
     setPopoverMode(mode);
     // Its own popout now — opening it closes whatever tab drawer/About
     // panel happened to be open instead of stacking on top of it.
@@ -1983,12 +1989,11 @@ export function InteractiveGradient() {
       // The export popout is tall and its button sits near the bottom of the rail, so
       // it grows upward from the button's bottom edge instead of downward off-screen.
       if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 200 });
-      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 168 });
+      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 200 });
     }
   };
   const openExportPopover = (triggerEl?: HTMLElement | null) => {
-    if (autoShufflePopoverAnchor && popoverMode === 'export') setAutoShufflePopoverAnchor(null);
-    else openAutoShufflePopover(triggerEl, 'export');
+    openAutoShufflePopover(triggerEl, 'export');
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
   // closes whatever tab drawer/Auto Shuffle popover happened to be open
@@ -2040,16 +2045,19 @@ export function InteractiveGradient() {
         // Fixed flush to the rail now (like the drawer) instead of
         // floating free — square on the edge touching the rail, rounded
         // on the edge facing the canvas.
-        className="fixed z-50 shadow-sm p-3 flex flex-col gap-2 bg-black/75 rounded-none"
+        className="fixed z-50 shadow-sm bg-black/75 rounded-none"
         style={{
           top: autoShufflePopoverAnchor.top,
           bottom: autoShufflePopoverAnchor.bottom,
           left: autoShufflePopoverAnchor.left,
-          width: autoShufflePopoverAnchor.width,
+          width: isMobile ? autoShufflePopoverAnchor.width : autoShufflePopoverAnchor.width * POPOVER_SCALE,
           height: autoShufflePopoverAnchor.height,
           border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
+        {/* On desktop the tab drawers render at 1.3x (ControlDrawer's scale wrapper);
+            zoom gives this popout the same type size, with layout following it. */}
+        <div className="p-3 flex flex-col gap-2" style={isMobile ? undefined : { zoom: POPOVER_SCALE }}>
         {popoverMode === 'export' ? (<>
         <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save PNG</span>
         {([
@@ -2078,7 +2086,7 @@ export function InteractiveGradient() {
           className="py-1.5 text-[11px] font-semibold transition-all"
           style={{ backgroundColor: '#ffffff', color: '#000000' }}
         >Save PNG</button>
-        <p className="text-[10px] text-white/50">The S key saves with these settings.</p>
+        {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
         </>) : (<>
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
@@ -2145,6 +2153,7 @@ export function InteractiveGradient() {
         </div>
         <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
         </>)}
+        </div>
       </div>,
       document.body,
     );

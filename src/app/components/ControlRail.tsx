@@ -204,7 +204,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         <Shuffle weight="regular" className={iconCls} />
       </button>
       <button
-        onClick={(e) => autoShufflePopoverAnchor ? setAutoShufflePopoverAnchor(null) : openAutoShufflePopover(e.currentTarget)}
+        onClick={(e) => openAutoShufflePopover(e.currentTarget)}
         className={`${railBtnBase} ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
         title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
         aria-label="Auto Shuffle settings"
