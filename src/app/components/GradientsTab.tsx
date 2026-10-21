@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
 import { type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 
 export interface GradientsTabProps {
   gradientType: GradientType;
@@ -129,6 +130,8 @@ export interface GradientsTabProps {
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...)
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
+  // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
+  applyGradientLook: (look: GradientLook) => void;
 
   // Wave Interference
   waveInterferenceSourceCount: number; setWaveInterferenceSourceCount: (v: number) => void;
@@ -239,7 +242,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, applyGradientLook,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -598,6 +601,28 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Styled-field gradients (Smoke, Glass, Mesh, ...) — one shared Scale/Speed pair */}
         {STYLE_FIELD_GRADIENT_TYPES.includes(gradientType) && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
+            {(GRADIENT_LOOKS[gradientType]?.length ?? 0) > 0 && (
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-white/80 font-medium">Looks</label>
+                <div className="flex flex-wrap gap-1">
+                  {GRADIENT_LOOKS[gradientType]!.map((look) => (
+                    <button
+                      key={look.name}
+                      onClick={() => applyGradientLook(look)}
+                      title={`Apply the ${look.name} look — sets the palette, Scale and Speed`}
+                      className="flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="block w-6 h-3 border border-white/20"
+                        style={{ background: `linear-gradient(to right, ${look.colors.join(', ')})` }}
+                      />
+                      {look.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {renderFieldMappingRows()}
             {[
               { label: 'Scale', value: fieldScale, set: setFieldScale, min: 0.3, max: 3, step: 0.05 },

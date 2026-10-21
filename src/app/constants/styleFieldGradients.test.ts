@@ -54,3 +54,46 @@ describe('styled-field gradients', () => {
     expect(GRADIENT_MOD_CATEGORY['halftone-screen']).toEqual(['Halftone (Gradient)']);
   });
 });
+
+import { GRADIENT_LOOKS } from './gradientLooks';
+
+describe('per-gradient looks', () => {
+  it('every styled gradient has at least three looks', () => {
+    for (const id of STYLE_FIELD_GRADIENT_TYPES) {
+      expect(GRADIENT_LOOKS[id]?.length ?? 0, id).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('only styled gradients have looks, with unique names per gradient', () => {
+    for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
+      expect(STYLE_FIELD_GRADIENT_TYPES as string[], id).toContain(id);
+      const names = (looks ?? []).map((l) => l.name);
+      expect(new Set(names).size, id).toBe(names.length);
+    }
+  });
+
+  it('palettes are valid hex colors within the app palette limits, and values stay in slider range', () => {
+    for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
+      for (const l of looks ?? []) {
+        const where = `${id}/${l.name}`;
+        expect(l.colors.length, where).toBeGreaterThanOrEqual(2);
+        expect(l.colors.length, where).toBeLessThanOrEqual(10);
+        for (const c of l.colors) expect(c, where).toMatch(/^#[0-9a-fA-F]{6}$/);
+        if (l.scale !== undefined) { expect(l.scale, where).toBeGreaterThanOrEqual(0.3); expect(l.scale, where).toBeLessThanOrEqual(3); }
+        if (l.speed !== undefined) { expect(l.speed, where).toBeGreaterThanOrEqual(0); expect(l.speed, where).toBeLessThanOrEqual(3); }
+        if (l.bias !== undefined) { expect(l.bias, where).toBeGreaterThanOrEqual(0); expect(l.bias, where).toBeLessThanOrEqual(1); }
+        if (l.sharp !== undefined) { expect(l.sharp, where).toBeGreaterThanOrEqual(0); expect(l.sharp, where).toBeLessThanOrEqual(1); }
+      }
+    }
+  });
+
+  it('the dark single-light gradients all start from a dark ground', () => {
+    const lum = (hex: string) => {
+      const n = parseInt(hex.slice(1), 16);
+      return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+    };
+    for (const id of ['light-beam', 'edge-glow', 'curtains', 'eclipse', 'rays', 'vortex'] as const) {
+      for (const l of GRADIENT_LOOKS[id] ?? []) expect(lum(l.colors[0]), `${id}/${l.name}`).toBeLessThan(0.1);
+    }
+  });
+});

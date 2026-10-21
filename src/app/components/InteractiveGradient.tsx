@@ -27,7 +27,8 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
-import { hslToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
+import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
+import { LOOK_DEFAULTS, type GradientLook } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -1584,6 +1585,26 @@ export function InteractiveGradient() {
   }, [buildSnapshot]);
 
   // Randomize all colors
+  // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
+  // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
+  // doesn't to their defaults so a look always lands the same way. Undoable like
+  // any other palette change. A palette the same length as the current one eases
+  // in; a different length snaps (see setColorsInstant for why a length change
+  // can't ease).
+  const applyGradientLook = useCallback((look: GradientLook) => {
+    saveCurrentState();
+    const colors = look.colors.map(hexToRgb);
+    if (colors.length === gradientColorsRef.current.length) setTargetColors(colors);
+    else setColorsInstant(colors);
+    setFieldScale(look.scale ?? LOOK_DEFAULTS.scale);
+    setFieldSpeed(look.speed ?? LOOK_DEFAULTS.speed);
+    setPaletteBias(look.bias ?? LOOK_DEFAULTS.bias);
+    setPaletteSharp(look.sharp ?? LOOK_DEFAULTS.sharp);
+    setFieldContrast(look.contrast ?? LOOK_DEFAULTS.contrast);
+    setPaletteStops(null);
+    if (look.blend) setColorBlend(look.blend);
+  }, [saveCurrentState, setColorsInstant]);
+
   const randomizeAllColors = useCallback(() => {
     saveCurrentState();
     setTargetColors(gradientColors.map(() => randomColor()));
@@ -3703,7 +3724,7 @@ export function InteractiveGradient() {
   // useSnapshot.ts/useRandomization.ts already use for this exact problem.
   const controlDrawerTabProps = {
     // Color
-    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor,
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
