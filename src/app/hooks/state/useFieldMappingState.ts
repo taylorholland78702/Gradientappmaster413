@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ColorBlend } from '../../utils/color';
+import { DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, type ColorBlend } from '../../utils/color';
 
 // Shared post-processing controls for scalar-field gradients (Reaction-
 // Diffusion, Marble, Caustics, Topographic, Julia). A single field
@@ -15,6 +15,13 @@ export function useFieldMappingState() {
   // gradient, not just the scalar-field ones this hook is otherwise for, but
   // it sits next to paletteMode since both are "how the palette is sampled."
   const [colorBlend, setColorBlend] = useState<ColorBlend>('oklab');
+  // Palette mapping (see paletteSegmentFor in utils/color.ts): where each color
+  // sits along the ramp (null = evenly spaced; also ignored if its length no
+  // longer matches the palette), plus Bias and Sharpness. Defaults reproduce the
+  // original even, linear mapping.
+  const [paletteStops, setPaletteStops] = useState<number[] | null>(null);
+  const [paletteBias, setPaletteBias] = useState(DEFAULT_PALETTE_BIAS);
+  const [paletteSharp, setPaletteSharp] = useState(DEFAULT_PALETTE_SHARP);
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...
   // — see drawStyleFieldGL.ts), which have no per-style sliders of their own.
   const [fieldScale, setFieldScale] = useState(1);
@@ -29,6 +36,12 @@ export function useFieldMappingState() {
     setPaletteBands,
     colorBlend,
     setColorBlend,
+    paletteStops,
+    setPaletteStops,
+    paletteBias,
+    setPaletteBias,
+    paletteSharp,
+    setPaletteSharp,
     fieldScale,
     setFieldScale,
     fieldSpeed,

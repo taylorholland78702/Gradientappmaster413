@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { hslToRgb, rgbToHsl, blendRgb } from './color';
+import {
+  hslToRgb, rgbToHsl, blendRgb, paletteSegmentFor, sharpenFraction, biasToGamma, evenStops, samplePalette,
+  type PaletteSegment,
+} from './color';
 
 describe('hslToRgb / rgbToHsl', () => {
   it('round-trips pure red, green, blue', () => {
@@ -80,5 +83,84 @@ describe('blendRgb', () => {
         expect(v).toBeLessThanOrEqual(255);
       }
     }
+  });
+});
+
+describe('palette mapping', () => {
+  const seg = (t: number, n: number, stops: number[] | null = null, bias = 0.5, sharp = 0): PaletteSegment =>
+    ({ ...paletteSegmentFor(t, n, stops, bias, sharp, { i0: 0, f: 0 }) });
+
+  it('defaults reproduce the original even, linear mapping exactly', () => {
+    for (const n of [2, 3, 5, 8]) {
+      for (let k = 0; k <= 40; k++) {
+        const t = k / 40;
+        const pos = t * (n - 1);
+        const expectIdx = Math.min(Math.floor(pos), n - 2);
+        const got = seg(t, n);
+        expect(got.i0).toBe(expectIdx);
+        expect(got.f).toBeCloseTo(pos - expectIdx, 12);
+      }
+    }
+  });
+
+  it('even custom stops match the default mapping', () => {
+    for (let k = 0; k <= 20; k++) {
+      const t = k / 20;
+      const a = seg(t, 4), b = seg(t, 4, evenStops(4));
+      expect(b.i0).toBe(a.i0);
+      expect(b.f).toBeCloseTo(a.f, 12);
+    }
+  });
+
+  it('custom stops move where each color sits', () => {
+    const stops = [0, 0.2, 0.9, 1];
+    expect(seg(0.1, 4, stops)).toEqual({ i0: 0, f: 0.5 });
+    expect(seg(0.2, 4, stops)).toEqual({ i0: 1, f: 0 });
+    expect(seg(0.55, 4, stops).i0).toBe(1);
+    expect(seg(0.55, 4, stops).f).toBeCloseTo(0.5, 12);
+    expect(seg(0.95, 4, stops).i0).toBe(2);
+  });
+
+  it('holds the first/last color outside the outermost stops', () => {
+    const stops = [0.3, 0.7];
+    expect(seg(0.1, 2, stops)).toEqual({ i0: 0, f: 0 });
+    expect(seg(0.9, 2, stops)).toEqual({ i0: 0, f: 1 });
+  });
+
+  it('ignores stops whose length no longer matches the palette', () => {
+    expect(seg(0.5, 5, [0, 0.1, 1])).toEqual(seg(0.5, 5));
+  });
+
+  it('bias 0.5 is neutral; higher favors later colors, lower earlier ones', () => {
+    expect(biasToGamma(0.5)).toBe(1);
+    const mid = (b: number) => { const g = seg(0.5, 2, null, b); return g.i0 + g.f; };
+    expect(mid(0.5)).toBeCloseTo(0.5, 12);
+    expect(mid(0.9)).toBeGreaterThan(0.5);
+    expect(mid(0.1)).toBeLessThan(0.5);
+  });
+
+  it('sharpness 0 leaves the blend untouched and 1 collapses it toward hard bands', () => {
+    expect(sharpenFraction(0.3, 0)).toBe(0.3);
+    expect(sharpenFraction(0.5, 1)).toBeCloseTo(0.5, 12);
+    expect(sharpenFraction(0.2, 1)).toBeLessThan(0.01);
+    expect(sharpenFraction(0.8, 1)).toBeGreaterThan(0.99);
+    // monotonic at partial sharpness
+    let prev = -1;
+    for (let k = 0; k <= 50; k++) {
+      const v = sharpenFraction(k / 50, 0.6);
+      expect(v).toBeGreaterThanOrEqual(prev - 1e-12);
+      prev = v;
+    }
+  });
+
+  it('samples a preview strip through the same mapping', () => {
+    const colors = [{ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 }];
+    const strip = samplePalette(colors, null, 0.5, 0, 'srgb', 5);
+    expect(strip.map((c) => Math.round(c.r))).toEqual([0, 64, 128, 191, 255]);
+    const hard = samplePalette(colors, [0, 1], 0.5, 1, 'srgb', 5);
+    expect(hard[0].r).toBeCloseTo(0, 5);
+    expect(hard[4].r).toBeCloseTo(255, 5);
+    expect(hard[1].r).toBeLessThan(2);
+    expect(hard[3].r).toBeGreaterThan(253);
   });
 });

@@ -9,7 +9,7 @@
 // this matches that simpler path instead.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const MAX_OCTAVES = 8;
@@ -75,12 +75,7 @@ void main() {
     : combinedNoise / totalAmplitude;
 
   float shiftedPos = mod(combinedNoise + uColorShift, 1.0);
-  float n = float(uColorCount);
-  float colorPos = shiftedPos * (n - 1.0);
-  int colorIdx = int(floor(colorPos));
-  float colorFrac = colorPos - float(colorIdx);
-  int colorIdx2 = min(colorIdx + 1, uColorCount - 1);
-  vec3 color = blendColors(uColors[colorIdx], uColors[colorIdx2], colorFrac);
+  vec3 color = paletteLookup(shiftedPos);
 
   float dist = sqrt(ndx * ndx + ndy * ndy);
   float radialPulse = uBassBoost * (1.0 - dist / uMaxDist) * 0.8;
@@ -149,7 +144,7 @@ function renderNoiseStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFr
   gl.uniform1f(gl.getUniformLocation(program, 'uMaxDist'), u.maxDist);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), u.colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), u.colorCount);
-  setBlendUniform(gl, program);
+  setPaletteMapUniforms(gl, program, u.colorCount);
   drawFieldFullscreen(gl);
 }
 

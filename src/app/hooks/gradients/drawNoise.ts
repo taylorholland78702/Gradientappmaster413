@@ -1,5 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend } from '../../utils/color';
+import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
 
 export function drawNoise(P: any): CanvasGradient | undefined {
   const {
@@ -297,9 +297,9 @@ export function drawNoise(P: any): CanvasGradient | undefined {
 
               // Shift color position with treble so palette rotates on audio
               const shiftedPos = (combinedNoise + noiseColorShift) % 1;
-              const colorPos = shiftedPos * (gradientColors.length - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
+              const palSeg = paletteSegment(shiftedPos, gradientColors.length);
+              const colorIdx = palSeg.i0;
+              const colorFrac = palSeg.f;
               const color1 = gradientColors[colorIdx % gradientColors.length];
               const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
               const idx = (ny * nRenderW + nx) * 4;

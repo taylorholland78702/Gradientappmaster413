@@ -1,4 +1,4 @@
-import { blendRgb } from './color';
+import { blendRgb, paletteSegment } from './color';
 
 export interface RGB {
   r: number;
@@ -38,12 +38,10 @@ export function mapValueToColor(t: number, colors: RGB[], mode: PaletteMode, ban
     tt = (tt * repeats) % 1;
   }
   const n = colors.length;
-  const pos = tt * (n - 1);
-  const idx = Math.floor(pos);
-  const frac = pos - idx;
-  const c1 = colors[idx] || colors[0] || { r: 255, g: 255, b: 255 };
-  const c2 = colors[Math.min(idx + 1, n - 1)] || c1;
-  return blendRgb(c1, c2, frac);
+  const seg = paletteSegment(tt, n);
+  const c1 = colors[seg.i0] || colors[0] || { r: 255, g: 255, b: 255 };
+  const c2 = colors[Math.min(seg.i0 + 1, n - 1)] || c1;
+  return blendRgb(c1, c2, seg.f);
 }
 
 // Convenience wrapper combining both steps for the common case of "reshape

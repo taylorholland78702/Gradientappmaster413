@@ -6,7 +6,7 @@
 // palette-mode step), matching the CPU path exactly.
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
-import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -31,12 +31,7 @@ void main() {
   pixelAngle = mod(mod(pixelAngle, TWO_PI) + TWO_PI, TWO_PI);
   float t = pixelAngle / TWO_PI;
 
-  float n = float(uColorCount);
-  float colorPos = t * (n - 1.0);
-  int colorIdx = int(floor(colorPos));
-  float colorFrac = colorPos - float(colorIdx);
-  int colorIdx2 = min(colorIdx + 1, uColorCount - 1);
-  outColor = vec4(antiBand(blendColors(uColors[colorIdx], uColors[colorIdx2], colorFrac)), 1.0);
+  outColor = vec4(antiBand(paletteLookup(t)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;
@@ -84,7 +79,7 @@ function renderAngleStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLFr
   gl.uniform1f(gl.getUniformLocation(program, 'uStartAngle'), u.startAngle);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), u.colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), u.colorCount);
-  setBlendUniform(gl, program);
+  setPaletteMapUniforms(gl, program, u.colorCount);
   drawFieldFullscreen(gl);
 }
 

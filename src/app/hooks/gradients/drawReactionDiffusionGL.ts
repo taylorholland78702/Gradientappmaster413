@@ -9,7 +9,7 @@
 // memoized), _registry.ts falls back to the CPU implementation for the
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
-import { BLEND_COLORS_GLSL, DITHER_GLSL, setBlendUniform } from './glShared';
+import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms } from './glShared';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -122,12 +122,7 @@ void main() {
     float repeats = max(1.0, floor(uBands + 0.5));
     tt = mod(tt * repeats, 1.0);
   }
-  float n = float(uColorCount);
-  float pos = tt * (n - 1.0);
-  int idx = int(floor(pos));
-  float frac = pos - float(idx);
-  int idx2 = min(idx + 1, uColorCount - 1);
-  vec3 color = blendColors(uColors[idx], uColors[idx2], frac);
+  vec3 color = paletteLookup(tt);
   outColor = vec4(antiBand(color), 1.0);
 }`;
 
@@ -417,7 +412,7 @@ export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
   gl.uniform1f(gl.getUniformLocation(st.colorProgram, 'uBands'), paletteBands);
   gl.uniform3fv(gl.getUniformLocation(st.colorProgram, 'uColors'), colorArr);
   gl.uniform1i(gl.getUniformLocation(st.colorProgram, 'uColorCount'), colorCount);
-  setBlendUniform(gl, st.colorProgram);
+  setPaletteMapUniforms(gl, st.colorProgram, colorCount);
   drawFullscreen(gl);
 
   // Same smoothing/blur upscale as the CPU path (drawReactionDiffusion.ts:349-352)

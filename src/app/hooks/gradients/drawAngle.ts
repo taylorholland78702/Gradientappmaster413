@@ -1,5 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend } from '../../utils/color';
+import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
 
 export function drawAngle(P: any): CanvasGradient | undefined {
   const {
@@ -242,9 +242,9 @@ export function drawAngle(P: any): CanvasGradient | undefined {
               pixelAngle = ((pixelAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
               const t = pixelAngle / (2 * Math.PI);
 
-              const colorPos = t * (angleNumColors - 1);
-              const colorIdx = Math.floor(colorPos);
-              const colorFrac = colorPos - colorIdx;
+              const palSeg = paletteSegment(t, angleNumColors);
+              const colorIdx = palSeg.i0;
+              const colorFrac = palSeg.f;
               const color1 = gradientColors[colorIdx % angleNumColors];
               const color2 = gradientColors[(colorIdx + 1) % angleNumColors];
               const idx = (ry * aRenderW + rx) * 4;

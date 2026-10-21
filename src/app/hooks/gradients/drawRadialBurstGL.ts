@@ -7,7 +7,7 @@
 // only calls this for 'sweep' and always uses the CPU path otherwise.
 // Falls back to the CPU implementation if WebGL2 isn't available or this
 // throws.
-import { BLEND_COLORS_GLSL, setBlendUniform, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
+import { BLEND_COLORS_GLSL, setPaletteMapUniforms, FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, DITHER_GLSL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
 
 const FRAG_SRC = `#version 300 es
@@ -40,12 +40,7 @@ void main() {
   }
   if (angleDiff <= uBeamHalf + 3.0) brightness = max(brightness, uAudioFlash);
 
-  float n = float(uColorCount);
-  float colorPos = (pixelAngle / 360.0) * (n - 1.0);
-  int colorIdx = int(floor(colorPos));
-  float colorFrac = colorPos - float(colorIdx);
-  int colorIdx2 = min(colorIdx + 1, uColorCount - 1);
-  vec3 color = blendColors(uColors[colorIdx], uColors[colorIdx2], colorFrac);
+  vec3 color = paletteLookup((pixelAngle / 360.0));
 
   outColor = vec4(antiBand(color * brightness), 1.0);
 }`;
@@ -98,7 +93,7 @@ function renderRadialBurstSweepStage(gl: WebGL2RenderingContext, outputFramebuff
   gl.uniform1f(gl.getUniformLocation(program, 'uAudioFlash'), u.audioFlash);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), u.colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), u.colorCount);
-  setBlendUniform(gl, program);
+  setPaletteMapUniforms(gl, program, u.colorCount);
   drawFieldFullscreen(gl);
 }
 

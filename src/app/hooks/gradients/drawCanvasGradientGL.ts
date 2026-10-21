@@ -13,7 +13,7 @@
 //
 // Both entry points return false when WebGL2 is unavailable or the shader
 // fails, and the caller keeps its native-gradient path as the fallback.
-import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, BLEND_COLORS_GLSL, DITHER_GLSL, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, setBlendUniform } from './glShared';
+import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, BLEND_COLORS_GLSL, DITHER_GLSL, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, setPaletteMapUniforms } from './glShared';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -38,13 +38,7 @@ void main() {
     vec2 d = uB - uA;
     t = clamp(dot(fp - uA, d) / max(dot(d, d), 1e-6), 0.0, 1.0);
   }
-  vec3 c = uColors[0];
-  if (uColorCount > 1) {
-    float pos = t * float(uColorCount - 1);
-    int i0 = min(int(floor(pos)), uColorCount - 2);
-    c = blendColors(uColors[i0], uColors[i0 + 1], pos - float(i0));
-  }
-  outColor = vec4(antiBand(c), 1.0);
+  outColor = vec4(antiBand(paletteLookup(t)), 1.0);
 }`;
 
 let program: WebGLProgram | null = null;
@@ -97,7 +91,7 @@ function fillGL(P: any, spec: Spec, colors: RGB[]): boolean { // eslint-disable-
       gl.uniform2f(gl.getUniformLocation(program, 'uA'), spec.x0 * sx, spec.y0 * sy);
       gl.uniform2f(gl.getUniformLocation(program, 'uB'), spec.x1 * sx, spec.y1 * sy);
     }
-    setBlendUniform(gl, program);
+    setPaletteMapUniforms(gl, program, count);
     drawFieldFullscreen(gl);
 
     ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);

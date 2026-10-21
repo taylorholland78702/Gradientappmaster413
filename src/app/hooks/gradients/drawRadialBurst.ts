@@ -1,6 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend } from '../../utils/color';
+import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
 export function drawRadialBurst(P: any): CanvasGradient | undefined {
   const {
     activeEffects,
@@ -251,9 +251,9 @@ export function drawRadialBurst(P: any): CanvasGradient | undefined {
                 }
                 if (angleDiff <= beamHalf + 3) brightness = Math.max(brightness, audioRadarFlash);
 
-                const colorPos = (pixelAngle / 360) * (gradientColors.length - 1);
-                const colorIdx = Math.floor(colorPos);
-                const colorFrac = colorPos - colorIdx;
+                const palSeg = paletteSegment((pixelAngle / 360), gradientColors.length);
+                const colorIdx = palSeg.i0;
+                const colorFrac = palSeg.f;
                 const color1 = gradientColors[colorIdx % gradientColors.length];
                 const color2 = gradientColors[(colorIdx + 1) % gradientColors.length];
                 const idx = (ry * rRenderW + rx) * 4;

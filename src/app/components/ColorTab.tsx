@@ -2,6 +2,7 @@ import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb, type ColorBlend } from '../utils/color';
+import { PaletteStopsEditor } from './PaletteStopsEditor';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
 // swatch row from growing unboundedly if someone just holds down +.
@@ -24,6 +25,12 @@ export interface ColorTabProps {
   setPaletteContrast: (v: number) => void;
   colorBlend: ColorBlend;
   setColorBlend: (v: ColorBlend) => void;
+  paletteStops: number[] | null;
+  setPaletteStops: (v: number[] | null) => void;
+  paletteBias: number;
+  setPaletteBias: (v: number) => void;
+  paletteSharp: number;
+  setPaletteSharp: (v: number) => void;
 }
 
 const COLOR_BLEND_OPTIONS: { value: ColorBlend; label: string; hint: string }[] = [
@@ -37,6 +44,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
   paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
   paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
   colorBlend, setColorBlend,
+  paletteStops, setPaletteStops, paletteBias, setPaletteBias, paletteSharp, setPaletteSharp,
 }) => {
   const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
@@ -117,6 +125,21 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* Where each color sits along the ramp, plus Bias/Sharpness — a global
+          reshaping of how every gradient samples the palette (see
+          paletteSegmentFor in utils/color.ts). */}
+      <PaletteStopsEditor
+        colors={gradientColors}
+        stops={paletteStops}
+        setStops={setPaletteStops}
+        bias={paletteBias}
+        setBias={setPaletteBias}
+        sharp={paletteSharp}
+        setSharp={setPaletteSharp}
+        blend={colorBlend}
+        onBeforeChange={saveCurrentState}
+      />
 
       {/* Palette-wide adjustments — applied to the whole gradientColors
           array at a single point (see adjustPalette in utils/color.ts),

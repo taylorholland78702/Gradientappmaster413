@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { adjustPalette, setActiveColorBlend, shiftHueByTreble } from '../utils/color';
+import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
@@ -518,6 +518,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const driftedColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
     // Every palette interpolation site (CPU lerps + GL shaders) reads this.
     setActiveColorBlend(params.colorBlend);
+    setActivePaletteMap(params.paletteStops, params.paletteBias, params.paletteSharp);
     const renderColors = adjustPalette(driftedColors, {
       hue: paletteHue, saturation: paletteSaturation, brightness: paletteBrightness, contrast: paletteContrast,
     });

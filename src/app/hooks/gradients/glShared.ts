@@ -12,7 +12,7 @@
 // ctx.drawImage — identical handoff to the CPU path's putLowResImageData,
 // just with a GPU-rendered source image instead of a JS-computed ImageData.
 
-import { colorBlendIndex, getActiveColorBlend } from '../../utils/color';
+import { colorBlendIndex, getActiveColorBlend, getActivePaletteMap, biasToGamma } from '../../utils/color';
 
 export const MAX_FIELD_COLORS = 12;
 
@@ -48,7 +48,7 @@ float jsMod(float x, float m) {
 // (2, hue travels the short way round the wheel). Splice into any shader
 // that lerps between palette stops, and call blendColors() in place of mix().
 // uBlendMode is uploaded from the frame's active mode (see setColorUniforms /
-// setBlendUniform).
+// setPaletteMapUniforms).
 export const BLEND_COLORS_GLSL = `
 uniform int uBlendMode; // 0 sRGB, 1 OKLab, 2 OKLCH
 vec3 srgbToLinear(vec3 c) {
@@ -100,10 +100,53 @@ vec3 blendColors(vec3 a, vec3 b, float t) {
   float C = mix(c1, c2, t);
   float h = h1 + dh * t;
   return oklabToRgb(vec3(L, C * cos(h), C * sin(h)));
+}
+
+// Palette lookup with stop positions, Bias and Sharpness — the GLSL twin of
+// paletteSegmentFor in color.ts (keep them in step). Needs uColors and
+// uColorCount declared before this is spliced in. With even stops, Bias 0.5
+// and Sharpness 0 it reduces to the plain even-spaced linear blend every
+// shader used before these controls existed.
+uniform float uStops[${MAX_FIELD_COLORS}];
+uniform float uBiasGamma; // 1 = neutral
+uniform float uSharp;     // 0 = linear
+float sharpenFrac(float f) {
+  if (uSharp <= 0.0) return f;
+  float half_ = 0.5 - (0.5 - 0.03) * uSharp;
+  float x = clamp((f - (0.5 - half_)) / (2.0 * half_), 0.0, 1.0);
+  float sm = x * x * (3.0 - 2.0 * x);
+  return mix(f, sm, uSharp);
+}
+vec3 paletteLookup(float t) {
+  if (uColorCount <= 1) return uColors[0];
+  float tt = clamp(t, 0.0, 1.0);
+  if (uBiasGamma != 1.0) tt = pow(tt, uBiasGamma);
+  int i0 = 0;
+  for (int k = 1; k < ${MAX_FIELD_COLORS} - 1; k++) {
+    if (k >= uColorCount - 1) break;
+    if (tt >= uStops[k]) i0 = k;
+  }
+  float a = uStops[i0];
+  float b = uStops[i0 + 1];
+  float f = b > a ? clamp((tt - a) / (b - a), 0.0, 1.0) : (tt >= b ? 1.0 : 0.0);
+  return blendColors(uColors[i0], uColors[i0 + 1], sharpenFrac(f));
 }`;
 
-export function setBlendUniform(gl: WebGL2RenderingContext, program: WebGLProgram) {
+// Uploads everything paletteLookup/blendColors read besides the colors
+// themselves: the Blend mode, the stop positions, Bias (as a gamma) and
+// Sharpness. `colorCount` is how many colors were uploaded; custom stops only
+// apply when there is exactly one per uploaded color (otherwise even spacing).
+export function setPaletteMapUniforms(gl: WebGL2RenderingContext, program: WebGLProgram, colorCount: number) {
   gl.uniform1i(gl.getUniformLocation(program, 'uBlendMode'), colorBlendIndex(getActiveColorBlend()));
+  const { stops, bias, sharp } = getActivePaletteMap();
+  const arr = new Float32Array(MAX_FIELD_COLORS);
+  const custom = stops && stops.length === colorCount;
+  for (let i = 0; i < MAX_FIELD_COLORS; i++) {
+    arr[i] = custom ? stops![i] : colorCount > 1 ? i / (colorCount - 1) : 0;
+  }
+  gl.uniform1fv(gl.getUniformLocation(program, 'uStops'), arr);
+  gl.uniform1f(gl.getUniformLocation(program, 'uBiasGamma'), biasToGamma(bias));
+  gl.uniform1f(gl.getUniformLocation(program, 'uSharp'), sharp);
 }
 
 // Anti-banding dither. A screen shows 256 levels per channel, so a slow
@@ -170,12 +213,7 @@ vec3 mapValueToColor(float t) {
     float repeats = max(1.0, floor(uBands + 0.5));
     tt = mod(tt * repeats, 1.0);
   }
-  float n = float(uColorCount);
-  float pos = tt * (n - 1.0);
-  int idx = int(floor(pos));
-  float frac = pos - float(idx);
-  int idx2 = min(idx + 1, uColorCount - 1);
-  return blendColors(uColors[idx], uColors[idx2], frac);
+  return paletteLookup(tt);
 }
 
 vec3 getMappedColor(float t) {
@@ -264,7 +302,7 @@ export function setColorUniforms(
   gl.uniform1f(gl.getUniformLocation(program, 'uBands'), paletteBands);
   gl.uniform3fv(gl.getUniformLocation(program, 'uColors'), colorArr);
   gl.uniform1i(gl.getUniformLocation(program, 'uColorCount'), colorCount);
-  setBlendUniform(gl, program);
+  setPaletteMapUniforms(gl, program, colorCount);
 }
 
 // Feature-detects what these field shaders need: a WebGL2 context and
