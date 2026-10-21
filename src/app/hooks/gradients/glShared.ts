@@ -431,6 +431,11 @@ export function setColorUniforms(
 let basicSupportCache: boolean | null = null;
 export function detectFieldGLSupport(): boolean {
   if (basicSupportCache !== null) return basicSupportCache;
+  // Adding ?nogl to the page URL pretends WebGL2 is unavailable, to exercise (and
+  // let support reproduce) the CPU fallbacks without needing an old browser.
+  try {
+    if (new URLSearchParams(window.location.search).has('nogl')) return (basicSupportCache = false);
+  } catch { /* no window/location: fall through to the real check */ }
   try {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl2', { antialias: false });

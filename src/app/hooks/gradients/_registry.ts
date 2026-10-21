@@ -6,6 +6,7 @@ import { drawStack } from './drawStack';
 import { drawHatch } from './drawHatch';
 import { drawFade } from './drawFade';
 import { drawNoise } from './drawNoise';
+import { drawStyleFieldCPU } from './drawStyleFieldCPU';
 import { drawTopographic } from './drawTopographic';
 import { drawJulia } from './drawJulia';
 import { drawGrid } from './drawGrid';
@@ -250,17 +251,17 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
 
 // The styled-field gradients (Smoke, Glass, Mesh, ...) are WebGL-only. With
 // no WebGL2, or if a style's shader won't compile on this device, they fall
-// back to the CPU Noise gradient — still animated and palette-driven — rather
+// back to a CPU stand-in (drawStyleFieldCPU.ts: same family of picture, simpler math) — still animated and palette-driven — rather
 // than leaving the canvas blank.
 function styleFieldAuto(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (!hasStyleFieldFailed(id) && detectStyleFieldGLSupport()) {
     try {
       return drawStyleFieldGL(id, P);
     } catch (err) {
-      console.error(`WebGL ${id} failed, falling back to CPU Noise:`, err);
+      console.error(`WebGL ${id} failed, falling back to the CPU version:`, err);
     }
   }
-  return drawNoise(P);
+  return drawStyleFieldCPU(id, P);
 }
 
 // Alphabetical by id — keep new entries sorted in.
