@@ -84,8 +84,8 @@ export function useMiscState() {
   const [activeEffects, setActiveEffects] = useState<EffectType[]>([]);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [showWavHint, setShowWavHint] = useState(() => {
-    try { return !localStorage.getItem('wavGestureHintSeen'); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to read wavGestureHintSeen:', err);
+    try { return !localStorage.getItem('wavGestureGuideSeen'); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to read wavGestureGuideSeen:', err);
       return true;
     }
   });

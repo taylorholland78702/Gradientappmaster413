@@ -15,7 +15,7 @@
  * 
  * - Mouse wheel scroll zoom
  */
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
@@ -28,6 +28,7 @@ import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
+import { haptic } from '../utils/haptics';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
@@ -391,6 +392,8 @@ export function InteractiveGradient() {
   // the About button's position together so none of them can disagree
   // about which layout mode is active at a given width.
   const isMobile = useIsMobile(1024);
+  // Coarse pointer = a finger, not a mouse: decides which gestures the guide lists.
+  const isTouchDevice = typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
   // panelRef now points at the rail (ControlRail's root, data-role="panel")
   // — it used to be the draggable 3-row card, but the rail replaced that
   // card and inherited the same drag mechanism, so this is the same ref
@@ -518,8 +521,8 @@ export function InteractiveGradient() {
   // app's primary target, so without this the gestures are undiscoverable.
   const dismissWavHint = () => {
     setShowWavHint(false);
-    try { localStorage.setItem('wavGestureHintSeen', '1'); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to persist wavGestureHintSeen:', err);
+    try { localStorage.setItem('wavGestureGuideSeen', '1'); } catch (err) {
+      if (import.meta.env.DEV) console.warn('Failed to persist wavGestureGuideSeen:', err);
     }
   };
   
@@ -2449,6 +2452,65 @@ export function InteractiveGradient() {
     applySnapshot(snapshot);
   }, [buildSnapshot, applySnapshot]);
 
+  // ---- Gesture feedback and the shared actions behind swipes, arrow keys and taps ----------
+  // A small message near the controls ("Shuffled · swipe right to undo"), with an optional
+  // one-tap action, that fades on its own. `kind` picks the hint wording: a touch gesture
+  // says "swipe", a key press says "←".
+  const [toast, setToast] = useState<{ id: number; text: string; action?: { label: string; run: () => void } } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((text: string, action?: { label: string; run: () => void }) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ id: Date.now(), text, action });
+    toastTimerRef.current = setTimeout(() => setToast(null), action ? 3200 : 1800);
+  }, []);
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
+
+  const isControlsVisibleRef = useRef(true);
+  isControlsVisibleRef.current = isControlsVisible;
+
+  // Back is Undo. Forward is Redo when there is something to redo, otherwise a new
+  // Shuffle — so after stepping back, forward walks you back up before it rolls anything new.
+  const goBack = useCallback((via: 'swipe' | 'key') => {
+    if (undoIndexRef.current < 0) {
+      haptic('warn');
+      showToast('Nothing to undo');
+      return;
+    }
+    undoLastChange();
+    haptic('tick');
+    showToast(via === 'swipe' ? 'Undone · swipe left to go forward' : 'Undone · → goes forward', { label: 'Redo', run: () => redoLastChange() });
+  }, [undoLastChange, redoLastChange, showToast]);
+
+  const goForward = useCallback((via: 'swipe' | 'key') => {
+    if (redoStackRef.current.length > 0) {
+      redoLastChange();
+      haptic('tick');
+      showToast('Redone', { label: 'Undo', run: () => undoLastChange() });
+      return;
+    }
+    evolveWithFactor(1);
+    haptic('success');
+    showToast(via === 'swipe' ? 'Shuffled · swipe right to undo' : 'Shuffled · ← to undo', { label: 'Undo', run: () => undoLastChange() });
+  }, [evolveWithFactor, undoLastChange, redoLastChange, showToast]);
+
+  const togglePause = useCallback(() => {
+    const wasPlaying = isAutoModeRef.current || isVCRPlayingRef.current;
+    toggleVCRPlayback();
+    haptic('tick');
+    showToast(wasPlaying ? 'Paused · double-tap to play' : 'Playing');
+  }, [toggleVCRPlayback, showToast]);
+
+  const toggleControls = useCallback(() => {
+    if (IS_DISPLAY_MODE) return;
+    const wasVisible = isControlsVisibleRef.current;
+    setIsControlsVisible(!wasVisible);
+    haptic('success');
+    showToast(wasVisible ? 'Controls hidden · press and hold to show' : 'Controls shown');
+  }, [showToast]);
+
+  const gestureActionsRef = useRef({ goBack, goForward, togglePause, toggleControls });
+  gestureActionsRef.current = { goBack, goForward, togglePause, toggleControls };
+
   // Jump all the way back to the oldest snapshot in the stack
   const undoAll = useCallback(() => {
     if (undoIndexRef.current < 0) return;
@@ -3381,54 +3443,138 @@ export function InteractiveGradient() {
     handleInteraction(e.clientX, e.clientY);
   }, [handleInteraction]);
 
-  // Swipes on a touch screen: a quick horizontal flick left is Shuffle, right is Undo.
-  // The canvas's own drag (rotate the angle, re-roll the color under the finger) would
-  // otherwise fire on the way, so once a touch is clearly horizontal it stops driving
-  // that drag and puts back whatever the first few pixels changed. Slow horizontal drags
-  // therefore do nothing; vertical and circular drags work as before.
-  const swipeRef = useRef<{ x: number; y: number; t: number; horizontal: boolean; colors: ColorRGB[]; angle: number } | null>(null);
+  // ---- Touch gestures on the canvas -------------------------------------------------
+  //   flick left / right     forward (redo, else Shuffle) / back (Undo)
+  //   pinch                  zoom
+  //   twist with two fingers rotate
+  //   double-tap             pause / play
+  //   press and hold         hide / show the controls
+  //   drag in a circle       spin the gradient and re-roll the color under the finger (as before)
+  // Once a touch is clearly horizontal it stops driving that drag and puts back whatever the
+  // first few pixels changed, so a flick doesn't leave stray color changes. Slow horizontal
+  // drags therefore do nothing; vertical and circular drags work as before.
+  interface TouchGesture {
+    x: number; y: number; t: number;
+    horizontal: boolean; moved: boolean; longFired: boolean; wasPinch: boolean;
+    longTimer: ReturnType<typeof setTimeout> | null;
+    colors: ColorRGB[]; angle: number;
+    pinch: { d0: number; a0: number; zoom0: number; angle0: number } | null;
+  }
+  const gestureRef = useRef<TouchGesture | null>(null);
+  const lastTapRef = useRef<{ t: number; x: number; y: number } | null>(null);
   const SWIPE_MIN_PX = 70;
   const SWIPE_MAX_MS = 700;
+  const LONG_PRESS_MS = 550;
+  const MOVE_SLOP_PX = 10;
+  const DOUBLE_TAP_MS = 320;
+
+  const clearLongTimer = (g: TouchGesture | null) => {
+    if (g?.longTimer) { clearTimeout(g.longTimer); g.longTimer = null; }
+  };
+  const pinchMetrics = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const a = e.touches[0], b = e.touches[1];
+    const dx = b.clientX - a.clientX, dy = b.clientY - a.clientY;
+    return { d: Math.max(1, Math.hypot(dx, dy)), a: (Math.atan2(dy, dx) * 180) / Math.PI };
+  };
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (activeTab) setActiveTab(null);
     setIsDragging(true);
     previousPosition.current = null;
+    const prev = gestureRef.current;
+    if (e.touches.length >= 2 && prev) {
+      // A second finger: this is a pinch/twist, not a tap, swipe or hold.
+      clearLongTimer(prev);
+      prev.moved = true; prev.horizontal = false; prev.wasPinch = true;
+      const m = pinchMetrics(e);
+      prev.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
+      return;
+    }
+    clearLongTimer(prev);
     const t = e.touches[0];
-    swipeRef.current = e.touches.length === 1 && t
-      ? { x: t.clientX, y: t.clientY, t: performance.now(), horizontal: false,
-          colors: targetColorsRef.current.map(c => ({ ...c })), angle: targetAngleRef.current }
-      : null;
+    if (!t) { gestureRef.current = null; return; }
+    const g: TouchGesture = {
+      x: t.clientX, y: t.clientY, t: performance.now(),
+      horizontal: false, moved: false, longFired: false, wasPinch: false, longTimer: null,
+      colors: targetColorsRef.current.map(c => ({ ...c })), angle: targetAngleRef.current, pinch: null,
+    };
+    g.longTimer = setTimeout(() => {
+      g.longTimer = null;
+      if (g.moved || g.longFired) return;
+      g.longFired = true;
+      gestureActionsRef.current.toggleControls();
+    }, LONG_PRESS_MS);
+    gestureRef.current = g;
   }, [activeTab, setActiveTab]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     setIsDragging(false);
     previousPosition.current = null;
-    const sw = swipeRef.current;
-    swipeRef.current = null;
+    const g = gestureRef.current;
+    if (!g) return;
+    clearLongTimer(g);
+    if (e.touches.length > 0) return; // fingers still down: the gesture isn't over
+    gestureRef.current = null;
+    if (g.wasPinch || g.longFired) return;
     const t = e.changedTouches[0];
-    if (!sw || !sw.horizontal || !t) return;
-    const dx = t.clientX - sw.x;
-    if (Math.abs(dx) < SWIPE_MIN_PX || performance.now() - sw.t > SWIPE_MAX_MS) return;
-    try { navigator.vibrate?.(8); } catch { /* haptics unavailable */ }
-    if (dx < 0) evolveWithFactor(1); // swipe left: Shuffle
-    else undoLastChange();           // swipe right: Undo
-  }, [evolveWithFactor, undoLastChange]);
+    if (!t) return;
+    const elapsed = performance.now() - g.t;
+    const dx = t.clientX - g.x;
+    // Flick: forward / back.
+    if (g.horizontal && Math.abs(dx) >= SWIPE_MIN_PX && elapsed <= SWIPE_MAX_MS) {
+      if (dx < 0) gestureActionsRef.current.goForward('swipe');
+      else gestureActionsRef.current.goBack('swipe');
+      return;
+    }
+    // Tap: a second one close behind the first is a double-tap (pause / play).
+    if (!g.moved && elapsed < 260) {
+      const now = performance.now();
+      const last = lastTapRef.current;
+      if (last && now - last.t < DOUBLE_TAP_MS && Math.hypot(t.clientX - last.x, t.clientY - last.y) < 40) {
+        lastTapRef.current = null;
+        gestureActionsRef.current.togglePause();
+      } else {
+        lastTapRef.current = { t: now, x: t.clientX, y: t.clientY };
+      }
+    }
+  }, []);
+
+  const handleTouchCancel = useCallback(() => {
+    setIsDragging(false);
+    previousPosition.current = null;
+    clearLongTimer(gestureRef.current);
+    gestureRef.current = null;
+  }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (e.touches.length > 1) { swipeRef.current = null; }
+    const g = gestureRef.current;
+    if (e.touches.length >= 2) {
+      if (!g) return;
+      clearLongTimer(g);
+      g.moved = true; g.horizontal = false; g.wasPinch = true;
+      const m = pinchMetrics(e);
+      if (!g.pinch) g.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
+      // Pinch scales zoom by how far the fingers have spread; twisting adds the change in
+      // the angle between them to the gradient's angle.
+      lastManualZoomTime.current = Date.now();
+      setTargetZoom(Math.max(0.05, Math.min(20, g.pinch.zoom0 * (m.d / g.pinch.d0))));
+      let dA = m.a - g.pinch.a0;
+      if (dA > 180) dA -= 360; else if (dA < -180) dA += 360;
+      setTargetAngle(g.pinch.angle0 + dA);
+      return;
+    }
     if (e.touches.length > 0) {
       const touch = e.touches[0];
-      const sw = swipeRef.current;
-      if (sw) {
-        const dx = touch.clientX - sw.x, dy = touch.clientY - sw.y;
-        if (!sw.horizontal && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-          sw.horizontal = true;
-          // Undo what the first pixels of this swipe already did to the colors and angle.
-          setTargetColors(sw.colors.map(c => ({ ...c })));
-          setTargetAngle(sw.angle);
+      if (g) {
+        const dx = touch.clientX - g.x, dy = touch.clientY - g.y;
+        if (!g.moved && Math.hypot(dx, dy) > MOVE_SLOP_PX) { g.moved = true; clearLongTimer(g); }
+        if (!g.horizontal && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+          g.horizontal = true;
+          // Undo what the first pixels of this flick already did to the colors and angle.
+          setTargetColors(g.colors.map(c => ({ ...c })));
+          setTargetAngle(g.angle);
         }
-        if (sw.horizontal) return;
+        if (g.horizontal) return;
       }
       handleInteraction(touch.clientX, touch.clientY);
     }
@@ -3811,6 +3957,14 @@ export function InteractiveGradient() {
       if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
 
       switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          goBack('key');
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          goForward('key');
+          break;
         case 'g': case 'G':
           e.preventDefault();
           if (e.shiftKey) shuffleGradientType();
@@ -3925,7 +4079,7 @@ export function InteractiveGradient() {
     toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection,
     evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab,
     isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording,
-    autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook,
+    autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook, goBack, goForward,
   ]);
 
   // Manual touch-drag scroll for the mobile control panel — a fallback
@@ -4285,6 +4439,7 @@ export function InteractiveGradient() {
           onMouseLeave={handleMouseUp}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
           onTouchMove={handleTouchMove}
           onWheel={handleWheel}
           className="w-full h-full"
@@ -4371,24 +4526,73 @@ export function InteractiveGradient() {
           repositioned now that it can't sit inline under the wordmark
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
+      {/* First-run gesture guide: every gesture and shortcut that moves the artwork, once. */}
       {showWavHint && !activeTab && railRect && (
         <div
-          className="fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px]"
-          style={isMobile
-            ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
-            : { left: railRect.right + 12, top: railRect.top }}
+          role="dialog"
+          aria-label="Gestures"
+          className="fixed z-40 pointer-events-auto px-3 py-2.5 rounded-lg border border-white/15 text-white/90"
+          style={{
+            backgroundColor: 'rgba(8, 8, 12, 0.92)',
+            width: isMobile ? 'calc(100vw - 16px)' : 300,
+            ...(isMobile
+              ? { left: 8, bottom: window.innerHeight - railRect.top + 8 }
+              : { left: railRect.right + 12, top: railRect.top }),
+          }}
         >
-          <span className="text-[10px] leading-snug flex-1">
-            Tap <span className="text-white font-medium">wāv</span> for help · tap <Shuffle weight="regular" className="w-2.5 h-2.5 inline -translate-y-px" /> to shuffle a new look
-          </span>
-          <button
-            onClick={dismissWavHint}
-            className="text-white/50 hover:text-white transition-all flex-shrink-0"
-            title="Dismiss"
-            aria-label="Dismiss hint"
-          >
-            <X weight="bold" className="w-3 h-3" />
-          </button>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-white">{isTouchDevice ? 'Touch gestures' : 'Keys and gestures'}</span>
+            <button onClick={dismissWavHint} className="text-white/50 hover:text-white transition-all" title="Close" aria-label="Dismiss hint">
+              <X weight="bold" className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-snug">
+            {(isTouchDevice ? [
+              ['Flick left', 'Forward: redo, or a new Shuffle'],
+              ['Flick right', 'Back: undo'],
+              ['Pinch', 'Zoom'],
+              ['Twist two fingers', 'Rotate'],
+              ['Double-tap', 'Pause / play'],
+              ['Press and hold', 'Hide / show the controls'],
+              ['Drag in a circle', 'Spin the gradient, re-roll colors'],
+            ] : [
+              ['→', 'Forward: redo, or a new Shuffle'],
+              ['←', 'Back: undo'],
+              ['Space', 'Pause / play'],
+              ['H', 'Hide / show the controls'],
+              ['Scroll', 'Zoom'],
+              ['?', 'All shortcuts'],
+            ]).map(([k, v]) => (
+              <Fragment key={k}>
+                <span className="text-white font-medium whitespace-nowrap">{k}</span>
+                <span className="text-white/70">{v}</span>
+              </Fragment>
+            ))}
+          </div>
+          <button onClick={dismissWavHint} className="mt-2 w-full py-1 text-[11px] font-semibold bg-white text-black">Got it</button>
+        </div>
+      )}
+
+      {toast && (
+        <div
+          key={toast.id}
+          role="status"
+          aria-live="polite"
+          className="fixed z-50 flex items-center gap-3 px-3 py-1.5 rounded-full border border-white/15 text-[12px] text-white shadow-lg pointer-events-auto"
+          style={{
+            backgroundColor: 'rgba(8, 8, 12, 0.88)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: isMobile && railRect ? window.innerHeight - railRect.top + 12 : 20,
+          }}
+        >
+          <span>{toast.text}</span>
+          {toast.action && (
+            <button
+              onClick={() => { toast.action!.run(); setToast(null); }}
+              className="font-semibold underline underline-offset-2 hover:text-white/80"
+            >{toast.action.label}</button>
+          )}
         </div>
       )}
 
@@ -4521,6 +4725,13 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Gestures and arrows</p>
+                <p className="flex items-center justify-between gap-2"><span>Forward — redo, or a new Shuffle when there is nothing to redo</span><Kbd label="→" /></p>
+                <p className="flex items-center justify-between gap-2"><span>Back — undo</span><Kbd label="←" /></p>
+                <p className="text-xs text-white/60">On a touch screen: flick left for forward and right for back (quick, mostly horizontal flicks only), pinch to zoom, twist two fingers to rotate, double-tap to pause or play, and press and hold to hide or show the controls.</p>
               </div>
 
               <div className="flex flex-col gap-3">
