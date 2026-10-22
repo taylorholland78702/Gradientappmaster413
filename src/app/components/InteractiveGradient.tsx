@@ -292,7 +292,7 @@ const TOUCH_GESTURES: [string, string][] = [
   ['Twist two fingers', 'Rotate'],
   ['Double-tap', 'Pause / play'],
   ['Press and hold', 'Hide / show the controls'],
-  ['Three-finger tap', 'Save to Photos (Save Image in the share sheet)'],
+  ['Three-finger tap', 'Save the image (press and hold it, then Add to Photos)'],
   ['Drag in a circle', 'Spin the gradient, re-roll colors'],
   ['Shake', 'Shuffle (turn on below)'],
   ['Tilt', 'Rotate the gradient (turn on below)'],
@@ -3555,7 +3555,7 @@ export function InteractiveGradient() {
     // Three fingers down and up together, without sliding: Save PNG (the S key's job).
     if (g.threeFinger && !g.threeMoved && performance.now() - g.t < 600) {
       haptic('success');
-      exportAsPNG(true);
+      exportAsPNG('preview');
       return;
     }
     if (g.wasPinch || g.longFired) return;
@@ -3663,9 +3663,11 @@ export function InteractiveGradient() {
   // history between frames (Feedback, Chromatic Trails, Slit-Scan) restart when
   // the canvas changes size, so they come out as a fresh frame.
   const isExportingRef = useRef(false);
-  // `toPhotos` hands the image to the system share sheet (on a phone it offers Save Image /
-  // Add to Photos) and falls back to a normal download wherever sharing files isn't available.
-  const exportAsPNG = useCallback(async (toPhotos = false) => {
+  // `preview` (the three-finger tap) doesn't download: it opens a sheet showing the image, because
+  // a web page can't write to the photo library. Pressing and holding the image on an iPhone or
+  // Android offers Add to Photos, which the share sheet's file route (Files, Drive) does not.
+  const [savePreview, setSavePreview] = useState<{ url: string; blob: Blob; name: string } | null>(null);
+  const exportAsPNG = useCallback(async (mode: 'download' | 'preview' = 'download') => {
     const canvas = canvasRef.current;
     if (!canvas || isExportingRef.current) return;
     isExportingRef.current = true;
@@ -3704,17 +3706,9 @@ export function InteractiveGradient() {
       const blob = await new Promise<Blob | null>(r => out.toBlob(r, 'image/png'));
       if (blob) {
         const name = `gradient-${outW}x${outH}-${Date.now()}.png`;
-        if (toPhotos && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-          const file = new File([blob], name, { type: 'image/png' });
-          if (navigator.canShare?.({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: 'wāv' });
-              return;
-            } catch (err) {
-              // Closing the share sheet is not a failure; anything else falls through to a download.
-              if ((err as DOMException)?.name === 'AbortError') return;
-            }
-          }
+        if (mode === 'preview') {
+          setSavePreview(prev => { if (prev) URL.revokeObjectURL(prev.url); return { url: URL.createObjectURL(blob), blob, name }; });
+          return;
         }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -4590,6 +4584,49 @@ export function InteractiveGradient() {
           repositioned now that it can't sit inline under the wordmark
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
+      {savePreview && (
+        <div
+          role="dialog"
+          aria-label="Save image"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.86)' }}
+          onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
+        >
+          <img
+            src={savePreview.url}
+            alt="Your artwork. Press and hold to save it to Photos."
+            className="max-w-full object-contain shadow-2xl"
+            style={{ maxHeight: 'calc(100% - 120px)' }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="text-[13px] text-white text-center">Press and hold the image, then tap <span className="font-semibold">Add to Photos</span></p>
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+              <button
+                className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+                onClick={async () => {
+                  const file = new File([savePreview.blob], savePreview.name, { type: 'image/png' });
+                  try { if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }); } catch { /* closed or unsupported */ }
+                }}
+              >Share…</button>
+            )}
+            <button
+              className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = savePreview.url;
+                link.download = savePreview.name;
+                link.click();
+              }}
+            >Download</button>
+            <button
+              className="px-4 py-2 text-[13px] font-semibold bg-white text-black"
+              onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
+            >Done</button>
+          </div>
+        </div>
+      )}
+
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
       {showWavHint && !activeTab && railRect && (
         <div
