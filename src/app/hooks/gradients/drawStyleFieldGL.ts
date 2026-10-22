@@ -50,6 +50,8 @@ uniform float uB;
 uniform float uExposure;
 uniform int uTone;
 uniform vec3 uGrade; // brightness, contrast, saturation (1 = unchanged)
+uniform float uSwirl; // twist of the drawing plane about the center (0 = none)
+float gTime = 0.0;    // the time the current sample is being drawn at (set in main)
 in vec2 vUv;
 out vec4 outColor;
 ${DITHER_GLSL}
@@ -127,7 +129,16 @@ float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 // offset that shade()'s p carries. The radial looks (Eclipse, Rays, Bokeh) use
 // this so their center follows the drag-to-move center instead of wandering
 // off with the seed.
-vec2 cpos() { return (vUv * uSize - uCenter) / uSize.y * uScale; }
+// Twists a plane position about the center, more with distance and slowly breathing, so the
+// pattern swirls. Does nothing at Swirl 0.
+vec2 twist(vec2 q) {
+  if (uSwirl <= 0.0) return q;
+  float r = length(q);
+  float a = uSwirl * (0.5 * r + 0.25 * sin(gTime * 0.3 + r * 1.5));
+  float s = sin(a), c = cos(a);
+  return vec2(c * q.x - s * q.y, s * q.x + c * q.y);
+}
+vec2 cpos() { return twist((vUv * uSize - uCenter) / uSize.y * uScale); }
 
 // Turns a 0..1+ light intensity into color for the dark, single-light looks:
 // near-black ground (the palette's first color, heavily darkened) rising
@@ -145,7 +156,8 @@ vec3 lightRamp(float I) {
 const MAIN = `
 void main() {
   vec2 fp = vUv * uSize;
-  vec2 p = (fp - uCenter) / uSize.y * uScale + vec2(uSeed * 1.7, uSeed * 2.3);
+  gTime = uTime;
+  vec2 p = twist((fp - uCenter) / uSize.y * uScale) + vec2(uSeed * 1.7, uSeed * 2.3);
   outColor = vec4(antiBand(finish(shade(p, vUv, uTime))), 1.0);
 }`;
 
@@ -792,7 +804,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone, fieldGrade,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone, fieldGrade, fieldSwirl,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -824,6 +836,7 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   gl.uniform1f(gl.getUniformLocation(program, 'uB'), fieldShapeB ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), fieldExposure ?? 0);
   gl.uniform3f(gl.getUniformLocation(program, 'uGrade'), fieldGrade?.brightness ?? 1, fieldGrade?.contrast ?? 1, fieldGrade?.saturation ?? 1);
+  gl.uniform1f(gl.getUniformLocation(program, 'uSwirl'), fieldSwirl ?? 0);
   gl.uniform1i(gl.getUniformLocation(program, 'uTone'), fieldTone === 'aces' ? 1 : fieldTone === 'soft' ? 2 : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);

@@ -72,6 +72,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'eclipseSpeed', label: 'Eclipse Speed', category: 'Eclipse', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'edgeGlowScale', label: 'Edge Glow Scale', category: 'Edge Glow', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'edgeGlowSpeed', label: 'Edge Glow Speed', category: 'Edge Glow', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'fieldSwirl', label: 'Swirl (styled gradients)', category: 'Styled gradients', min: 0.0, max: 2.0 },
   { key: 'embersScale', label: 'Embers Scale', category: 'Embers', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'embersSpeed', label: 'Embers Speed', category: 'Embers', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'emojiRotateSpeed', label: 'Emoji Rotate Speed', category: 'Emoji', min: 0.0, max: 180.0 },

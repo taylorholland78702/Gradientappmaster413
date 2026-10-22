@@ -141,6 +141,7 @@ export interface GradientsTabProps {
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
   fieldExposure: number; setFieldExposure: (v: number) => void;
+  fieldSwirl: number; setFieldSwirl: (v: number) => void;
   fieldGrade: { brightness: number; contrast: number; saturation: number }; setFieldGrade: (v: { brightness: number; contrast: number; saturation: number }) => void;
   fieldTone: 'off' | 'aces' | 'soft'; setFieldTone: (v: 'off' | 'aces' | 'soft') => void;
   fieldShapeA: number; setFieldShapeA: (v: number) => void;
@@ -262,7 +263,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, fieldGrade, setFieldGrade, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, fieldGrade, setFieldGrade, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -734,6 +735,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Scale', value: fieldScale, set: setFieldScale, min: 0.3, max: 3, step: 0.05 },
               { label: 'Speed', value: fieldSpeed, set: setFieldSpeed, min: 0, max: 3, step: 0.05 },
+              { label: 'Swirl', value: fieldSwirl, set: setFieldSwirl, min: 0, max: 2, step: 0.05, hint: 'Twists the pattern around the center, more toward the edges (the Mesh gradients and Tunnel ignore it)' },
               // Two extra sliders specific to the gradient (constants/styleShapeControls.ts).
               ...((STYLE_SHAPE_CONTROLS[gradientType] ?? []).map((c, i) => ({
                 label: c.label, hint: c.hint,
