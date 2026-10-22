@@ -1267,11 +1267,7 @@ export function InteractiveGradient() {
       // the actual cause of the Display tab's angle/pattern slowly falling out of sync).
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && isAutoModeRef.current) {
         let rotationAmountPerFrame;
-        if (gradientTypeRef.current === 'fade') {
-          rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.0167 : -0.0167;
-        } else {
-          rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.03125 : -0.03125;
-        }
+        rotationAmountPerFrame = rotationDirectionRef.current === 'clockwise' ? 0.03125 : -0.03125;
         // audioMidsLevel's natural range depends on the Mids multiplier
         // slider (0-5) and master sensitivity, not a fixed 0-1 — clamping
         // to 1 here keeps the speed boost within its documented "up to 3x"
@@ -1310,12 +1306,6 @@ export function InteractiveGradient() {
       // static tilingRotation slider rather than replacing it.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
         animValuesRef.current.tilingAnimTime += 0.3 * spd * dtScale;
-      }
-
-      // Wave Interference source drift — same PLAY/Auto-only gating as
-      // Tiling/Flower above.
-      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'wave-interference' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.waveInterferenceAnimTime += 0.5 * spd * dtScale;
       }
 
       rafId = requestAnimationFrame(loop);
@@ -1385,16 +1375,6 @@ export function InteractiveGradient() {
   // sync effect below), so the two windows stay frame-locked instead of
   // drifting apart.
 
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'fade' || fadeMode !== 'light' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    // Deliberately slow — a full crossfade between two palette colors takes
-    // roughly 20s at the default speed, not the ~1-2s of every other clock
-    // in this file. Light mode's whole point is that nothing here should read
-    // as "reactive."
-    const id = setInterval(() => setTurrellAnimTime(t => t + 0.0008 * vcrPlaybackSpeed * turrellSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, fadeMode, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, turrellSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
@@ -1694,7 +1674,6 @@ export function InteractiveGradient() {
         juliaReal: setJuliaReal, juliaImaginary: setJuliaImaginary, juliaZoom: setJuliaZoom, juliaIterations: setJuliaIterations,
         tilingSize: setTilingSize, tilingSymmetry: setTilingSymmetry, tilingComplexity: setTilingComplexity, tilingRotation: setTilingRotation,
         reactionDiffusionFeed: setReactionDiffusionFeed, reactionDiffusionKill: setReactionDiffusionKill, reactionDiffusionSpeed: setReactionDiffusionSpeed,
-        waveInterferenceSourceCount: setWaveInterferenceSourceCount, waveInterferenceFrequency: setWaveInterferenceFrequency, waveInterferenceSpeed: setWaveInterferenceSpeed,
         voronoiCellCount: setVoronoiCellCount, voronoiDistortion: setVoronoiDistortion,
         radialSizeScale: setRadialSizeScale, radialSpeed: setRadialSpeed,
         radialBurstMode: setRadialBurstMode, radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,
@@ -3195,9 +3174,7 @@ export function InteractiveGradient() {
     };
 
     const interval = setInterval(() => {
-      if (gradientType === 'fade') {
-        setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 8)));
-      } else if (gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
+      if (gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
         setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 60)));
       } else {
         // Capped at the palette size: with 2 colors, asking for 3 distinct indices never

@@ -24,23 +24,23 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // photo has a modulatable category but is excluded elsewhere from random
 // pools since it's a no-op with no uploaded image.
 export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
-  angle: ['Angle'], attractor: ['Attractor'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
+  angle: ['Angle'], attractor: ['Attractor'], caustics: ['Caustics'],
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
-  voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], windmill: ['Windmill', 'Helix'],
+  voronoi: ['Voronoi'], windmill: ['Windmill', 'Helix'],
   stack: ['Stack'], hatch: ['Hatch'],
   // Styled-field gradients (drawStyleFieldGL.ts): each has its own Scale/Speed
   // entries in MODULATABLE_PARAMS under its display name ('Halftone (Gradient)'
   // is disambiguated from the Halftone effect's category).
-  contour: ['Contour'], glass: ['Glass'], 'halftone-screen': ['Halftone (Gradient)'], holographic: ['Holographic'],
+  contour: ['Contour'], glass: ['Glass'], holographic: ['Holographic'],
   mercury: ['Mercury'], mesh: ['Mesh'], nebula: ['Nebula'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
   tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
   eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
-  'flow-mesh': ['Flow Mesh'], plasma: ['Plasma'], ribbon: ['Ribbon'], strands: ['Strands'], iridescent: ['Iridescent'],
-  embers: ['Embers'], bands: ['Bands'], soft: ['Soft'], sheen: ['Sheen'],
+  'flow-mesh': ['Flow Mesh'], ribbon: ['Ribbon'], strands: ['Strands'], iridescent: ['Iridescent'],
+  embers: ['Embers'], bands: ['Bands'], sheen: ['Sheen'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
@@ -225,11 +225,6 @@ export function useRandomization(params: RandomizationParams) {
     setTilingComplexity(Math.floor(Math.random() * 20) * 0.5 + 0.5);   // 0.5–10
     setTilingRotation(Math.floor(Math.random() * 360));                // 0–359
     setTilingRowOffset(Math.floor(Math.random() * 301) - 150);         // -150–150
-
-    // Wave Interference
-    setWaveInterferenceSourceCount(Math.floor(Math.random() * 7) + 2);  // 2–8
-    setWaveInterferenceFrequency(Math.random() * 19 + 1);               // 1–20
-    setWaveInterferenceSpeed(Math.random() * 4.9 + 0.1);                // 0.1–5
 
     // Caustics
     setCausticsBrightness(Math.random() * 4.5 + 0.5);                  // 0.5–5
@@ -1036,7 +1031,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'topographic') setTopographicScale(Math.round(rng(10, 99)));
     else if (gradientType === 'particles') { setParticlesSpeed(rng(0.1, 5)); setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'tiling') setTilingComplexity(rng(0.5, 10));
-    else if (gradientType === 'wave-interference') setWaveInterferenceSpeed(rng(0.1, 5));
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
     else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));

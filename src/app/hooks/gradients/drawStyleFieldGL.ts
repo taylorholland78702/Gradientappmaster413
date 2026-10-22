@@ -21,11 +21,11 @@ import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFi
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
-  | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves' | 'halftone-screen'
+  | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'plasma' | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands'
-  | 'soft' | 'sheen';
+  | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands'
+  | 'sheen';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -387,28 +387,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return col;
 }`;
 
-// Dot-screen shading: a 45-degree grid whose dots grow with a smooth tone
-// field — the printed-halftone look, colored from the palette.
-const HALFTONE = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  float cell = 0.105 * uA;
-  float c45 = 0.70710678;
-  vec2 r = vec2(c45 * p.x + c45 * p.y, -c45 * p.x + c45 * p.y);
-  vec2 gp = r / cell;
-  vec2 f = fract(gp) - 0.5;
-  vec2 id = floor(gp);
-  vec2 centerP = vec2(c45 * (id.x + 0.5) - c45 * (id.y + 0.5), c45 * (id.x + 0.5) + c45 * (id.y + 0.5)) * cell;
-  float tone = fbm(centerP * 0.55 + vec2(t * 0.03, -t * 0.02)) * 1.25
-             + 0.35 * sin(centerP.x * 0.9 + t * 0.3) * sin(centerP.y * 0.8 - t * 0.2) + uBass * 0.1;
-  tone = smoothstep(0.12, 0.9, clamp(tone, 0.0, 1.0));
-  float rad = sqrt(tone) * 0.54 * uB;
-  float d = length(f);
-  float aa = max(fwidth(d), 1e-3);
-  float dotMask = 1.0 - smoothstep(rad - aa, rad + aa, d);
-  vec3 paper = getMappedColor(0.0) * 0.14;
-  vec3 ink = getMappedColor(clamp(tone * 1.1, 0.0, 1.0));
-  return mix(paper, ink, dotMask);
-}`;
 
 
 // A shaft of light from an off-screen source: a cone whose width grows with
@@ -628,21 +606,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 }`;
 
 
-// Classic demoscene plasma: four interfering sine fields summed and fed through
-// a sine so the palette swings back and forth without a seam.
-const PLASMA = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  vec2 q = p * 1.2 * uA;
-  float v = sin(q.x * 1.6 + t * 0.35);
-  v += sin(q.y * 1.3 + t * 0.28);
-  v += sin((q.x + q.y) * 1.1 + t * 0.22);
-  v += sin(length(q + vec2(sin(t * 0.17), cos(t * 0.13)) * 1.5) * 2.2 - t * 0.4);
-  float k = 0.5 + 0.5 * sin(v * 0.9 * uB + uBass * 0.6);
-  // Push toward the palette's ends: a plain sine spends most of its time near the
-  // middle, which averages a varied palette into one muddy tone.
-  k = mix(k, smoothstep(0.05, 0.95, k), 0.5);
-  return getMappedColor(k) * (0.88 + 0.24 * sin(v * 0.5 + t * 0.1));
-}`;
 
 // One wide ribbon bending across the frame, shaded across its width with the
 // palette twisting along its length.
@@ -745,17 +708,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(a, b, e);
 }`;
 
-// Very diffuse pastel haze: large, slow clouds with no dark gaps, so colors melt
-// into each other.
-const SOFT = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  vec2 q = p * 0.32 * uA;
-  float f = fbm3(q + vec2(t * 0.020, -t * 0.015));
-  float g = fbm3(q * 1.2 + 4.0 + f * 1.1 - t * 0.010);
-  float k = clamp(0.5 + (g - 0.5) * 1.7 * uB + uBass * 0.05, 0.0, 1.0);
-  vec3 col = getMappedColor(k);
-  return mix(vec3(luma(col)), col, 0.92);
-}`;
 
 // Brushed satin: streaky stretched noise with broad highlight bands sweeping
 // across it.
@@ -783,7 +735,6 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   raindrops: RAINDROPS,
   holographic: HOLOGRAPHIC,
   waves: WAVES,
-  'halftone-screen': HALFTONE,
   'light-beam': LIGHT_BEAM,
   'edge-glow': EDGE_GLOW,
   curtains: CURTAINS,
@@ -794,13 +745,11 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   spectral: SPECTRAL,
   drape: DRAPE,
   'flow-mesh': FLOW_MESH,
-  plasma: PLASMA,
   ribbon: RIBBON,
   strands: STRANDS,
   iridescent: IRIDESCENT,
   embers: EMBERS,
   bands: BANDS,
-  soft: SOFT,
   sheen: SHEEN,
 };
 

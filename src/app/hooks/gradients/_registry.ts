@@ -4,7 +4,6 @@ import { drawWindmill } from './drawWindmill';
 import { drawShapes } from './drawShapes';
 import { drawStack } from './drawStack';
 import { drawHatch } from './drawHatch';
-import { drawFade } from './drawFade';
 import { drawNoise } from './drawNoise';
 import { drawStyleFieldCPU } from './drawStyleFieldCPU';
 import { drawTopographic } from './drawTopographic';
@@ -31,7 +30,6 @@ import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
 import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
-import { drawWaveInterference } from './drawWaveInterference';
 import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type StyleFieldId } from './drawStyleFieldGL';
 
 // Lazily code-split the heaviest, least-often-selected gradients (large
@@ -273,13 +271,11 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'drape': (P) => styleFieldAuto('drape', P),
   'eclipse': (P) => styleFieldAuto('eclipse', P),
   'edge-glow': (P) => styleFieldAuto('edge-glow', P),
-  'fade': drawFade,
   'fireworks': drawFireworksLazy,
   'flow-mesh': (P) => styleFieldAuto('flow-mesh', P),
   'flower': drawFlower,
   'glass': (P) => styleFieldAuto('glass', P),
   'grid': drawGrid,
-  'halftone-screen': (P) => styleFieldAuto('halftone-screen', P),
   'hatch': drawHatch,
   'holographic': (P) => styleFieldAuto('holographic', P),
   'julia': drawJuliaAuto,
@@ -288,13 +284,11 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'lightning': drawLightningLazy,
   'marble': drawMarbleAuto,
   'mercury': (P) => styleFieldAuto('mercury', P),
-  'plasma': (P) => styleFieldAuto('plasma', P),
   'ribbon': (P) => styleFieldAuto('ribbon', P),
   'strands': (P) => styleFieldAuto('strands', P),
   'iridescent': (P) => styleFieldAuto('iridescent', P),
   'embers': (P) => styleFieldAuto('embers', P),
   'bands': (P) => styleFieldAuto('bands', P),
-  'soft': (P) => styleFieldAuto('soft', P),
   'sheen': (P) => styleFieldAuto('sheen', P),
   'mesh': (P) => styleFieldAuto('mesh', P),
   'metaballs': drawMetaballsAuto,
@@ -317,7 +311,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'tunnel': (P) => styleFieldAuto('tunnel', P),
   'voronoi': drawVoronoiAuto,
   'vortex': (P) => styleFieldAuto('vortex', P),
-  'wave-interference': drawWaveInterference,
   'waves': (P) => styleFieldAuto('waves', P),
   'windmill': drawWindmillAuto,
 };

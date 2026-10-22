@@ -30,10 +30,10 @@ type Family = 'glow' | 'bands' | 'field';
 const FAMILY: Record<StyleFieldId, Family> = {
   'light-beam': 'glow', 'edge-glow': 'glow', curtains: 'glow', eclipse: 'glow', rays: 'glow',
   bokeh: 'glow', vortex: 'glow', spectral: 'glow', embers: 'glow',
-  waves: 'bands', ribbon: 'bands', strands: 'bands', bands: 'bands', plasma: 'bands',
+  waves: 'bands', ribbon: 'bands', strands: 'bands', bands: 'bands',
   smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field',
-  nebula: 'field', prism: 'field', raindrops: 'field', holographic: 'field', 'halftone-screen': 'field',
-  drape: 'field', 'flow-mesh': 'field', iridescent: 'field', soft: 'field', sheen: 'field',
+  nebula: 'field', prism: 'field', raindrops: 'field', holographic: 'field',
+  drape: 'field', 'flow-mesh': 'field', iridescent: 'field', sheen: 'field',
 };
 
 // Light intensity (0..~1.2) for the dark-ground looks, at plane position (x, y),
@@ -118,12 +118,6 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
       const s = (0.5 + 0.5 * Math.sin(w * 1.4)) * 6;
       const f = s - Math.floor(s);
       return (Math.floor(s) + smooth(clamp01((f - 0.88) / 0.12))) / 6;
-    }
-    case 'plasma': {
-      const qx = x * 1.2, qy = y * 1.2;
-      const s = Math.sin(qx * 1.6 + t * 0.35) + Math.sin(qy * 1.3 + t * 0.28) + Math.sin((qx + qy) * 1.1 + t * 0.22)
-        + Math.sin(Math.hypot(qx + Math.sin(t * 0.17) * 1.5, qy + Math.cos(t * 0.13) * 1.5) * 2.2 - t * 0.4);
-      return 0.5 + 0.5 * Math.sin(s * 0.9);
     }
     case 'tunnel': {
       const r = Math.max(Math.hypot(u - 0.5, v - 0.5) * 2, 0.02);

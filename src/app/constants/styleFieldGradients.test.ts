@@ -49,12 +49,6 @@ describe('styled-field gradients', () => {
     expect(new Set(keys).size).toBe(keys.length);
     expect(resolveModulationKey('marbleVeinFreq')).toBe('marbleVeinFreq');
   });
-
-  it("keeps the Halftone gradient's category apart from the Halftone effect's", () => {
-    const effectCats = new Set(MODULATABLE_PARAMS.filter((p) => !p.target).map((p) => p.category));
-    expect(effectCats.has('Halftone')).toBe(true);
-    expect(GRADIENT_MOD_CATEGORY['halftone-screen']).toEqual(['Halftone (Gradient)']);
-  });
 });
 
 describe('per-gradient looks', () => {
@@ -166,6 +160,12 @@ describe('merged gradient families', () => {
 
   it('sends the removed gradients to a close surviving one', () => {
     expect(migrateId('aurora')).toBe('curtains');
+    expect(migrateId('plasma')).toBe('noise');
+    expect(migrateId('wave-interference')).toBe('raindrops');
+    expect(migrateId('halftone-screen')).toBe('smoke');
+    expect(migrateId('soft')).toBe('smoke');
+    expect(migrateId('fade')).toBe('mesh');
+    expect(migrateId('turrell')).toBe('mesh');
     expect(migrateId('mesh-wireframe')).toBe('voronoi');
     expect(FULL_GRADIENT_TYPES).not.toContain('aurora' as never);
     expect(FULL_GRADIENT_TYPES).not.toContain('mesh-wireframe' as never);

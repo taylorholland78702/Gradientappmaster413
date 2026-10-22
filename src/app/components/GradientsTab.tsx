@@ -10,7 +10,7 @@ import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleSh
 // older ones that read it), so a Seed control means something for them.
 // A function, not a module constant: the import cycle through InteractiveGradient
 // can evaluate this file before gradientEffects has finished.
-const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic', 'wave-interference'];
+const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic'];
 const usesSeed = (t: GradientType) => SEEDED_EXTRA.includes(t) || STYLE_FIELD_GRADIENT_TYPES.includes(t);
 
 export interface GradientsTabProps {
@@ -295,7 +295,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   // Banded/Cyclic don't apply the same way).
   const renderFieldMappingRows = () => (
     <>
-      {gradientType !== 'fade' && (
+      {(
         <div className="flex items-center gap-1">
           <label className="text-[10px] text-white whitespace-nowrap">Palette:</label>
           <div className="flex gap-1 flex-1">
@@ -321,7 +321,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
         </div>
       </div>
-      {gradientType !== 'fade' && paletteMode !== 'linear' && (
+      {paletteMode !== 'linear' && (
         <div className="flex items-center justify-between">
           <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
           <div className="flex items-center gap-1 flex-1 ml-2">
@@ -973,24 +973,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {gradientType === 'wave-interference' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {renderFieldMappingRows()}
-            {[
-              { label: 'Sources', value: waveInterferenceSourceCount, set: setWaveInterferenceSourceCount, min: 2, max: 8, step: 1 },
-              { label: 'Frequency', value: waveInterferenceFrequency, set: setWaveInterferenceFrequency, min: 1, max: 20, step: 0.5 },
-              { label: 'Speed', value: waveInterferenceSpeed, set: setWaveInterferenceSpeed, min: 0.1, max: 5, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
 
         {gradientType === 'julia' && (
@@ -1711,64 +1693,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
           </div>
         )}
-
-        {/* Fade Controls — 'light' mode folds in the former standalone
-            Turrell gradient (a full-bleed field with no visible gradient
-            stop, crossing the palette slowly over minutes) as an
-            alternate mode, same precedent as Helix merging into Windmill. */}
-        {gradientType === 'fade' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Mode:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <button
-                  onClick={() => setFadeMode('angle')}
-                  aria-pressed={fadeMode === 'angle'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    fadeMode === 'angle' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
-                >
-                  Angle
-                </button>
-                <button
-                  onClick={() => setFadeMode('light')}
-                  aria-pressed={fadeMode === 'light'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    fadeMode === 'light' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
-                >
-                  Light
-                </button>
-              </div>
-            </div>
-            {fadeMode === 'angle' ? (
-              <>
-                {renderFieldMappingRows()}
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Direction:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input type="range" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="360" value={fadeDirection} onChange={(e) => setFadeDirection(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </div>
-              </>
-            ) : (
-              [
-                { label: 'Speed', value: turrellSpeed, set: setTurrellSpeed, min: 0.1, max: 2, step: 0.1 },
-                { label: 'Glow', value: turrellGlow, set: setTurrellGlow, min: 0, max: 1, step: 0.05 },
-              ].map(({ label, value, set, min, max, step }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (

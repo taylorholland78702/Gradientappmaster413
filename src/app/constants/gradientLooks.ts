@@ -25,7 +25,6 @@ export const LOOK_PARAM_KEYS = [
   'juliaReal', 'juliaImaginary', 'juliaZoom', 'juliaIterations',
   'tilingSize', 'tilingSymmetry', 'tilingComplexity', 'tilingRotation',
   'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
-  'waveInterferenceSourceCount', 'waveInterferenceFrequency', 'waveInterferenceSpeed',
   'voronoiCellCount', 'voronoiDistortion',
   'radialSizeScale', 'radialSpeed',
   'radialBurstMode', 'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
@@ -122,11 +121,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Magma', colors: ['#2b0a03', '#a3260b', '#ff6a1a', '#ffd27a'], speed: 1.3 },
     { name: 'Sakura', colors: ['#5b1a3a', '#c2477a', '#ff9ec4', '#ffe3ef'], speed: 0.7 },
   ],
-  'halftone-screen': [
-    { name: 'Print', colors: ['#fdf6e3', '#ff4d4d', '#2b6cff', '#ffd400'] },
-    { name: 'Mono', colors: ['#0a0a0a', '#4a4a4a', '#9a9a9a', '#f2f2f2'], speed: 0.6 },
-    { name: 'Riso', colors: ['#fff4e0', '#ff6b8b', '#3d5afe', '#00c9a7'], scale: 1.2 },
-  ],
   'light-beam': [
     { name: 'Ember Beam', colors: ['#0a0402', '#7a2a08', '#ff7a1a', '#ffe2b0'] },
     { name: 'Cobalt Shaft', colors: ['#02060f', '#0a2a66', '#2f7bff', '#d6e8ff'] },
@@ -179,11 +173,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Aqua Folds', colors: ['#0aa4c9', '#2de1b5', '#7a8cff', '#c5f3ff'], speed: 0.8 },
     { name: 'Lilac Satin', colors: ['#b8a0ff', '#e0b8ff', '#ffd1f0', '#9ec5ff'], speed: 0.6 },
   ],
-  plasma: [
-    { name: 'Lava Lamp', colors: ['#2a0a3a', '#d4145a', '#ff7a18', '#ffe259'] },
-    { name: 'Acid', colors: ['#031a0f', '#12ff8a', '#d4ff3a', '#ff3ad4'], speed: 1.3 },
-    { name: 'Deep Sea', colors: ['#021428', '#0b4f8a', '#2ac4d8', '#c9fff4'], speed: 0.7 },
-  ],
   ribbon: [
     { name: 'Satin', colors: ['#1b1030', '#6a3fd0', '#ff7ac8', '#ffe3f1'] },
     { name: 'Gold Leaf', colors: ['#2a1a06', '#9a6a12', '#f1c24a', '#fff2c4'], speed: 0.8 },
@@ -209,11 +198,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Retro', colors: ['#ff6b6b', '#ffd166', '#06d6a0', '#118ab2'], scale: 1.2 },
     { name: 'Dusk', colors: ['#0f0c29', '#302b63', '#6a5acd', '#c8b6ff'], speed: 0.7 },
   ],
-  soft: [
-    { name: 'Cotton', colors: ['#ffd6e8', '#d6e8ff', '#fff4c9', '#d9f5e0'] },
-    { name: 'Dawn Haze', colors: ['#f6c1d0', '#f9d7b5', '#c9d6f5', '#e6d4f5'], speed: 0.7 },
-    { name: 'Mist', colors: ['#cfd9e6', '#e6eef5', '#d6e4e0', '#eef0f5'], speed: 0.6 },
-  ],
   sheen: [
     { name: 'Satin', colors: ['#2a1b3d', '#6b4a9f', '#c9a8ff', '#fff2ff'] },
     { name: 'Champagne', colors: ['#3a2a18', '#a8864a', '#e8d29a', '#fff8e6'] },
@@ -229,11 +213,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Sunburst', colors: ['#fff1b8', '#ffb347', '#ff5e62', '#6a1b9a'], params: { radialSizeScale: 1.3 } },
     { name: 'Moonlight', colors: ['#02030c', '#1b2a5a', '#7aa2ff', '#f2f6ff'], params: { radialSizeScale: 0.9 } },
     { name: 'Peach Glow', colors: ['#ffe0d0', '#ffb6a0', '#ff8fa3', '#c06c9c'], params: { radialSizeScale: 1.6 } },
-  ],
-  fade: [
-    { name: 'Dawn', colors: ['#1b1b3a', '#7a4fa8', '#ff9a8b', '#ffe3b3'], params: { fadeDirection: 70 } },
-    { name: 'Mint Sherbet', colors: ['#c8f7e4', '#9be7ff', '#d6b3ff', '#ffd1e8'], params: { fadeDirection: 120 } },
-    { name: 'Ink Wash', colors: ['#0a0a12', '#2a2a4a', '#6a6a9a', '#c8c8e8'], params: { fadeDirection: 20 } },
   ],
   noise: [
     { name: 'Soft Clouds', colors: ['#dfeaff', '#b9d2ff', '#e8d8ff', '#fff0f6'], params: { noiseType: 'smooth', noiseScale: 120, noiseOctaves: 3, noiseWarp: 0.3 } },
@@ -294,11 +273,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Coral', colors: ['#05121c', '#0b5a6b', '#ff7a6a', '#fff1e0'], params: { reactionDiffusionFeed: 0.055, reactionDiffusionKill: 0.062 } },
     { name: 'Spots', colors: ['#0a0a14', '#2a2a5a', '#8a8aff', '#f0f0ff'], params: { reactionDiffusionFeed: 0.035, reactionDiffusionKill: 0.065 } },
     { name: 'Labyrinth', colors: ['#1a0a00', '#7a3d00', '#e0a200', '#fff4c2'], params: { reactionDiffusionFeed: 0.029, reactionDiffusionKill: 0.057 } },
-  ],
-  'wave-interference': [
-    { name: 'Pond', colors: ['#02131a', '#0b5a6b', '#27c3e0', '#e6ffff'], params: { waveInterferenceSourceCount: 4, waveInterferenceFrequency: 8 } },
-    { name: 'Moire', colors: ['#fafafa', '#222222', '#fafafa', '#222222'], params: { waveInterferenceSourceCount: 5, waveInterferenceFrequency: 14 } },
-    { name: 'Sunset Ripples', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { waveInterferenceSourceCount: 3, waveInterferenceFrequency: 6 } },
   ],
   grid: [
     { name: 'Pixel Candy', colors: ['#ff9ecb', '#9ed8ff', '#fff09e', '#b6f2b0'], params: { gridRows: 10, gridColumns: 14 } },
