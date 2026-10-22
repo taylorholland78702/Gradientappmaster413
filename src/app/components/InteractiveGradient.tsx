@@ -29,6 +29,8 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
+import { renderLoopToMp4, evenMultiplier, webCodecsAvailable } from '../utils/loopExport';
+import { loopRender } from '../hooks/gradients/drawStyleFieldGL';
 import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
 import { encodePresetData } from '../utils/presetShare';
 import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
@@ -300,6 +302,14 @@ const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[] = [
   { id: '10', label: '10s', seconds: 10 },
   { id: '30', label: '30s', seconds: 30 },
 ];
+
+// Seamless loop export: lengths, and the effects that remember earlier frames (a loop can't repeat
+// through those, so a seam shows).
+type LoopSeconds = '4' | '6' | '8' | '10';
+const LOOP_LENGTHS: { id: LoopSeconds; label: string }[] = [
+  { id: '4', label: '4s' }, { id: '6', label: '6s' }, { id: '8', label: '8s' }, { id: '10', label: '10s' },
+];
+const HISTORY_EFFECTS = ['feedback', 'chromatic-trails', 'slit-scan'];
 
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 const EXPORT_MAX_EDGE = 8192;
@@ -2231,6 +2241,37 @@ export function InteractiveGradient() {
           {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
         </div>
         <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <span className="text-[10px] text-white/60" title="An MP4 whose end leads straight back into its start, for a background that plays forever">Seamless loop</span>
+          <div className="flex gap-1" role="group" aria-label="Loop length">
+            {LOOP_LENGTHS.map(o => (
+              <button
+                key={o.id}
+                onClick={() => setLoopSeconds(o.id)}
+                aria-pressed={loopSeconds === o.id}
+                disabled={loopProgress !== null}
+                className="flex-1 px-2 py-1 text-[10px] transition-all disabled:opacity-50"
+                style={loopSeconds === o.id
+                  ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
+                  : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+              >{o.label}</button>
+            ))}
+          </div>
+          <button
+            onClick={exportLoop}
+            disabled={!loopable && loopProgress === null}
+            className="py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40"
+            style={loopProgress !== null ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
+          >{loopProgress !== null ? `Rendering ${Math.round(loopProgress * 100)}% — Cancel` : 'Export loop'}</button>
+          <p className="text-[10px] text-white/50">
+            {!loopable
+              ? 'Loops work with the shader gradients (Smoke, Glass, Ring, Mesh and the like) — not the simulations.'
+              : activeEffects.some(e => HISTORY_EFFECTS.includes(e))
+                ? 'Feedback, Chromatic Trails and Slit-Scan remember past frames, so this loop will show a seam. Uses the video Size above; audio is ignored.'
+                : 'Uses the video Size above. Audio is ignored and auto-drifts are paused while it renders.'}
+          </p>
+          {loopError && <p role="alert" className="text-[10px] text-red-300">{loopError}</p>}
+        </div>
+        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
           <div className="flex gap-1">
             {([['box', 'Box 16:9'], ['background', 'Background']] as [EmbedKind, string][]).map(([kind, label]) => (
@@ -3887,6 +3928,75 @@ export function InteractiveGradient() {
       isExportingRef.current = false;
     }
   }, []);
+
+  // Seamless loop: renders the shader gradient frame by frame into an MP4 whose last frame leads straight
+  // back into its first (the picture is cross-faded with itself one loop earlier; see loopRender).
+  const [loopSeconds, setLoopSecondsState] = useState<LoopSeconds>(() => {
+    try { const v = localStorage.getItem('loopSeconds'); return LOOP_LENGTHS.some(o => o.id === v) ? (v as LoopSeconds) : '6'; } catch { return '6'; }
+  });
+  const setLoopSeconds = (v: LoopSeconds) => { setLoopSecondsState(v); try { localStorage.setItem('loopSeconds', v); } catch { /* not persisted */ } };
+  const [loopProgress, setLoopProgress] = useState<number | null>(null);
+  const [loopError, setLoopError] = useState<string | null>(null);
+  const loopCancelRef = useRef(false);
+  const loopable = STYLE_FIELD_GRADIENT_TYPES.includes(gradientType as GradientType);
+  const exportLoop = async () => {
+    if (loopProgress !== null) { loopCancelRef.current = true; return; }
+    const canvas = canvasRef.current;
+    if (!canvas || !loopable) return;
+    setLoopError(null);
+    if (!webCodecsAvailable()) { setLoopError('This browser can’t encode video (it needs WebCodecs).'); return; }
+    loopCancelRef.current = false;
+    setLoopProgress(0);
+    // Freeze everything that drifts on its own, so the only thing moving is the loop.
+    const wasAutoColor = isAutoColorRef.current, wasAuto = isAutoModeRef.current, wasShuffle = isAutoShuffleOn;
+    if (wasAutoColor) setIsAutoColor(false);
+    if (wasAuto) setIsAutoMode(false);
+    if (wasShuffle) setIsAutoShuffleOn(false);
+    const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
+    try {
+      await nextFrame();
+      const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
+      const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
+      const mult = evenMultiplier(cssW, cssH, longEdge || Math.max(cssW, cssH) * (canvas.width / cssW));
+      exportRender.multiplier = mult;
+      const seconds = Number(loopSeconds);
+      // Shader time runs at (playback speed x this gradient's Speed) per real second.
+      const speed = vcrPlaybackSpeedRef.current * (animValuesRef.current.fieldSpeedLive ?? 1);
+      loopRender.base = animValuesRef.current.fieldAnimTime ?? 0;
+      loopRender.T = Math.max(0.001, seconds * speed);
+      loopRender.phase = 0;
+      loopRender.active = true;
+      drawParamsDirtyRef.current = true;
+      for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
+      await nextFrame();
+      const blob = await renderLoopToMp4({
+        canvas, seconds, fps: 30,
+        drawFrame: async (phase) => { loopRender.phase = phase; drawParamsDirtyRef.current = true; await nextFrame(); await nextFrame(); },
+        onProgress: setLoopProgress,
+        isCancelled: () => loopCancelRef.current,
+      });
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `wav-loop-${canvas.width}x${canvas.height}-${seconds}s.mp4`;
+        link.click();
+        URL.revokeObjectURL(url);
+        haptic('success');
+      }
+    } catch (err) {
+      console.error('Loop export failed:', err);
+      setLoopError(err instanceof Error ? err.message : 'The loop could not be rendered.');
+    } finally {
+      loopRender.active = false;
+      exportRender.multiplier = 0;
+      drawParamsDirtyRef.current = true;
+      if (wasAutoColor) setIsAutoColor(true);
+      if (wasAuto) setIsAutoMode(true);
+      if (wasShuffle) setIsAutoShuffleOn(true);
+      setLoopProgress(null);
+    }
+  };
 
   // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
   // size first, since the encoder is fixed to the canvas size at the moment recording begins.
