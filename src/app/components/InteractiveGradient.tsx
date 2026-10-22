@@ -2469,15 +2469,14 @@ export function InteractiveGradient() {
   }, [buildSnapshot, applySnapshot]);
 
   // ---- Gesture feedback and the shared actions behind swipes, arrow keys and taps ----------
-  // A small message near the controls ("Shuffled · swipe right to undo"), with an optional
-  // one-tap action, that fades on its own. `kind` picks the hint wording: a touch gesture
+  // A small message near the controls ("Shuffled · swipe right to undo") that fades on its own. `kind` picks the hint wording: a touch gesture
   // says "swipe", a key press says "←".
-  const [toast, setToast] = useState<{ id: number; text: string; action?: { label: string; run: () => void } } | null>(null);
+  const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showToast = useCallback((text: string, action?: { label: string; run: () => void }) => {
+  const showToast = useCallback((text: string) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToast({ id: Date.now(), text, action });
-    toastTimerRef.current = setTimeout(() => setToast(null), action ? 3200 : 1800);
+    setToast({ id: Date.now(), text });
+    toastTimerRef.current = setTimeout(() => setToast(null), 2000);
   }, []);
   useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
 
@@ -2494,19 +2493,19 @@ export function InteractiveGradient() {
     }
     undoLastChange();
     haptic('tick');
-    showToast(via === 'swipe' ? 'Undone · swipe left to go forward' : 'Undone · → goes forward', { label: 'Redo', run: () => redoLastChange() });
+    showToast(via === 'swipe' ? 'Undone · swipe left to go forward' : 'Undone · → goes forward');
   }, [undoLastChange, redoLastChange, showToast]);
 
   const goForward = useCallback((via: 'swipe' | 'key') => {
     if (redoStackRef.current.length > 0) {
       redoLastChange();
       haptic('tick');
-      showToast('Redone', { label: 'Undo', run: () => undoLastChange() });
+      showToast('Redone');
       return;
     }
     evolveWithFactor(1);
     haptic('success');
-    showToast(via === 'swipe' ? 'Shuffled · swipe right to undo' : 'Shuffled · ← to undo', { label: 'Undo', run: () => undoLastChange() });
+    showToast(via === 'swipe' ? 'Shuffled · swipe right to undo' : 'Shuffled · ← to undo');
   }, [evolveWithFactor, undoLastChange, redoLastChange, showToast]);
 
   const togglePause = useCallback(() => {
@@ -4569,7 +4568,7 @@ export function InteractiveGradient() {
           key={toast.id}
           role="status"
           aria-live="polite"
-          className="fixed z-50 flex items-center gap-3 px-3 py-1.5 rounded-full border border-white/15 text-[12px] text-white shadow-lg pointer-events-auto"
+          className="fixed z-50 flex items-center gap-3 px-3 py-1.5 rounded-full border border-white/15 text-[12px] text-white shadow-lg pointer-events-none"
           style={{
             backgroundColor: 'rgba(8, 8, 12, 0.88)',
             left: '50%',
@@ -4578,12 +4577,6 @@ export function InteractiveGradient() {
           }}
         >
           <span>{toast.text}</span>
-          {toast.action && (
-            <button
-              onClick={() => { toast.action!.run(); setToast(null); }}
-              className="font-semibold underline underline-offset-2 hover:text-white/80"
-            >{toast.action.label}</button>
-          )}
         </div>
       )}
 
