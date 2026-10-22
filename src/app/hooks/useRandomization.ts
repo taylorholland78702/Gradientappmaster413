@@ -24,10 +24,10 @@ import type { AudioBinding } from './state/useAudioBindingsState';
 // photo has a modulatable category but is excluded elsewhere from random
 // pools since it's a no-op with no uploaded image.
 export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
-  angle: ['Angle'], attractor: ['Attractor'], aurora: ['Aurora'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
+  angle: ['Angle'], attractor: ['Attractor'], caustics: ['Caustics'], fade: ['Fade', 'Light'],
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
-  'mesh-wireframe': ['Mesh Wireframe'], metaballs: ['Metaballs'],
+  metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], 'wave-interference': ['Wave Interference'], windmill: ['Windmill', 'Helix'],
@@ -226,21 +226,10 @@ export function useRandomization(params: RandomizationParams) {
     setTilingRotation(Math.floor(Math.random() * 360));                // 0–359
     setTilingRowOffset(Math.floor(Math.random() * 301) - 150);         // -150–150
 
-    // Mesh Wireframe — never touched by any randomize/shuffle path before,
-    // same gap Fireworks/Lightning/Particles/Tiling above used to have.
-    setMeshWireframeGridSize(Math.floor(Math.random() * 28) + 3);       // 3–30
-    setMeshWireframeJitter(Math.random());                              // 0–1
-    setMeshWireframeLineWidth(Math.random() * 4);                       // 0–4
-
-    // Wave Interference — same gap as Mesh Wireframe above.
+    // Wave Interference
     setWaveInterferenceSourceCount(Math.floor(Math.random() * 7) + 2);  // 2–8
     setWaveInterferenceFrequency(Math.random() * 19 + 1);               // 1–20
     setWaveInterferenceSpeed(Math.random() * 4.9 + 0.1);                // 0.1–5
-
-    // Aurora
-    setAuroraBandCount(Math.floor(Math.random() * 10) + 2);            // 2–11
-    setAuroraBandHeight(Math.random() * 3.5 + 0.5);                    // 0.5–4
-    setAuroraWaveSpeed(Math.random() * 2.9 + 0.1);                     // 0.1–3
 
     // Caustics
     setCausticsBrightness(Math.random() * 4.5 + 0.5);                  // 0.5–5
@@ -1032,7 +1021,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); setRadarBeamWidth(Math.round(rng(1, 90))); }
     else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
     else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
-    else if (gradientType === 'aurora') { setAuroraBandCount(Math.round(rng(2, 12))); setAuroraWaveSpeed(rng(0.1, 3)); }
     else if (gradientType === 'caustics') setCausticsScale(rng(1, 12));
     else if (gradientType === 'lava-lamp') { setLavaBlobCount(Math.round(rng(2, 12))); setLavaBlobSize(rng(0.05, 0.4)); }
     else if (gradientType === 'marble') setMarbleTurbulence(rng(0, 5));
@@ -1049,7 +1037,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'particles') { setParticlesSpeed(rng(0.1, 5)); setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
     else if (gradientType === 'tiling') setTilingComplexity(rng(0.5, 10));
     else if (gradientType === 'wave-interference') setWaveInterferenceSpeed(rng(0.1, 5));
-    else if (gradientType === 'mesh-wireframe') setMeshWireframeJitter(rng(0, 1));
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
     else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));

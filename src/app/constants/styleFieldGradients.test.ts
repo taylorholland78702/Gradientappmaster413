@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES, AUDIO_GRADIENTS,
-  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES,
+  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, migrateId,
 } from './gradientEffects';
 import { STYLE_FIELD_IDS } from '../hooks/gradients/drawStyleFieldGL';
 import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
@@ -148,5 +148,26 @@ describe('shape controls', () => {
       expect(c, t).toBeDefined();
       expect(c![0].label && c![1].label, t).toBeTruthy();
     }
+  });
+});
+
+describe('merged gradient families', () => {
+  it('only group real, selectable gradients, each in at most one family', () => {
+    const seen = new Set<string>();
+    for (const f of GRADIENT_FAMILIES) {
+      expect(f.members.length, f.id).toBeGreaterThanOrEqual(2);
+      for (const m of f.members) {
+        expect(FULL_GRADIENT_TYPES, `${f.id}/${m.type}`).toContain(m.type);
+        expect(seen.has(m.type), `${m.type} in two families`).toBe(false);
+        seen.add(m.type);
+      }
+    }
+  });
+
+  it('sends the removed gradients to a close surviving one', () => {
+    expect(migrateId('aurora')).toBe('curtains');
+    expect(migrateId('mesh-wireframe')).toBe('voronoi');
+    expect(FULL_GRADIENT_TYPES).not.toContain('aurora' as never);
+    expect(FULL_GRADIENT_TYPES).not.toContain('mesh-wireframe' as never);
   });
 });

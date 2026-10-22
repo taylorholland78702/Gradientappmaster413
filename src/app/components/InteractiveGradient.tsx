@@ -1318,11 +1318,6 @@ export function InteractiveGradient() {
         animValuesRef.current.waveInterferenceAnimTime += 0.5 * spd * dtScale;
       }
 
-      // Mesh Wireframe point-jitter drift — same gating.
-      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'mesh-wireframe' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.meshWireframeAnimTime += 0.5 * spd * dtScale;
-      }
-
       rafId = requestAnimationFrame(loop);
     };
     // Explicitly stop scheduling new frames while the tab is backgrounded
@@ -1389,12 +1384,6 @@ export function InteractiveGradient() {
   // tab's copies are pushed from the controller instead (see the animation
   // sync effect below), so the two windows stay frame-locked instead of
   // drifting apart.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'aurora' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setAuroraAnimTime(t => t + 0.016 * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
@@ -1696,7 +1685,6 @@ export function InteractiveGradient() {
     // The gradient's own sliders/modes. Only what the look lists is touched.
     if (look.params) {
       const setters: Record<LookParamKey, (v: any) => void> = { // eslint-disable-line @typescript-eslint/no-explicit-any
-        auroraBandCount: setAuroraBandCount, auroraBandHeight: setAuroraBandHeight, auroraWaveSpeed: setAuroraWaveSpeed,
         causticsBrightness: setCausticsBrightness, causticsScale: setCausticsScale,
         lavaBlobCount: setLavaBlobCount, lavaBlobSize: setLavaBlobSize, lavaSpeed: setLavaSpeed,
         marbleVeinFreq: setMarbleVeinFreq, marbleTurbulence: setMarbleTurbulence, marbleOctaves: setMarbleOctaves,
@@ -1707,7 +1695,6 @@ export function InteractiveGradient() {
         tilingSize: setTilingSize, tilingSymmetry: setTilingSymmetry, tilingComplexity: setTilingComplexity, tilingRotation: setTilingRotation,
         reactionDiffusionFeed: setReactionDiffusionFeed, reactionDiffusionKill: setReactionDiffusionKill, reactionDiffusionSpeed: setReactionDiffusionSpeed,
         waveInterferenceSourceCount: setWaveInterferenceSourceCount, waveInterferenceFrequency: setWaveInterferenceFrequency, waveInterferenceSpeed: setWaveInterferenceSpeed,
-        meshWireframeGridSize: setMeshWireframeGridSize, meshWireframeJitter: setMeshWireframeJitter, meshWireframeLineWidth: setMeshWireframeLineWidth,
         voronoiCellCount: setVoronoiCellCount, voronoiDistortion: setVoronoiDistortion,
         radialSizeScale: setRadialSizeScale, radialSpeed: setRadialSpeed,
         radialBurstMode: setRadialBurstMode, radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,

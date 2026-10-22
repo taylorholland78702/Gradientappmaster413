@@ -12,7 +12,6 @@ import { drawJulia } from './drawJulia';
 import { drawGrid } from './drawGrid';
 import { drawRadialBurst } from './drawRadialBurst';
 import { drawVoronoi } from './drawVoronoi';
-import { drawAurora } from './drawAurora';
 import { drawCaustics } from './drawCaustics';
 import { drawLavaLamp } from './drawLavaLamp';
 import { drawMarble } from './drawMarble';
@@ -33,7 +32,6 @@ import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
 import { drawWaveInterference } from './drawWaveInterference';
-import { drawMeshWireframe } from './drawMeshWireframe';
 import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type StyleFieldId } from './drawStyleFieldGL';
 
 // Lazily code-split the heaviest, least-often-selected gradients (large
@@ -268,7 +266,6 @@ function styleFieldAuto(id: StyleFieldId, P: any): CanvasGradient | undefined { 
 export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
   'angle': drawAngleAuto,
   'attractor': drawAttractorLazy,
-  'aurora': drawAurora,
   'bokeh': (P) => styleFieldAuto('bokeh', P),
   'caustics': drawCausticsAuto,
   'contour': (P) => styleFieldAuto('contour', P),
@@ -300,7 +297,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | unde
   'soft': (P) => styleFieldAuto('soft', P),
   'sheen': (P) => styleFieldAuto('sheen', P),
   'mesh': (P) => styleFieldAuto('mesh', P),
-  'mesh-wireframe': drawMeshWireframe,
   'metaballs': drawMetaballsAuto,
   'nebula': (P) => styleFieldAuto('nebula', P),
   'noise': drawNoiseAuto,

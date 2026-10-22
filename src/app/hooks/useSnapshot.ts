@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { type GradientType, DEFAULT_COLORS } from '../constants/gradientEffects';
+import { type GradientType, DEFAULT_COLORS, migrateId } from '../constants/gradientEffects';
 
 // Loosely typed for the same reason as useRandomization.ts's params: this
 // hook wires together ~380 values/setters covering every persistable piece
@@ -408,7 +408,8 @@ export function useSnapshot(params: SnapshotParams) {
     // goes solid black, and since the bad state is already applied by the
     // time anything throws, the ErrorBoundary's remount just reapplies the
     // same broken preset and crash-loops instead of recovering.
-    setGradientType(snapshot.gradientType ?? 'angle');
+    // Ids of removed or renamed gradients (Aurora, Mesh Wireframe, ...) land on their replacement.
+    setGradientType(migrateId(snapshot.gradientType ?? 'angle') as GradientType);
     setGradientAngle(snapshot.gradientAngle ?? 45);
     setTargetAngle(snapshot.targetAngle ?? snapshot.gradientAngle ?? 45);
     setZoom(snapshot.zoom ?? 1);

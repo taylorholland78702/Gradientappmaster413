@@ -16,7 +16,6 @@ import type { GradientType } from './gradientEffects';
 // (InteractiveGradient.tsx); numeric ones are range-checked in tests against the
 // same limits as the sliders themselves.
 export const LOOK_PARAM_KEYS = [
-  'auroraBandCount', 'auroraBandHeight', 'auroraWaveSpeed',
   'causticsBrightness', 'causticsScale',
   'lavaBlobCount', 'lavaBlobSize', 'lavaSpeed',
   'marbleVeinFreq', 'marbleTurbulence', 'marbleOctaves',
@@ -27,7 +26,6 @@ export const LOOK_PARAM_KEYS = [
   'tilingSize', 'tilingSymmetry', 'tilingComplexity', 'tilingRotation',
   'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
   'waveInterferenceSourceCount', 'waveInterferenceFrequency', 'waveInterferenceSpeed',
-  'meshWireframeGridSize', 'meshWireframeJitter', 'meshWireframeLineWidth',
   'voronoiCellCount', 'voronoiDistortion',
   'radialSizeScale', 'radialSpeed',
   'radialBurstMode', 'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
@@ -301,16 +299,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Pond', colors: ['#02131a', '#0b5a6b', '#27c3e0', '#e6ffff'], params: { waveInterferenceSourceCount: 4, waveInterferenceFrequency: 8 } },
     { name: 'Moire', colors: ['#fafafa', '#222222', '#fafafa', '#222222'], params: { waveInterferenceSourceCount: 5, waveInterferenceFrequency: 14 } },
     { name: 'Sunset Ripples', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { waveInterferenceSourceCount: 3, waveInterferenceFrequency: 6 } },
-  ],
-  'mesh-wireframe': [
-    { name: 'Blueprint', colors: ['#02244a', '#0a4d9a', '#6fb3ff', '#e6f2ff'], params: { meshWireframeGridSize: 12, meshWireframeJitter: 0.2, meshWireframeLineWidth: 1 } },
-    { name: 'Neon Net', colors: ['#05000f', '#ff2bd6', '#2bffe4', '#ffffff'], params: { meshWireframeGridSize: 18, meshWireframeJitter: 0.5, meshWireframeLineWidth: 0.75 } },
-    { name: 'Paper Mesh', colors: ['#f1ebe0', '#d8cdb6', '#a89878', '#5a4a32'], params: { meshWireframeGridSize: 8, meshWireframeJitter: 0.3, meshWireframeLineWidth: 1.5 } },
-  ],
-  aurora: [
-    { name: 'Northern Lights', colors: ['#02110f', '#0b6b4a', '#38d996', '#7a5cff'], params: { auroraBandCount: 5, auroraBandHeight: 2 } },
-    { name: 'Polar Pink', colors: ['#0a0214', '#7a2cbf', '#ff5fa8', '#ffd27a'], params: { auroraBandCount: 4, auroraBandHeight: 1.5 } },
-    { name: 'Teal Veil', colors: ['#001a1f', '#06606b', '#27e0c0', '#e0fff8'], params: { auroraBandCount: 8, auroraWaveSpeed: 0.6 } },
   ],
   grid: [
     { name: 'Pixel Candy', colors: ['#ff9ecb', '#9ed8ff', '#fff09e', '#b6f2b0'], params: { gridRows: 10, gridColumns: 14 } },

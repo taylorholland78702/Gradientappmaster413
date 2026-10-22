@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, familyOf } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
@@ -10,7 +10,7 @@ import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleSh
 // older ones that read it), so a Seed control means something for them.
 // A function, not a module constant: the import cycle through InteractiveGradient
 // can evaluate this file before gradientEffects has finished.
-const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic', 'wave-interference', 'mesh-wireframe'];
+const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic', 'wave-interference'];
 const usesSeed = (t: GradientType) => SEEDED_EXTRA.includes(t) || STYLE_FIELD_GRADIENT_TYPES.includes(t);
 
 export interface GradientsTabProps {
@@ -352,6 +352,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     </div>
   );
 
+  // Which member of a merged gradient (Mesh: Soft / Flow, ...) was on last, so clicking the entry again
+  // returns to it rather than always to the first.
+  const lastFamilyMember = React.useRef<Record<string, GradientType>>({});
+  const currentFamily = familyOf(gradientType);
+  if (currentFamily) lastFamilyMember.current[currentFamily.id] = gradientType;
+
   return (
     <>
 
@@ -368,25 +374,34 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
           {(() => {
             const COLS = 2;
-            const shown = FULL_GRADIENT_TYPES;
-            const rows = Math.ceil(shown.length / COLS);
+            // One entry per family (its Mode switch lives below), one per gradient otherwise,
+            // alphabetical by what's shown.
+            const entries = FULL_GRADIENT_TYPES.reduce<{ key: string; label: string; types: GradientType[] }[]>((acc, type) => {
+              const fam = familyOf(type);
+              if (!fam) { acc.push({ key: type, label: getGradientDisplayName(type), types: [type] }); return acc; }
+              if (!acc.some(e => e.key === fam.id)) acc.push({ key: fam.id, label: fam.label, types: fam.members.map(m => m.type) });
+              return acc;
+            }, []).sort((a, b) => a.label.localeCompare(b.label));
+            const rows = Math.ceil(entries.length / COLS);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
-                {shown.map((type, i) => {
+                {entries.map((entry, i) => {
                   const columnIndex = Math.floor(i / rows);
                   const isLastColumn = columnIndex === COLS - 1;
+                  const active = entry.types.includes(gradientType);
+                  const fam = GRADIENT_FAMILIES.find(f => f.id === entry.key);
                   return (
                     <button
-                      key={type}
-                      onClick={() => setGradientType(type)}
-                      aria-pressed={gradientType === type}
+                      key={entry.key}
+                      onClick={() => setGradientType(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
+                      aria-pressed={active}
                       className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
-                        gradientType === type
+                        active
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'
                       }`}
                     >
-                      {getGradientDisplayName(type)}
+                      {entry.label}
                     </button>
                   );
                 })}
@@ -421,6 +436,21 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
+        {currentFamily && (
+          <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
+            <label className="text-[10px] text-white">Mode:</label>
+            <div className="flex flex-1 gap-1" role="group" aria-label={`${currentFamily.label} mode`}>
+              {currentFamily.members.map(m => (
+                <button
+                  key={m.type}
+                  onClick={() => setGradientType(m.type)}
+                  aria-pressed={gradientType === m.type}
+                  className={`flex-1 text-[10px] py-1 transition-all ${gradientType === m.type ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                >{m.label}</button>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Looks and palettes, one dropdown: this gradient's own Looks (a palette plus a few
             of its settings, constants/gradientLooks.ts) first, then a large library of
             colors-only palettes (constants/palettePresets.ts) that works with every gradient. */}
@@ -586,24 +616,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {/* Iridescent Controls */}
-        {/* Aurora Controls */}
-        {gradientType === 'aurora' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Bands', value: auroraBandCount, set: setAuroraBandCount, min: 2, max: 12, step: 1 },
-              { label: 'Band Height', value: auroraBandHeight, set: setAuroraBandHeight, min: 0.5, max: 4, step: 0.1 },
-              { label: 'Speed', value: auroraWaveSpeed, set: setAuroraWaveSpeed, min: 0.1, max: 3, step: 0.1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Stack Controls — identical hard-edged bars at regular intervals;
             orientation reuses the shared Angle control below. */}
@@ -980,24 +992,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {gradientType === 'mesh-wireframe' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {renderFieldMappingRows()}
-            {[
-              { label: 'Grid Size', value: meshWireframeGridSize, set: setMeshWireframeGridSize, min: 3, max: 30, step: 1 },
-              { label: 'Jitter', value: meshWireframeJitter, set: setMeshWireframeJitter, min: 0, max: 1, step: 0.05 },
-              { label: 'Line Width', value: meshWireframeLineWidth, set: setMeshWireframeLineWidth, min: 0, max: 4, step: 0.25 },
-            ].map(({ label, value, set, min, max, step }) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {gradientType === 'julia' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
