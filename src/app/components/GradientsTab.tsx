@@ -395,7 +395,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={entry.key}
                       onClick={() => setGradientType(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
                       aria-pressed={active}
-                      className={`px-1 py-2 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
+                      className={`px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
                         active
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'
