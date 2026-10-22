@@ -2,7 +2,7 @@ import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import { rgbToHex, hexToRgb, hslToRgb, samplePalette, type ColorBlend } from '../utils/color';
-import { PALETTE_PRESETS, type PalettePreset } from '../constants/palettePresets';
+import { PALETTE_GROUPS, type PalettePreset } from '../constants/palettePresets';
 import { WAV_MOODS } from '../constants/gradientEffects';
 import { extractPalette } from '../utils/extractPalette';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
@@ -242,17 +242,24 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           </div>
         </div>
         {startFrom === 'palettes' && (
-          <div className="grid grid-cols-2 gap-1">
-            {PALETTE_PRESETS.map(p => (
-              <button
-                key={p.name}
-                onClick={() => applyPalettePreset(p)}
-                title={`Use the ${p.name} palette`}
-                className="flex flex-col gap-1 p-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all text-left"
-              >
-                <span aria-hidden="true" className="block w-full h-3" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
-                {p.name}
-              </button>
+          <div className="max-h-72 overflow-y-auto flex flex-col gap-2 pr-0.5">
+            {PALETTE_GROUPS.map(g => (
+              <div key={g.group} className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase tracking-wide text-white/50">{g.group}</span>
+                <div className="grid grid-cols-2 gap-1">
+                  {g.palettes.map(p => (
+                    <button
+                      key={p.name}
+                      onClick={() => applyPalettePreset(p)}
+                      title={`Use the ${p.name} palette`}
+                      className="flex flex-col gap-1 p-1 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all text-left"
+                    >
+                      <span aria-hidden="true" className="block w-full h-3" style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} />
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

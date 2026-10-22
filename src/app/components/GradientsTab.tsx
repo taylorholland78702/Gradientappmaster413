@@ -2,7 +2,8 @@ import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
 import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
-import { hexToRgb } from '../utils/color';
+import { LooksMenu } from './LooksMenu';
+import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
@@ -145,6 +146,7 @@ export interface GradientsTabProps {
   fieldShapeB: number; setFieldShapeB: (v: number) => void;
   // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
   applyGradientLook: (look: GradientLook) => void;
+  applyPalette: (palette: PalettePreset) => void;
   gradientColors: ColorRGB[];
   structuralSeed: number;
   setStructuralSeed: (v: number) => void;
@@ -258,7 +260,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, applyPalette, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -419,52 +421,19 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
-        {/* Named Looks (constants/gradientLooks.ts) — a palette plus a few of this
-            gradient's own settings, one click. Shared across every gradient that has
-            them, so it sits above the per-type blocks. */}
-        {(GRADIENT_LOOKS[gradientType]?.length ?? 0) > 0 && (
-          <div className="w-full flex flex-col gap-1 px-1.5 py-1">
-            <label className="text-[10px] text-white/80 font-medium">Looks</label>
-            <div className="flex flex-wrap gap-1">
-              {(() => {
-                // A Look reads as active while the palette is near its colors. Auto
-                // color drifts the palette slowly, so it's the closest Look within a
-                // loose tolerance rather than an exact match.
-                const looks = GRADIENT_LOOKS[gradientType]!;
-                const distance = (look: GradientLook) => {
-                  if (look.colors.length !== gradientColors.length) return Infinity;
-                  let sum = 0;
-                  look.colors.forEach((hex, i) => {
-                    const c = hexToRgb(hex), g = gradientColors[i];
-                    sum += Math.abs(c.r - g.r) + Math.abs(c.g - g.g) + Math.abs(c.b - g.b);
-                  });
-                  return sum / (look.colors.length * 3);
-                };
-                const best = looks.reduce((a, l) => (distance(l) < distance(a) ? l : a), looks[0]);
-                const activeLook = distance(best) < 45 ? best : null;
-                return looks.map((look) => {
-                const active = look === activeLook;
-                return (
-                <button
-                  key={look.name}
-                  onClick={() => applyGradientLook(look)}
-                  aria-pressed={active}
-                  title={`Apply the ${look.name} look — sets the palette and its settings`}
-                  className={`flex items-center gap-1.5 pl-1 pr-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="block w-6 h-3 border border-white/20"
-                    style={{ background: `linear-gradient(to right, ${look.colors.join(', ')})` }}
-                  />
-                  {look.name}
-                </button>
-                );
-                });
-              })()}
-            </div>
-          </div>
-        )}
+        {/* Looks and palettes, one dropdown: this gradient's own Looks (a palette plus a few
+            of its settings, constants/gradientLooks.ts) first, then a large library of
+            colors-only palettes (constants/palettePresets.ts) that works with every gradient. */}
+        <div className="w-full flex flex-col gap-1 px-1.5 py-1">
+          <label className="text-[10px] text-white/80 font-medium">Looks &amp; palettes</label>
+          <LooksMenu
+            gradientName={getGradientDisplayName(gradientType)}
+            looks={GRADIENT_LOOKS[gradientType] ?? []}
+            gradientColors={gradientColors}
+            onLook={applyGradientLook}
+            onPalette={applyPalette}
+          />
+        </div>
         {/* Finishing — exposure in stops, then a tone curve. Every gradient has it: the
             styled ones apply it inside their shaders, the rest through a GPU pass right
             after the gradient is drawn. */}

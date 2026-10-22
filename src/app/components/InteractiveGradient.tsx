@@ -27,7 +27,7 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
-import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
+import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
@@ -1712,6 +1712,17 @@ export function InteractiveGradient() {
     setFieldExposure(0);
     setFieldTone('off');
   }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldExposure, setFieldTone, gradientTypeRef]);
+
+  // A colors-only palette from the library: eases in when it has as many colors as now, else
+  // is re-cut to the current count (same rule as the Color tab's Start from > Palettes).
+  const applyPalette = useCallback((palette: { colors: string[] }) => {
+    saveCurrentState();
+    const colors = palette.colors.map(hexToRgb);
+    const n = gradientColorsRef.current.length;
+    if (colors.length === n) setTargetColors(colors);
+    else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
+    setPaletteStops(null);
+  }, [saveCurrentState, setTargetColors, setColorsInstant, colorBlend, setPaletteStops]);
 
   const randomizeAllColors = useCallback(() => {
     saveCurrentState();
@@ -3999,7 +4010,7 @@ export function InteractiveGradient() {
   // useSnapshot.ts/useRandomization.ts already use for this exact problem.
   const controlDrawerTabProps = {
     // Color
-    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, structuralSeed, setStructuralSeed,
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, structuralSeed, setStructuralSeed,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
