@@ -29,6 +29,8 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
+import { useMotionGestures } from '../hooks/useMotionGestures';
+import { motionSensorsSupported, requestMotionPermission } from '../utils/motionPermission';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
@@ -290,7 +292,10 @@ const TOUCH_GESTURES: [string, string][] = [
   ['Twist two fingers', 'Rotate'],
   ['Double-tap', 'Pause / play'],
   ['Press and hold', 'Hide / show the controls'],
+  ['Three-finger tap', 'Save a PNG'],
   ['Drag in a circle', 'Spin the gradient, re-roll colors'],
+  ['Shake', 'Shuffle (turn on below)'],
+  ['Tilt', 'Rotate the gradient (turn on below)'],
 ];
 const KEY_GESTURES: [string, string][] = [
   ['→', 'Forward: redo, or a new Shuffle'],
@@ -2509,6 +2514,38 @@ export function InteractiveGradient() {
   const gestureActionsRef = useRef({ goBack, goForward, togglePause, toggleControls });
   gestureActionsRef.current = { goBack, goForward, togglePause, toggleControls };
 
+  // Motion gestures (phone only): shake to Shuffle, tilt to rotate. Off until switched on in the
+  // About panel, because iOS asks permission and only from a tap; the choice is remembered.
+  const readFlag = (key: string) => { try { return localStorage.getItem(key) === '1'; } catch { return false; } };
+  const [shakeEnabled, setShakeEnabledState] = useState(() => readFlag('wavShake'));
+  const [tiltEnabled, setTiltEnabledState] = useState(() => readFlag('wavTilt'));
+  const [motionDenied, setMotionDenied] = useState(false);
+  const toggleMotion = async (kind: 'shake' | 'tilt') => {
+    const current = kind === 'shake' ? shakeEnabled : tiltEnabled;
+    const next = !current;
+    if (next) {
+      const ok = await requestMotionPermission();
+      if (!ok) { setMotionDenied(true); return; }
+      setMotionDenied(false);
+    }
+    (kind === 'shake' ? setShakeEnabledState : setTiltEnabledState)(next);
+    try { localStorage.setItem(kind === 'shake' ? 'wavShake' : 'wavTilt', next ? '1' : '0'); } catch { /* not persisted */ }
+    if (next) haptic('tick');
+  };
+  // Tilt turns the phone's left-right lean into the gradient angle, measured from wherever
+  // the phone was held when tilt came on (or when it was last re-centered).
+  const tiltBaseRef = useRef<{ gamma: number; angle: number } | null>(null);
+  useEffect(() => { if (!tiltEnabled) tiltBaseRef.current = null; }, [tiltEnabled]);
+  useMotionGestures({
+    shake: shakeEnabled,
+    tilt: tiltEnabled,
+    onShake: () => { evolveWithFactor(1); haptic('success'); },
+    onTilt: (gamma) => {
+      if (!tiltBaseRef.current) tiltBaseRef.current = { gamma, angle: targetAngleRef.current };
+      setTargetAngle(tiltBaseRef.current.angle + (gamma - tiltBaseRef.current.gamma) * 2.2);
+    },
+  });
+
   // Jump all the way back to the oldest snapshot in the stack
   const undoAll = useCallback(() => {
     if (undoIndexRef.current < 0) return;
@@ -3453,7 +3490,7 @@ export function InteractiveGradient() {
   // drags therefore do nothing; vertical and circular drags work as before.
   interface TouchGesture {
     x: number; y: number; t: number;
-    horizontal: boolean; moved: boolean; longFired: boolean; wasPinch: boolean;
+    horizontal: boolean; moved: boolean; longFired: boolean; wasPinch: boolean; threeFinger: boolean; threeMoved?: boolean;
     longTimer: ReturnType<typeof setTimeout> | null;
     colors: ColorRGB[]; angle: number;
     pinch: { d0: number; a0: number; zoom0: number; angle0: number } | null;
@@ -3481,9 +3518,11 @@ export function InteractiveGradient() {
     previousPosition.current = null;
     const prev = gestureRef.current;
     if (e.touches.length >= 2 && prev) {
-      // A second finger: this is a pinch/twist, not a tap, swipe or hold.
+      // A second finger: this is a pinch/twist, not a tap, swipe or hold. A third makes it a
+      // three-finger tap instead (see touchend), so the pinch is dropped.
       clearLongTimer(prev);
       prev.moved = true; prev.horizontal = false; prev.wasPinch = true;
+      if (e.touches.length >= 3) { prev.threeFinger = true; prev.pinch = null; return; }
       const m = pinchMetrics(e);
       prev.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
       return;
@@ -3493,7 +3532,7 @@ export function InteractiveGradient() {
     if (!t) { gestureRef.current = null; return; }
     const g: TouchGesture = {
       x: t.clientX, y: t.clientY, t: performance.now(),
-      horizontal: false, moved: false, longFired: false, wasPinch: false, longTimer: null,
+      horizontal: false, moved: false, longFired: false, wasPinch: false, threeFinger: false, longTimer: null,
       colors: targetColorsRef.current.map(c => ({ ...c })), angle: targetAngleRef.current, pinch: null,
     };
     g.longTimer = setTimeout(() => {
@@ -3513,6 +3552,12 @@ export function InteractiveGradient() {
     clearLongTimer(g);
     if (e.touches.length > 0) return; // fingers still down: the gesture isn't over
     gestureRef.current = null;
+    // Three fingers down and up together, without sliding: Save PNG (the S key's job).
+    if (g.threeFinger && !g.threeMoved && performance.now() - g.t < 600) {
+      haptic('success');
+      exportAsPNG();
+      return;
+    }
     if (g.wasPinch || g.longFired) return;
     const t = e.changedTouches[0];
     if (!t) return;
@@ -3550,6 +3595,12 @@ export function InteractiveGradient() {
       if (!g) return;
       clearLongTimer(g);
       g.moved = true; g.horizontal = false; g.wasPinch = true;
+      if (g.threeFinger || e.touches.length >= 3) {
+        g.threeFinger = true;
+        // Any real slide turns the three-finger touch into nothing (not a tap).
+        if (Math.hypot(e.touches[0].clientX - g.x, e.touches[0].clientY - g.y) > 24) g.threeMoved = true;
+        return;
+      }
       const m = pinchMetrics(e);
       if (!g.pinch) g.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
       // Pinch scales zoom by how far the fingers have spread; twisting adds the change in
@@ -4689,6 +4740,26 @@ export function InteractiveGradient() {
                   ))}
                 </div>
                 <p className="text-xs text-white/50">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
+                {motionSensorsSupported() && (
+                  <div className="flex flex-col gap-2 pt-1">
+                    <p className="text-white font-medium">Motion</p>
+                    {([
+                      { kind: 'shake' as const, label: 'Shake to Shuffle', on: shakeEnabled },
+                      { kind: 'tilt' as const, label: 'Tilt to rotate', on: tiltEnabled },
+                    ]).map(m => (
+                      <div key={m.kind} className="flex items-center justify-between gap-2">
+                        <span>{m.label}</span>
+                        <button
+                          onClick={() => toggleMotion(m.kind)}
+                          aria-pressed={m.on}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${m.on ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                        >{m.on ? 'On' : 'Off'}</button>
+                      </div>
+                    ))}
+                    {motionDenied && <p className="text-xs text-red-300">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
+                    <p className="text-xs text-white/50">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-3">

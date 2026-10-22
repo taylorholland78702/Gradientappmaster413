@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PALETTE_GROUPS, PALETTE_PRESETS } from './palettePresets';
+import { PALETTE_GROUPS, PALETTE_PRESETS, startsDark } from './palettePresets';
 
 describe('palette library', () => {
   it('has well-formed, uniquely named palettes of 2-6 hex colors', () => {
@@ -16,5 +16,10 @@ describe('palette library', () => {
   it('offers a large choice across several groups', () => {
     expect(PALETTE_GROUPS.length).toBeGreaterThanOrEqual(6);
     expect(PALETTE_PRESETS.length).toBeGreaterThanOrEqual(60);
+  });
+
+  it('has plenty of palettes that start dark, for the dark-ground gradients', () => {
+    expect(PALETTE_PRESETS.filter(startsDark).length).toBeGreaterThanOrEqual(30);
+    expect(startsDark({ name: 'x', colors: ['#ffffff', '#000000'] })).toBe(false);
   });
 });

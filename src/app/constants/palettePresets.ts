@@ -117,3 +117,13 @@ export const PALETTE_GROUPS: PaletteGroup[] = [
 
 // Flat list, for places that just want every palette.
 export const PALETTE_PRESETS: PalettePreset[] = PALETTE_GROUPS.flatMap(g => g.palettes);
+
+// The dark-ground gradients (Eclipse, Vortex, Light Beam...) treat a palette's first
+// color as the near-black backdrop, so only palettes that start dark suit them.
+export const DARK_GROUND_GRADIENTS = ['eclipse', 'vortex', 'light-beam', 'edge-glow', 'curtains', 'rays', 'bokeh', 'embers'];
+
+export function startsDark(p: PalettePreset): boolean {
+  const n = parseInt(p.colors[0].slice(1), 16);
+  const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return lum < 0.16;
+}

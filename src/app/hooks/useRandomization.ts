@@ -7,6 +7,7 @@ import { pickRandomEmojiSet } from '../components/InteractiveGradient';
 import { hslToRgb, rgbToHsl, hexToRgb } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { GRADIENT_LOOKS } from '../constants/gradientLooks';
+import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS } from '../constants/styleShapeControls';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
@@ -919,11 +920,19 @@ export function useRandomization(params: RandomizationParams) {
       setPaletteStops(null);
       setPaletteBias(0.5);
       setPaletteSharp(0);
+      // Colors: a curated Look for this gradient (palette plus its settings), or a palette
+      // from the shared library (colors only), or else the random palette picked above.
       const looks = finalGradientType ? GRADIENT_LOOKS[finalGradientType] : undefined;
-      if (looks?.length && Math.random() < 0.65) {
+      const roll = Math.random();
+      if (looks?.length && roll < 0.4) {
         const look = looks[Math.floor(Math.random() * looks.length)];
         const lookColors = look.colors.map(hexToRgb);
         applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
+      } else if (roll < (looks?.length ? 0.75 : 0.5)) {
+        const dark = !!finalGradientType && DARK_GROUND_GRADIENTS.includes(finalGradientType);
+        const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
+        const palette = pool[Math.floor(Math.random() * pool.length)];
+        if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
       }
     }
     // Remix randomizes every gradient/effect slider already — extend that to
