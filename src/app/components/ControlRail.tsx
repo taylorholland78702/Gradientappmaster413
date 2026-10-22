@@ -1,10 +1,10 @@
 import React, { forwardRef } from 'react';
 import {
   Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
-  Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk, PencilSimple,
+  Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
 
-type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'draw' | 'presets';
+type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
 
 export interface ControlRailProps {
   isMobile: boolean;
@@ -237,9 +237,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       </button>
       <button onClick={() => setActiveTab(activeTab === 'color' ? null : 'color')} title="Color (C)" aria-label="Color tab" className={tabBtnClass('color')}>
         <Palette weight="regular" className={iconCls} />
-      </button>
-      <button onClick={() => setActiveTab(activeTab === 'draw' ? null : 'draw')} title="Draw (B)" aria-label="Draw tab" className={tabBtnClass('draw')}>
-        <PencilSimple weight="regular" className={iconCls} />
       </button>
       <button onClick={() => setActiveTab(activeTab === 'presets' ? null : 'presets')} title="Presets (P)" aria-label="Presets tab" className={tabBtnClass('presets')}>
         <FloppyDisk weight="regular" className={iconCls} />

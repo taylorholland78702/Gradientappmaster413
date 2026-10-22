@@ -17,7 +17,7 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, PencilSimple, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
+import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -27,11 +27,10 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
-import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, paletteSegment, blendRgb } from '../utils/color';
+import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
-import { addStrokePoint, clearDabs, endStroke, hasLiveDabs, drawSettings, type BrushKind } from '../utils/drawStrokes';
 import {
   type ColorRGB, type GradientType, type EffectType,
   DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
@@ -1155,8 +1154,7 @@ export function InteractiveGradient() {
       // for colors/angle/zoom to converge and then freeze solid — the sim being alive
       // under the hood is meaningless if this loop stops calling draw() at all.
       const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current
-        || gradientTypeRef.current === 'reaction-diffusion' || gradientTypeRef.current === 'fireworks' || gradientTypeRef.current === 'lightning'
-        || hasLiveDabs();
+        || gradientTypeRef.current === 'reaction-diffusion' || gradientTypeRef.current === 'fireworks' || gradientTypeRef.current === 'lightning';
       const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
 
       if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {
@@ -1952,26 +1950,6 @@ export function InteractiveGradient() {
   const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
   const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
   exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
-  // Draw mode: freehand strokes over the gradient that fade away (utils/drawStrokes.ts).
-  const [drawEnabled, setDrawEnabled] = useState(false);
-  const [drawSize, setDrawSize] = useState(60);
-  const [drawSoftness, setDrawSoftnessState] = useState(0.6);
-  const [drawFadeSec, setDrawFadeSecState] = useState(4);
-  // -1 cycles along the palette; otherwise the index of the swatch to paint with.
-  const [drawColorIndex, setDrawColorIndex] = useState(-1);
-  const drawEnabledRef = useRef(false);
-  drawEnabledRef.current = drawEnabled;
-  const drawSizeRef = useRef(60);
-  drawSizeRef.current = drawSize;
-  const drawColorIndexRef = useRef(-1);
-  drawColorIndexRef.current = drawColorIndex;
-  const [drawBrush, setDrawBrushState] = useState<BrushKind>('soft');
-  const setDrawBrush = (v: BrushKind) => { setDrawBrushState(v); drawSettings.brush = v; };
-  const setDrawSoftness = (v: number) => { setDrawSoftnessState(v); drawSettings.softness = v; };
-  const setDrawFadeSec = (v: number) => { setDrawFadeSecState(v); drawSettings.fadeMs = v * 1000; };
-  const isPaintingRef = useRef(false);
-  // Opening the Draw tab turns Draw on: that's why you opened it.
-  useEffect(() => { if (activeTab === 'draw') setDrawEnabled(true); }, [activeTab]);
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
@@ -3364,51 +3342,7 @@ export function InteractiveGradient() {
     lastChangeTime.current = currentTime;
   }, [isDragging, gradientColors.length, baseAIColors, randomColor]);
 
-  // Draw mode. Pointer events cover mouse, touch and pen alike (a pen reports
-  // pressure; a mouse is treated as full pressure). While Draw is on, the canvas's
-  // usual drag-to-move handlers below stand down.
-  const paintAt = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
-    const pressure = e.pointerType === 'pen' ? (e.pressure || 0.5) : 1;
-    const cols = gradientColorsRef.current;
-    const n = cols.length;
-    addStrokePoint((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height, pressure, {
-      canvasW: rect.width,
-      canvasH: rect.height,
-      sizePx: drawSizeRef.current,
-      now: performance.now(),
-      fixedColor: drawColorIndexRef.current >= 0 ? cols[Math.min(drawColorIndexRef.current, n - 1)] : undefined,
-      colorAt: (t) => {
-        if (n === 0) return { r: 255, g: 255, b: 255 };
-        if (n === 1) return cols[0];
-        const seg = paletteSegment(t, n);
-        return blendRgb(cols[seg.i0], cols[Math.min(n - 1, seg.i0 + 1)], seg.f);
-      },
-    });
-    drawParamsDirtyRef.current = true;
-  };
-  const handlePaintDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!drawEnabledRef.current) return;
-    // The drawer stays open while painting (it docks beside the canvas), so the brush can be tuned mid-stroke.
-    isPaintingRef.current = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    endStroke();
-    paintAt(e);
-  };
-  const handlePaintMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!drawEnabledRef.current || !isPaintingRef.current) return;
-    paintAt(e);
-  };
-  const handlePaintUp = () => {
-    isPaintingRef.current = false;
-    endStroke();
-  };
-
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (drawEnabledRef.current) return;
     // Clicking the canvas is "outside" whichever tab drawer (Gradient/
     // Effects/Audio/Color/Presets) is open — same dismissal Escape already
     // does, just reachable without the keyboard. Auto Shuffle/About already
@@ -3433,12 +3367,10 @@ export function InteractiveGradient() {
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (drawEnabledRef.current) return;
     handleInteraction(e.clientX, e.clientY);
   }, [handleInteraction]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (drawEnabledRef.current) return;
     if (activeTab) setActiveTab(null);
     setIsDragging(true);
     previousPosition.current = null;
@@ -3450,7 +3382,6 @@ export function InteractiveGradient() {
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (drawEnabledRef.current) return;
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       handleInteraction(touch.clientX, touch.clientY);
@@ -3853,10 +3784,6 @@ export function InteractiveGradient() {
           e.preventDefault();
           setActiveTab(prev => prev === 'color' ? null : 'color');
           break;
-        case 'b': case 'B':
-          e.preventDefault();
-          setActiveTab(prev => prev === 'draw' ? null : 'draw');
-          break;
         case 'p': case 'P':
           e.preventDefault();
           if (e.shiftKey) toggleDisplayWindow();
@@ -4073,7 +4000,6 @@ export function InteractiveGradient() {
   const controlDrawerTabProps = {
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, structuralSeed, setStructuralSeed,
-    drawEnabled, setDrawEnabled, drawBrush, setDrawBrush, drawSize, setDrawSize, drawSoftness, setDrawSoftness, drawFadeSec, setDrawFadeSec, drawColorIndex, setDrawColorIndex, clearDabs,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,
@@ -4307,10 +4233,6 @@ export function InteractiveGradient() {
       <div ref={shakeWrapperRef} className="fixed inset-0 z-0">
         <canvas
           ref={canvasRef}
-          onPointerDown={handlePaintDown}
-          onPointerMove={handlePaintMove}
-          onPointerUp={handlePaintUp}
-          onPointerCancel={handlePaintUp}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -4320,7 +4242,7 @@ export function InteractiveGradient() {
           onTouchMove={handleTouchMove}
           onWheel={handleWheel}
           className="w-full h-full"
-          style={{ touchAction: 'none', cursor: drawEnabled ? 'crosshair' : undefined, opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
+          style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
         />
       </div>
       {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
@@ -4552,7 +4474,6 @@ export function InteractiveGradient() {
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><PencilSimple weight="regular" className="w-4 h-4 shrink-0" /> Draw — paint on the canvas with strokes that fade away</span><Kbd label="B" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
               </div>
 

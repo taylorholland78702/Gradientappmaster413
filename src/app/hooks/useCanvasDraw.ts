@@ -27,7 +27,6 @@ import { detectVoronoiGLSupport, getVoronoiGLStage } from './gradients/drawVoron
 import { detectWindmillGLSupport, getWindmillHelixGLStage } from './gradients/drawWindmillGL';
 import { getPostGradientOverlayStage } from './gradients/glPostGradientOverlay';
 import { getToneStage } from './gradients/glToneStage';
-import { renderDabs, hasLiveDabs } from '../utils/drawStrokes';
 import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { detectFisheyeGLSupport, getFisheyeGLStage } from './effects/applyFisheyeGL';
 import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
@@ -699,9 +698,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       const runStages: GLEffectStage[] = [gradientStage, overlayStage];
       if (needsToneStage) { runStages.push(getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off')); toneApplied = true; }
       let lookahead = 0;
-      // While strokes are on screen the pipeline stops after the gradient, so the paint can
-      // be laid over it before the first effect runs.
-      while (lookahead < activeEffects.length && !hasLiveDabs()) {
+      while (lookahead < activeEffects.length) {
         const nextType = activeEffects[lookahead];
         const nextCtx = buildEffectCtx(nextType, lookahead);
         if (!nextCtx) break;
@@ -811,9 +808,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     if (needsToneStage && !toneApplied) {
       runGLEffectChain([getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off')], canvas, ctx, displayWidth, displayHeight, 1);
     }
-
-    // Draw-mode strokes sit on the gradient and under the effects.
-    renderDabs(ctx, displayWidth, displayHeight, performance.now());
 
     // Apply visual effects after gradient is rendered
     // Apply each active effect in sequence
