@@ -3381,20 +3381,55 @@ export function InteractiveGradient() {
     handleInteraction(e.clientX, e.clientY);
   }, [handleInteraction]);
 
+  // Swipes on a touch screen: a quick horizontal flick left is Shuffle, right is Undo.
+  // The canvas's own drag (rotate the angle, re-roll the color under the finger) would
+  // otherwise fire on the way, so once a touch is clearly horizontal it stops driving
+  // that drag and puts back whatever the first few pixels changed. Slow horizontal drags
+  // therefore do nothing; vertical and circular drags work as before.
+  const swipeRef = useRef<{ x: number; y: number; t: number; horizontal: boolean; colors: ColorRGB[]; angle: number } | null>(null);
+  const SWIPE_MIN_PX = 70;
+  const SWIPE_MAX_MS = 700;
+
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (activeTab) setActiveTab(null);
     setIsDragging(true);
     previousPosition.current = null;
+    const t = e.touches[0];
+    swipeRef.current = e.touches.length === 1 && t
+      ? { x: t.clientX, y: t.clientY, t: performance.now(), horizontal: false,
+          colors: targetColorsRef.current.map(c => ({ ...c })), angle: targetAngleRef.current }
+      : null;
   }, [activeTab, setActiveTab]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     setIsDragging(false);
     previousPosition.current = null;
-  }, []);
+    const sw = swipeRef.current;
+    swipeRef.current = null;
+    const t = e.changedTouches[0];
+    if (!sw || !sw.horizontal || !t) return;
+    const dx = t.clientX - sw.x;
+    if (Math.abs(dx) < SWIPE_MIN_PX || performance.now() - sw.t > SWIPE_MAX_MS) return;
+    try { navigator.vibrate?.(8); } catch { /* haptics unavailable */ }
+    if (dx < 0) evolveWithFactor(1); // swipe left: Shuffle
+    else undoLastChange();           // swipe right: Undo
+  }, [evolveWithFactor, undoLastChange]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length > 1) { swipeRef.current = null; }
     if (e.touches.length > 0) {
       const touch = e.touches[0];
+      const sw = swipeRef.current;
+      if (sw) {
+        const dx = touch.clientX - sw.x, dy = touch.clientY - sw.y;
+        if (!sw.horizontal && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+          sw.horizontal = true;
+          // Undo what the first pixels of this swipe already did to the colors and angle.
+          setTargetColors(sw.colors.map(c => ({ ...c })));
+          setTargetAngle(sw.angle);
+        }
+        if (sw.horizontal) return;
+      }
       handleInteraction(touch.clientX, touch.clientY);
     }
   }, [handleInteraction, isAutoMode]);
@@ -4502,6 +4537,7 @@ export function InteractiveGradient() {
                 <p className="font-semibold text-white">More shortcuts</p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
                 <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="Shift+R" /></p>
+                <p className="flex items-center justify-between gap-2"><span>On a touch screen: swipe left to Shuffle, right to Undo</span><Kbd label="← →" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Next / previous Look for the current gradient</span><Kbd label="L" /></p>
                 <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
