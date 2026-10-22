@@ -29,6 +29,8 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
+import { encodePresetData } from '../utils/presetShare';
+import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { useMotionGestures } from '../hooks/useMotionGestures';
 import { motionSensorsSupported, requestMotionPermission } from '../utils/motionPermission';
@@ -1966,6 +1968,32 @@ export function InteractiveGradient() {
   const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
   const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
   exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
+  // "Copied" feedback for the share buttons in the Save popout: which one, for a moment.
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const copyText = async (key: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Older browsers / insecure contexts: fall back to a temporary textarea.
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* nothing more to try */ }
+      document.body.removeChild(ta);
+    }
+    setCopiedKey(key);
+    window.setTimeout(() => setCopiedKey(k => (k === key ? null : k)), 1500);
+  };
+  // The player link for what is on screen right now (?display=1&preset=…: the look with no controls).
+  // Numbers are rounded to 3 decimals first: the snapshot carries floats like 240.40263068951,
+  // which roughly doubled the link for no visible difference.
+  const currentPlayerUrl = () => {
+    const compact = JSON.parse(JSON.stringify(buildSnapshot(), (_k, v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v)));
+    return `${window.location.origin}${window.location.pathname}?display=1&preset=${encodePresetData(compact)}`;
+  };
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
@@ -2075,7 +2103,7 @@ export function InteractiveGradient() {
             zoom gives this popout the same type size, with layout following it. */}
         <div className="p-3 flex flex-col gap-2" style={isMobile ? undefined : { zoom: POPOVER_SCALE }}>
         {popoverMode === 'export' ? (<>
-        <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save PNG</span>
+        <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save &amp; share</span>
         {([
           { label: 'Size', options: EXPORT_SIZES, value: exportSize, set: setExportSize, hint: 'Long edge of the saved image. Re-renders the artwork at that size.' },
           { label: 'Aspect', options: EXPORT_ASPECTS, value: exportAspect, set: setExportAspect, hint: 'Crops the center of what you see to this shape.' },
@@ -2103,6 +2131,31 @@ export function InteractiveGradient() {
           style={{ backgroundColor: '#ffffff', color: '#000000' }}
         >Save PNG</button>
         {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
+        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
+          <div className="flex gap-1">
+            {([['box', 'Box 16:9'], ['background', 'Background']] as [EmbedKind, string][]).map(([kind, label]) => (
+              <button
+                key={kind}
+                onClick={() => copyText(`embed-${kind}`, embedSnippet(currentPlayerUrl(), kind))}
+                title={kind === 'box' ? 'A responsive 16:9 frame' : 'Pinned behind the whole page'}
+                className="flex-1 px-2 py-1 text-[10px] transition-all"
+                style={copiedKey === `embed-${kind}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+              >{copiedKey === `embed-${kind}` ? 'Copied' : label}</button>
+            ))}
+          </div>
+          <span className="text-[10px] text-white/60 pt-1">Copy palette as</span>
+          <div className="flex gap-1">
+            {([['hex', 'Hex'], ['css', 'CSS'], ['tailwind', 'Tailwind'], ['json', 'JSON']] as [PaletteFormat, string][]).map(([fmt, label]) => (
+              <button
+                key={fmt}
+                onClick={() => copyText(`palette-${fmt}`, formatPalette(gradientColors, paletteStops, fmt))}
+                className="flex-1 px-1 py-1 text-[10px] transition-all"
+                style={copiedKey === `palette-${fmt}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+              >{copiedKey === `palette-${fmt}` ? 'Copied' : label}</button>
+            ))}
+          </div>
+        </div>
         </>) : (<>
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
