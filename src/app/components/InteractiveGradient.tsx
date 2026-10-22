@@ -2469,59 +2469,42 @@ export function InteractiveGradient() {
   }, [buildSnapshot, applySnapshot]);
 
   // ---- Gesture feedback and the shared actions behind swipes, arrow keys and taps ----------
-  // A small message near the controls ("Shuffled · swipe right to undo") that fades on its own. `kind` picks the hint wording: a touch gesture
-  // says "swipe", a key press says "←".
-  const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showToast = useCallback((text: string) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToast({ id: Date.now(), text });
-    toastTimerRef.current = setTimeout(() => setToast(null), 2000);
-  }, []);
-  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
-
+  // ---- Shared actions behind swipes, arrow keys and taps (each gives a haptic tap, no on-screen message) ----
   const isControlsVisibleRef = useRef(true);
   isControlsVisibleRef.current = isControlsVisible;
 
   // Back is Undo. Forward is Redo when there is something to redo, otherwise a new
   // Shuffle — so after stepping back, forward walks you back up before it rolls anything new.
-  const goBack = useCallback((via: 'swipe' | 'key') => {
+  const goBack = useCallback(() => {
     if (undoIndexRef.current < 0) {
       haptic('warn');
-      showToast('Nothing to undo');
       return;
     }
     undoLastChange();
     haptic('tick');
-    showToast(via === 'swipe' ? 'Undone · swipe left to go forward' : 'Undone · → goes forward');
-  }, [undoLastChange, redoLastChange, showToast]);
+  }, [undoLastChange]);
 
-  const goForward = useCallback((via: 'swipe' | 'key') => {
+  const goForward = useCallback(() => {
     if (redoStackRef.current.length > 0) {
       redoLastChange();
       haptic('tick');
-      showToast('Redone');
       return;
     }
     evolveWithFactor(1);
     haptic('success');
-    showToast(via === 'swipe' ? 'Shuffled · swipe right to undo' : 'Shuffled · ← to undo');
-  }, [evolveWithFactor, undoLastChange, redoLastChange, showToast]);
+  }, [evolveWithFactor, redoLastChange]);
 
   const togglePause = useCallback(() => {
-    const wasPlaying = isAutoModeRef.current || isVCRPlayingRef.current;
     toggleVCRPlayback();
     haptic('tick');
-    showToast(wasPlaying ? 'Paused · double-tap to play' : 'Playing');
-  }, [toggleVCRPlayback, showToast]);
+  }, [toggleVCRPlayback]);
 
   const toggleControls = useCallback(() => {
     if (IS_DISPLAY_MODE) return;
     const wasVisible = isControlsVisibleRef.current;
     setIsControlsVisible(!wasVisible);
     haptic('success');
-    showToast(wasVisible ? 'Controls hidden · press and hold to show' : 'Controls shown');
-  }, [showToast]);
+  }, []);
 
   const gestureActionsRef = useRef({ goBack, goForward, togglePause, toggleControls });
   gestureActionsRef.current = { goBack, goForward, togglePause, toggleControls };
@@ -3537,8 +3520,8 @@ export function InteractiveGradient() {
     const dx = t.clientX - g.x;
     // Flick: forward / back.
     if (g.horizontal && Math.abs(dx) >= SWIPE_MIN_PX && elapsed <= SWIPE_MAX_MS) {
-      if (dx < 0) gestureActionsRef.current.goForward('swipe');
-      else gestureActionsRef.current.goBack('swipe');
+      if (dx < 0) gestureActionsRef.current.goForward();
+      else gestureActionsRef.current.goBack();
       return;
     }
     // Tap: a second one close behind the first is a double-tap (pause / play).
@@ -3974,11 +3957,11 @@ export function InteractiveGradient() {
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault();
-          goBack('key');
+          goBack();
           break;
         case 'ArrowRight':
           e.preventDefault();
-          goForward('key');
+          goForward();
           break;
         case 'g': case 'G':
           e.preventDefault();
@@ -4563,22 +4546,6 @@ export function InteractiveGradient() {
         </div>
       )}
 
-      {toast && (
-        <div
-          key={toast.id}
-          role="status"
-          aria-live="polite"
-          className="fixed z-50 flex items-center gap-3 px-3 py-1.5 rounded-full border border-white/15 text-[12px] text-white shadow-lg pointer-events-none"
-          style={{
-            backgroundColor: 'rgba(8, 8, 12, 0.88)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bottom: isMobile && railRect ? window.innerHeight - railRect.top + 12 : 20,
-          }}
-        >
-          <span>{toast.text}</span>
-        </div>
-      )}
 
       {audioFile && (
         <audio
