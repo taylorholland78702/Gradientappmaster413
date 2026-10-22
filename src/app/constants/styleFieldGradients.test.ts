@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES, AUDIO_GRADIENTS,
-  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, migrateId,
+  GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, GRADIENT_DESCRIPTIONS, migrateId,
 } from './gradientEffects';
 import { STYLE_FIELD_IDS } from '../hooks/gradients/drawStyleFieldGL';
 import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
@@ -169,5 +169,14 @@ describe('merged gradient families', () => {
     expect(migrateId('mesh-wireframe')).toBe('voronoi');
     expect(FULL_GRADIENT_TYPES).not.toContain('aurora' as never);
     expect(FULL_GRADIENT_TYPES).not.toContain('mesh-wireframe' as never);
+  });
+});
+
+describe('gradient descriptions', () => {
+  it('every selectable gradient has a one-line description', () => {
+    for (const t of FULL_GRADIENT_TYPES) {
+      expect(GRADIENT_DESCRIPTIONS[t], t).toBeTruthy();
+      expect(GRADIENT_DESCRIPTIONS[t].length, t).toBeLessThan(90);
+    }
   });
 });

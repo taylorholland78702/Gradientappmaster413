@@ -39,6 +39,7 @@ export interface ColorTabProps {
 
 const COLOR_BLEND_OPTIONS: { value: ColorBlend; label: string; hint: string }[] = [
   { value: 'srgb', label: 'sRGB', hint: 'Straight per-channel blend — the classic look' },
+  { value: 'linear', label: 'Linear', hint: 'Mixes in linear light — physically correct, brighter midpoints than sRGB' },
   { value: 'oklab', label: 'OKLab', hint: 'Perceptual blend — no muddy grey midpoints between saturated colors' },
   { value: 'oklch', label: 'OKLCH', hint: 'Perceptual blend that travels around the hue wheel — vivid transitions' },
 ];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, familyOf } from '../constants/gradientEffects';
+import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, GRADIENT_DESCRIPTIONS, familyOf } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
@@ -141,6 +141,7 @@ export interface GradientsTabProps {
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
   fieldExposure: number; setFieldExposure: (v: number) => void;
+  fieldGrade: { brightness: number; contrast: number; saturation: number }; setFieldGrade: (v: { brightness: number; contrast: number; saturation: number }) => void;
   fieldTone: 'off' | 'aces' | 'soft'; setFieldTone: (v: 'off' | 'aces' | 'soft') => void;
   fieldShapeA: number; setFieldShapeA: (v: number) => void;
   fieldShapeB: number; setFieldShapeB: (v: number) => void;
@@ -261,7 +262,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, fieldGrade, setFieldGrade, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -437,6 +438,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
+        {GRADIENT_DESCRIPTIONS[gradientType] && (
+          <p className="w-full px-1.5 pt-1.5 text-[10px] leading-snug text-white/60">{GRADIENT_DESCRIPTIONS[gradientType]}</p>
+        )}
         {currentFamily && (
           <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
             <label className="text-[10px] text-white">Mode:</label>
@@ -504,6 +508,19 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               ))}
             </div>
           </div>
+          {([
+            { key: 'brightness' as const, label: 'Brightness', min: 0.5, max: 1.5 },
+            { key: 'contrast' as const, label: 'Contrast', min: 0.5, max: 1.5 },
+            { key: 'saturation' as const, label: 'Saturation', min: 0, max: 2 },
+          ]).map(g => (
+            <div key={g.key} className="flex items-center justify-between" title={`${g.label} of the finished picture (1 leaves it as is)`}>
+              <label className="text-[10px] text-white w-20 shrink-0">{g.label}:</label>
+              <div className="flex items-center gap-1 flex-1 ml-2">
+                <input type="range" min={g.min} max={g.max} step={0.01} value={fieldGrade[g.key]} onChange={e => setFieldGrade({ ...fieldGrade, [g.key]: Number(e.target.value) })} className="flex-1" />
+                <input type="number" min={g.min} max={g.max} step={0.01} value={fieldGrade[g.key]} onChange={e => setFieldGrade({ ...fieldGrade, [g.key]: Number(e.target.value) || 1 })} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
+              </div>
+            </div>
+          ))}
         </div>
         {/* Seed — the pattern-structure number the gradients above hash into their
             layout (cell positions, vein paths, blob phases). Audio drops bump it, and

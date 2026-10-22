@@ -13,6 +13,7 @@ uniform sampler2D uTex;
 uniform vec2 uSize;
 uniform float uExposure;
 uniform int uTone;
+uniform vec3 uGrade;
 in vec2 vUv;
 out vec4 outColor;
 
@@ -23,6 +24,11 @@ void main() {
   } else if (uTone == 2) {
     c = (1.0 - exp(-1.5 * c)) / (1.0 - exp(-1.5));
   }
+  c = clamp(c, 0.0, 1.0);
+  c = (c - 0.5) * uGrade.y + 0.5;
+  c *= uGrade.x;
+  float gl = dot(c, vec3(0.299, 0.587, 0.114));
+  c = mix(vec3(gl), c, uGrade.z);
   outColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }`;
 
@@ -31,7 +37,11 @@ let programGL: WebGL2RenderingContext | null = null;
 
 export type ToneCurve = 'off' | 'aces' | 'soft';
 
-export function getToneStage(exposure: number, tone: ToneCurve): GLEffectStage {
+export interface Grade { brightness: number; contrast: number; saturation: number }
+export const NEUTRAL_GRADE: Grade = { brightness: 1, contrast: 1, saturation: 1 };
+export const isNeutralGrade = (g?: Grade | null) => !g || (g.brightness === 1 && g.contrast === 1 && g.saturation === 1);
+
+export function getToneStage(exposure: number, tone: ToneCurve, grade: Grade = NEUTRAL_GRADE): GLEffectStage {
   return {
     type: 'tone',
     render: (gl, inputTexture, outputFramebuffer, width, height) => {
@@ -47,6 +57,7 @@ export function getToneStage(exposure: number, tone: ToneCurve): GLEffectStage {
       gl.uniform1i(gl.getUniformLocation(program, 'uTex'), 0);
       setSizeUniform(gl, program, width, height);
       gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), exposure);
+      gl.uniform3f(gl.getUniformLocation(program, 'uGrade'), grade.brightness, grade.contrast, grade.saturation);
       gl.uniform1i(gl.getUniformLocation(program, 'uTone'), tone === 'aces' ? 1 : tone === 'soft' ? 2 : 0);
       drawFieldFullscreen(gl);
     },

@@ -30,6 +30,8 @@ export function useFieldMappingState() {
   // kept per gradient id as [A, B] so switching away and back keeps them; 1 = original look.
   // Exposure (stops) and tone curve applied by the styled-field shaders before output.
   const [fieldExposure, setFieldExposure] = useState(0);
+  // Brightness / contrast / saturation of the finished image (1 = unchanged), applied with Exposure and Tone.
+  const [fieldGrade, setFieldGrade] = useState<{ brightness: number; contrast: number; saturation: number }>({ brightness: 1, contrast: 1, saturation: 1 });
   const [fieldTone, setFieldTone] = useState<'off' | 'aces' | 'soft'>('off');
   const [fieldShapes, setFieldShapes] = useState<Record<string, [number, number]>>({});
 
@@ -55,6 +57,8 @@ export function useFieldMappingState() {
     fieldShapes,
     setFieldShapes,
     fieldExposure,
+    fieldGrade,
+    setFieldGrade,
     setFieldExposure,
     fieldTone,
     setFieldTone,

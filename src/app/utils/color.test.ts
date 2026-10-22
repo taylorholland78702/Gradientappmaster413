@@ -50,7 +50,7 @@ describe('blendRgb', () => {
   });
 
   it('reproduces both endpoints in every mode', () => {
-    for (const mode of ['srgb', 'oklab', 'oklch'] as const) {
+    for (const mode of ['srgb', 'linear', 'oklab', 'oklch'] as const) {
       for (const [c, t] of [[blue, 0], [yellow, 1]] as const) {
         const out = blendRgb(blue, yellow, t, mode);
         expect(out.r).toBeCloseTo(c.r, 0);

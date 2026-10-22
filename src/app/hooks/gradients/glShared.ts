@@ -82,8 +82,21 @@ vec3 oklabToRgb(vec3 lab) {
 float safeHue(vec2 ab) {
   return dot(ab, ab) < 1e-10 ? 0.0 : atan(ab.y, ab.x);
 }
+// Weighted-average helpers for shaders that mix many colors at once (the mesh gradients):
+// into the blend space, accumulate there, and back out.
+vec3 blendIn(vec3 c) {
+  if (uBlendMode == 0) return c;
+  if (uBlendMode == 3) return srgbToLinear(c);
+  return rgbToOklab(c);
+}
+vec3 blendOut(vec3 c) {
+  if (uBlendMode == 0) return c;
+  if (uBlendMode == 3) return linearToSrgb(c);
+  return oklabToRgb(c);
+}
 vec3 blendColors(vec3 a, vec3 b, float t) {
   if (uBlendMode == 0) return mix(a, b, t);
+  if (uBlendMode == 3) return linearToSrgb(mix(srgbToLinear(a), srgbToLinear(b), t));
   vec3 la = rgbToOklab(a);
   vec3 lb = rgbToOklab(b);
   if (uBlendMode == 1) return oklabToRgb(mix(la, lb, t));

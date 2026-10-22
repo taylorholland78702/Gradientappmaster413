@@ -87,8 +87,8 @@ export function adjustPalette(colors: ColorRGB[], adjust: PaletteAdjust): ColorR
 // midpoints a straight sRGB lerp produces between saturated colors (blue →
 // yellow passing through grey). 'oklch' does the same but travels around the
 // hue wheel instead of cutting across it, so transitions stay vivid.
-export type ColorBlend = 'srgb' | 'oklab' | 'oklch';
-export const COLOR_BLEND_MODES: ColorBlend[] = ['srgb', 'oklab', 'oklch'];
+export type ColorBlend = 'srgb' | 'linear' | 'oklab' | 'oklch';
+export const COLOR_BLEND_MODES: ColorBlend[] = ['srgb', 'linear', 'oklab', 'oklch'];
 
 // Set once per frame from the draw params (useCanvasDraw) rather than threaded
 // through every gradient's draw function — ~15 interpolation sites across the
@@ -98,7 +98,7 @@ let activeColorBlend: ColorBlend = 'srgb';
 export const setActiveColorBlend = (mode: ColorBlend | undefined) => { activeColorBlend = mode ?? 'srgb'; };
 export const getActiveColorBlend = (): ColorBlend => activeColorBlend;
 // Matches `uBlendMode` in the GLSL (glShared's blendColorsGLSL).
-export const colorBlendIndex = (mode: ColorBlend): number => (mode === 'oklab' ? 1 : mode === 'oklch' ? 2 : 0);
+export const colorBlendIndex = (mode: ColorBlend): number => (mode === 'oklab' ? 1 : mode === 'oklch' ? 2 : mode === 'linear' ? 3 : 0);
 
 const srgbToLinear = (v: number): number => {
   const c = v / 255;
@@ -146,6 +146,11 @@ const ACHROMATIC_CHROMA = 0.004;
 export function blendRgb(c1: ColorRGB, c2: ColorRGB, t: number, mode: ColorBlend = activeColorBlend): ColorRGB {
   if (mode === 'srgb') {
     return { r: c1.r + (c2.r - c1.r) * t, g: c1.g + (c2.g - c1.g) * t, b: c1.b + (c2.b - c1.b) * t };
+  }
+  if (mode === 'linear') {
+    // Light-accurate mixing: average in linear light, not in the gamma-encoded values.
+    const mix = (a: number, b: number) => linearToSrgb(srgbToLinear(a) + (srgbToLinear(b) - srgbToLinear(a)) * t);
+    return { r: mix(c1.r, c2.r), g: mix(c1.g, c2.g), b: mix(c1.b, c2.b) };
   }
   const [L1, a1, b1] = rgbToOklab(c1.r, c1.g, c1.b);
   const [L2, a2, b2] = rgbToOklab(c2.r, c2.g, c2.b);

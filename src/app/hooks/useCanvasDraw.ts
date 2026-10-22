@@ -26,7 +26,7 @@ import { detectTopographicGLSupport, getTopographicGLStage } from './gradients/d
 import { detectVoronoiGLSupport, getVoronoiGLStage } from './gradients/drawVoronoiGL';
 import { detectWindmillGLSupport, getWindmillHelixGLStage } from './gradients/drawWindmillGL';
 import { getPostGradientOverlayStage } from './gradients/glPostGradientOverlay';
-import { getToneStage } from './gradients/glToneStage';
+import { getToneStage, isNeutralGrade } from './gradients/glToneStage';
 import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { detectFisheyeGLSupport, getFisheyeGLStage } from './effects/applyFisheyeGL';
 import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
@@ -668,7 +668,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // field gradients do it in their shaders. Done in the pipeline when the gradient
     // runs there, otherwise as its own pass right after the gradient is drawn.
     const needsToneStage = !!gradientType && !STYLE_FIELD_GRADIENT_TYPES.includes(gradientType)
-      && ((drawCtx.fieldExposure ?? 0) !== 0 || (drawCtx.fieldTone ?? 'off') !== 'off');
+      && ((drawCtx.fieldExposure ?? 0) !== 0 || (drawCtx.fieldTone ?? 'off') !== 'off' || !isNeutralGrade(drawCtx.fieldGrade));
     let toneApplied = false;
     const gradientStage = gradientType ? getGradientGLStage(gradientType, drawCtx) : null;
     if (gradientStage) {
@@ -696,7 +696,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       });
 
       const runStages: GLEffectStage[] = [gradientStage, overlayStage];
-      if (needsToneStage) { runStages.push(getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off')); toneApplied = true; }
+      if (needsToneStage) { runStages.push(getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off', drawCtx.fieldGrade)); toneApplied = true; }
       let lookahead = 0;
       while (lookahead < activeEffects.length) {
         const nextType = activeEffects[lookahead];
@@ -806,7 +806,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
 
     if (needsToneStage && !toneApplied) {
-      runGLEffectChain([getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off')], canvas, ctx, displayWidth, displayHeight, 1);
+      runGLEffectChain([getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off', drawCtx.fieldGrade)], canvas, ctx, displayWidth, displayHeight, 1);
     }
 
     // Apply visual effects after gradient is rendered

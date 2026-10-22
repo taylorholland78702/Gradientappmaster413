@@ -49,6 +49,7 @@ uniform float uA;
 uniform float uB;
 uniform float uExposure;
 uniform int uTone;
+uniform vec3 uGrade; // brightness, contrast, saturation (1 = unchanged)
 in vec2 vUv;
 out vec4 outColor;
 ${DITHER_GLSL}
@@ -112,6 +113,12 @@ vec3 finish(vec3 c) {
   } else if (uTone == 2) {
     c = (1.0 - exp(-1.5 * c)) / (1.0 - exp(-1.5));
   }
+  c = clamp(c, 0.0, 1.0);
+  // Grade: contrast about mid-grey, then brightness, then saturation about the luma.
+  c = (c - 0.5) * uGrade.y + 0.5;
+  c *= uGrade.x;
+  float gl = dot(c, vec3(0.299, 0.587, 0.114));
+  c = mix(vec3(gl), c, uGrade.z);
   return clamp(c, 0.0, 1.0);
 }
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
@@ -203,11 +210,11 @@ vec3 shade(vec2 p, vec2 uv, float t) {
     float w = pow(1.0 / (d * d + 0.015 * uA * uA), 1.55);
     w *= 1.0 + 0.5 * uBass * step(0.5, fract(fi * 0.5));
     vec3 col = uColors[i];
-    acc += w * (uBlendMode == 0 ? col : rgbToOklab(col));
+    acc += w * blendIn(col);
     wsum += w;
   }
   acc /= max(wsum, 1e-5);
-  return uBlendMode == 0 ? acc : oklabToRgb(acc);
+  return blendOut(acc);
 }`;
 
 // Liquid chrome: steep, blobby height field shaded as a mirror — the palette
@@ -594,11 +601,11 @@ vec3 shade(vec2 p, vec2 uv, float t) {
     float d = length(w - c);
     float wt = pow(1.0 / (d * d + 0.012), 1.9);
     vec3 col = uColors[i];
-    acc += wt * (uBlendMode == 0 ? col : rgbToOklab(col));
+    acc += wt * blendIn(col);
     wsum += wt;
   }
   acc /= max(wsum, 1e-5);
-  vec3 base = uBlendMode == 0 ? acc : oklabToRgb(acc);
+  vec3 base = blendOut(acc);
   float fold = fbm3(w * 1.5 + vec2(t * 0.03, 0.0)) * 5.5 + t * 0.2;
   float sat = pow(0.5 + 0.5 * sin(fold), 4.0);
   vec3 col = base * (0.82 + 0.30 * sat * uB) + sat * 0.14 * uB * (1.0 + uBass * 0.5);
@@ -785,7 +792,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone, fieldGrade,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -816,6 +823,7 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   gl.uniform1f(gl.getUniformLocation(program, 'uA'), fieldShapeA ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uB'), fieldShapeB ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), fieldExposure ?? 0);
+  gl.uniform3f(gl.getUniformLocation(program, 'uGrade'), fieldGrade?.brightness ?? 1, fieldGrade?.contrast ?? 1, fieldGrade?.saturation ?? 1);
   gl.uniform1i(gl.getUniformLocation(program, 'uTone'), fieldTone === 'aces' ? 1 : fieldTone === 'soft' ? 2 : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
