@@ -282,6 +282,24 @@ const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[] = [
 const EXPORT_MAX_EDGE = 8192;
 const EXPORT_MAX_PIXELS = 40_000_000;
 
+// What the About panel's gesture guide lists (touch first, then keys).
+const TOUCH_GESTURES: [string, string][] = [
+  ['Flick left', 'Forward: redo, or a new Shuffle'],
+  ['Flick right', 'Back: undo'],
+  ['Pinch', 'Zoom'],
+  ['Twist two fingers', 'Rotate'],
+  ['Double-tap', 'Pause / play'],
+  ['Press and hold', 'Hide / show the controls'],
+  ['Drag in a circle', 'Spin the gradient, re-roll colors'],
+];
+const KEY_GESTURES: [string, string][] = [
+  ['→', 'Forward: redo, or a new Shuffle'],
+  ['←', 'Back: undo'],
+  ['Space', 'Pause / play'],
+  ['H', 'Hide / show the controls'],
+  ['Scroll', 'Zoom'],
+];
+
 // Matches ControlDrawer's desktop scale, so popouts read at the same type size as the tabs.
 const POPOVER_SCALE = 1.3;
 
@@ -392,8 +410,6 @@ export function InteractiveGradient() {
   // the About button's position together so none of them can disagree
   // about which layout mode is active at a given width.
   const isMobile = useIsMobile(1024);
-  // Coarse pointer = a finger, not a mouse: decides which gestures the guide lists.
-  const isTouchDevice = typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
   // panelRef now points at the rail (ControlRail's root, data-role="panel")
   // — it used to be the draggable 3-row card, but the rail replaced that
   // card and inherited the same drag mechanism, so this is the same ref
@@ -4526,50 +4542,25 @@ export function InteractiveGradient() {
           repositioned now that it can't sit inline under the wordmark
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
-      {/* First-run gesture guide: every gesture and shortcut that moves the artwork, once. */}
+      {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
       {showWavHint && !activeTab && railRect && (
         <div
-          role="dialog"
-          aria-label="Gestures"
-          className="fixed z-40 pointer-events-auto px-3 py-2.5 rounded-lg border border-white/15 text-white/90"
-          style={{
-            backgroundColor: 'rgba(8, 8, 12, 0.92)',
-            width: isMobile ? 'calc(100vw - 16px)' : 300,
-            ...(isMobile
-              ? { left: 8, bottom: window.innerHeight - railRect.top + 8 }
-              : { left: railRect.right + 12, top: railRect.top }),
-          }}
+          className="fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px]"
+          style={isMobile
+            ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
+            : { left: railRect.right + 12, top: railRect.top }}
         >
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold text-white">{isTouchDevice ? 'Touch gestures' : 'Keys and gestures'}</span>
-            <button onClick={dismissWavHint} className="text-white/50 hover:text-white transition-all" title="Close" aria-label="Dismiss hint">
-              <X weight="bold" className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-snug">
-            {(isTouchDevice ? [
-              ['Flick left', 'Forward: redo, or a new Shuffle'],
-              ['Flick right', 'Back: undo'],
-              ['Pinch', 'Zoom'],
-              ['Twist two fingers', 'Rotate'],
-              ['Double-tap', 'Pause / play'],
-              ['Press and hold', 'Hide / show the controls'],
-              ['Drag in a circle', 'Spin the gradient, re-roll colors'],
-            ] : [
-              ['→', 'Forward: redo, or a new Shuffle'],
-              ['←', 'Back: undo'],
-              ['Space', 'Pause / play'],
-              ['H', 'Hide / show the controls'],
-              ['Scroll', 'Zoom'],
-              ['?', 'All shortcuts'],
-            ]).map(([k, v]) => (
-              <Fragment key={k}>
-                <span className="text-white font-medium whitespace-nowrap">{k}</span>
-                <span className="text-white/70">{v}</span>
-              </Fragment>
-            ))}
-          </div>
-          <button onClick={dismissWavHint} className="mt-2 w-full py-1 text-[11px] font-semibold bg-white text-black">Got it</button>
+          <span className="text-[10px] leading-snug flex-1">
+            Tap <span className="text-white font-medium">wāv</span> for gestures and help · tap <Shuffle weight="regular" className="w-2.5 h-2.5 inline -translate-y-px" /> to shuffle a new look
+          </span>
+          <button
+            onClick={dismissWavHint}
+            className="text-white/50 hover:text-white transition-all flex-shrink-0"
+            title="Dismiss"
+            aria-label="Dismiss hint"
+          >
+            <X weight="bold" className="w-3 h-3" />
+          </button>
         </div>
       )}
 
@@ -4728,10 +4719,28 @@ export function InteractiveGradient() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Gestures and arrows</p>
-                <p className="flex items-center justify-between gap-2"><span>Forward — redo, or a new Shuffle when there is nothing to redo</span><Kbd label="→" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Back — undo</span><Kbd label="←" /></p>
-                <p className="text-xs text-white/60">On a touch screen: flick left for forward and right for back (quick, mostly horizontal flicks only), pinch to zoom, twist two fingers to rotate, double-tap to pause or play, and press and hold to hide or show the controls.</p>
+                <p className="font-semibold text-white">Touch gestures</p>
+                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                  {TOUCH_GESTURES.map(([k, v]) => (
+                    <Fragment key={k}>
+                      <span className="text-white font-medium whitespace-nowrap">{k}</span>
+                      <span>{v}</span>
+                    </Fragment>
+                  ))}
+                </div>
+                <p className="text-xs text-white/50">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="font-semibold text-white">Arrows and keys</p>
+                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                  {KEY_GESTURES.map(([k, v]) => (
+                    <Fragment key={k}>
+                      <span className="flex"><Kbd label={k} /></span>
+                      <span>{v}</span>
+                    </Fragment>
+                  ))}
+                </div>
               </div>
 
               <div className="flex flex-col gap-3">
