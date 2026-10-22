@@ -29,6 +29,7 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
+import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { useMotionGestures } from '../hooks/useMotionGestures';
 import { motionSensorsSupported, requestMotionPermission } from '../utils/motionPermission';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
@@ -1713,6 +1714,20 @@ export function InteractiveGradient() {
     else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
     setPaletteStops(null);
   }, [saveCurrentState, setTargetColors, setColorsInstant, colorBlend, setPaletteStops]);
+
+  // The shuffle button beside the Looks & palettes menu: a random palette from the library
+  // (one that starts dark when the gradient needs a dark backdrop), never the one already showing.
+  const lastShuffledPaletteRef = useRef<string | null>(null);
+  const shuffleColors = useCallback(() => {
+    const dark = DARK_GROUND_GRADIENTS.includes(gradientTypeRef.current);
+    const pool = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS);
+    const live = gradientColorsRef.current;
+    const liveKey = live.map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|');
+    // Also never the one picked last time: the live colors are still easing toward it for a second or two.
+    const choices = pool.filter(p => p.name !== lastShuffledPaletteRef.current && p.colors.map(hexToRgb).map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|') !== liveKey);
+    const pick = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length ? choices.length : pool.length))];
+    if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick); }
+  }, [applyPalette]);
 
   const randomizeAllColors = useCallback(() => {
     saveCurrentState();
@@ -4221,7 +4236,7 @@ export function InteractiveGradient() {
   // useSnapshot.ts/useRandomization.ts already use for this exact problem.
   const controlDrawerTabProps = {
     // Color
-    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, structuralSeed, setStructuralSeed,
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, structuralSeed, setStructuralSeed,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,

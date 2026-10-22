@@ -147,6 +147,7 @@ export interface GradientsTabProps {
   // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
   applyGradientLook: (look: GradientLook) => void;
   applyPalette: (palette: PalettePreset) => void;
+  shuffleColors: () => void;
   gradientColors: ColorRGB[];
   structuralSeed: number;
   setStructuralSeed: (v: number) => void;
@@ -260,7 +261,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, applyPalette, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -456,13 +457,23 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             colors-only palettes (constants/palettePresets.ts) that works with every gradient. */}
         <div className="w-full flex flex-col gap-1 px-1.5 py-1">
           <label className="text-[10px] text-white/80 font-medium">Looks &amp; palettes</label>
-          <LooksMenu
-            gradientName={getGradientDisplayName(gradientType)}
-            looks={GRADIENT_LOOKS[gradientType] ?? []}
-            gradientColors={gradientColors}
-            onLook={applyGradientLook}
-            onPalette={applyPalette}
-          />
+          <div className="flex items-stretch gap-1">
+            <div className="flex-1 min-w-0">
+              <LooksMenu
+                gradientName={getGradientDisplayName(gradientType)}
+                looks={GRADIENT_LOOKS[gradientType] ?? []}
+                gradientColors={gradientColors}
+                onLook={applyGradientLook}
+                onPalette={applyPalette}
+              />
+            </div>
+            <button
+              onClick={shuffleColors}
+              title="Shuffle colors — a random palette from the library"
+              aria-label="Shuffle colors"
+              className="px-2.5 flex items-center justify-center text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+            ><Shuffle weight="regular" className="w-4 h-4" /></button>
+          </div>
         </div>
         {/* Finishing — exposure in stops, then a tone curve. Every gradient has it: the
             styled ones apply it inside their shaders, the rest through a GPU pass right
