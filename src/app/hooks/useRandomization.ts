@@ -8,6 +8,7 @@ import { hslToRgb, rgbToHsl, hexToRgb } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { GRADIENT_LOOKS } from '../constants/gradientLooks';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
+import { paletteFamily, inFamily, generateFamilyPalette } from '../utils/colorFamily';
 import { STYLE_SHAPE_CONTROLS } from '../constants/styleShapeControls';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
@@ -105,7 +106,7 @@ export type RandomizationParams = Record<string, any>;
 
 export function useRandomization(params: RandomizationParams) {
   const {
-    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
+    colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
@@ -907,14 +908,30 @@ export function useRandomization(params: RandomizationParams) {
       setPaletteSharp(0);
       // Colors: a curated Look for this gradient (palette plus its settings), or a palette
       // from the shared library (colors only), or else the random palette picked above.
+      // With "Same family" on, every one of those is held to the family the palette is in, and
+      // a fresh palette is generated when nothing curated fits.
       const looks = finalGradientType ? GRADIENT_LOOKS[finalGradientType] : undefined;
+      const dark = !!finalGradientType && DARK_GROUND_GRADIENTS.includes(finalGradientType);
+      const fam = colorFamilyRef?.current;
+      const anchor = fam?.enabled ? (fam.anchor ?? (fam.anchor = paletteFamily(gradientColors))) : null;
       const roll = Math.random();
-      if (looks?.length && roll < 0.4) {
+      if (anchor) {
+        const okLooks = (looks ?? []).filter(l => inFamily(l.colors.map(hexToRgb), anchor));
+        const okPalettes = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS).filter(p => inFamily(p.colors.map(hexToRgb), anchor));
+        if (okLooks.length && roll < 0.35) {
+          const look = okLooks[Math.floor(Math.random() * okLooks.length)];
+          applyLookValues(look, adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
+        } else if (okPalettes.length && roll < 0.7) {
+          const palette = okPalettes[Math.floor(Math.random() * okPalettes.length)];
+          setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
+        } else {
+          setTargetColors(generateFamilyPalette(anchor, gradientColors.length, dark));
+        }
+      } else if (looks?.length && roll < 0.4) {
         const look = looks[Math.floor(Math.random() * looks.length)];
         const lookColors = look.colors.map(hexToRgb);
         applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
       } else if (roll < (looks?.length ? 0.75 : 0.5)) {
-        const dark = !!finalGradientType && DARK_GROUND_GRADIENTS.includes(finalGradientType);
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
         const palette = pool[Math.floor(Math.random() * pool.length)];
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));

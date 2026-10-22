@@ -29,6 +29,7 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
+import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
 import { encodePresetData } from '../utils/presetShare';
 import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
@@ -1698,6 +1699,7 @@ export function InteractiveGradient() {
 
   // What a Look chip does: the same, but undoable.
   const applyGradientLook = useCallback((look: GradientLook) => {
+    colorFamilyRef.current.anchor = null;
     saveCurrentState();
     applyLookValues(look);
     // A Look lands the same way every time, so the gradient's shape sliders go back to 1 too.
@@ -1707,9 +1709,23 @@ export function InteractiveGradient() {
     setFieldGrade({ brightness: 1, contrast: 1, saturation: 1 });
   }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, gradientTypeRef]);
 
+  // "Same family": Shuffle keeps to the color family the palette was in when this was switched on (or
+  // when you last picked a palette yourself), so a run of shuffles reads as one mood.
+  const [keepFamily, setKeepFamilyState] = useState(() => { try { return localStorage.getItem('wavKeepFamily') === '1'; } catch { return false; } });
+  const colorFamilyRef = useRef<{ enabled: boolean; anchor: Family | null }>({ enabled: keepFamily, anchor: null });
+  colorFamilyRef.current.enabled = keepFamily;
+  if (keepFamily && !colorFamilyRef.current.anchor && gradientColorsRef.current.length) colorFamilyRef.current.anchor = paletteFamily(gradientColorsRef.current);
+  const reanchorFamily = () => { colorFamilyRef.current.anchor = null; };
+  const setKeepFamily = (v: boolean) => {
+    colorFamilyRef.current.anchor = v ? paletteFamily(gradientColorsRef.current) : null;
+    setKeepFamilyState(v);
+    try { localStorage.setItem('wavKeepFamily', v ? '1' : '0'); } catch { /* not persisted */ }
+  };
+
   // A colors-only palette from the library: eases in when it has as many colors as now, else
   // is re-cut to the current count (same rule as the Color tab's Start from > Palettes).
-  const applyPalette = useCallback((palette: { colors: string[] }) => {
+  const applyPalette = useCallback((palette: { colors: string[] }, opts?: { fromShuffle?: boolean }) => {
+    if (!opts?.fromShuffle) colorFamilyRef.current.anchor = null; // your own pick re-anchors the family
     saveCurrentState();
     const colors = palette.colors.map(hexToRgb);
     const n = gradientColorsRef.current.length;
@@ -1723,14 +1739,26 @@ export function InteractiveGradient() {
   const lastShuffledPaletteRef = useRef<string | null>(null);
   const shuffleColors = useCallback(() => {
     const dark = DARK_GROUND_GRADIENTS.includes(gradientTypeRef.current);
-    const pool = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS);
+    const fam = colorFamilyRef.current;
+    const anchor = fam.enabled ? (fam.anchor ?? (fam.anchor = paletteFamily(gradientColorsRef.current))) : null;
+    const n = gradientColorsRef.current.length;
+    let pool = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS);
+    if (anchor) pool = pool.filter(p => inFamily(p.colors.map(hexToRgb), anchor));
     const live = gradientColorsRef.current;
     const liveKey = live.map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|');
     // Also never the one picked last time: the live colors are still easing toward it for a second or two.
     const choices = pool.filter(p => p.name !== lastShuffledPaletteRef.current && p.colors.map(hexToRgb).map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|') !== liveKey);
+    if (anchor && (choices.length < 2 || Math.random() < 0.35)) {
+      // Too few library palettes in this family (or just for variety): make one.
+      saveCurrentState();
+      setTargetColors(generateFamilyPalette(anchor, n, dark));
+      setPaletteStops(null);
+      lastShuffledPaletteRef.current = null;
+      return;
+    }
     const pick = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length ? choices.length : pool.length))];
-    if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick); }
-  }, [applyPalette]);
+    if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick, { fromShuffle: true }); }
+  }, [applyPalette, saveCurrentState, setTargetColors, setPaletteStops]);
 
   const randomizeAllColors = useCallback(() => {
     saveCurrentState();
@@ -1810,7 +1838,7 @@ export function InteractiveGradient() {
     randomizeUncoveredParams, shuffleGradientType, randomizeEffects,
     feelingLucky, evolveWithFactor, shuffleAudiovisuals,
   } = useRandomization({
-    activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
+    colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
@@ -4290,7 +4318,7 @@ export function InteractiveGradient() {
   // useSnapshot.ts/useRandomization.ts already use for this exact problem.
   const controlDrawerTabProps = {
     // Color
-    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, structuralSeed, setStructuralSeed,
+    isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, keepFamily, setKeepFamily, structuralSeed, setStructuralSeed,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,
     isKeywordHelpOpen, setIsKeywordHelpOpen, handleAIPromptSubmit, setIsAIColorPickerOpen,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness,

@@ -35,6 +35,9 @@ export interface ColorTabProps {
   setPaletteBias: (v: number) => void;
   paletteSharp: number;
   setPaletteSharp: (v: number) => void;
+  keepFamily: boolean;
+  setKeepFamily: (v: boolean) => void;
+  shuffleColors: () => void;
 }
 
 const COLOR_BLEND_OPTIONS: { value: ColorBlend; label: string; hint: string }[] = [
@@ -50,6 +53,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
   paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
   colorBlend, setColorBlend,
   paletteStops, setPaletteStops, paletteBias, setPaletteBias, paletteSharp, setPaletteSharp,
+  keepFamily, setKeepFamily, shuffleColors,
 }) => {
   const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
@@ -170,11 +174,26 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           Shuffle button (border-b doubling as the divider before the first
           section below it). */}
       <button
-        onClick={() => { saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
+        onClick={() => { if (keepFamily) { shuffleColors(); return; } saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
         className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
         title="Shuffle Colors"
         aria-label="Shuffle Colors"
       ><Shuffle weight="regular" className="w-4 h-4" /></button>
+
+      <div className="w-full px-1.5 pt-2 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-white/80 font-medium" title="What Shuffle does with the colors">Shuffle picks</span>
+        <div className="flex gap-0.5" role="group" aria-label="Shuffle color range">
+          {([[false, 'Any color', 'Any palette at all'], [true, 'Same family', 'Stay in the color family you have now, so a run of shuffles feels like one mood']] as const).map(([val, label, hint]) => (
+            <button
+              key={label}
+              onClick={() => setKeepFamily(val)}
+              aria-pressed={keepFamily === val}
+              title={hint}
+              className={`px-2 h-8 lg:h-5 text-[10px] transition-all ${keepFamily === val ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+            >{label}</button>
+          ))}
+        </div>
+      </div>
 
       {/* Your palette: the swatches themselves (one native color input each,
           bound to gradientColors[i]) and how many there are. */}
