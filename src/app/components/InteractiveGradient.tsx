@@ -292,7 +292,7 @@ const TOUCH_GESTURES: [string, string][] = [
   ['Twist two fingers', 'Rotate'],
   ['Double-tap', 'Pause / play'],
   ['Press and hold', 'Hide / show the controls'],
-  ['Three-finger tap', 'Save a PNG'],
+  ['Three-finger tap', 'Save to Photos (Save Image in the share sheet)'],
   ['Drag in a circle', 'Spin the gradient, re-roll colors'],
   ['Shake', 'Shuffle (turn on below)'],
   ['Tilt', 'Rotate the gradient (turn on below)'],
@@ -3555,7 +3555,7 @@ export function InteractiveGradient() {
     // Three fingers down and up together, without sliding: Save PNG (the S key's job).
     if (g.threeFinger && !g.threeMoved && performance.now() - g.t < 600) {
       haptic('success');
-      exportAsPNG();
+      exportAsPNG(true);
       return;
     }
     if (g.wasPinch || g.longFired) return;
@@ -3663,7 +3663,9 @@ export function InteractiveGradient() {
   // history between frames (Feedback, Chromatic Trails, Slit-Scan) restart when
   // the canvas changes size, so they come out as a fresh frame.
   const isExportingRef = useRef(false);
-  const exportAsPNG = useCallback(async () => {
+  // `toPhotos` hands the image to the system share sheet (on a phone it offers Save Image /
+  // Add to Photos) and falls back to a normal download wherever sharing files isn't available.
+  const exportAsPNG = useCallback(async (toPhotos = false) => {
     const canvas = canvasRef.current;
     if (!canvas || isExportingRef.current) return;
     isExportingRef.current = true;
@@ -3701,10 +3703,23 @@ export function InteractiveGradient() {
       octx.drawImage(canvas, Math.round((canvas.width - outW) / 2), Math.round((canvas.height - outH) / 2), outW, outH, 0, 0, outW, outH);
       const blob = await new Promise<Blob | null>(r => out.toBlob(r, 'image/png'));
       if (blob) {
+        const name = `gradient-${outW}x${outH}-${Date.now()}.png`;
+        if (toPhotos && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+          const file = new File([blob], name, { type: 'image/png' });
+          if (navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: 'wāv' });
+              return;
+            } catch (err) {
+              // Closing the share sheet is not a failure; anything else falls through to a download.
+              if ((err as DOMException)?.name === 'AbortError') return;
+            }
+          }
+        }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `gradient-${outW}x${outH}-${Date.now()}.png`;
+        link.download = name;
         link.click();
         URL.revokeObjectURL(url);
       }
