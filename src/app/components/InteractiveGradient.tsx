@@ -284,6 +284,23 @@ const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[] = [
   { id: '16:9', label: '16:9', ratio: 16 / 9 },
   { id: '9:16', label: '9:16', ratio: 9 / 16 },
 ];
+// Save Video options. Size is the recorded video's long edge (the artwork is re-rendered at that
+// size for the take); Length stops the take for you, or leaves it to the Record button.
+type VideoSize = 'screen' | '720' | '1080' | '4k';
+type VideoLength = 'manual' | '5' | '10' | '30';
+const VIDEO_SIZES: { id: VideoSize; label: string; longEdge: number }[] = [
+  { id: 'screen', label: 'Screen', longEdge: 0 },
+  { id: '720', label: '720p', longEdge: 1280 },
+  { id: '1080', label: '1080p', longEdge: 1920 },
+  { id: '4k', label: '4K', longEdge: 3840 },
+];
+const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[] = [
+  { id: 'manual', label: 'Until I stop', seconds: 0 },
+  { id: '5', label: '5s', seconds: 5 },
+  { id: '10', label: '10s', seconds: 10 },
+  { id: '30', label: '30s', seconds: 30 },
+];
+
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 const EXPORT_MAX_EDGE = 8192;
 const EXPORT_MAX_PIXELS = 40_000_000;
@@ -1997,6 +2014,19 @@ export function InteractiveGradient() {
   const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
   const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
   exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
+  const [videoSize, setVideoSizeState] = useState<VideoSize>(() => {
+    try { const v = localStorage.getItem('videoSize'); return VIDEO_SIZES.some(o => o.id === v) ? (v as VideoSize) : 'screen'; } catch { return 'screen'; }
+  });
+  const [videoLength, setVideoLengthState] = useState<VideoLength>(() => {
+    try { const v = localStorage.getItem('videoLength'); return VIDEO_LENGTHS.some(o => o.id === v) ? (v as VideoLength) : 'manual'; } catch { return 'manual'; }
+  });
+  const setVideoSize = (v: VideoSize) => { setVideoSizeState(v); try { localStorage.setItem('videoSize', v); } catch { /* not persisted */ } };
+  const setVideoLength = (v: VideoLength) => { setVideoLengthState(v); try { localStorage.setItem('videoLength', v); } catch { /* not persisted */ } };
+  // True from the moment a take is started from the Save popout until it ends, so the larger render
+  // size can be put back and the length timer cleared however the take stops.
+  const videoTakeRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; sized: boolean } | null>(null);
+  const isRecordingNowRef = useRef(false);
+  isRecordingNowRef.current = isRecording;
   // "Copied" feedback for the share buttons in the Save popout: which one, for a moment.
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copyText = async (key: string, text: string) => {
@@ -2126,6 +2156,8 @@ export function InteractiveGradient() {
           width: isMobile ? autoShufflePopoverAnchor.width : autoShufflePopoverAnchor.width * POPOVER_SCALE,
           height: autoShufflePopoverAnchor.height,
           border: '1px solid rgba(255, 255, 255, 0.1)',
+          maxHeight: 'calc(100vh - 16px)',
+          overflowY: 'auto',
         }}
       >
         {/* On desktop the tab drawers render at 1.3x (ControlDrawer's scale wrapper);
@@ -2160,6 +2192,34 @@ export function InteractiveGradient() {
           style={{ backgroundColor: '#ffffff', color: '#000000' }}
         >Save PNG</button>
         {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
+        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <span className="text-[10px] text-white/60" title="Records the live artwork, with sound if audio is on, as an MP4">Record video</span>
+          {([
+            { label: 'Size', options: VIDEO_SIZES, value: videoSize, set: setVideoSize },
+            { label: 'Length', options: VIDEO_LENGTHS, value: videoLength, set: setVideoLength },
+          ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void }[]).map(g => (
+            <div key={g.label} className="flex flex-wrap gap-1" role="group" aria-label={`Video ${g.label.toLowerCase()}`}>
+              {g.options.map(o => (
+                <button
+                  key={o.id}
+                  onClick={() => g.set(o.id as never)}
+                  aria-pressed={g.value === o.id}
+                  disabled={isRecording}
+                  className="px-2 py-1 text-[10px] transition-all disabled:opacity-50"
+                  style={g.value === o.id
+                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
+                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+                >{o.label}</button>
+              ))}
+            </div>
+          ))}
+          <button
+            onClick={startVideoTake}
+            className="py-1.5 text-[11px] font-semibold transition-all"
+            style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
+          >{isRecording ? 'Stop recording' : 'Start recording'}</button>
+          {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
+        </div>
         <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
           <div className="flex gap-1">
@@ -3784,6 +3844,52 @@ export function InteractiveGradient() {
       isExportingRef.current = false;
     }
   }, []);
+
+  // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
+  // size first, since the encoder is fixed to the canvas size at the moment recording begins.
+  const startVideoTake = async () => {
+    if (isRecording) { toggleVCRRecording(); return; }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
+    let sized = false;
+    if (longEdge > 0) {
+      const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
+      // H.264 wants even width and height: nudge the scale until both come out even.
+      let mult = Math.min(longEdge / Math.max(cssW, cssH), EXPORT_MAX_EDGE / Math.max(cssW, cssH));
+      for (let k = 0; k < 60; k++, mult += 0.0007) {
+        if (Math.floor(cssW * mult) % 2 === 0 && Math.floor(cssH * mult) % 2 === 0) break;
+      }
+      exportRender.multiplier = mult;
+      drawParamsDirtyRef.current = true;
+      sized = true;
+      const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
+      for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
+      await nextFrame();
+      await nextFrame();
+    }
+    videoTakeRef.current = { timer: null, sized };
+    toggleVCRRecording();
+    const seconds = VIDEO_LENGTHS.find(o => o.id === videoLength)?.seconds ?? 0;
+    if (seconds > 0) videoTakeRef.current.timer = setTimeout(() => toggleVCRRecording(), seconds * 1000);
+    // If recording never actually began (encoders unavailable, permission refused), put the size back.
+    setTimeout(() => {
+      const take = videoTakeRef.current;
+      if (take && !isRecordingNowRef.current) {
+        videoTakeRef.current = null;
+        if (take.timer) clearTimeout(take.timer);
+        if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
+      }
+    }, 6000);
+  };
+  // Whenever recording ends (length reached, or the Record button pressed), undo the take's setup.
+  useEffect(() => {
+    if (isRecording || !videoTakeRef.current) return;
+    const take = videoTakeRef.current;
+    videoTakeRef.current = null;
+    if (take.timer) clearTimeout(take.timer);
+    if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
+  }, [isRecording]);
 
   // Export animated GIF
   const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
