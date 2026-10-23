@@ -7,7 +7,7 @@ import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
 } from '../constants/gradientEffects';
-import { pickRandomEmojiSet, splitGraphemes, EMOJI_PICKER_CATEGORIES } from '../components/InteractiveGradient';
+import { pickRandomEmojiSet, splitGraphemes, EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 import { GRADIENT_DRAW_FNS } from './gradients/_registry';
 import { EFFECT_DRAW_FNS } from './effects/_registry';
 import { runGLEffectChain, type GLEffectStage } from './effects/glEffectPipeline';

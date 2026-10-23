@@ -3,7 +3,7 @@ import {
   type ColorRGB, type GradientType, type EffectType,
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FEELING_LUCKY_GRADIENT_TYPES, FULL_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
-import { pickRandomEmojiSet } from '../components/InteractiveGradient';
+import { pickRandomEmojiSet } from '../constants/emojiPicker';
 import { hslToRgb, rgbToHsl, hexToRgb } from '../utils/color';
 import { RANGES, randInRange, randIntInRange } from '../constants/randomizationRanges';
 import { GRADIENT_LOOKS } from '../constants/gradientLooks';

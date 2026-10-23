@@ -1,4 +1,4 @@
-import { splitGraphemes } from '../../components/InteractiveGradient';
+import { splitGraphemes } from '../../constants/emojiPicker';
 export function applyEmoji(P: any): void {
   const {
     activeEffects,
