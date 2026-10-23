@@ -27,7 +27,10 @@ export function PopoverPortal({ anchor, popoverRef, isMobile, children }: {
         width: isMobile ? anchor.width : anchor.width * POPOVER_SCALE,
         height: anchor.height,
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        maxHeight: 'calc(100vh - 16px)',
+        // Anchored by its bottom edge it grows upward, so it may only use the room above that edge.
+        maxHeight: anchor.top === undefined && anchor.bottom !== undefined
+          ? `calc(100vh - ${anchor.bottom + 8}px)`
+          : 'calc(100vh - 16px)',
         overflowY: 'auto',
       }}
     >
