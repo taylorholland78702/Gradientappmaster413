@@ -1742,12 +1742,9 @@ export function InteractiveGradient() {
     videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG,
-    loopSeconds, setLoopSeconds, loopProgress, loopError, loopable, exportLoop,
     startVideoTake,
   } = useExportControls({
     canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
-    isAutoColorRef, isAutoModeRef, setIsAutoColor, setIsAutoMode, isAutoShuffleOn, setIsAutoShuffleOn,
-    vcrPlaybackSpeedRef, animValuesRef, gradientType,
   });
   // Clicking the Auto Shuffle button opens this popover (on/off toggle +
   // interval slider) instead of directly toggling on/off — the interval
@@ -1863,9 +1860,6 @@ export function InteractiveGradient() {
             videoSize={videoSize} setVideoSize={setVideoSize}
             videoLength={videoLength} setVideoLength={setVideoLength}
             isRecording={isRecording} startVideoTake={startVideoTake}
-            loopSeconds={loopSeconds} setLoopSeconds={setLoopSeconds}
-            loopProgress={loopProgress} exportLoop={exportLoop} loopable={loopable} loopError={loopError}
-            activeEffects={activeEffects}
             copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
             gradientColors={gradientColors} paletteStops={paletteStops}
           />

@@ -50,8 +50,6 @@ uniform float uB;
 uniform float uExposure;
 uniform int uTone;
 uniform vec3 uGrade; // brightness, contrast, saturation (1 = unchanged)
-uniform float uLoopW; // < 0: normal. Otherwise 0..1 through a seamless loop (see loopRender)
-uniform float uLoopT; // length of the loop in shader time units
 uniform float uSwirl; // twist of the drawing plane about the center (0 = none)
 float gTime = 0.0;    // the time the current sample is being drawn at (set in main)
 in vec2 vUv;
@@ -164,14 +162,7 @@ vec3 sampleAt(float t) {
   return shade(p, vUv, t);
 }
 void main() {
-  vec3 col;
-  if (uLoopW < 0.0) {
-    col = sampleAt(uTime);
-  } else {
-    // Seamless loop: fade from "now" to "one loop ago" as the loop plays, so the last frame
-    // lands exactly on the first. Costs two samples per pixel, only while exporting a loop.
-    col = mix(sampleAt(uTime), sampleAt(uTime - uLoopT), uLoopW);
-  }
+  vec3 col = sampleAt(uTime);
   outColor = vec4(antiBand(finish(col)), 1.0);
 }`;
 
@@ -815,12 +806,6 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
   return program;
 }
 
-// Set by the seamless-loop export (InteractiveGradient): while active, time comes from `phase`
-// (0..1 through the loop) instead of the live clock, the picture is cross-faded with itself one
-// loop earlier so it repeats exactly, and audio is ignored so nothing depends on the music.
-export const loopRender = { active: false, phase: 0, base: 0, T: 8 };
-if (typeof window !== 'undefined' && import.meta.env?.DEV) (window as unknown as { __wavLoop?: typeof loopRender }).__wavLoop = loopRender;
-
 export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
@@ -838,10 +823,10 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
     throw err;
   }
 
-  const audio = !!(isAudioEnabled && isAudioReactive) && !loopRender.active;
+  const audio = !!(isAudioEnabled && isAudioReactive);
   // The app-driven clock (InteractiveGradient.tsx): frozen while paused, scaled by the
   // playback speed and this gradient's Speed, and synced to Display windows.
-  const time = loopRender.active ? loopRender.base + loopRender.phase * loopRender.T : (fieldAnimTime ?? 0);
+  const time = fieldAnimTime ?? 0;
   const scale = 3 * (fieldScale ?? 1) / Math.max(0.05, zoom ?? 1);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -857,8 +842,6 @@ export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | und
   gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), fieldExposure ?? 0);
   gl.uniform3f(gl.getUniformLocation(program, 'uGrade'), fieldGrade?.brightness ?? 1, fieldGrade?.contrast ?? 1, fieldGrade?.saturation ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uSwirl'), fieldSwirl ?? 0);
-  gl.uniform1f(gl.getUniformLocation(program, 'uLoopW'), loopRender.active ? loopRender.phase : -1);
-  gl.uniform1f(gl.getUniformLocation(program, 'uLoopT'), loopRender.T);
   gl.uniform1i(gl.getUniformLocation(program, 'uTone'), fieldTone === 'aces' ? 1 : fieldTone === 'soft' ? 2 : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);

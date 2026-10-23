@@ -1,17 +1,15 @@
 import { Camera } from '@phosphor-icons/react';
-import type { ColorRGB, EffectType } from '../constants/gradientEffects';
+import type { ColorRGB } from '../constants/gradientEffects';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
   type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
-  type LoopSeconds, LOOP_LENGTHS, HISTORY_EFFECTS,
 } from '../constants/exportOptions';
 import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 
-// The "Save & share" popout: PNG size/aspect, video take, seamless loop, embed snippet and palette copy.
+// The "Save & share" popout: PNG size/aspect, video take, embed snippet and palette copy.
 export function ExportPopout({
   isMobile, exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, closePopover,
   videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake,
-  loopSeconds, setLoopSeconds, loopProgress, exportLoop, loopable, loopError, activeEffects,
   copiedKey, copyText, currentPlayerUrl, gradientColors, paletteStops,
 }: {
   isMobile: boolean;
@@ -21,9 +19,6 @@ export function ExportPopout({
   videoSize: VideoSize; setVideoSize: (v: VideoSize) => void;
   videoLength: VideoLength; setVideoLength: (v: VideoLength) => void;
   isRecording: boolean; startVideoTake: () => void;
-  loopSeconds: LoopSeconds; setLoopSeconds: (v: LoopSeconds) => void;
-  loopProgress: number | null; exportLoop: () => void; loopable: boolean; loopError: string | null;
-  activeEffects: EffectType[];
   copiedKey: string | null; copyText: (key: string, text: string) => void; currentPlayerUrl: () => string;
   gradientColors: ColorRGB[]; paletteStops: Parameters<typeof formatPalette>[1];
 }) {
@@ -83,37 +78,6 @@ export function ExportPopout({
           style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
         >{isRecording ? 'Stop recording' : 'Start recording'}</button>
         {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
-      </div>
-      <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <span className="text-[10px] text-white/60" title="An MP4 whose end leads straight back into its start, for a background that plays forever">Seamless loop</span>
-        <div className="flex gap-1" role="group" aria-label="Loop length">
-          {LOOP_LENGTHS.map(o => (
-            <button
-              key={o.id}
-              onClick={() => setLoopSeconds(o.id)}
-              aria-pressed={loopSeconds === o.id}
-              disabled={loopProgress !== null}
-              className="flex-1 px-2 py-1 text-[10px] transition-all disabled:opacity-50"
-              style={loopSeconds === o.id
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{o.label}</button>
-          ))}
-        </div>
-        <button
-          onClick={exportLoop}
-          disabled={!loopable && loopProgress === null}
-          className="py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40"
-          style={loopProgress !== null ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
-        >{loopProgress !== null ? `Rendering ${Math.round(loopProgress * 100)}% — Cancel` : 'Export loop'}</button>
-        <p className="text-[10px] text-white/50">
-          {!loopable
-            ? 'Loops work with the shader gradients (Smoke, Glass, Ring, Mesh and the like) — not the simulations.'
-            : activeEffects.some(e => HISTORY_EFFECTS.includes(e))
-              ? 'Feedback, Chromatic Trails and Slit-Scan remember past frames, so this loop will show a seam. Uses the video Size above; audio is ignored.'
-              : 'Uses the video Size above. Audio is ignored and auto-drifts are paused while it renders.'}
-        </p>
-        {loopError && <p role="alert" className="text-[10px] text-red-300">{loopError}</p>}
       </div>
       <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
         <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>

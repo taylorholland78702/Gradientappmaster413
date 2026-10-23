@@ -1,42 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { GradientType } from '../constants/gradientEffects';
-import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
   type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
-  type LoopSeconds, LOOP_LENGTHS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS,
+  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS,
 } from '../constants/exportOptions';
-import { renderLoopToMp4, evenMultiplier, webCodecsAvailable } from '../utils/loopExport';
-import { loopRender } from './gradients/drawStyleFieldGL';
 import { exportRender } from './useCanvasDraw';
 import { encodePresetData } from '../utils/presetShare';
-import { haptic } from '../utils/haptics';
 import type { useCanvasState } from './state/useCanvasState';
 import type { useMiscState } from './state/useMiscState';
 
 type MiscState = ReturnType<typeof useMiscState>;
 
-// Everything behind the Save & share popout: PNG / video-take / seamless-loop export and the
+// Everything behind the Save & share popout: PNG / video-take export and the
 // copy-to-clipboard share buttons, with their persisted settings.
 export function useExportControls({
   canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
-  isAutoColorRef, isAutoModeRef, setIsAutoColor, setIsAutoMode, isAutoShuffleOn, setIsAutoShuffleOn,
-  vcrPlaybackSpeedRef, animValuesRef, gradientType,
 }: {
   canvasRef: ReturnType<typeof useCanvasState>['canvasRef'];
   drawParamsDirtyRef: MiscState['drawParamsDirtyRef'];
   buildSnapshot: () => unknown;
   isRecording: boolean;
   toggleVCRRecording: () => void;
-  isAutoColorRef: MiscState['isAutoColorRef'];
-  isAutoModeRef: MiscState['isAutoModeRef'];
-  setIsAutoColor: MiscState['setIsAutoColor'];
-  setIsAutoMode: MiscState['setIsAutoMode'];
-  isAutoShuffleOn: boolean;
-  setIsAutoShuffleOn: (v: boolean | ((prev: boolean) => boolean)) => void;
-  vcrPlaybackSpeedRef: MiscState['vcrPlaybackSpeedRef'];
-  animValuesRef: MiscState['animValuesRef'];
-  gradientType: MiscState['gradientType'];
 }) {
   const [exportSize, setExportSizeState] = useState<ExportSize>(() => {
     try { const v = localStorage.getItem('exportSize'); return EXPORT_SIZES.some(o => o.id === v) ? (v as ExportSize) : 'screen'; } catch { return 'screen'; }
@@ -155,75 +139,6 @@ export function useExportControls({
     }
   }, []);
 
-  // Seamless loop: renders the shader gradient frame by frame into an MP4 whose last frame leads straight
-  // back into its first (the picture is cross-faded with itself one loop earlier; see loopRender).
-  const [loopSeconds, setLoopSecondsState] = useState<LoopSeconds>(() => {
-    try { const v = localStorage.getItem('loopSeconds'); return LOOP_LENGTHS.some(o => o.id === v) ? (v as LoopSeconds) : '6'; } catch { return '6'; }
-  });
-  const setLoopSeconds = (v: LoopSeconds) => { setLoopSecondsState(v); try { localStorage.setItem('loopSeconds', v); } catch { /* not persisted */ } };
-  const [loopProgress, setLoopProgress] = useState<number | null>(null);
-  const [loopError, setLoopError] = useState<string | null>(null);
-  const loopCancelRef = useRef(false);
-  const loopable = STYLE_FIELD_GRADIENT_TYPES.includes(gradientType as GradientType);
-  const exportLoop = async () => {
-    if (loopProgress !== null) { loopCancelRef.current = true; return; }
-    const canvas = canvasRef.current;
-    if (!canvas || !loopable) return;
-    setLoopError(null);
-    if (!webCodecsAvailable()) { setLoopError('This browser can’t encode video (it needs WebCodecs).'); return; }
-    loopCancelRef.current = false;
-    setLoopProgress(0);
-    // Freeze everything that drifts on its own, so the only thing moving is the loop.
-    const wasAutoColor = isAutoColorRef.current, wasAuto = isAutoModeRef.current, wasShuffle = isAutoShuffleOn;
-    if (wasAutoColor) setIsAutoColor(false);
-    if (wasAuto) setIsAutoMode(false);
-    if (wasShuffle) setIsAutoShuffleOn(false);
-    const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
-    try {
-      await nextFrame();
-      const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
-      const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
-      const mult = evenMultiplier(cssW, cssH, longEdge || Math.max(cssW, cssH) * (canvas.width / cssW));
-      exportRender.multiplier = mult;
-      const seconds = Number(loopSeconds);
-      // Shader time runs at (playback speed x this gradient's Speed) per real second.
-      const speed = vcrPlaybackSpeedRef.current * (animValuesRef.current.fieldSpeedLive ?? 1);
-      loopRender.base = animValuesRef.current.fieldAnimTime ?? 0;
-      loopRender.T = Math.max(0.001, seconds * speed);
-      loopRender.phase = 0;
-      loopRender.active = true;
-      drawParamsDirtyRef.current = true;
-      for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
-      await nextFrame();
-      const blob = await renderLoopToMp4({
-        canvas, seconds, fps: 30,
-        drawFrame: async (phase) => { loopRender.phase = phase; drawParamsDirtyRef.current = true; await nextFrame(); await nextFrame(); },
-        onProgress: setLoopProgress,
-        isCancelled: () => loopCancelRef.current,
-      });
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `wav-loop-${canvas.width}x${canvas.height}-${seconds}s.mp4`;
-        link.click();
-        URL.revokeObjectURL(url);
-        haptic('success');
-      }
-    } catch (err) {
-      console.error('Loop export failed:', err);
-      setLoopError(err instanceof Error ? err.message : 'The loop could not be rendered.');
-    } finally {
-      loopRender.active = false;
-      exportRender.multiplier = 0;
-      drawParamsDirtyRef.current = true;
-      if (wasAutoColor) setIsAutoColor(true);
-      if (wasAuto) setIsAutoMode(true);
-      if (wasShuffle) setIsAutoShuffleOn(true);
-      setLoopProgress(null);
-    }
-  };
-
   // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
   // size first, since the encoder is fixed to the canvas size at the moment recording begins.
   const startVideoTake = async () => {
@@ -275,7 +190,6 @@ export function useExportControls({
     videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG,
-    loopSeconds, setLoopSeconds, loopProgress, loopError, loopable, exportLoop,
     startVideoTake,
   };
 }

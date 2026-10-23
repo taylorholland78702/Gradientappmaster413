@@ -32,14 +32,6 @@ export const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[
   { id: '30', label: '30s', seconds: 30 },
 ];
 
-// Seamless loop export: lengths, and the effects that remember earlier frames (a loop can't repeat
-// through those, so a seam shows).
-export type LoopSeconds = '4' | '6' | '8' | '10';
-export const LOOP_LENGTHS: { id: LoopSeconds; label: string }[] = [
-  { id: '4', label: '4s' }, { id: '6', label: '6s' }, { id: '8', label: '8s' }, { id: '10', label: '10s' },
-];
-export const HISTORY_EFFECTS = ['feedback', 'chromatic-trails', 'slit-scan'];
-
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 export const EXPORT_MAX_EDGE = 8192;
 export const EXPORT_MAX_PIXELS = 40_000_000;
