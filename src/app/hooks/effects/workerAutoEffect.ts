@@ -32,6 +32,12 @@ export interface WorkerAutoConfig<TRequest extends { buffer: ArrayBuffer }> {
   // and permanently falls back to the CPU path for the rest of the session,
   // same as every original of these five files did.
   buildRequest: (P: any) => { buffer: ArrayBuffer; extra: Omit<TRequest, 'buffer'> }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // Set when buildRequest reads the live canvas (Grid, Triangulate, Brush Strokes). The request must
+  // then be built BEFORE the last result is painted: otherwise each frame's input is the effect's own
+  // previous output, and the effect feeds on itself. Grid with shapes that leave gaps goes black within
+  // a couple of seconds, and Triangulate drifts darker and darker. Leave unset when the request's pixels
+  // come from the caller (Halftone, Dither): there the CPU fallback still needs the buffer intact.
+  snapshotBeforePaint?: boolean;
 }
 
 export function createWorkerAutoEffect<
@@ -96,6 +102,18 @@ export function createWorkerAutoEffect<
     const { displayWidth, displayHeight, putScaledImageData, drawParamsDirtyRef } = P;
     if (drawParamsDirtyRef) latestDirtyRef = drawParamsDirtyRef;
 
+    // Canvas-reading effects snapshot the input first, while the canvas still holds this frame's
+    // pre-effect picture (see snapshotBeforePaint).
+    let early: { buffer: ArrayBuffer; extra: Omit<TRequest, 'buffer'> } | null = null;
+    if (config.snapshotBeforePaint && !pending) {
+      try {
+        early = config.buildRequest(P);
+      } catch (err) {
+        console.error(`${config.effectName} worker postMessage failed, falling back to main thread:`, err);
+        workerFailed = true;
+      }
+    }
+
     if (!lastResult || lastResult.displayWidth !== displayWidth || lastResult.displayHeight !== displayHeight) {
       config.cpuFallback(P);
     } else {
@@ -109,10 +127,10 @@ export function createWorkerAutoEffect<
       putScaledImageData(lastResult.imageData);
     }
 
-    if (!pending) {
+    if (!pending && !workerFailed) {
       pending = true;
       try {
-        const { buffer, extra } = config.buildRequest(P);
+        const { buffer, extra } = early ?? config.buildRequest(P);
         const w = getWorker();
         const request = { buffer, ...extra } as TRequest;
         w.postMessage(request, [buffer]);

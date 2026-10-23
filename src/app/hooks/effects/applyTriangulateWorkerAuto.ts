@@ -9,6 +9,7 @@ import type { TriangulateWorkerRequest, TriangulateWorkerResponse } from './tria
 
 export const applyTriangulateWorkerAuto = createWorkerAutoEffect<TriangulateWorkerRequest, TriangulateWorkerResponse>({
   workerUrl: new URL('./triangulateWorker.ts', import.meta.url),
+  snapshotBeforePaint: true,
   effectName: 'Triangulate',
   cpuFallback: applyTriangulate,
   buildRequest: (P) => {

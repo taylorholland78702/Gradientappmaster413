@@ -9,6 +9,7 @@ const MAX_DIM = 480;
 
 const workerAuto = createWorkerAutoEffect<BrushStrokesWorkerRequest, BrushStrokesWorkerResponse>({
   workerUrl: new URL('./brushStrokesWorker.ts', import.meta.url),
+  snapshotBeforePaint: true,
   effectName: 'Brush Strokes',
   cpuFallback: applyBrushStrokes,
   shouldRun: (P) => P.canvas.width !== 0 && P.canvas.height !== 0,
