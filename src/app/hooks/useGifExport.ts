@@ -5,10 +5,10 @@ import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 // Downscale target for the encoded GIF — full-canvas-resolution GIFs (this
 // app's canvas is often 1000px+ wide) would make quantize()/applyPalette()
 // slow enough per frame to stall the capture loop, and produce multi-tens-
-// of-MB files for something meant to be a quick shareable clip. 480px wide
-// matches what most GIF-export tools default to; aspect ratio is preserved.
-const MAX_GIF_WIDTH = 480;
-const GIF_FPS = 10;
+// of-MB files for something meant to be a quick shareable clip. 720px wide
+// keeps phone-screen clips sharp; aspect ratio is preserved.
+const MAX_GIF_WIDTH = 720;
+const GIF_FPS = 15;
 const FRAME_DELAY = 1000 / GIF_FPS;
 // No duration cap existed at all — a long recording just kept quantizing
 // and appending frames to the in-memory GIF encoder indefinitely. Shorter
