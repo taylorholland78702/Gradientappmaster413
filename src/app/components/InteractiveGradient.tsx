@@ -2066,15 +2066,6 @@ export function InteractiveGradient() {
   };
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
-  // What triggers an Auto Shuffle: the timer, or the music's big bass hits (the drops). With "drops"
-  // chosen but no audio playing, it falls back to the timer so it never just sits still.
-  const [autoShuffleTiming, setAutoShuffleTimingState] = useState<'timer' | 'drops'>(() => {
-    try { return localStorage.getItem('autoShuffleTiming') === 'drops' ? 'drops' : 'timer'; } catch { return 'timer'; }
-  });
-  const setAutoShuffleTiming = (v: 'timer' | 'drops') => {
-    setAutoShuffleTimingState(v);
-    try { localStorage.setItem('autoShuffleTiming', v); } catch { /* not persisted */ }
-  };
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -2347,23 +2338,6 @@ export function InteractiveGradient() {
             >{o.label}</button>
           ))}
         </div>
-        <div className="flex gap-1" role="group" aria-label="Auto Shuffle timing" title="What triggers a shuffle">
-          {([['timer', 'Timer'], ['drops', 'On the drops']] as const).map(([id, label]) => (
-            <button
-              key={id}
-              onClick={() => setAutoShuffleTiming(id)}
-              aria-pressed={autoShuffleTiming === id}
-              title={id === 'drops' ? 'Shuffle when the music hits hard (needs audio playing); the interval below is the shortest wait' : 'Shuffle every interval'}
-              className="flex-1 py-1 text-[10px] transition-all"
-              style={autoShuffleTiming === id
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{label}</button>
-          ))}
-        </div>
-        {autoShuffleTiming === 'drops' && (
-          <p className="text-[10px] text-white/50">{isAudioEnabled && isAudioReactive ? 'Shuffles on strong bass hits, with the interval as the shortest wait (a bit less on a hard-hitting track).' : 'Turn on audio (mic or a file) for this to follow the music; until then it uses the timer.'}</p>
-        )}
         <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
           {[5, 15, 60, 300].map(sec => (
             <button
@@ -2414,29 +2388,12 @@ export function InteractiveGradient() {
   };
   const runAutoShuffleTickRef = useRef(runAutoShuffleTick);
   runAutoShuffleTickRef.current = runAutoShuffleTick;
-  const dropsActive = autoShuffleTiming === 'drops' && isAudioEnabled && isAudioReactive;
   useEffect(() => {
-    if (!isAutoShuffleOn || isNewPresetPending || dropsActive) return;
+    if (!isAutoShuffleOn || isNewPresetPending) return;
     runAutoShuffleTickRef.current();
     const id = setInterval(() => runAutoShuffleTickRef.current(), autoShuffleIntervalSec * 1000);
     return () => clearInterval(id);
-  }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending, dropsActive]);
-  // On the drops: shuffle when a strong bass hit lands, at most once per interval. The energy bar and
-  // the gap both adapt to how dynamic the track has been (same idea as the audio reseed below), so a
-  // quiet passage doesn't trigger and a real drop shortens the wait.
-  const lastDropShuffleRef = useRef(0);
-  useEffect(() => {
-    if (!isAutoShuffleOn || isNewPresetPending || !dropsActive || bassOnsetTick === 0) return;
-    const intensity = musicIntensityRef.current ?? 1;
-    if (audioEnergy < 0.72 / intensity) return;
-    const now = performance.now();
-    // The interval is the wait between shuffles; on a track that has been hitting hard it can shrink to 70%.
-    const gapMs = Math.max(2500, autoShuffleIntervalSec * 1000 * (intensity > 1.2 ? 0.7 : 1));
-    if (now - lastDropShuffleRef.current < gapMs) return;
-    lastDropShuffleRef.current = now;
-    runAutoShuffleTickRef.current();
-  }, [bassOnsetTick, dropsActive, isAutoShuffleOn, isNewPresetPending, audioEnergy, autoShuffleIntervalSec]);
-
+  }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending]);
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
