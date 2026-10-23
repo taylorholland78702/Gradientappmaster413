@@ -69,7 +69,7 @@ export function ExportPopout({
                 onClick={() => g.set(o.id as never)}
                 aria-pressed={g.value === o.id}
                 disabled={isRecording}
-                className="px-2 py-1 text-[10px] transition-all disabled:opacity-50"
+                className="flex-1 px-1 py-1 text-[10px] transition-all disabled:opacity-50"
                 style={g.value === o.id
                   ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
                   : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
