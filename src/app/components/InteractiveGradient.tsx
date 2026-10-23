@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Shuffle, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
+import { useAutoShuffle } from '../hooks/useAutoShuffle';
 import { useExportControls } from '../hooks/useExportControls';
 import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
@@ -143,7 +144,6 @@ import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
-import { type AutoShuffleScope, AUTO_SHUFFLE_SCOPES, AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC } from '../constants/autoShuffle';
 import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY, DISPLAY_SYNC_KEY, DISPLAY_ANIM_SYNC_KEY } from '../constants/displayMode';
 
 // Re-exported so existing importers keep working.
@@ -1735,39 +1735,26 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
-  // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
-  // wordmark) on a timer, so the artwork keeps evolving
-  // hands-free. evolveWithFactor(1) sets new target values that the master
-  // RAF loop lerps toward over time — that lerp IS the fade between one
-  // result and the next, so no separate opacity/crossfade code is needed.
-  const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
-  // True while the "name this new preset" field is open (see PresetsPanel's
-  // onAddingPresetChange) — pauses Auto Shuffle for that window so it can't
-  // randomize the very state the user is trying to save out from under them.
-  const [isNewPresetPending, setIsNewPresetPending] = useState(false);
-  // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
-  // slider in the Info panel. Persisted so it survives a reload.
-  const [autoShuffleIntervalSec, setAutoShuffleIntervalSecState] = useState(() => {
-    try {
-      const saved = localStorage.getItem('autoShuffleIntervalSec');
-      const n = saved ? Number(saved) : NaN;
-      if (Number.isFinite(n) && n >= AUTO_SHUFFLE_MIN_SEC) return Math.min(AUTO_SHUFFLE_MAX_SEC, n);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to read autoShuffleIntervalSec:', err);
-    }
-    return 7;
+  const {
+    isAutoShuffleOn, setIsAutoShuffleOn, isNewPresetPending, setIsNewPresetPending,
+    autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope,
+    isAutoShuffleOnRef,
+  } = useAutoShuffle({
+    shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors,
+    gradientColorsRef, evolveWithFactor,
   });
-  const setAutoShuffleIntervalSec = (sec: number) => {
-    const clamped = Math.min(AUTO_SHUFFLE_MAX_SEC, Math.max(AUTO_SHUFFLE_MIN_SEC, Math.round(sec)));
-    setAutoShuffleIntervalSecState(clamped);
-    try { localStorage.setItem('autoShuffleIntervalSec', String(clamped)); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to persist autoShuffleIntervalSec:', err);
-    }
-  };
-  // Log-scale mapping so the slider gives useful precision across the whole
-  // 1s-3600s range instead of a linear scale where the first few seconds
-  // (the most commonly used values) would be squeezed into a sliver of the
-  // track.
+  const {
+    exportSize, setExportSize, exportAspect, setExportAspect,
+    videoSize, setVideoSize, videoLength, setVideoLength,
+    copiedKey, copyText, currentPlayerUrl,
+    savePreview, setSavePreview, exportAsPNG,
+    loopSeconds, setLoopSeconds, loopProgress, loopError, loopable, exportLoop,
+    startVideoTake,
+  } = useExportControls({
+    canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
+    isAutoColorRef, isAutoModeRef, setIsAutoColor, setIsAutoMode, isAutoShuffleOn, setIsAutoShuffleOn,
+    vcrPlaybackSpeedRef, animValuesRef, gradientType,
+  });
   // Clicking the Auto Shuffle button opens this popover (on/off toggle +
   // interval slider) instead of directly toggling on/off — the interval
   // control used to live only in the Info panel, which turned out to be too
@@ -1787,28 +1774,6 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShuffleScope, setAutoShuffleScopeState] = useState<AutoShuffleScope>(() => {
-    try {
-      const saved = localStorage.getItem('autoShuffleScope');
-      return AUTO_SHUFFLE_SCOPES.some(o => o.id === saved) ? (saved as AutoShuffleScope) : 'all';
-    } catch { return 'all'; }
-  });
-  const setAutoShuffleScope = (scope: AutoShuffleScope) => {
-    setAutoShuffleScopeState(scope);
-    try { localStorage.setItem('autoShuffleScope', scope); } catch { /* storage unavailable: the choice just won't persist */ }
-  };
-  const {
-    exportSize, setExportSize, exportAspect, setExportAspect,
-    videoSize, setVideoSize, videoLength, setVideoLength,
-    copiedKey, copyText, currentPlayerUrl,
-    savePreview, setSavePreview, exportAsPNG,
-    loopSeconds, setLoopSeconds, loopProgress, loopError, loopable, exportLoop,
-    startVideoTake,
-  } = useExportControls({
-    canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
-    isAutoColorRef, isAutoModeRef, setIsAutoColor, setIsAutoMode, isAutoShuffleOn, setIsAutoShuffleOn,
-    vcrPlaybackSpeedRef, animValuesRef, gradientType,
-  });
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
@@ -1920,42 +1885,6 @@ export function InteractiveGradient() {
       </PopoverPortal>
     );
   };
-  // Read through a ref rather than depending on evolveWithFactor directly —
-  // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
-  // frames, and that's one of its deps), which was tearing down and
-  // restarting this interval on every recreation, so it never survived long
-  // enough to actually fire at 5s.
-  const evolveWithFactorRef = useRef(evolveWithFactor);
-  evolveWithFactorRef.current = evolveWithFactor;
-  // Slows the master RAF loop's color/angle/zoom lerp while auto-shuffle is
-  // running, so each result has a longer, more overlapping cross-fade into
-  // the next instead of the ~2s ease used for a manual nudge/remix.
-  const isAutoShuffleOnRef = useRef(false);
-  useEffect(() => { isAutoShuffleOnRef.current = isAutoShuffleOn; }, [isAutoShuffleOn]);
-  // What each Auto Shuffle tick changes: everything (a full remix), or just the
-  // gradient, the effects or the colors. Read through a ref so changing the scope
-  // doesn't restart the timer.
-  const autoShuffleScopeRef = useRef(autoShuffleScope);
-  autoShuffleScopeRef.current = autoShuffleScope;
-  const autoShuffleActionsRef = useRef({ shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors });
-  autoShuffleActionsRef.current = { shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors };
-  const runAutoShuffleTick = () => {
-    const a = autoShuffleActionsRef.current;
-    switch (autoShuffleScopeRef.current) {
-      case 'gradient': a.shuffleGradientType(); break;
-      case 'effects': a.randomizeEffects(); break;
-      case 'colors': a.saveCurrentState(); a.setTargetColors(gradientColorsRef.current.map(() => a.randomColor())); break;
-      default: evolveWithFactorRef.current(1);
-    }
-  };
-  const runAutoShuffleTickRef = useRef(runAutoShuffleTick);
-  runAutoShuffleTickRef.current = runAutoShuffleTick;
-  useEffect(() => {
-    if (!isAutoShuffleOn || isNewPresetPending) return;
-    runAutoShuffleTickRef.current();
-    const id = setInterval(() => runAutoShuffleTickRef.current(), autoShuffleIntervalSec * 1000);
-    return () => clearInterval(id);
-  }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending]);
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
