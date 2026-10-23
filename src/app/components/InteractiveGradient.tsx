@@ -15,9 +15,8 @@
  * 
  * - Mouse wheel scroll zoom
  */
-import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Shuffle, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useGifExport } from '../hooks/useGifExport';
@@ -36,7 +35,7 @@ import { encodePresetData } from '../utils/presetShare';
 import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { useMotionGestures } from '../hooks/useMotionGestures';
-import { motionSensorsSupported, requestMotionPermission } from '../utils/motionPermission';
+import { requestMotionPermission } from '../utils/motionPermission';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
@@ -140,16 +139,20 @@ import { useVoronoiState } from '../hooks/state/useVoronoiState';
 import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
 
-import { Kbd } from './Kbd';
+import { AboutPanel } from './AboutPanel';
+import { PopoverPortal } from './PopoverPortal';
+import { ExportPopout } from './ExportPopout';
+import { AutoShufflePopout } from './AutoShufflePopout';
+import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
   type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
-  type LoopSeconds, LOOP_LENGTHS, HISTORY_EFFECTS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS,
+  type LoopSeconds, LOOP_LENGTHS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS,
 } from '../constants/exportOptions';
 import { TOUCH_GESTURES, KEY_GESTURES } from '../constants/gestureGuide';
-import { POPOVER_SCALE, type AutoShuffleScope, AUTO_SHUFFLE_SCOPES } from '../constants/autoShuffle';
+import { type AutoShuffleScope, AUTO_SHUFFLE_SCOPES, AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC } from '../constants/autoShuffle';
 import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY, DISPLAY_SYNC_KEY, DISPLAY_ANIM_SYNC_KEY } from '../constants/displayMode';
 
 // Re-exported so existing importers keep working.
@@ -1753,8 +1756,6 @@ export function InteractiveGradient() {
   const [isNewPresetPending, setIsNewPresetPending] = useState(false);
   // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
   // slider in the Info panel. Persisted so it survives a reload.
-  const AUTO_SHUFFLE_MIN_SEC = 1;
-  const AUTO_SHUFFLE_MAX_SEC = 3600;
   const [autoShuffleIntervalSec, setAutoShuffleIntervalSecState] = useState(() => {
     try {
       const saved = localStorage.getItem('autoShuffleIntervalSec');
@@ -1776,18 +1777,6 @@ export function InteractiveGradient() {
   // 1s-3600s range instead of a linear scale where the first few seconds
   // (the most commonly used values) would be squeezed into a sliver of the
   // track.
-  const autoShuffleSliderMax = 1000;
-  const autoShuffleLogRange = Math.log(AUTO_SHUFFLE_MAX_SEC) - Math.log(AUTO_SHUFFLE_MIN_SEC);
-  const autoShuffleSecToSlider = (sec: number) =>
-    Math.round(autoShuffleSliderMax * (Math.log(Math.max(AUTO_SHUFFLE_MIN_SEC, sec)) - Math.log(AUTO_SHUFFLE_MIN_SEC)) / autoShuffleLogRange);
-  const autoShuffleSliderToSec = (v: number) =>
-    Math.round(Math.exp(Math.log(AUTO_SHUFFLE_MIN_SEC) + autoShuffleLogRange * (v / autoShuffleSliderMax)));
-  const formatAutoShuffleInterval = (sec: number) => {
-    if (sec < 60) return `${sec}s`;
-    const minutes = Math.floor(sec / 60);
-    const remainder = sec % 60;
-    return remainder === 0 ? `${minutes}m` : `${minutes}m ${remainder}s`;
-  };
   // Clicking the Auto Shuffle button opens this popover (on/off toggle +
   // interval slider) instead of directly toggling on/off — the interval
   // control used to live only in the Info panel, which turned out to be too
@@ -1950,214 +1939,31 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    // Styled to match the panel's other popouts (bg-black/75, white text,
-    // same corner treatment as the drawer) — this popover is portaled to
-    // document.body, outside the dock's own DOM subtree, so it doesn't get
-    // that theme CSS applied automatically; the colors below are written
-    // out directly instead.
-    return createPortal(
-      <div
-        ref={autoShufflePopoverRef}
-        // Fixed flush to the rail now (like the drawer) instead of
-        // floating free — square on the edge touching the rail, rounded
-        // on the edge facing the canvas.
-        className="fixed z-50 shadow-sm bg-black/75 rounded-none"
-        style={{
-          top: autoShufflePopoverAnchor.top,
-          bottom: autoShufflePopoverAnchor.bottom,
-          left: autoShufflePopoverAnchor.left,
-          width: isMobile ? autoShufflePopoverAnchor.width : autoShufflePopoverAnchor.width * POPOVER_SCALE,
-          height: autoShufflePopoverAnchor.height,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          maxHeight: 'calc(100vh - 16px)',
-          overflowY: 'auto',
-        }}
-      >
-        {/* On desktop the tab drawers render at 1.3x (ControlDrawer's scale wrapper);
-            zoom gives this popout the same type size, with layout following it. */}
-        <div className="p-3 flex flex-col gap-2" style={isMobile ? undefined : { zoom: POPOVER_SCALE }}>
-        {popoverMode === 'export' ? (<>
-        <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save &amp; share</span>
-        {([
-          { label: 'Size', options: EXPORT_SIZES, value: exportSize, set: setExportSize, hint: 'Long edge of the saved image. Re-renders the artwork at that size.' },
-          { label: 'Aspect', options: EXPORT_ASPECTS, value: exportAspect, set: setExportAspect, hint: 'Crops the center of what you see to this shape.' },
-        ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void; hint: string }[]).map(g => (
-          <div key={g.label} className="flex flex-col gap-1" title={g.hint}>
-            <span className="text-[10px] text-white/60">{g.label}</span>
-            <div className="flex flex-wrap gap-1" role="group" aria-label={`Export ${g.label.toLowerCase()}`}>
-              {g.options.map(o => (
-                <button
-                  key={o.id}
-                  onClick={() => g.set(o.id as never)}
-                  aria-pressed={g.value === o.id}
-                  className="px-2 py-1 text-[10px] transition-all"
-                  style={g.value === o.id
-                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-                >{o.label}</button>
-              ))}
-            </div>
-          </div>
-        ))}
-        <button
-          onClick={() => { exportAsPNG(); setAutoShufflePopoverAnchor(null); }}
-          className="py-1.5 text-[11px] font-semibold transition-all"
-          style={{ backgroundColor: '#ffffff', color: '#000000' }}
-        >Save PNG</button>
-        {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="Records the live artwork, with sound if audio is on, as an MP4">Record video</span>
-          {([
-            { label: 'Size', options: VIDEO_SIZES, value: videoSize, set: setVideoSize },
-            { label: 'Length', options: VIDEO_LENGTHS, value: videoLength, set: setVideoLength },
-          ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void }[]).map(g => (
-            <div key={g.label} className="flex flex-wrap gap-1" role="group" aria-label={`Video ${g.label.toLowerCase()}`}>
-              {g.options.map(o => (
-                <button
-                  key={o.id}
-                  onClick={() => g.set(o.id as never)}
-                  aria-pressed={g.value === o.id}
-                  disabled={isRecording}
-                  className="px-2 py-1 text-[10px] transition-all disabled:opacity-50"
-                  style={g.value === o.id
-                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-                >{o.label}</button>
-              ))}
-            </div>
-          ))}
-          <button
-            onClick={startVideoTake}
-            className="py-1.5 text-[11px] font-semibold transition-all"
-            style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
-          >{isRecording ? 'Stop recording' : 'Start recording'}</button>
-          {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
-        </div>
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="An MP4 whose end leads straight back into its start, for a background that plays forever">Seamless loop</span>
-          <div className="flex gap-1" role="group" aria-label="Loop length">
-            {LOOP_LENGTHS.map(o => (
-              <button
-                key={o.id}
-                onClick={() => setLoopSeconds(o.id)}
-                aria-pressed={loopSeconds === o.id}
-                disabled={loopProgress !== null}
-                className="flex-1 px-2 py-1 text-[10px] transition-all disabled:opacity-50"
-                style={loopSeconds === o.id
-                  ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                  : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{o.label}</button>
-            ))}
-          </div>
-          <button
-            onClick={exportLoop}
-            disabled={!loopable && loopProgress === null}
-            className="py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40"
-            style={loopProgress !== null ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
-          >{loopProgress !== null ? `Rendering ${Math.round(loopProgress * 100)}% — Cancel` : 'Export loop'}</button>
-          <p className="text-[10px] text-white/50">
-            {!loopable
-              ? 'Loops work with the shader gradients (Smoke, Glass, Ring, Mesh and the like) — not the simulations.'
-              : activeEffects.some(e => HISTORY_EFFECTS.includes(e))
-                ? 'Feedback, Chromatic Trails and Slit-Scan remember past frames, so this loop will show a seam. Uses the video Size above; audio is ignored.'
-                : 'Uses the video Size above. Audio is ignored and auto-drifts are paused while it renders.'}
-          </p>
-          {loopError && <p role="alert" className="text-[10px] text-red-300">{loopError}</p>}
-        </div>
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
-          <div className="flex gap-1">
-            {([['box', 'Box 16:9'], ['background', 'Background']] as [EmbedKind, string][]).map(([kind, label]) => (
-              <button
-                key={kind}
-                onClick={() => copyText(`embed-${kind}`, embedSnippet(currentPlayerUrl(), kind))}
-                title={kind === 'box' ? 'A responsive 16:9 frame' : 'Pinned behind the whole page'}
-                className="flex-1 px-2 py-1 text-[10px] transition-all"
-                style={copiedKey === `embed-${kind}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{copiedKey === `embed-${kind}` ? 'Copied' : label}</button>
-            ))}
-          </div>
-          <span className="text-[10px] text-white/60 pt-1">Copy palette as</span>
-          <div className="flex gap-1">
-            {([['hex', 'Hex'], ['css', 'CSS'], ['tailwind', 'Tailwind'], ['json', 'JSON']] as [PaletteFormat, string][]).map(([fmt, label]) => (
-              <button
-                key={fmt}
-                onClick={() => copyText(`palette-${fmt}`, formatPalette(gradientColors, paletteStops, fmt))}
-                className="flex-1 px-1 py-1 text-[10px] transition-all"
-                style={copiedKey === `palette-${fmt}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{copiedKey === `palette-${fmt}` ? 'Copied' : label}</button>
-            ))}
-          </div>
-        </div>
-        </>) : (<>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
-          <button
-            onClick={() => setIsAutoShuffleOn(prev => !prev)}
-            aria-pressed={isAutoShuffleOn}
-            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
-            className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
-            style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.15)' }}
-          >
-            <span
-              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
-              style={{ backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff', transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
-            />
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="range"
-            min={0}
-            max={autoShuffleSliderMax}
-            value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
-            onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
-            className="flex-1"
-            aria-label="Auto Shuffle interval"
+    return (
+      <PopoverPortal anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}>
+        {popoverMode === 'export' ? (
+          <ExportPopout
+            isMobile={isMobile}
+            exportSize={exportSize} setExportSize={setExportSize}
+            exportAspect={exportAspect} setExportAspect={setExportAspect}
+            exportAsPNG={exportAsPNG} closePopover={() => setAutoShufflePopoverAnchor(null)}
+            videoSize={videoSize} setVideoSize={setVideoSize}
+            videoLength={videoLength} setVideoLength={setVideoLength}
+            isRecording={isRecording} startVideoTake={startVideoTake}
+            loopSeconds={loopSeconds} setLoopSeconds={setLoopSeconds}
+            loopProgress={loopProgress} exportLoop={exportLoop} loopable={loopable} loopError={loopError}
+            activeEffects={activeEffects}
+            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
+            gradientColors={gradientColors} paletteStops={paletteStops}
           />
-          <input
-            type="number"
-            min={AUTO_SHUFFLE_MIN_SEC}
-            max={AUTO_SHUFFLE_MAX_SEC}
-            value={autoShuffleIntervalSec}
-            onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-            className="text-[10px] w-12 text-right rounded px-1 text-white"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
-            aria-label="Auto Shuffle interval in seconds"
+        ) : (
+          <AutoShufflePopout
+            isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
+            autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+            autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
           />
-        </div>
-        <div className="flex gap-1" role="group" aria-label="What Auto Shuffle changes">
-          {AUTO_SHUFFLE_SCOPES.map(o => (
-            <button
-              key={o.id}
-              onClick={() => setAutoShuffleScope(o.id)}
-              aria-pressed={autoShuffleScope === o.id}
-              title={o.hint}
-              className="flex-1 py-1 text-[10px] transition-all"
-              style={autoShuffleScope === o.id
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{o.label}</button>
-          ))}
-        </div>
-        <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
-          {[5, 15, 60, 300].map(sec => (
-            <button
-              key={sec}
-              onClick={() => setAutoShuffleIntervalSec(sec)}
-              aria-pressed={autoShuffleIntervalSec === sec}
-              className="flex-1 py-1 text-[10px] transition-all"
-              style={autoShuffleIntervalSec === sec
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{formatAutoShuffleInterval(sec)}</button>
-          ))}
-        </div>
-        <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
-        </>)}
-        </div>
-      </div>,
-      document.body,
+        )}
+      </PopoverPortal>
     );
   };
   // Read through a ref rather than depending on evolveWithFactor directly —
@@ -4761,174 +4567,12 @@ export function InteractiveGradient() {
           underneath isn't blurred out; only the card itself keeps its own
           surface. */}
       {isAboutOpen && (
-        <div className="absolute inset-0 pointer-events-auto z-50">
-          <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
-          <div
-            ref={aboutDialogRef}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-label="About wāv"
-            className={
-              isMobile
-                ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
-                : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
-            }
-            style={isMobile ? undefined : (railRect
-              ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }
-              : { top: 16, left: 16 })}
-          >
-            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed mt-6">
-              <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
-              <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
-              <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
-              <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, <strong>wāv</strong> can transform your audio experience into a spectacle.</p>
-            </div>
-
-            <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Rail</p>
-                <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen.</p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Rail icons</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — hide the control rail</span><Kbd label="H" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
-                <button
-                  onClick={() => setIsAutoShuffleOn(prev => !prev)}
-                  className="flex items-center justify-between gap-2 text-left"
-                  aria-pressed={isAutoShuffleOn}
-                >
-                  <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
-                  <span className="flex items-center gap-2">
-                    <Kbd label="⌥⇧W" />
-                    <span
-                      className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/15'}`}
-                    >
-                      <span
-                        className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform ${isAutoShuffleOn ? 'bg-black translate-x-[18px]' : 'bg-white translate-x-[2px]'}`}
-                      />
-                    </span>
-                  </span>
-                </button>
-                {/* Auto Shuffle interval — log-scale slider (see
-                    autoShuffleSecToSlider/autoShuffleSliderToSec) so 1s-3600s
-                    are all reachable with useful precision, plus a direct
-                    number input for typing an exact value. Adjustable
-                    whether Auto Shuffle is currently on or off. */}
-                <div className="flex items-center gap-2 pl-6">
-                  <input
-                    type="range"
-                    min={0}
-                    max={autoShuffleSliderMax}
-                    value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
-                    onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
-                    className="flex-1"
-                    aria-label="Auto Shuffle interval"
-                  />
-                  <input
-                    type="number"
-                    min={AUTO_SHUFFLE_MIN_SEC}
-                    max={AUTO_SHUFFLE_MAX_SEC}
-                    value={autoShuffleIntervalSec}
-                    onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-                    className="text-[10px] text-white w-12 text-right bg-white/10 border border-white/20 rounded px-1"
-                    aria-label="Auto Shuffle interval in seconds"
-                  />
-                  <span className="text-[10px] text-white/50 shrink-0">sec</span>
-                </div>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Playback row</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Stop weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / stop — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</span><Kbd label="D" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Tabs</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Touch gestures</p>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-                  {TOUCH_GESTURES.map(([k, v]) => (
-                    <Fragment key={k}>
-                      <span className="text-white font-medium whitespace-nowrap">{k}</span>
-                      <span>{v}</span>
-                    </Fragment>
-                  ))}
-                </div>
-                <p className="text-xs text-white/50">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
-                {motionSensorsSupported() && (
-                  <div className="flex flex-col gap-2 pt-1">
-                    <p className="text-white font-medium">Motion</p>
-                    {([
-                      { kind: 'shake' as const, label: 'Shake to Shuffle', on: shakeEnabled },
-                      { kind: 'tilt' as const, label: 'Tilt to rotate', on: tiltEnabled },
-                    ]).map(m => (
-                      <div key={m.kind} className="flex items-center justify-between gap-2">
-                        <span>{m.label}</span>
-                        <button
-                          onClick={() => toggleMotion(m.kind)}
-                          aria-pressed={m.on}
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${m.on ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
-                        >{m.on ? 'On' : 'Off'}</button>
-                      </div>
-                    ))}
-                    {motionDenied && <p className="text-xs text-red-300">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
-                    <p className="text-xs text-white/50">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Arrows and keys</p>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-                  {KEY_GESTURES.map(([k, v]) => (
-                    <Fragment key={k}>
-                      <span className="flex"><Kbd label={k} /></span>
-                      <span>{v}</span>
-                    </Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Randomizing</p>
-                <p>Five ways to randomize, from smallest to biggest change:</p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings (scoped to the current gradient and active effects). Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — click Shuffle to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">More shortcuts</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="Shift+R" /></p>
-                <p className="flex items-center justify-between gap-2"><span>On a touch screen: swipe left to Shuffle, right to Undo</span><Kbd label="← →" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Next / previous Look for the current gradient</span><Kbd label="L" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
-                <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AboutPanel
+          isMobile={isMobile} railRect={railRect} dialogRef={aboutDialogRef} onClose={() => setIsAboutOpen(false)}
+          isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
+          autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+          shakeEnabled={shakeEnabled} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} motionDenied={motionDenied}
+        />
       )}
 
     </div>

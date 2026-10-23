@@ -8,3 +8,7 @@ export const AUTO_SHUFFLE_SCOPES: { id: AutoShuffleScope; label: string; hint: s
   { id: 'effects', label: 'Effects', hint: 'Only reshuffle the effects' },
   { id: 'colors', label: 'Colors', hint: 'Only roll a new palette' },
 ];
+
+// Auto Shuffle's remix interval range, in seconds.
+export const AUTO_SHUFFLE_MIN_SEC = 1;
+export const AUTO_SHUFFLE_MAX_SEC = 3600;
