@@ -41,11 +41,11 @@ import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } f
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
-  type ColorRGB, type GradientType, type EffectType,
-  DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
-  ID_MIGRATIONS, migrateId, migrateIds,
-  WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
-  ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
+  type ColorRGB, type GradientType,
+  DEFAULT_COLORS,
+  migrateId, migrateIds,
+  GRADIENT_DISPLAY_NAMES,
+  NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
 import { totalCost, resolutionForEffectCost, costOf, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
@@ -147,21 +147,10 @@ import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
-import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY, DISPLAY_SYNC_KEY, DISPLAY_ANIM_SYNC_KEY } from '../constants/displayMode';
+import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY } from '../constants/displayMode';
 
 // Re-exported so existing importers keep working.
 export { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes, EffectSection };
-
-type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
-
-// Recording frame interface
-interface RecordingFrame {
-  colors: ColorRGB[];
-  angle: number;
-  zoom: number;
-  timestamp: number;
-}
-
 
 export function InteractiveGradient() {
   const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge } = useAngleState();
@@ -187,8 +176,8 @@ export function InteractiveGradient() {
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
     paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
   } = useColorState();
-  const { diffusionSpeed, setDiffusionSpeed, diffusionFeed, setDiffusionFeed, diffusionKill, setDiffusionKill, diffusionAnimTrigger, setDiffusionAnimTrigger } = useDiffusionState();
-  const { diffusionGridRef } = useDiffusionGridState();
+  useDiffusionState();
+  useDiffusionGridState();
   const { digitalNoiseIntensity, setDigitalNoiseIntensity } = useDigitalNoiseState();
   const { ditherType, setDitherType, ditherLevels, setDitherLevels, ditherScale, setDitherScale } = useDitherState();
   const { oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels } = useOilPaintState();
@@ -197,7 +186,7 @@ export function InteractiveGradient() {
   const { watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle } = useWatercolorState();
   const { dadaPanels, setDadaPanels, dadaChaos, setDadaChaos } = useDadaState();
   const { duotoneIntensity, setDuotoneIntensity, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor } = useDuotoneState();
-  const { dustCrackleIntensity, setDustCrackleIntensity, dustSize, setDustSize, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor } = useDustState();
+  const { dustCrackleIntensity, setDustCrackleIntensity, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor } = useDustState();
   const { emojiSize, setEmojiSize, emojiChars, setEmojiChars, emojiRotateSpeed, setEmojiRotateSpeed, emojiAnimTime, setEmojiAnimTime, emojiOffsetX, setEmojiOffsetX, emojiSizeVariation, setEmojiSizeVariation, emojiPickerSearch, setEmojiPickerSearch } = useEmojiState();
   const { fadeDirection, setFadeDirection, fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow, turrellSmoothRef } = useFadeState();
   const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
@@ -216,7 +205,7 @@ export function InteractiveGradient() {
   const { hexGridSize, setHexGridSize } = useHexGridState();
   const { invertAmount, setInvertAmount } = useInvertState();
   const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations, juliaCanvasRef } = useJuliaState();
-  const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeReflections, setKaleidoscopeReflections, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
+  const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
   const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
   const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
@@ -226,7 +215,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   // The current gradient's two shape sliders, read out of the per-gradient map.
   const fieldShapeA = fieldShapes[gradientType]?.[0] ?? 1;
   const fieldShapeB = fieldShapes[gradientType]?.[1] ?? 1;
@@ -283,9 +272,9 @@ export function InteractiveGradient() {
   }, [isAboutOpen]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
-  const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
+  const { pixelSize, setPixelSize } = usePixelState();
   const { polygon2Sides, setPolygon2Sides } = usePolygon2State();
-  const { posterizeLevels, setPosterizeLevels, posterizeSolarize, setPosterizeSolarize } = usePosterizeState();
+  const { posterizeLevels, setPosterizeLevels } = usePosterizeState();
   const { radarSweepAngle, setRadarSweepAngle, radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth } = useRadarState();
   const { radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, radialAnimTime, setRadialAnimTime, radialSpeed, setRadialSpeed } = useRadialState();
   const { radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize, radialBurstMode, setRadialBurstMode } = useRadialBurstState();
@@ -310,7 +299,7 @@ export function InteractiveGradient() {
   const { undoStackRef, undoIndexRef, undoDepth, setUndoDepth } = useUndoState();
   const { vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount } = useVhsState();
   const { vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness } = useVignetteState();
-  const { voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion, voronoiMorphSpeed, setVoronoiMorphSpeed, voronoiAnimTime, setVoronoiAnimTime } = useVoronoiState();
+  const { voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion, voronoiAnimTime, setVoronoiAnimTime } = useVoronoiState();
   const { waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation } = useWaveState();
   const { windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness, windmillZoom, setWindmillZoom, windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode } = useWindmillState();
   const windmillModeRef = useRef(windmillMode);
@@ -530,12 +519,6 @@ export function InteractiveGradient() {
   // Minimum time between color changes (in milliseconds)
   const CHANGE_INTERVAL = 300;
 
-  // Helper function to calculate slider progress percentage
-  const getSliderStyle = (value: number, min: number, max: number) => {
-    const percentage = ((value - min) / (max - min)) * 100;
-    return { '--slider-progress': `${percentage}%` } as React.CSSProperties;
-  };
-
   // Memoized helper for generating random hex colors
   const randomHexColor = useCallback(() => {
     const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
@@ -570,21 +553,21 @@ export function InteractiveGradient() {
   // Destructure audio hook values for use throughout this component
   const {
     isAudioEnabled, setIsAudioEnabled,
-    audioFile, setAudioFile,
-    audioFileName, setAudioFileName,
-    audioFileMetadata, setAudioFileMetadata,
-    waveformData, setWaveformData,
+    audioFile,
+    audioFileName,
+    audioFileMetadata,
+    waveformData,
     isAudioReactive, setIsAudioReactive,
-    isMicActive, setIsMicActive,
+    isMicActive,
     micError, setMicError,
-    audioSubBassLevel, setAudioSubBassLevel,
-    audioMidsLevel, setAudioMidsLevel,
-    audioTrebleLevel, setAudioTrebleLevel,
-    audioEnergy, setAudioEnergy,
+    audioSubBassLevel,
+    audioMidsLevel,
+    audioTrebleLevel,
+    audioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
     musicIntensityRef,
-    audioInputDevices, setAudioInputDevices,
+    audioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
     midsMultiplier, setMidsMultiplier,
@@ -611,20 +594,10 @@ export function InteractiveGradient() {
     subBassMultiplier, setSubBassMultiplier,
     subBassBeatSync, setSubBassBeatSync,
     liveSubBassLevel,
-    bpm, setBpm,
-    bassOpen, setBassOpen,
-    midsOpen, setMidsOpen,
-    trebleOpen, setTrebleOpen,
-    bassFlash, setBassFlash,
-    midsFlash, setMidsFlash,
-    trebleFlash, setTrebleFlash,
-    bpmFlash, setBpmFlash,
-    liveBassLevel, setLiveBassLevel,
-    liveMidsLevel, setLiveMidsLevel,
-    liveTrebleLevel, setLiveTrebleLevel,
-    isAudiovisualsOpen, setIsAudiovisualsOpen,
+    liveBassLevel,
+    liveMidsLevel,
+    liveTrebleLevel,
     isAudioControlsOpen, setIsAudioControlsOpen,
-    audioReactiveColors, setAudioReactiveColors,
     audioRef,
     analyserRef,
     analyzeAudioRef,
@@ -633,8 +606,6 @@ export function InteractiveGradient() {
     handleFileUpload,
     startMicVisualization,
     stopMicVisualization,
-    toggleAudio,
-    initAudioContext,
   } = audio;
 
   // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
@@ -670,22 +641,11 @@ export function InteractiveGradient() {
   });
 
   const {
-    isVCRRecording, setIsVCRRecording,
+    setIsVCRRecording,
     isVCRPlaying, setIsVCRPlaying,
-    vcrRecordedFrames, setVcrRecordedFrames,
     vcrPlaybackSpeed, setVcrPlaybackSpeed,
-    vcrPlaybackIndex, setVcrPlaybackIndex,
-    vcrRecordingStartTime,
-    vcrPlaybackStartTime,
-    mediaRecorderRef,
-    recordedChunksRef,
-    recordingAnimationRef,
-    recordCanvasRef,
-    startRecording,
-    stopRecording,
     toggleVCRRecording,
     toggleVCRPlayback,
-    handleStop,
     isEncoding, encodingProgress,
   } = vcr;
 
@@ -769,15 +729,12 @@ export function InteractiveGradient() {
   }, []);
 
   const {
-    isPresetModalOpen, setIsPresetModalOpen,
-    presetName, setPresetName,
-    savedPresets, setSavedPresets,
+    savedPresets,
     renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
-    openNewPresetSignal, setOpenNewPresetSignal,
+    openNewPresetSignal,
     folderNames,
-    savePreset,
     savePresetWithName,
     loadPreset,
     deletePreset,
@@ -1533,7 +1490,6 @@ export function InteractiveGradient() {
   const colorFamilyRef = useRef<{ enabled: boolean; anchor: Family | null }>({ enabled: keepFamily, anchor: null });
   colorFamilyRef.current.enabled = keepFamily;
   if (keepFamily && !colorFamilyRef.current.anchor && gradientColorsRef.current.length) colorFamilyRef.current.anchor = paletteFamily(gradientColorsRef.current);
-  const reanchorFamily = () => { colorFamilyRef.current.anchor = null; };
   const setKeepFamily = (v: boolean) => {
     colorFamilyRef.current.anchor = v ? paletteFamily(gradientColorsRef.current) : null;
     setKeepFamilyState(v);
@@ -1577,24 +1533,6 @@ export function InteractiveGradient() {
     const pick = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length ? choices.length : pool.length))];
     if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick, { fromShuffle: true }); }
   }, [applyPalette, saveCurrentState, setTargetColors, setPaletteStops]);
-
-  const randomizeAllColors = useCallback(() => {
-    saveCurrentState();
-    setTargetColors(gradientColors.map(() => randomColor()));
-    setBaseAIColors(null); // Clear base AI colors when randomizing
-    setSubmittedAIPrompt(''); // Clear submitted prompt when randomizing
-    
-    // Also randomize duotone colors
-    const randomHexColor = () => {
-      const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      return `#${r}${g}${b}`;
-    };
-    setDuotoneColor1(randomHexColor());
-    setDuotoneColor2(randomHexColor());
-    setDuotoneColor3(randomHexColor());
-  }, [gradientColors, randomColor, saveCurrentState]);
 
   // Gradient display names, and the full/feeling-lucky type lists, now live
   // in constants/gradientEffects.ts (GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES,
@@ -1653,8 +1591,8 @@ export function InteractiveGradient() {
   // piece of gradient/effect state, since randomization touches everything
   // by design.
   const {
-    randomizeUncoveredParams, shuffleGradientType, randomizeEffects,
-    feelingLucky, evolveWithFactor, shuffleAudiovisuals,
+    shuffleGradientType, randomizeEffects,
+    evolveWithFactor, shuffleAudiovisuals,
   } = useRandomization({
     colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
@@ -1953,13 +1891,6 @@ export function InteractiveGradient() {
       setTargetAngle(tiltBaseRef.current.angle + (gamma - tiltBaseRef.current.gamma) * 2.2);
     },
   });
-
-  // Jump all the way back to the oldest snapshot in the stack
-  const undoAll = useCallback(() => {
-    if (undoIndexRef.current < 0) return;
-    undoIndexRef.current = 0;
-    undoLastChange();
-  }, [undoLastChange]);
 
   // Reset everything to defaults — shared by the Reset button and the Shift+R hotkey
   const resetToDefaults = useCallback(() => {
@@ -2899,233 +2830,10 @@ export function InteractiveGradient() {
     setTargetZoom(prev => Math.max(0.05, Math.min(20, prev + zoomDelta)));
   }, [isAutoMode]);
 
-  // Export gradient as JPG
-  const exportGradient = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Convert canvas to JPG and download
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gradient-${Date.now()}.jpg`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/jpeg', 0.95);
-  }, []);
-
   // Export animated GIF
   const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
 
-  // Export as video (MP4/WebM) with audio
-  const exportAsVideo = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const recordDuration = 10000; // 10 seconds
-
-    try {
-      const videoStream = canvas.captureStream(60);
-      let finalStream: MediaStream = videoStream;
-
-      if (audioFile && audioRef.current) {
-        try {
-          if (audioContextRef.current && analyserRef.current) {
-            // Audio is already in Web Audio graph — tap the analyser output
-            const dest = audioContextRef.current.createMediaStreamDestination();
-            analyserRef.current.connect(dest);
-            const audioTracks = dest.stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
-            }
-          } else {
-            // Audio not yet in Web Audio graph — safe to call createMediaElementSource
-            const audioCtx = new AudioContext();
-            const source = audioCtx.createMediaElementSource(audioRef.current);
-            const dest = audioCtx.createMediaStreamDestination();
-            source.connect(dest);
-            source.connect(audioCtx.destination);
-            const audioTracks = dest.stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
-            }
-          }
-        } catch (audioErr) {
-          console.warn('Audio capture failed, exporting video only:', audioErr);
-        }
-      }
-
-      const HIGH_BITRATE = 40_000_000; // 40 Mbps
-      let options: MediaRecorderOptions;
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
-        options = { mimeType: 'video/mp4;codecs=avc1', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-        options = { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-        options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { mimeType: 'video/mp4', videoBitsPerSecond: HIGH_BITRATE };
-      } else {
-        options = { mimeType: 'video/webm', videoBitsPerSecond: HIGH_BITRATE };
-      }
-
-      const mediaRecorder = new MediaRecorder(finalStream, options);
-      const chunks: Blob[] = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
-        link.download = `gradient-video-${Date.now()}.${ext}`;
-        link.click();
-        URL.revokeObjectURL(url);
-      };
-
-      mediaRecorder.start();
-      setTimeout(() => { mediaRecorder.stop(); }, recordDuration);
-
-    } catch (error) {
-      console.error('Video export failed:', error);
-    }
-  };
-
-  // Export as mobile home screen wallpaper
-  const exportAsMobileWallpaper = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Create a new canvas with mobile wallpaper dimensions (1170x2532 for iPhone)
-    const mobileCanvas = document.createElement('canvas');
-    mobileCanvas.width = 1170;
-    mobileCanvas.height = 2532;
-    const ctx = mobileCanvas.getContext('2d');
-    
-    if (!ctx) return;
-
-    // Save context state
-    ctx.save();
-    
-    // Rotate 90 degrees clockwise and translate to correct position
-    // Move to center of canvas
-    ctx.translate(mobileCanvas.width / 2, mobileCanvas.height / 2);
-    // Rotate 90 degrees clockwise
-    ctx.rotate(90 * DEG_TO_RAD);
-    // Translate back, accounting for swapped dimensions
-    ctx.translate(-mobileCanvas.height / 2, -mobileCanvas.width / 2);
-    
-    // Now calculate aspect ratios (with swapped dimensions due to rotation)
-    const sourceAspect = canvas.width / canvas.height;
-    const targetAspect = mobileCanvas.height / mobileCanvas.width; // Swapped for rotation
-    
-    let drawWidth, drawHeight, offsetX, offsetY;
-    
-    // Cover mode: scale to fill, crop edges if needed (no distortion)
-    if (sourceAspect > targetAspect) {
-      // Source is wider - fit height, crop width
-      drawHeight = mobileCanvas.width; // Swapped due to rotation
-      drawWidth = drawHeight * sourceAspect;
-      offsetX = (mobileCanvas.height - drawWidth) / 2; // Swapped due to rotation
-      offsetY = 0;
-    } else {
-      // Source is taller - fit width, crop height
-      drawWidth = mobileCanvas.height; // Swapped due to rotation
-      drawHeight = drawWidth / sourceAspect;
-      offsetX = 0;
-      offsetY = (mobileCanvas.width - drawHeight) / 2; // Swapped due to rotation
-    }
-    
-    // Draw with cover behavior (no distortion)
-    ctx.drawImage(canvas, offsetX, offsetY, drawWidth, drawHeight);
-    
-    // Restore context state
-    ctx.restore();
-
-    // Download
-    mobileCanvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gradient-mobile-wallpaper-${Date.now()}.png`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/png');
-  };
-
   // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
-
-  // Toggle full screen
-  const toggleFullScreen = () => {
-    const currentRef = containerRef.current;
-    if (!currentRef) return;
-    
-    try {
-      if (isFullscreen) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          (document as any).mozCancelFullScreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen();
-        }
-      } else {
-        if (currentRef.requestFullscreen) {
-          currentRef.requestFullscreen().catch(() => {
-            alert(
-              '️ Full Screen Not Available\n\n' +
-              '⚠️ This feature cannot work in Figma Make\'s preview environment.\n' +
-              'Browsers block fullscreen API in embedded/iframe content for security.\n\n' +
-              '✅ All other features work great:\n' +
-              '• Interactive gradient (click & drag)\n' +
-              '• All gradient types (Linear, Radial, etc.)\n' +
-              '• Auto mode\n' +
-              '• Export Image (JPG)\n' +
-              '• Record Video\n\n' +
-              'The full screen feature would work if this app were deployed to a web server.'
-            );
-          });
-        } else if ((currentRef as any).mozRequestFullScreen) {
-          (currentRef as any).mozRequestFullScreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else if ((currentRef as any).webkitRequestFullscreen) {
-          (currentRef as any).webkitRequestFullscreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else if ((currentRef as any).msRequestFullscreen) {
-          (currentRef as any).msRequestFullscreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else {
-          throw new Error('Fullscreen not supported');
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling fullscreen:', error);
-      alert(
-        '🖥️ Full Screen Not Available\n\n' +
-        '⚠️ This feature doesn\'t work in preview environments.\n\n' +
-        '✅ All other features work great:\n' +
-        '• Click & drag to change colors\n' +
-        '• Switch gradient types\n' +
-        '• Auto mode animations\n' +
-        '• Export images\n' +
-        '• Record videos'
-      );
-    }
-  };
 
   useEffect(() => {
     const currentRef = containerRef.current;
@@ -3150,24 +2858,6 @@ export function InteractiveGradient() {
 
   // Preset load effect, savePreset, loadPreset, deletePreset, renamePreset, updatePreset are now in usePresets hook
 
-  // Toggle fullscreen
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch((err) => {
-        // Silently fail if fullscreen is not allowed by permissions policy
-        console.log('Fullscreen not available:', err.message);
-      });
-    } else {
-      document.exitFullscreen().then(() => {
-        setIsFullscreen(false);
-      }).catch((err) => {
-        console.error('Error attempting to exit fullscreen:', err);
-      });
-    }
-  }, []);
-  
   // Listen for fullscreen changes (e.g., user pressing ESC)
   useEffect(() => {
     const handleFullscreenChange = () => {
