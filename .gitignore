@@ -3,3 +3,6 @@ node_modules/
 *.local
 .vercel
 .env*
+
+# Build output (vite build). Vercel and Capacitor both build it fresh.
+dist/
