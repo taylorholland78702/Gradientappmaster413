@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
   type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
-  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS,
+  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
 import { encodePresetData } from '../utils/presetShare';
@@ -82,7 +82,7 @@ export function useExportControls({
   // a web page can't write to the photo library. Pressing and holding the image on an iPhone or
   // Android offers Add to Photos, which the share sheet's file route (Files, Drive) does not.
   const [savePreview, setSavePreview] = useState<{ url: string; blob: Blob; name: string } | null>(null);
-  const exportAsPNG = useCallback(async (mode: 'download' | 'preview' = 'download') => {
+  const exportAsPNG = useCallback(async (mode: 'download' | 'preview' = 'download', exact?: { w: number; h: number; name: string }) => {
     const canvas = canvasRef.current;
     if (!canvas || isExportingRef.current) return;
     isExportingRef.current = true;
@@ -90,12 +90,12 @@ export function useExportControls({
     const cssW = canvas.clientWidth || canvas.width;
     const cssH = canvas.clientHeight || canvas.height;
     // The region to keep, in CSS pixels, centered.
-    const ratio = EXPORT_ASPECTS.find(a => a.id === aspect)?.ratio ?? 0;
+    const ratio = exact ? exact.w / exact.h : EXPORT_ASPECTS.find(a => a.id === aspect)?.ratio ?? 0;
     let cropW = cssW, cropH = cssH;
     if (ratio > 0) {
       if (cssW / cssH > ratio) cropW = cssH * ratio; else cropH = cssW / ratio;
     }
-    const longEdge = EXPORT_SIZES.find(o => o.id === size)?.longEdge ?? 0;
+    const longEdge = exact ? Math.max(exact.w, exact.h) : EXPORT_SIZES.find(o => o.id === size)?.longEdge ?? 0;
     const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
     try {
       if (longEdge > 0) {
@@ -113,14 +113,15 @@ export function useExportControls({
       const outW = Math.max(1, Math.round(cropW * k));
       const outH = Math.max(1, Math.round(cropH * k));
       const out = document.createElement('canvas');
-      out.width = outW;
-      out.height = outH;
+      // A wallpaper is written at exactly the screen's pixel size (the crop above only has its shape).
+      out.width = exact ? exact.w : outW;
+      out.height = exact ? exact.h : outH;
       const octx = out.getContext('2d');
       if (!octx) return;
-      octx.drawImage(canvas, Math.round((canvas.width - outW) / 2), Math.round((canvas.height - outH) / 2), outW, outH, 0, 0, outW, outH);
+      octx.drawImage(canvas, Math.round((canvas.width - outW) / 2), Math.round((canvas.height - outH) / 2), outW, outH, 0, 0, out.width, out.height);
       const blob = await new Promise<Blob | null>(r => out.toBlob(r, 'image/png'));
       if (blob) {
-        const name = `gradient-${outW}x${outH}-${Date.now()}.png`;
+        const name = exact ? `${exact.name}-${out.width}x${out.height}-${Date.now()}.png` : `gradient-${outW}x${outH}-${Date.now()}.png`;
         if (mode === 'preview') {
           setSavePreview(prev => { if (prev) URL.revokeObjectURL(prev.url); return { url: URL.createObjectURL(blob), blob, name }; });
           return;
@@ -138,6 +139,12 @@ export function useExportControls({
       isExportingRef.current = false;
     }
   }, []);
+
+  // Saves the look as a wallpaper for this device: its screen size in real pixels, shaped like the screen.
+  const saveWallpaper = useCallback(() => {
+    const { w, h } = wallpaperTarget(window.screen.width, window.screen.height, window.devicePixelRatio || 1);
+    return exportAsPNG('download', { w, h, name: 'wallpaper' });
+  }, [exportAsPNG]);
 
   // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
   // size first, since the encoder is fixed to the canvas size at the moment recording begins.
@@ -189,7 +196,7 @@ export function useExportControls({
     exportSize, setExportSize, exportAspect, setExportAspect,
     videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
-    savePreview, setSavePreview, exportAsPNG,
+    savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,
   };
 }
