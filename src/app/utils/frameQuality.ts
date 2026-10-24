@@ -1,4 +1,5 @@
 import type { ColorRGB, GradientType } from '../constants/gradientEffects';
+import { frameFeatures, type FrameFeatures } from './frameScore';
 
 // Judges whether a shuffled look is worth showing. Shuffle rolls a gradient, a palette and a stack of effects at
 // random; some combinations wash out to a flat field (trails or blur smearing everything together), or land on
@@ -52,6 +53,28 @@ export function measureCanvas(canvas: HTMLCanvasElement): FrameStats | null {
     for (let i = 0; i < d.length; i += 4) { const l = (d[i] + d[i + 1] + d[i + 2]) / 3; s += l; s2 += l * l; }
     const mean = s / n;
     return { mean, sd: Math.sqrt(Math.max(0, s2 / n - mean * mean)) };
+  } catch {
+    return null;
+  }
+}
+
+let featureScratch: HTMLCanvasElement | null = null;
+// Everything about what is on the canvas right now that the shuffle judges: the brightness stats plus the richer
+// features (colour, detail, spread). One downscale serves both.
+export function measureFrame(canvas: HTMLCanvasElement): { stats: FrameStats; features: FrameFeatures } | null {
+  try {
+    featureScratch ??= Object.assign(document.createElement('canvas'), { width: 64, height: 40 });
+    const ctx = featureScratch.getContext('2d', { willReadFrequently: true });
+    if (!ctx || canvas.width === 0 || canvas.height === 0) return null;
+    ctx.drawImage(canvas, 0, 0, 64, 40);
+    const d = ctx.getImageData(0, 0, 64, 40).data;
+    const features = frameFeatures(d, 64, 40);
+    // Same definition of brightness and spread the dull-frame thresholds were set with (plain channel average).
+    let s = 0, s2 = 0;
+    const n = d.length / 4;
+    for (let i = 0; i < d.length; i += 4) { const l = (d[i] + d[i + 1] + d[i + 2]) / 3; s += l; s2 += l * l; }
+    const mean = s / n;
+    return { stats: { mean, sd: Math.sqrt(Math.max(0, s2 / n - mean * mean)) }, features };
   } catch {
     return null;
   }
