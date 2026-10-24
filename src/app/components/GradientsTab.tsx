@@ -212,6 +212,7 @@ export interface GradientsTabProps {
   // Voronoi
   voronoiCellCount: number; setVoronoiCellCount: (v: number) => void;
   voronoiDistortion: number; setVoronoiDistortion: (v: number) => void;
+  voronoiSpeed: number; setVoronoiSpeed: (v: number) => void;
 
   // Fade
   fadeDirection: number; setFadeDirection: (v: number) => void;
@@ -269,7 +270,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType, noiseSpeed, setNoiseSpeed,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
     
-    voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
+    voronoiCellCount, setVoronoiCellCount, voronoiDistortion, voronoiSpeed, setVoronoiDistortion, setVoronoiSpeed,
     fadeDirection, setFadeDirection,
     
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
@@ -874,6 +875,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <SliderRow label="Cell Count:" value={voronoiCellCount} onChange={setVoronoiCellCount} min="3" max="30" />
             <SliderRow label="Distortion:" value={voronoiDistortion} onChange={setVoronoiDistortion} min="0" max="100" />
+            <SliderRow label="Speed:" value={voronoiSpeed} onChange={setVoronoiSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 

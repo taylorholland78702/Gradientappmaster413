@@ -107,7 +107,7 @@ export function useSnapshot(params: SnapshotParams) {
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize,
     setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength,
-    setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionRotation, setWaveDistortionStrength,
+    setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionRotation, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, shakeBeatEnabled,
     shapesCount, shapesSides, shapesMode, slitScanDirection, slitScanIntensity, slitScanHistory, solarizeThreshold, windmillRotations,
     turrellAnimTime, turrellSpeed, turrellGlow,
@@ -117,7 +117,7 @@ export function useSnapshot(params: SnapshotParams) {
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
     trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness,
     truchetVariation, twistAmount, vhsGlitchIntensity, vhsJitterAmount, vignetteSoftness, vignetteStrength, voronoiCellCount,
-    voronoiDistortion, waveDistortionRotation, waveDistortionStrength,
+    voronoiDistortion, voronoiSpeed, waveDistortionRotation, waveDistortionStrength,
     zoom, zoomBeatEnabled,
   } = params;
 
@@ -304,7 +304,7 @@ export function useSnapshot(params: SnapshotParams) {
       slitScanDirection, slitScanIntensity, slitScanHistory,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
-      voronoiCellCount, voronoiDistortion,
+      voronoiCellCount, voronoiDistortion, voronoiSpeed,
       waveDistortionRotation,
     };
   }, [resolutionMultiplier, gradientColors, targetColors, gradientType, gradientAngle, targetAngle, zoom, targetZoom,
@@ -378,7 +378,7 @@ export function useSnapshot(params: SnapshotParams) {
       slitScanDirection, slitScanIntensity, slitScanHistory,
       truchetSize, truchetThickness, truchetVariation,
       vignetteSoftness,
-      voronoiCellCount, voronoiDistortion,
+      voronoiCellCount, voronoiDistortion, voronoiSpeed,
       waveDistortionRotation]);
 
   const applySnapshot = useCallback((snapshot: Snapshot) => {
@@ -703,6 +703,7 @@ export function useSnapshot(params: SnapshotParams) {
     setVignetteSoftness(snapshot.vignetteSoftness ?? 50);
     setVoronoiCellCount(snapshot.voronoiCellCount ?? 19);
     setVoronoiDistortion(snapshot.voronoiDistortion ?? 100);
+    setVoronoiSpeed(snapshot.voronoiSpeed ?? 1);
     setWaveDistortionRotation(snapshot.waveDistortionRotation ?? 200);
     // Live audio-reactivity levels (audioSubBassLevel etc.) are NOT part of
     // buildSnapshot's output — they're continuously-changing values synced

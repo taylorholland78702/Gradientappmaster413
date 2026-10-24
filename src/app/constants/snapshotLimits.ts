@@ -96,6 +96,7 @@ export const SNAPSHOT_LIMITS: Record<string, [number, number]> = {
   vignetteStrength: [-0.5, 1.5],
   voronoiCellCount: [3, 43.5],
   voronoiDistortion: [-50, 150],
+  voronoiSpeed: [0.1, 4.45],
   watercolorBleed: [-5, 15],
   watercolorGrain: [-0.5, 1.5],
   waveDistortionRotation: [-180, 540],

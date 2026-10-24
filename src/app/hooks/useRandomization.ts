@@ -151,7 +151,7 @@ export function useRandomization(params: RandomizationParams) {
     setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
     setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
-    setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionStrength,
+    setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
     // Passed in from InteractiveGradient.tsx's useRandomization() call but
@@ -454,6 +454,7 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstSpread(Math.floor(Math.random() * 70) + 20);        // 20–89
     setVoronoiCellCount(Math.floor(Math.random() * 30) + 8);          // 8–37
     setVoronoiDistortion(Math.floor(Math.random() * 35) + 5);         // 5–39
+    setVoronoiSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
     setHelixTurns(Math.floor(Math.random() * 10) + 2);        // 2–11
     setHelixTightness(Math.random() * 1.2 + 0.2);             // 0.2–1.4
     setGridRotation(Math.floor(Math.random() * 360));

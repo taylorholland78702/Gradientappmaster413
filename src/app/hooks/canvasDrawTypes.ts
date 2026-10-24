@@ -275,6 +275,7 @@ export interface CanvasDrawParams {
   vignetteStrength: number;
   voronoiCellCount: number;
   voronoiDistortion: number;
+  voronoiSpeed: number;
   waveDistortionRotation: number;
   waveDistortionStrength: number;
   zoom: number;

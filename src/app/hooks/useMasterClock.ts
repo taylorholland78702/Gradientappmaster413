@@ -39,12 +39,13 @@ export interface UseMasterClockParams {
   targetColorsRef: MutableRefObject<ColorRGB[]>;
   targetZoomRef: MutableRefObject<number>;
   vcrPlaybackSpeedRef: MutableRefObject<number>;
+  voronoiSpeedRef: MutableRefObject<number>;
   windmillModeRef: MutableRefObject<"blades" | "helix">;
   zoomRef: MutableRefObject<number>;
 }
 
 export function useMasterClock(p: UseMasterClockParams) {
-  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, windmillModeRef, zoomRef } = p;
+  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, voronoiSpeedRef, windmillModeRef, zoomRef } = p;
   useEffect(() => {
     let rafId: number;
     let lastFrameTime = performance.now();
@@ -195,7 +196,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * dtScale;
+        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * voronoiSpeedRef.current * dtScale;
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
