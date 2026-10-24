@@ -56,6 +56,12 @@ describe('shuffle taste table', () => {
     }
     expect(EFFECT_AFFINITY.pattern.kaleidoscope ?? 0).toBeGreaterThanOrEqual(0);
   });
+  it('marks down vhs and slit-scan (vhs kept 15 of 32 and slit-scan 7 of 14 across the marked looks, against 67% overall)', () => {
+    for (const kind of ['smooth', 'dark-ground', 'pattern'] as const) {
+      expect(EFFECT_AFFINITY[kind].vhs ?? 0).toBeLessThan(0);
+      expect(EFFECT_AFFINITY[kind]['slit-scan'] ?? 0).toBeLessThan(0);
+    }
+  });
   it('puts every gradient in a kind, and sorts the obvious ones', () => {
     for (const g of FEELING_LUCKY_GRADIENT_TYPES) expect(['dark-ground', 'smooth', 'pattern', 'particles']).toContain(gradientKind(g));
     expect(gradientKind('eclipse')).toBe('dark-ground');

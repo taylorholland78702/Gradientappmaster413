@@ -26,16 +26,16 @@ export const gradientKind = (gradient: string | null | undefined): GradientKind 
 export const EFFECT_AFFINITY: Record<GradientKind, Partial<Record<EffectType, number>>> = {
   'dark-ground': {
     bloom: 2, 'aura-glow': 2, halftone: 2, ascii: 2, vignette: 1, grain: 1, chromatic: 1, shift: 1, crt: 1, wave: 1, kaleidoscope: 1,
-    posterize: -1, dither: -1, invert: -1, watercolor: -1, 'grid-effect': -1,
+    posterize: -1, dither: -1, invert: -1, watercolor: -1, 'grid-effect': -1, vhs: -1, 'slit-scan': -1,
     duotone: -2, 'oil-paint': -2, impasto: -2, gesso: -2,
   },
   smooth: {
     grain: 2, bloom: 1, vignette: 1, chromatic: 1, wave: 1, liquid: 1, shift: 1, mirror: 1, kaleidoscope: 1, watercolor: 1,
-    'oil-paint': 1, blur: -1, feedback: -1,
+    'oil-paint': 1, blur: -1, feedback: -1, vhs: -1, 'slit-scan': -1,
   },
   pattern: {
     halftone: 2, ascii: 2, grain: 1, vignette: 1, chromatic: 1, bloom: 1, shift: 1, crt: 1, liquid: 1,
-    mirror: -1, pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1,
+    mirror: -1, pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, vhs: -1,
     'grid-effect': -2,
   },
   particles: {

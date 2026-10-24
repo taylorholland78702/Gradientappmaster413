@@ -96,6 +96,20 @@ describe('a marking session', () => {
   });
 });
 
+describe('extending a session', () => {
+  it('raises the target and keeps the marks already made in the session', () => {
+    const m = new ShuffleMarks(memory(), (() => { let t = 0; return () => ++t; })());
+    m.start(2);
+    for (let i = 0; i < 2; i++) { m.setCurrent(look(0.5)); m.mark('keep'); }
+    expect(m.sessionMarks).toHaveLength(2);
+    m.extend(15);
+    expect(m.active).toBe(true);
+    expect(m.target).toBe(17);
+    expect(m.sessionMarks).toHaveLength(2);
+    expect(m.current).toBeNull();
+  });
+});
+
 describe('speed and palette on marks', () => {
   const vivid = { lightness: 0.5, saturation: 0.9, contrast: 0.6 };
   const dark = { lightness: 0.2, saturation: 0.2, contrast: 0.1 };
