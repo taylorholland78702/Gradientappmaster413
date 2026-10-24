@@ -42,9 +42,6 @@ export interface SnapshotValues {
   fieldScale: number;
   fieldSpeed: number;
   fieldShapes: { [x: string]: [number, number]; };
-  fieldExposure: number;
-  fieldTone: "off" | "aces" | "soft";
-  fieldGrade: { brightness: number; contrast: number; saturation: number; };
   fieldSwirl: number;
   paletteStops: number[];
   paletteBias: number;

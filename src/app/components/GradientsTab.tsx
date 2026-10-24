@@ -139,10 +139,7 @@ export interface GradientsTabProps {
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...)
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
-  fieldExposure: number; setFieldExposure: (v: number) => void;
   fieldSwirl: number; setFieldSwirl: (v: number) => void;
-  fieldGrade: { brightness: number; contrast: number; saturation: number }; setFieldGrade: (v: { brightness: number; contrast: number; saturation: number }) => void;
-  fieldTone: 'off' | 'aces' | 'soft'; setFieldTone: (v: 'off' | 'aces' | 'soft') => void;
   fieldShapeA: number; setFieldShapeA: (v: number) => void;
   fieldShapeB: number; setFieldShapeB: (v: number) => void;
   // Applies a named Look (palette + Scale/Speed/...) for the styled-field gradients
@@ -263,7 +260,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldGrade, setFieldGrade, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,

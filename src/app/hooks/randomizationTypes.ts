@@ -150,9 +150,6 @@ export interface RandomizationParams {
   setPaletteSharp: (value: SetStateAction<number>) => void;
   applyLookValues: (look: GradientLook, colorsOverride?: ColorRGB[]) => void;
   setFieldShapes: (value: SetStateAction<Record<string, [number, number]>>) => void;
-  setFieldExposure: (value: SetStateAction<number>) => void;
-  setFieldTone: (value: SetStateAction<"off" | "aces" | "soft">) => void;
-  setFieldGrade: (value: SetStateAction<{ brightness: number; contrast: number; saturation: number; }>) => void;
   setFieldSwirl: (value: SetStateAction<number>) => void;
   setSlitScanIntensity: (value: SetStateAction<number>) => void;
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;

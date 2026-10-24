@@ -47,9 +47,6 @@ uniform float uTreble;
 // gradient's original look, and what each one does is specific to the gradient.
 uniform float uA;
 uniform float uB;
-uniform float uExposure;
-uniform int uTone;
-uniform vec3 uGrade; // brightness, contrast, saturation (1 = unchanged)
 uniform float uSwirl; // twist of the drawing plane about the center (0 = none)
 float gTime = 0.0;    // the time the current sample is being drawn at (set in main)
 in vec2 vUv;
@@ -105,22 +102,8 @@ float fbm3(vec2 p) {
   }
   return v;
 }
-// Exposure (in stops) then an optional tone curve, applied to the shaded color before
-// it is clamped for output — so colors a shader pushes above 1.0 (hot cores,
-// highlights) roll off instead of clipping flat. Off with 0 EV is the old plain clamp.
+// The shaded color, clamped for output.
 vec3 finish(vec3 c) {
-  c = max(c, vec3(0.0)) * exp2(uExposure);
-  if (uTone == 1) {
-    c = (c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14);
-  } else if (uTone == 2) {
-    c = (1.0 - exp(-1.5 * c)) / (1.0 - exp(-1.5));
-  }
-  c = clamp(c, 0.0, 1.0);
-  // Grade: contrast about mid-grey, then brightness, then saturation about the luma.
-  c = (c - 0.5) * uGrade.y + 0.5;
-  c *= uGrade.x;
-  float gl = dot(c, vec3(0.299, 0.587, 0.114));
-  c = mix(vec3(gl), c, uGrade.z);
   return clamp(c, 0.0, 1.0);
 }
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
@@ -755,7 +738,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
 export function drawStyleFieldGL(id: StyleFieldId, P: DrawCtx): CanvasGradient | undefined {
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
-    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone, fieldGrade, fieldSwirl,
+    centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldSwirl,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,
   } = P;
   if (canvas.width === 0 || canvas.height === 0) return undefined;
@@ -785,10 +768,7 @@ export function drawStyleFieldGL(id: StyleFieldId, P: DrawCtx): CanvasGradient |
   // structuralSeed spans 0-1e6; wrapped so the hash noise keeps float precision.
   gl.uniform1f(gl.getUniformLocation(program, 'uA'), fieldShapeA ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uB'), fieldShapeB ?? 1);
-  gl.uniform1f(gl.getUniformLocation(program, 'uExposure'), fieldExposure ?? 0);
-  gl.uniform3f(gl.getUniformLocation(program, 'uGrade'), fieldGrade?.brightness ?? 1, fieldGrade?.contrast ?? 1, fieldGrade?.saturation ?? 1);
   gl.uniform1f(gl.getUniformLocation(program, 'uSwirl'), fieldSwirl ?? 0);
-  gl.uniform1i(gl.getUniformLocation(program, 'uTone'), fieldTone === 'aces' ? 1 : fieldTone === 'soft' ? 2 : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uSeed'), (structuralSeed ?? 0) % 97);
   gl.uniform1f(gl.getUniformLocation(program, 'uBass'), audio ? Math.min(1, audioSubBassLevel / 5) : 0);
   gl.uniform1f(gl.getUniformLocation(program, 'uMids'), audio ? Math.min(1, audioMidsLevel / 5) : 0);
