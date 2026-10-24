@@ -195,7 +195,7 @@ function createFBO(gl: WebGL2RenderingContext, tex: WebGLTexture): WebGLFramebuf
   return fbo;
 }
 
-interface RDGLState {
+export interface RDGLState {
   gl: WebGL2RenderingContext;
   canvas: HTMLCanvasElement;
   stepProgram: WebGLProgram;

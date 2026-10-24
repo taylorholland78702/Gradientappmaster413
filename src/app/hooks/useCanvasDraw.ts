@@ -109,7 +109,8 @@ function getScratchOffscreen(key: string, width: number, height: number): Offscr
 // without wiring a bind-icon onto each individual slider row — the context
 // already holds every slider value under that same key via the `...params`
 // spread the caller built it with.
-function applyAudioBindings(target: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+function applyAudioBindings(targetObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+  const target = targetObj as Record<string, unknown>;
   for (const binding of bindings) {
     const key = resolveModulationKey(binding.param);
     const base = target[key];
@@ -127,7 +128,8 @@ function applyAudioBindings(target: Record<string, any>, bindings: { param: stri
 // result into each effect's context avoids re-running the same bindings
 // lookup+math once per active effect for a result that never changes within
 // the frame.
-function computeAudioBoundOverrides(base: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
+function computeAudioBoundOverrides(baseObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
+  const base = baseObj as Record<string, unknown>;
   const overrides: Record<string, number> = {};
   for (const binding of bindings) {
     const key = resolveModulationKey(binding.param);

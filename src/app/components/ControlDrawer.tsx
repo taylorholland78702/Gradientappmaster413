@@ -1,7 +1,9 @@
 import React, { forwardRef, lazy, Suspense, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { ColorTab } from './ColorTab';
-import { GradientsTab } from './GradientsTab';
-import { EffectsTab } from './EffectsTab';
+import { ColorTab, type ColorTabProps } from './ColorTab';
+import { GradientsTab, type GradientsTabProps } from './GradientsTab';
+import { EffectsTab, type EffectsTabProps } from './EffectsTab';
+import type { PresetsPanelProps } from './PresetsPanel';
+import type { AudioPanelState, AudioPanelActions } from './AudioPanel';
 
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
@@ -36,19 +38,13 @@ export interface ControlDrawerProps {
   // computation in InteractiveGradient.tsx (mobilePanelMaxHeight) for why
   // this isn't just a CSS vh unit (a dvh-staleness bug on iOS Safari).
   mobileMaxHeight: number;
-  // The union of every prop ColorTab/GradientsTab/EffectsTab/PresetsPanel
-  // need, passed through unchanged from InteractiveGradient.tsx — each tab
-  // only destructures the names its own Props interface declares, so extra
-  // unrelated keys here are harmless (same loosely-typed blob convention
-  // useSnapshot.ts/useRandomization.ts already use for this exact problem).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tabProps: Record<string, any>;
-  // AudioPanel takes pre-grouped state/actions objects rather than flat
-  // props, so those are built and passed separately.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  audioState: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  audioActions: Record<string, any>;
+  // The union of every prop ColorTab/GradientsTab/EffectsTab/PresetsPanel need, passed through
+  // unchanged from InteractiveGradient.tsx: each tab takes the names its own Props interface declares
+  // and ignores the rest.
+  tabProps: ColorTabProps & GradientsTabProps & EffectsTabProps & PresetsPanelProps;
+  // AudioPanel takes pre-grouped state/actions objects rather than flat props.
+  audioState: AudioPanelState;
+  audioActions: AudioPanelActions;
 }
 
 /**
@@ -136,24 +132,17 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
           the wordmark's 3-line stack height for vertical-center alignment
           — traded away in favor of a drastically tighter header). */}
       <div className="flex flex-col gap-[6px] px-1.5 pb-2">
-        {/* `as any` on every spread below: tabProps/audioState/audioActions
-            are intentionally loosely typed (see the props comment above) —
-            TS's excess/missing-property checking on a JSX spread applies
-            even against a Record<string, any> source (unlike a plain
-            function param destructure, which is how useSnapshot.ts/
-            useRandomization.ts get away with the same loose blob), so this
-            cast is what actually lets that convention work here. */}
-        {activeTab === 'color' && <ColorTab {...(tabProps as any)} />}
-        {activeTab === 'gradients' && <GradientsTab {...(tabProps as any)} />}
-        {activeTab === 'effects' && <EffectsTab {...(tabProps as any)} />}
+        {activeTab === 'color' && <ColorTab {...tabProps} />}
+        {activeTab === 'gradients' && <GradientsTab {...tabProps} />}
+        {activeTab === 'effects' && <EffectsTab {...tabProps} />}
         {activeTab === 'audio' && (
           <Suspense fallback={null}>
-            <AudioPanel state={audioState as any} actions={audioActions as any} />
+            <AudioPanel state={audioState} actions={audioActions} />
           </Suspense>
         )}
         {activeTab === 'presets' && (
           <Suspense fallback={null}>
-            <PresetsPanel {...(tabProps as any)} />
+            <PresetsPanel {...tabProps} />
           </Suspense>
         )}
       </div>

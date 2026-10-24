@@ -19,7 +19,7 @@ interface AuthUser {
 
 const UNCATEGORIZED = 'Uncategorized';
 
-interface PresetsPanelProps {
+export interface PresetsPanelProps {
   isMobile: boolean;
   isPresetsDropdownOpen: boolean;
   openNewPresetSignal: number;

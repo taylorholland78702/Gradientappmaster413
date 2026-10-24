@@ -1,3 +1,4 @@
+import type { EffectCtx } from '../hooks/canvasDrawTypes';
 // Single source of truth for every effect: its draw function, display label,
 // relative compute cost, modulation category (for audio-binding pools), and
 // whether it visibly reacts to audio. Previously this same information was
@@ -48,7 +49,7 @@ import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
 
 interface EffectRegistryEntry {
-  drawFn: (P: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  drawFn: (P: EffectCtx) => void;
   label: string;
   // Relative per-frame compute cost (1 = simple single-pass canvas op).
   // Used by feelingLucky's remix budget and the manual Multi-FX toggle to
@@ -71,7 +72,7 @@ interface EffectRegistryEntry {
 // native ctx.filter/ctx.drawImage, so this checks blurType before even
 // attempting GL, same reasoning as the gradient layer's sweep/helix-only
 // GL wrappers (see gradients/_registry.ts).
-function applyBlurAuto(P: any): void {
+function applyBlurAuto(P: EffectCtx): void {
   if ((P.blurType === 'zoom' || P.blurType === 'radial') && detectBlurGLSupport()) {
     try {
       if (P.blurType === 'zoom') applyBlurZoomGL(P); else applyBlurRadialGL(P);
@@ -88,7 +89,7 @@ function applyBlurAuto(P: any): void {
 // transcendentals are notably slower than basic ALU ops, while GPUs have
 // dedicated fast transcendental hardware, so the CPU/GPU gap here is larger
 // than "1 sample" suggests. See applyLiquidGL.ts.
-function applyLiquidAuto(P: any): void {
+function applyLiquidAuto(P: EffectCtx): void {
   if (detectLiquidGLSupport()) {
     try {
       applyLiquidGL(P);
@@ -102,7 +103,7 @@ function applyLiquidAuto(P: any): void {
 
 // Same reasoning as applyLiquidAuto above. See
 // applyWaveGL.ts.
-function applyWaveAuto(P: any): void {
+function applyWaveAuto(P: EffectCtx): void {
   if (detectWaveGLSupport()) {
     try {
       applyWaveGL(P);
@@ -118,7 +119,7 @@ function applyWaveAuto(P: any): void {
 // loop), so this isn't closing a CPU bottleneck — it exists so Mirror can
 // participate in a GL-pipeline chain instead of breaking one. See
 // applyMirrorGL.ts.
-function applyMirrorAuto(P: any): void {
+function applyMirrorAuto(P: EffectCtx): void {
   if (detectMirrorGLSupport()) {
     try {
       applyMirrorGL(P);
@@ -253,7 +254,7 @@ export const EFFECT_LABELS: Record<string, string> = Object.fromEntries(
   EFFECT_IDS.map((id) => [id, EFFECT_REGISTRY[id as keyof typeof EFFECT_REGISTRY].label]),
 );
 
-export const EFFECT_DRAW_FNS: Record<string, (P: any) => void> = Object.fromEntries( // eslint-disable-line @typescript-eslint/no-explicit-any
+export const EFFECT_DRAW_FNS: Record<string, (P: EffectCtx) => void> = Object.fromEntries(
   EFFECT_IDS.map((id) => [id, EFFECT_REGISTRY[id as keyof typeof EFFECT_REGISTRY].drawFn]),
 );
 

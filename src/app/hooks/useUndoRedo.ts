@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
 import type { useRedoState } from './state/useRedoState';
 import type { useUndoState } from './state/useUndoState';
+import type { Snapshot } from './snapshotTypes';
 
 // Undo / redo history: a 10-deep stack of snapshots with saveCurrentState pushing a new entry.
 export function useUndoRedo({
   buildSnapshot, applySnapshot, undoStackRef, undoIndexRef, setUndoDepth, redoStackRef, setRedoDepth,
 }: {
   buildSnapshot: () => any;
-  applySnapshot: (snapshot: any) => void;
+  applySnapshot: (snapshot: Snapshot) => void;
   undoStackRef: ReturnType<typeof useUndoState>['undoStackRef'];
   undoIndexRef: ReturnType<typeof useUndoState>['undoIndexRef'];
   setUndoDepth: ReturnType<typeof useUndoState>['setUndoDepth'];

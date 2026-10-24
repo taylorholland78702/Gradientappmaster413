@@ -15,8 +15,7 @@ export type GifWorkerResponse =
   | { type: 'finished'; bytes: Uint8Array }
   | { type: 'error'; message: string };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let gif: any = null;
+let gif: ReturnType<typeof GIFEncoder> | null = null;
 
 self.onmessage = (e: MessageEvent<GifWorkerRequest>) => {
   const msg = e.data;

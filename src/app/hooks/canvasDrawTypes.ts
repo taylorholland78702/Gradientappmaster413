@@ -3,6 +3,7 @@ import type { ColorRGB, EffectType, GradientType } from '../constants/gradientEf
 import type { AudioBinding } from './state/useAudioBindingsState';
 import type { WatercolorStyle } from './state/useWatercolorState';
 import type { ColorBlend } from '../utils/color';
+import type { RDGLState } from './gradients/drawReactionDiffusionGL';
 
 // Everything InteractiveGradient hands to useCanvasDraw: the live values, refs and setters the draw
 // pipeline reads. Generated from the call site's inferred type, then checked against it by tsc.
@@ -243,7 +244,7 @@ export interface CanvasDrawParams {
   radialHardEdge: boolean;
   radialSpeed: number;
   reactionDiffusionFeed: number;
-  reactionDiffusionGridRef: MutableRefObject<{ u: Float32Array<ArrayBufferLike>; v: Float32Array<ArrayBufferLike>; u2: Float32Array<ArrayBufferLike>; v2: Float32Array<ArrayBufferLike>; canvas: HTMLCanvasElement; time: number; gl?: any; }>;
+  reactionDiffusionGridRef: MutableRefObject<{ u: Float32Array<ArrayBufferLike>; v: Float32Array<ArrayBufferLike>; u2: Float32Array<ArrayBufferLike>; v2: Float32Array<ArrayBufferLike>; canvas: HTMLCanvasElement; time: number; gl?: RDGLState; }>;
   reactionDiffusionKill: number;
   reactionDiffusionSpeed: number;
   resolutionMultiplier: number;

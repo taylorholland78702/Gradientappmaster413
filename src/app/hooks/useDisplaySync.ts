@@ -3,6 +3,7 @@ import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY, DISPLAY_SYNC_KEY, DISPLAY_ANIM_
 import type { useMiscState } from './state/useMiscState';
 import type { useHalftoneState } from './state/useHalftoneState';
 import type { useReactionDiffusionGridState } from './state/useReactionDiffusionGridState';
+import type { Snapshot } from './snapshotTypes';
 
 type MiscState = ReturnType<typeof useMiscState>;
 
@@ -12,7 +13,7 @@ export function useDisplaySync({
   applySnapshot, buildSnapshot, animValuesRef, gradientColorsRef, halftoneTimeRef, reactionDiffusionGridRef,
   lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, setIsDisplayLinkCopied,
 }: {
-  applySnapshot: (snapshot: any) => void;
+  applySnapshot: (snapshot: Snapshot) => void;
   buildSnapshot: () => unknown;
   animValuesRef: MiscState['animValuesRef'];
   gradientColorsRef: MiscState['gradientColorsRef'];

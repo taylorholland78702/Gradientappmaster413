@@ -202,7 +202,7 @@ export interface GradientsTabProps {
   noiseOctaves: number; setNoiseOctaves: (v: number) => void;
   noiseDirection: number; setNoiseDirection: (v: number) => void;
   noiseWarp: number; setNoiseWarp: (v: number) => void;
-  noiseType: 'smooth' | 'ridged'; setNoiseType: (t: 'smooth' | 'ridged') => void;
+  noiseType: 'smooth' | 'ridged' | 'turbulence'; setNoiseType: (t: 'smooth' | 'ridged' | 'turbulence') => void;
   noiseSpeed: number; setNoiseSpeed: (v: number) => void;
 
   // Radial Burst

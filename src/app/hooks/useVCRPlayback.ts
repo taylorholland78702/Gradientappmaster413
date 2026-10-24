@@ -93,8 +93,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const isStartingRecordingRef = useRef(false);
 
   // ffmpeg frame capture refs
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ffmpegRef = useRef<any>(null);
+  const ffmpegRef = useRef<import('@ffmpeg/ffmpeg').FFmpeg | null>(null);
   const frameDataRef = useRef<Uint8Array[]>([]);
   const isCapturingRef = useRef(false);
   const captureRafRef = useRef<number | null>(null);
@@ -105,10 +104,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // WebCodecs capture refs — video is hardware-encoded live during recording
   // instead of relayed through JPEG frames + ffmpeg.wasm after the fact, so
   // the post-stop wait is just a quick flush instead of a full re-encode.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const videoEncoderRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const muxerRef = useRef<any>(null);
+  const videoEncoderRef = useRef<VideoEncoder | null>(null);
+  const muxerRef = useRef<Muxer<ArrayBufferTarget> | null>(null);
   const videoFrameIndexRef = useRef(0);
   const usingWebCodecsRef = useRef(false);
   // First rAF timestamp of the current recording — frame PTS is measured
@@ -213,8 +210,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // Re-encodes a recorded webm/opus audio blob into AAC AudioChunks and feeds
   // them into the given mp4 muxer. Runs after stop, but decoding+encoding audio
   // is cheap relative to video, so this doesn't meaningfully slow the export.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const muxAudioBlob = useCallback(async (audioBlob: Blob, muxer: any) => {
+  const muxAudioBlob = useCallback(async (audioBlob: Blob, muxer: Muxer<ArrayBufferTarget>) => {
     const arrayBuf = await audioBlob.arrayBuffer();
     const audioCtx = new AudioContext();
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
@@ -260,8 +256,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     });
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const startRecordingWebCodecs = useCallback((config: any) => {
+  const startRecordingWebCodecs = useCallback((config: VideoEncoderConfig) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -557,8 +552,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // path (drawReactionDiffusionGL.ts) uses.
   const startRecording = useCallback(async () => {
     const canvas = canvasRef.current;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let selectedConfig: any = null;
+    let selectedConfig: VideoEncoderConfig | null = null;
 
     if (typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined' && canvas) {
       const candidates = [

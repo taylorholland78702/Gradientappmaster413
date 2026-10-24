@@ -1,3 +1,4 @@
+import type { RandomizationParams } from './randomizationTypes';
 import { useCallback } from 'react';
 import {
   type ColorRGB, type GradientType, type EffectType,
@@ -95,14 +96,7 @@ const LOW_VISIBILITY_MOD_KEYS = new Set([
   'angleCenterX', 'angleCenterY', 'angleStartOffset',
   'blurMotionDirection', 'fadeDirection', 'noiseDirection',
 ]);
-// Loosely typed on purpose: this hook wires together ~150 setters spanning
-// nearly every piece of app state (randomization touches everything by
-// design). The build doesn't type-check (esbuild transpile only), and
-// precise per-field typing here would be hundreds of lines for zero actual
-// safety benefit — matches the existing PresetData = Record<string, any>
-// convention used for the same reason in usePresets.ts.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type RandomizationParams = Record<string, any>;
+export type { RandomizationParams };
 
 export function useRandomization(params: RandomizationParams) {
   const {
@@ -1037,7 +1031,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
     else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
-    else if (gradientType === 'fade') { setFadeDirection(Math.round(rng(0, 360))); setTurrellGlow(rng(0.2, 0.7)); }
     else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
     else if (gradientType === 'julia') setJuliaZoom(rng(0.3, 3));
     else if (gradientType === 'attractor') setAttractorSpeed(rng(0.1, 5));
