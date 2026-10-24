@@ -33,11 +33,8 @@ import { decodePresetData } from '../utils/presetShare';
 import type { PresetData } from '../hooks/usePresets';
 import { hslToRgb, shiftHueByTreble, getActivePaletteMap } from '../utils/color';
 import { haptic } from '../utils/haptics';
-import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
-import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { useMotionGestures } from '../hooks/useMotionGestures';
 import { requestMotionPermission } from '../utils/motionPermission';
-import { LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
