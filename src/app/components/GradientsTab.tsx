@@ -9,13 +9,6 @@ import { SliderRow } from './SliderRow';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
-// Gradients whose layout hashes structuralSeed (the styled field shaders plus the
-// older ones that read it), so a Seed control means something for them.
-// A function, not a module constant: the import cycle through InteractiveGradient
-// can evaluate this file before gradientEffects has finished.
-const SEEDED_EXTRA: GradientType[] = ['caustics', 'voronoi', 'marble', 'metaballs', 'topographic'];
-const usesSeed = (t: GradientType) => SEEDED_EXTRA.includes(t) || STYLE_FIELD_GRADIENT_TYPES.includes(t);
-
 export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
@@ -266,7 +259,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldTone, setFieldTone, fieldGrade, setFieldGrade, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors, structuralSeed, setStructuralSeed,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldExposure, setFieldExposure, fieldGrade, setFieldGrade, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -456,29 +449,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
           </div>
         </div>
-        {/* Finishing — exposure in stops, then a tone curve. Every gradient has it: the
+        {/* Finishing — exposure in stops, then brightness, contrast and saturation. Every gradient has it: the
             styled ones apply it inside their shaders, the rest through a GPU pass right
             after the gradient is drawn. */}
         <div className="w-full flex flex-col gap-2 px-1.5 py-1">
           <SliderRow label="Exposure:" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve" value={fieldExposure} onChange={setFieldExposure} onNumberChange={(v) => setFieldExposure(Math.max(-2, Math.min(2, v || 0)))} min={-2} max={2} step={0.05} />
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white w-20 shrink-0">Tone:</label>
-            <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Tone mapping">
-              {([
-                { id: 'off', label: 'Off', hint: 'Plain clamp — the original look' },
-                { id: 'aces', label: 'ACES', hint: 'Filmic curve: deeper contrast, bright areas roll off instead of clipping' },
-                { id: 'soft', label: 'Soft', hint: 'Gentle shoulder: lifts shadows a little and compresses highlights' },
-              ] as const).map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setFieldTone(t.id)}
-                  aria-pressed={fieldTone === t.id}
-                  title={t.hint}
-                  className={choice(fieldTone === t.id, 'flex-1')}
-                >{t.label}</button>
-              ))}
-            </div>
-          </div>
           {([
             { key: 'brightness' as const, label: 'Brightness', min: 0.5, max: 1.5 },
             { key: 'contrast' as const, label: 'Contrast', min: 0.5, max: 1.5 },
@@ -487,33 +462,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             <SliderRow key={g.key} label={`${g.label}:`} title={`${g.label} of the finished picture (1 leaves it as is)`} value={fieldGrade[g.key]} onChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v })} onNumberChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v || 1 })} min={g.min} max={g.max} step={0.01} />
           ))}
         </div>
-        {/* Seed — the pattern-structure number the gradients above hash into their
-            layout (cell positions, vein paths, blob phases). Audio drops bump it, and
-            it's saved with presets, but until now there was no way to see or set it. */}
-        {usesSeed(gradientType) && (
-          <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
-            <label htmlFor="structural-seed" className="text-[10px] text-white">Seed:</label>
-            <input
-              id="structural-seed"
-              type="number"
-              min={0}
-              max={999999}
-              value={Math.round(structuralSeed)}
-              onChange={(e) => {
-                const v = Math.floor(Number(e.target.value));
-                if (Number.isFinite(v)) setStructuralSeed(Math.min(999999, Math.max(0, v)));
-              }}
-              className="flex-1 min-w-0 px-1.5 py-0.5 text-[10px] text-white bg-wav-field border border-wav-line tabular-nums"
-            />
-            <button
-              onClick={() => setStructuralSeed(Math.floor(Math.random() * 1000000))}
-              title="Roll a new pattern layout"
-              className="px-2 py-0.5 text-[10px] text-white bg-wav-field hover:bg-wav-hover border border-wav-line transition-all"
-            >
-              Reroll
-            </button>
-          </div>
-        )}
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <div className="flex items-center justify-between">
