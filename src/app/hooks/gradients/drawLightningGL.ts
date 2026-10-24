@@ -13,6 +13,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { initPersistentGL, detectParticleGLSupport, drawFadeQuad, drawTriangles, toClipSpace, PersistentGLState } from './glParticleShared';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 interface Segment { x1: number; y1: number; x2: number; y2: number; w: number }
 
@@ -89,7 +90,7 @@ function appendSegmentQuad(
   }
 }
 
-export function drawLightningGL(P: any): CanvasGradient | undefined {
+export function drawLightningGL(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx, canvas, displayWidth, displayHeight, gradientColors,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioTrebleLevel,

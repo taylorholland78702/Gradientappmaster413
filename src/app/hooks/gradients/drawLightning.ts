@@ -1,3 +1,4 @@
+import type { DrawCtx } from '../canvasDrawTypes';
 // Recursive midpoint-displacement bolts — classic fractal-lightning
 // construction: split a segment at its midpoint, offset that midpoint
 // perpendicular to the segment by a shrinking random amount, recurse on
@@ -36,7 +37,7 @@ function buildBolt(x1: number, y1: number, x2: number, y2: number, displacement:
   }
 }
 
-export function drawLightning(P: any): CanvasGradient | undefined {
+export function drawLightning(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,

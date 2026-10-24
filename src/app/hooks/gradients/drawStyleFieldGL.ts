@@ -18,6 +18,7 @@
 // existing CPU Noise gradient — see _registry.ts — which is a graceful
 // degrade rather than a blank canvas.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
@@ -806,7 +807,7 @@ function getProgram(gl: WebGL2RenderingContext, id: StyleFieldId): WebGLProgram 
   return program;
 }
 
-export function drawStyleFieldGL(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function drawStyleFieldGL(id: StyleFieldId, P: DrawCtx): CanvasGradient | undefined {
   const {
     canvas, ctx, displayWidth, displayHeight, gradientColors, fieldContrast, paletteMode, paletteBands,
     centerX, centerY, zoom, structuralSeed, fieldScale, fieldAnimTime, fieldShapeA, fieldShapeB, fieldExposure, fieldTone, fieldGrade, fieldSwirl,

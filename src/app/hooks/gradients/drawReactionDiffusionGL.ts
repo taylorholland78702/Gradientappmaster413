@@ -10,6 +10,7 @@
 // whole session — this file is never reached in that case.
 import { RGB } from '../../utils/fieldCurve';
 import { BLEND_COLORS_GLSL, DITHER_GLSL, setPaletteMapUniforms, frameRenderSize } from './glShared';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const RD_W = 220, RD_H = 140;
 const MAX_COLORS = 12;
@@ -286,7 +287,7 @@ function drawFullscreen(gl: WebGL2RenderingContext) {
 
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
 
-export function drawReactionDiffusionGL(P: any): CanvasGradient | undefined {
+export function drawReactionDiffusionGL(P: DrawCtx): CanvasGradient | undefined {
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,

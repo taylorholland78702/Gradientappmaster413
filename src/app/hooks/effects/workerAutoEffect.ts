@@ -1,3 +1,4 @@
+import type { EffectCtx } from '../canvasDrawTypes';
 // Shared machinery for the "off-main-thread with one-frame latency" Worker
 // pattern used by Grid, Triangulate, Halftone, Dither, and Brush Strokes:
 // draw() is synchronous and can't block on an async postMessage reply
@@ -22,16 +23,16 @@ export interface WorkerAutoConfig<TRequest extends { buffer: ArrayBuffer }> {
   // ditherWorker.ts is pure array math and needs no OffscreenCanvas — every
   // other worker here rasterizes into one, so this defaults to true.
   requiresOffscreenCanvas?: boolean;
-  cpuFallback: (P: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  cpuFallback: (P: EffectCtx) => void;
   // Checked before anything else runs each call — mirrors each effect's own
   // early-return guard (Halftone: no imageData fetched yet; Grid/Brush
   // Strokes: a zero-size canvas). Default: always run.
-  shouldRun?: (P: any) => boolean; // eslint-disable-line @typescript-eslint/no-explicit-any
+  shouldRun?: (P: EffectCtx) => boolean;
   // Snapshots the canvas and builds the worker request's non-buffer fields.
   // May throw (e.g. no 2d context for the snapshot) — the caller catches it
   // and permanently falls back to the CPU path for the rest of the session,
   // same as every original of these five files did.
-  buildRequest: (P: any) => { buffer: ArrayBuffer; extra: Omit<TRequest, 'buffer'> }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  buildRequest: (P: EffectCtx) => { buffer: ArrayBuffer; extra: Omit<TRequest, 'buffer'> };
   // Set when buildRequest reads the live canvas (Grid, Triangulate, Brush Strokes). The request must
   // then be built BEFORE the last result is painted: otherwise each frame's input is the effect's own
   // previous output, and the effect feeds on itself. Grid with shapes that leave gaps goes black within
@@ -43,7 +44,7 @@ export interface WorkerAutoConfig<TRequest extends { buffer: ArrayBuffer }> {
 export function createWorkerAutoEffect<
   TRequest extends { buffer: ArrayBuffer },
   TResponse extends { buffer: ArrayBuffer; displayWidth: number; displayHeight: number },
->(config: WorkerAutoConfig<TRequest>): (P: any) => void { // eslint-disable-line @typescript-eslint/no-explicit-any
+>(config: WorkerAutoConfig<TRequest>): (P: EffectCtx) => void {
   let worker: Worker | null = null;
   let workerFailed = false;
   let pending = false;
@@ -92,7 +93,7 @@ export function createWorkerAutoEffect<
     return worker;
   }
 
-  return function applyWorkerAuto(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+  return function applyWorkerAuto(P: EffectCtx): void {
     if (!detectSupport()) {
       config.cpuFallback(P);
       return;

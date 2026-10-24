@@ -1,10 +1,11 @@
+import type { EffectCtx } from '../canvasDrawTypes';
 // Module-level clock — a plain time accumulator rather than a dedicated
 // ref threaded through useMiscState/animValuesRef/useSnapshot, since this
 // is purely a cosmetic phase with no undo/redo or Display-mode sync value
 // depending on it.
 let agTime = 0;
 
-export function applyAuraGlow(P: any): void {
+export function applyAuraGlow(P: EffectCtx): void {
   const {
     activeEffects,
     addGradientStops,
@@ -41,13 +42,11 @@ export function applyAuraGlow(P: any): void {
     causticsAnimTime,
     causticsBrightness,
     causticsScale,
-    charcoalIntensity,
     chromaticAngle,
     chromaticOffset,
     chromaticTrailsBufferRef,
     chromaticTrailsDecay,
     chromaticTrailsOffset,
-    colorPins,
     colorShiftHue,
     concentricRingCount,
     concentricRingWidth,
@@ -56,9 +55,6 @@ export function applyAuraGlow(P: any): void {
     ditherLevels,
     ditherType,
     drawParams,
-    glitchIntensity,
-    glitchBlockSize,
-    glitchChromaSplit,
     drawParamsDirtyRef,
     drawRef,
     duotoneColor1,
@@ -106,9 +102,6 @@ export function applyAuraGlow(P: any): void {
     halftoneSize,
     halftoneTimeRef,
     halftoneVariation,
-    iridescentAngle,
-    iridescentIntensity,
-    iridescentScale,
     isAudioEnabled,
     isAudioReactive,
     isAutoModeRef,
@@ -132,9 +125,6 @@ export function applyAuraGlow(P: any): void {
     metaballSize,
     mirrorMode,
     mirrorTileCount,
-    moireAnimTime,
-    moireOffset,
-    moireScale,
     noiseDirection,
     noiseOctaves,
     noiseScale,
@@ -144,8 +134,6 @@ export function applyAuraGlow(P: any): void {
     photoImageRef,
     photoOpacity,
     pixelSize,
-    plasmaComplexity,
-    plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
     radarBeamWidth,
@@ -160,9 +148,6 @@ export function applyAuraGlow(P: any): void {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    scanlineIntensity,
-    scanlineSpacing,
-    scanlineSpeed,
     shapesCount,
     shapesSides,
     slitScanBufferRef,
@@ -190,13 +175,8 @@ export function applyAuraGlow(P: any): void {
     voronoiAnimTime,
     voronoiCellCount,
     voronoiDistortion,
-    waveAmplitude,
     waveDistortionRotation,
     waveDistortionStrength,
-    waveFrequency,
-    waveNumberRef,
-    waveRotationRef,
-    waveScale,
     zoom,
     zoomRef,
     ctx,

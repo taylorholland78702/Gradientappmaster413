@@ -17,6 +17,7 @@
 // the way it always did.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 const WAVE_FRAG_SRC = `#version 300 es
 precision highp float;
@@ -52,7 +53,7 @@ export function detectWaveGLSupport(): boolean {
   return detectEffectGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: EffectCtx) {
   const { waveDistortionRotation, waveDistortionStrength, isAudioReactive, audioSubBassLevel, audioMidsLevel } = P;
   const angleRad = waveDistortionRotation * Math.PI / 180;
   const audioWaveAmp = isAudioReactive ? (audioSubBassLevel / 5) * 80 : 0;
@@ -86,7 +87,7 @@ function renderWaveStage(
   drawFullscreen(gl);
 }
 
-export function applyWaveGL(P: any): void {
+export function applyWaveGL(P: EffectCtx): void {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
@@ -101,7 +102,7 @@ export function applyWaveGL(P: any): void {
 // Used by glEffectPipeline.ts when Wave is part of a contiguous run of
 // GL-eligible effects — see that file for why chaining avoids a per-effect
 // canvas round-trip.
-export function getWaveGLStage(P: any): GLEffectStage {
+export function getWaveGLStage(P: EffectCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'wave',

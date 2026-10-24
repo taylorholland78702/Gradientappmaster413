@@ -1,4 +1,5 @@
 import { DEG_TO_RAD } from '../../constants/gradientEffects';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // Donald Judd: identical units at precise, regular intervals, each one a
 // hard-cornered flat-color bar — no gradient, no glow, no per-bar
@@ -6,7 +7,7 @@ import { DEG_TO_RAD } from '../../constants/gradientEffects';
 // it belongs to. With audio off this renders as a static, unchanging
 // stack, same as Judd's own wall pieces; Response is what turns it into
 // an equalizer. Orientation reuses the shared gradientAngle control.
-export function drawStack(P: any): CanvasGradient | undefined {
+export function drawStack(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,

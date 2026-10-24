@@ -1,9 +1,10 @@
+import type { EffectCtx } from '../canvasDrawTypes';
 // Robert Ryman: the canvas ground itself as the subject. Desaturates and
 // lifts whatever's underneath toward a near-white monochrome field, then
 // lays a fine brushed-texture noise over it — audio (when on) only ever
 // deepens that texture, never reintroduces color, since every channel gets
 // the identical delta.
-export function applyGesso(P: any): void {
+export function applyGesso(P: EffectCtx): void {
   const {
     imageData,
     putScaledImageData,

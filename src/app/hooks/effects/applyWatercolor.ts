@@ -1,6 +1,7 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2, valueNoise } from '../../utils/valueNoise';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 // Working resolution cap — see downscaleCapture.ts. The smear below samples
 // several taps per pixel plus a handful of noise evaluations, cheap at the
@@ -34,7 +35,7 @@ const WATERCOLOR_STYLES: Record<string, { warpMul: number; poolMul: number; post
   'ink-wash': { warpMul: 1.8, poolMul: 1.6, posterizeLevels: 4, desaturate: 1 },
 };
 
-export function applyWatercolor(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function applyWatercolor(P: EffectCtx): void {
   const { displayWidth, displayHeight, watercolorBleed, watercolorGrain, watercolorStyle, ctx, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
   const style = WATERCOLOR_STYLES[watercolorStyle] || WATERCOLOR_STYLES.watercolor;

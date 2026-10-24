@@ -1,4 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 // Module-level clock — a plain time accumulator rather than a dedicated
 // ref threaded through useMiscState/animValuesRef/useSnapshot, since this
@@ -6,7 +7,7 @@ import { getScratchImageData } from '../../utils/scratchCanvas';
 // depending on it (same reasoning as applyAuraGlow.ts's agTime).
 let crtTime = 0;
 
-export function applyCrt(P: any): void {
+export function applyCrt(P: EffectCtx): void {
   const {
     ctx,
     canvas,

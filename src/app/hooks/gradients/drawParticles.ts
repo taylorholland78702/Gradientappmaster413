@@ -1,3 +1,4 @@
+import type { DrawCtx } from '../canvasDrawTypes';
 // Draws one particle as a small line (sides=1), circle (sides=2), or
 // regular polygon (sides 3-8, triangle through octagon) inscribed in a
 // circle of radius `size`. pCtx.fillStyle is assumed already set by the
@@ -31,7 +32,7 @@ function drawParticleShape(pCtx: CanvasRenderingContext2D, x: number, y: number,
   pCtx.fill();
 }
 
-export function drawParticles(P: any): CanvasGradient | undefined {
+export function drawParticles(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,

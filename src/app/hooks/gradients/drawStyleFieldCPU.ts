@@ -1,6 +1,7 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getActiveColorBlend, getActivePaletteMap, samplePalette } from '../../utils/color';
 import type { StyleFieldId } from './drawStyleFieldGL';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // The styled-field gradients are WebGL2 shaders. Where WebGL2 is missing (or a
 // shader won't compile) this draws a cheap CPU stand-in instead: not the exact
@@ -146,7 +147,7 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
   }
 }
 
-export function drawStyleFieldCPU(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function drawStyleFieldCPU(id: StyleFieldId, P: DrawCtx): CanvasGradient | undefined {
   const { ctx, displayWidth, displayHeight, gradientColors, fieldScale, fieldAnimTime, structuralSeed, zoom, putLowResImageData } = P;
   if (!gradientColors?.length) return undefined;
   const W = Math.max(8, Math.min(320, Math.round(displayWidth * 0.3)));

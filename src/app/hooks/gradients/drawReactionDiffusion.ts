@@ -1,4 +1,5 @@
 import { getMappedColor } from '../../utils/fieldCurve';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // Duplicated rather than imported from InteractiveGradient.tsx (same reason
 // useMiscState.ts duplicates it) — Display mode must never run its own
@@ -8,7 +9,7 @@ import { getMappedColor } from '../../utils/fieldCurve';
 // patterns instead of just drifting out of phase.
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
 
-export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
+export function drawReactionDiffusion(P: DrawCtx): CanvasGradient | undefined {
   const {
     fieldContrast,
     paletteMode,
@@ -45,13 +46,11 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     causticsAnimTime,
     causticsBrightness,
     causticsScale,
-    charcoalIntensity,
     chromaticAngle,
     chromaticOffset,
     chromaticTrailsBufferRef,
     chromaticTrailsDecay,
     chromaticTrailsOffset,
-    colorPins,
     colorShiftHue,
     concentricRingCount,
     concentricRingWidth,
@@ -60,9 +59,6 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     ditherLevels,
     ditherType,
     drawParams,
-    glitchIntensity,
-    glitchBlockSize,
-    glitchChromaSplit,
     drawParamsDirtyRef,
     drawRef,
     duotoneColor1,
@@ -110,9 +106,6 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     halftoneSize,
     halftoneTimeRef,
     halftoneVariation,
-    iridescentAngle,
-    iridescentIntensity,
-    iridescentScale,
     isAudioEnabled,
     isAudioReactive,
     isAutoModeRef,
@@ -131,16 +124,11 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     marbleOctaves,
     marbleTurbulence,
     marbleVeinFreq,
-    meshGridSize,
-    meshJitter,
     metaballAnimTime,
     metaballCount,
     metaballSize,
     mirrorMode,
     mirrorTileCount,
-    moireAnimTime,
-    moireOffset,
-    moireScale,
     noiseDirection,
     noiseOctaves,
     noiseScale,
@@ -150,8 +138,6 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     photoImageRef,
     photoOpacity,
     pixelSize,
-    plasmaComplexity,
-    plasmaZoomScale,
     polygon2Sides,
     posterizeLevels,
     radarBeamWidth,
@@ -166,9 +152,6 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     reactionDiffusionKill,
     reactionDiffusionSpeed,
     resolutionMultiplier,
-    scanlineIntensity,
-    scanlineSpacing,
-    scanlineSpeed,
     shapesCount,
     shapesSides,
     slitScanBufferRef,
@@ -196,13 +179,8 @@ export function drawReactionDiffusion(P: any): CanvasGradient | undefined {
     voronoiAnimTime,
     voronoiCellCount,
     voronoiDistortion,
-    waveAmplitude,
     waveDistortionRotation,
     waveDistortionStrength,
-    waveFrequency,
-    waveNumberRef,
-    waveRotationRef,
-    waveScale,
     zoom,
     zoomRef,
     ctx,

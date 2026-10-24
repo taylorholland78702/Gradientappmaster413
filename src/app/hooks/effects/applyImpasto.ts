@@ -1,5 +1,6 @@
 import { impastoPixels } from './impastoPixels';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 // Impasto's Sobel pass is O(width*height) (cheap per-pixel, no radius
 // scan), so it could run at full display resolution, but capping keeps its
@@ -11,7 +12,7 @@ const MAX_DIM = 480;
 // no undo/redo or Display-mode value depends on it.
 let impastoTime = 0;
 
-export function applyImpasto(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function applyImpasto(P: EffectCtx): void {
   const { displayWidth, displayHeight, impastoStrength, impastoLightAngle, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
   const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);

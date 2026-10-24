@@ -14,6 +14,7 @@
 // UV back into that one corner region, with the flip applied first.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 const MIRROR_FRAG_SRC = `#version 300 es
 precision highp float;
@@ -46,7 +47,7 @@ export function detectMirrorGLSupport(): boolean {
   return detectEffectGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: EffectCtx) {
   const { mirrorMode, mirrorTileCount, isFirstEffect, audioModulation } = P;
   const modeIdx = mirrorMode === 'horizontal' ? 0 : mirrorMode === 'vertical' ? 1 : 2;
   const gridN = Math.max(2, Math.min(16, Math.round(mirrorTileCount + (isFirstEffect ? audioModulation * 4 : 0))));
@@ -76,7 +77,7 @@ function renderMirrorStage(
   drawFullscreen(gl);
 }
 
-export function applyMirrorGL(P: any): void {
+export function applyMirrorGL(P: EffectCtx): void {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
@@ -91,7 +92,7 @@ export function applyMirrorGL(P: any): void {
 // Used by glEffectPipeline.ts when Mirror is part of a contiguous run of
 // GL-eligible effects — see that file for why chaining avoids a per-effect
 // canvas round-trip.
-export function getMirrorGLStage(P: any): GLEffectStage {
+export function getMirrorGLStage(P: EffectCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'mirror',

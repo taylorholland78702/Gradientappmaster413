@@ -1,4 +1,5 @@
 import { DEG_TO_RAD } from '../../constants/gradientEffects';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // Sol LeWitt: a wall drawing reduced to its own instructions — 1-4 layers
 // of straight parallel lines, each layer one fixed direction evenly spread
@@ -8,7 +9,7 @@ import { DEG_TO_RAD } from '../../constants/gradientEffects';
 // rate — a literal instruction ("slide layer N this way") rather than a
 // gesture, and alternates direction per layer so adjacent layers cross
 // rather than the whole field sliding in lockstep.
-export function drawHatch(P: any): CanvasGradient | undefined {
+export function drawHatch(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,
