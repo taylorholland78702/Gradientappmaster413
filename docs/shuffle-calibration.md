@@ -38,3 +38,18 @@ is the best inverted (low colour preferred).
 Number of effects and how often the look was kept (90 looks): 0 effects 2 of 21, 1 effect 4 of 15, 2 effects 21 of 31,
 3 effects 14 of 15, 4-5 effects 6 of 8. So the floor is now 3 effects (2 on gradients that take at most 2; the rated-results blend
 tops up to the same).
+
+## Sessions 4-6 (every look has at least 3 effects; session 6 has Love)
+
+- Sessions 4 and 5: 52 of 60 looks kept. Session 6: 20 of 30 kept, 7 loved.
+- The colour penalty did not hold. In sessions 1-3 colourful looks were skipped more (the effect-less looks, always
+  smooth and colourful, drove that). In session 6, with effects everywhere, the kept looks were *more* colourful
+  (0.66 vs 0.51). So the score no longer uses colourfulness, and on session 6 the previous score ranked keeps above skips only
+  44% of the time (chance is 50%).
+- What set the loved looks apart: more detail (0.17 vs 0.09), more contrast (sd 63 vs 44), fewer lit pixels (0.56 vs 0.77),
+  darker (mean 86 vs 114). Five of the seven loved looks used ascii or halftone, and ascii was kept 5 of 5, halftone 4 of 4.
+  The taste table had both at -1 for most gradients; it is now +1 for pattern and dark-ground gradients.
+- New score: 0.4 contrast + 0.4 detail (up to 0.3, then falling off) + 0.1 brightness richness + 0.1 for shadow (dark-ground
+  gradients keep the lit-share band). On sessions 1-3 it ranks keeps above skips 67%, on session 6 62%, and the loved looks
+  above the rest 80% of the time. This is fitted to those sessions, so it is optimistic; more Love marks will tell.
+- GOOD_ENOUGH is 0.45, about the median of all marked looks.

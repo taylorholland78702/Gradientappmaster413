@@ -25,8 +25,8 @@ export const gradientKind = (gradient: string | null | undefined): GradientKind 
 // gradient, clutters it, or fights what it already does). Effects not listed are neutral.
 export const EFFECT_AFFINITY: Record<GradientKind, Partial<Record<EffectType, number>>> = {
   'dark-ground': {
-    bloom: 2, 'aura-glow': 2, vignette: 1, grain: 1, chromatic: 1, vhs: 1, shift: 1, crt: 1, wave: 1, kaleidoscope: 1,
-    posterize: -1, dither: -1, halftone: -1, invert: -1, watercolor: -1, ascii: -1, emoji: -1, 'grid-effect': -1,
+    bloom: 2, 'aura-glow': 2, vignette: 1, grain: 1, chromatic: 1, vhs: 1, shift: 1, crt: 1, wave: 1, kaleidoscope: 1, halftone: 1, ascii: 1,
+    posterize: -1, dither: -1, invert: -1, watercolor: -1, emoji: -1, 'grid-effect': -1,
     duotone: -2, 'oil-paint': -2, impasto: -2, gesso: -2,
   },
   smooth: {
@@ -35,7 +35,7 @@ export const EFFECT_AFFINITY: Record<GradientKind, Partial<Record<EffectType, nu
   },
   pattern: {
     grain: 1, vignette: 1, chromatic: 1, bloom: 1, shift: 1, vhs: 1, crt: 1, liquid: 1,
-    mirror: -1, pixelate: -1, halftone: -1, triangulate: -1, blur: -1, 'slit-scan': -1, emoji: -1, ascii: -1,
+    mirror: -1, pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, emoji: -1, halftone: 1, ascii: 1,
     kaleidoscope: -2, 'grid-effect': -2,
   },
   particles: {
