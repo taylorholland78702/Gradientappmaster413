@@ -5,6 +5,7 @@ import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
+import { SliderRow } from './SliderRow';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
 // older ones that read it), so a Seed control means something for them.
@@ -317,21 +318,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between">
-        <label className="text-[10px] text-white w-20 shrink-0">Contrast:</label>
-        <div className="flex items-center gap-1 flex-1 ml-2">
-          <input type="range" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="flex-1" />
-          <input type="number" min="0.3" max="3" step="0.1" value={fieldContrast} onChange={(e) => setFieldContrast(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-        </div>
-      </div>
+      <SliderRow label="Contrast:" value={fieldContrast} onChange={setFieldContrast} min="0.3" max="3" step="0.1" />
       {paletteMode !== 'linear' && (
-        <div className="flex items-center justify-between">
-          <label className="text-[10px] text-white w-20 shrink-0">{paletteMode === 'banded' ? 'Bands:' : 'Repeats:'}</label>
-          <div className="flex items-center gap-1 flex-1 ml-2">
-            <input type="range" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="flex-1" />
-            <input type="number" min="2" max="16" step="1" value={paletteBands} onChange={(e) => setPaletteBands(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-          </div>
-        </div>
+        <SliderRow label={paletteMode === 'banded' ? 'Bands:' : 'Repeats:'} value={paletteBands} onChange={setPaletteBands} min="2" max="16" step="1" />
       )}
     </>
   );
@@ -484,13 +473,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             styled ones apply it inside their shaders, the rest through a GPU pass right
             after the gradient is drawn. */}
         <div className="w-full flex flex-col gap-2 px-1.5 py-1">
-          <div className="flex items-center justify-between" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve">
-            <label className="text-[10px] text-white w-20 shrink-0">Exposure:</label>
-            <div className="flex items-center gap-1 flex-1 ml-2">
-              <input type="range" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Number(e.target.value))} className="flex-1" />
-              <input type="number" min={-2} max={2} step={0.05} value={fieldExposure} onChange={e => setFieldExposure(Math.max(-2, Math.min(2, Number(e.target.value) || 0)))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
-          </div>
+          <SliderRow label="Exposure:" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve" value={fieldExposure} onChange={setFieldExposure} onNumberChange={(v) => setFieldExposure(Math.max(-2, Math.min(2, v || 0)))} min={-2} max={2} step={0.05} />
           <div className="flex items-center justify-between">
             <label className="text-[10px] text-white w-20 shrink-0">Tone:</label>
             <div className="flex flex-1 ml-2 gap-1" role="group" aria-label="Tone mapping">
@@ -514,13 +497,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             { key: 'contrast' as const, label: 'Contrast', min: 0.5, max: 1.5 },
             { key: 'saturation' as const, label: 'Saturation', min: 0, max: 2 },
           ]).map(g => (
-            <div key={g.key} className="flex items-center justify-between" title={`${g.label} of the finished picture (1 leaves it as is)`}>
-              <label className="text-[10px] text-white w-20 shrink-0">{g.label}:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min={g.min} max={g.max} step={0.01} value={fieldGrade[g.key]} onChange={e => setFieldGrade({ ...fieldGrade, [g.key]: Number(e.target.value) })} className="flex-1" />
-                <input type="number" min={g.min} max={g.max} step={0.01} value={fieldGrade[g.key]} onChange={e => setFieldGrade({ ...fieldGrade, [g.key]: Number(e.target.value) || 1 })} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
+            <SliderRow key={g.key} label={`${g.label}:`} title={`${g.label} of the finished picture (1 leaves it as is)`} value={fieldGrade[g.key]} onChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v })} onNumberChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v || 1 })} min={g.min} max={g.max} step={0.01} />
           ))}
         </div>
         {/* Seed — the pattern-structure number the gradients above hash into their
@@ -576,70 +553,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               </div>
             </div>
             {gridMode === 'classic' && renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Rows:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="2"
-                  max="50"
-                  value={gridRows}
-                  onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="2"
-                  max="50"
-                  value={gridRows}
-                  onChange={(e) => setGridRows(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Columns:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="2"
-                  max="50"
-                  value={gridColumns}
-                  onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="2"
-                  max="50"
-                  value={gridColumns}
-                  onChange={(e) => setGridColumns(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            <SliderRow label="Rows:" value={gridRows} onChange={setGridRows} min="2" max="50" />
+            <SliderRow label="Columns:" value={gridColumns} onChange={setGridColumns} min="2" max="50" />
             {gridMode === 'classic' && (
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] text-white whitespace-nowrap" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation">Cell Angle Step:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="90"
-                    value={gridCellAngleStep}
-                    onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    max="90"
-                    value={gridCellAngleStep}
-                    onChange={(e) => setGridCellAngleStep(Number(e.target.value))}
-                    className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                  />
-                </div>
-              </div>
+              <SliderRow label="Cell Angle Step:" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation" value={gridCellAngleStep} onChange={setGridCellAngleStep} min="0" max="90" />
             )}
           </div>
         )}
@@ -657,13 +574,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Length', value: stackLength, set: setStackLength, min: 0.1, max: 2, step: 0.05 },
               { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -679,13 +590,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Response', value: hatchResponse, set: setHatchResponse, min: 0, max: 1, step: 0.05 },
               { label: 'Speed', value: hatchSpeed, set: setHatchSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -698,13 +603,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
               { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -717,13 +616,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
               { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -743,13 +636,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 min: SHAPE_MIN, max: SHAPE_MAX, step: 0.05,
               }))),
             ].map(({ label, value, set, min, max, step, hint }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string }, i) => (
-              <div key={`${label}-${i}`} className="flex items-center justify-between" title={hint}>
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={`${label}-${i}`} label={`${label}:`} title={hint} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -763,13 +650,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
               { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -781,13 +662,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
               { label: 'Speed', value: metaballSpeed, set: setMetaballSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -799,13 +674,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
               { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -819,13 +688,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
               { label: 'Fade', value: attractorTrailFade, set: setAttractorTrailFade, min: 0.01, max: 0.3, step: 0.01 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -892,13 +755,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
                 ]
             ).map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -911,21 +768,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Complexity', value: tilingComplexity, set: setTilingComplexity, min: 0.5, max: 10, step: 0.5 },
               { label: 'Rotation', value: tilingRotation, set: setTilingRotation, min: 0, max: 360, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white w-20 shrink-0" title="Shifts every other tile row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min={-tilingSize} max={tilingSize} value={tilingRowOffset} onChange={e => setTilingRowOffset(Number(e.target.value))} className="flex-1" />
-                <input type="number" value={tilingRowOffset} onChange={e => setTilingRowOffset(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
+            <SliderRow label="Row Offset:" title="Shifts every other tile row horizontally, like a brick or polka-dot pattern" value={tilingRowOffset} onChange={setTilingRowOffset} min={-tilingSize} max={tilingSize} />
           </div>
         )}
 
@@ -936,13 +781,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Particles', value: fireworksParticleCount, set: setFireworksParticleCount, min: 8, max: 400, step: 1 },
               { label: 'Trail Fade', value: fireworksTrailFade, set: setFireworksTrailFade, min: 0.02, max: 0.5, step: 0.01 },
             ].map(({ label, value, set, min, max, step }) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -954,13 +793,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Jitter', value: lightningJitter, set: setLightningJitter, min: 0.1, max: 1, step: 0.05 },
               { label: 'Branching', value: lightningBranchiness, set: setLightningBranchiness, min: 0, max: 0.85, step: 0.05 },
             ].map(({ label, value, set, min, max, step }) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -973,13 +806,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
               { label: 'Speed', value: reactionDiffusionSpeed, set: setReactionDiffusionSpeed, min: 0.2, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -992,13 +819,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Bands', value: topographicBands, set: setTopographicBands, min: 3, max: 30, step: 1 },
               { label: 'Line Width', value: topographicLineWidth, set: setTopographicLineWidth, min: 0.01, max: 0.15, step: 0.005 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -1014,13 +835,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Zoom', value: juliaZoom, set: setJuliaZoom, min: 0.3, max: 3, step: 0.1 },
               { label: 'Detail', value: juliaIterations, set: setJuliaIterations, min: 20, max: 120, step: 5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <div key={label} className="flex items-center justify-between">
-                <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-                <div className="flex items-center gap-1 flex-1 ml-2">
-                  <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-              </div>
+              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
@@ -1029,69 +844,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'angle' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(angleHardEdge, setAngleHardEdge)}
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Start Angle:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={angleStartOffset}
-                  onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="360"
-                  value={angleStartOffset}
-                  onChange={(e) => setAngleStartOffset(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Center X:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Center Y:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            <SliderRow label="Start Angle:" value={angleStartOffset} onChange={setAngleStartOffset} min="0" max="360" />
+            <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
+            <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
           </div>
         )}
         
@@ -1125,114 +880,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             {shapesMode === 'polygon' ? (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Scale:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="10"
-                      max="300"
-                      value={concentricRingWidth}
-                      onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="10"
-                      max="300"
-                      value={concentricRingWidth}
-                      onChange={(e) => setConcentricRingWidth(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Sides:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={shapesSides}
-                      onChange={(e) => setShapesSides(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={shapesSides}
-                      onChange={(e) => setShapesSides(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Count:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="50"
-                      value={shapesCount}
-                      onChange={(e) => setShapesCount(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="50"
-                      value={shapesCount}
-                      onChange={(e) => setShapesCount(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
+                <SliderRow label="Scale:" value={concentricRingWidth} onChange={setConcentricRingWidth} min="10" max="300" />
+                <SliderRow label="Sides:" value={shapesSides} onChange={setShapesSides} min="1" max="10" />
+                <SliderRow label="Count:" value={shapesCount} onChange={setShapesCount} min="1" max="50" />
               </>
             ) : (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Radials:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="24"
-                      value={polygon2Sides}
-                      onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="24"
-                      value={polygon2Sides}
-                      onChange={(e) => setPolygon2Sides(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Ring Count:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="30"
-                      value={concentricRingCount}
-                      onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={concentricRingCount}
-                      onChange={(e) => setConcentricRingCount(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
+                <SliderRow label="Radials:" value={polygon2Sides} onChange={setPolygon2Sides} min="1" max="24" />
+                <SliderRow label="Ring Count:" value={concentricRingCount} onChange={setConcentricRingCount} min="1" max="30" />
               </>
             )}
           </div>
@@ -1268,139 +923,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             {windmillMode === 'blades' ? (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Rotations:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={windmillRotations}
-                      onChange={(e) => setWindmillRotations(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={windmillRotations}
-                      onChange={(e) => setWindmillRotations(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Tightness:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="20"
-                      value={windmillTightness}
-                      onChange={(e) => setWindmillTightness(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={windmillTightness}
-                      onChange={(e) => setWindmillTightness(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Thickness:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="5"
-                      max="100"
-                      value={windmillThickness}
-                      onChange={(e) => setWindmillThickness(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={windmillThickness}
-                      onChange={(e) => setWindmillThickness(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white whitespace-nowrap" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients">Zoom Response:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={windmillZoomResponse}
-                      onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={windmillZoomResponse}
-                      onChange={(e) => setWindmillZoomResponse(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
+                <SliderRow label="Rotations:" value={windmillRotations} onChange={setWindmillRotations} min="1" max="10" />
+                <SliderRow label="Tightness:" value={windmillTightness} onChange={setWindmillTightness} min="1" max="20" />
+                <SliderRow label="Thickness:" value={windmillThickness} onChange={setWindmillThickness} min="5" max="100" />
+                <SliderRow label="Zoom Response:" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients" value={windmillZoomResponse} onChange={setWindmillZoomResponse} min="0" max="1" step="0.05" />
               </>
             ) : (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Turns:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="1"
-                      max="20"
-                      value={helixTurns}
-                      onChange={(e) => setHelixTurns(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={helixTurns}
-                      onChange={(e) => setHelixTurns(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Tightness:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="2"
-                      step="0.1"
-                      value={helixTightness}
-                      onChange={(e) => setHelixTightness(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="0.1"
-                      max="2"
-                      step="0.1"
-                      value={helixTightness}
-                      onChange={(e) => setHelixTightness(Number(e.target.value))}
-                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
+                <SliderRow label="Turns:" value={helixTurns} onChange={setHelixTurns} min="1" max="20" />
+                <SliderRow label="Tightness:" value={helixTightness} onChange={setHelixTightness} min="0.1" max="2" step="0.1" />
               </>
             )}
           </div>
@@ -1417,69 +948,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 ))}
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={noiseScale}
-                  onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="200"
-                  value={noiseScale}
-                  onChange={(e) => setNoiseScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Detail:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="8"
-                  value={noiseOctaves}
-                  onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={noiseOctaves}
-                  onChange={(e) => setNoiseOctaves(Number(e.target.value))}
-                  className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Direction:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="360" value={noiseDirection} onChange={(e) => setNoiseDirection(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Warp:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0" max="1" step="0.01" value={noiseWarp} onChange={(e) => setNoiseWarp(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.1" max="3" step="0.1" value={noiseSpeed} onChange={(e) => setNoiseSpeed(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="3" step="0.1" value={noiseSpeed} onChange={(e) => setNoiseSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
+            <SliderRow label="Scale:" value={noiseScale} onChange={setNoiseScale} min="10" max="200" />
+            <SliderRow label="Detail:" value={noiseOctaves} onChange={setNoiseOctaves} min="1" max="8" />
+            <SliderRow label="Direction:" value={noiseDirection} onChange={setNoiseDirection} min="0" max="360" />
+            <SliderRow label="Warp:" value={noiseWarp} onChange={setNoiseWarp} min="0" max="1" step="0.01" />
+            <SliderRow label="Speed:" value={noiseSpeed} onChange={setNoiseSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -1488,62 +961,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'radial' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(radialHardEdge, setRadialHardEdge)}
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Center X:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterX}
-                  onChange={(e) => setAngleCenterX(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Center Y:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={angleCenterY}
-                  onChange={(e) => setAngleCenterY(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.25" max="4" step="0.05" value={radialSizeScale} onChange={(e) => setRadialSizeScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Speed:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min="0.1" max="3" step="0.1" value={radialSpeed} onChange={(e) => setRadialSpeed(Number(e.target.value))} className="flex-1" />
-                <input type="number" min="0.1" max="3" step="0.1" value={radialSpeed} onChange={(e) => setRadialSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
+            <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
+            <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
+            <SliderRow label="Scale:" value={radialSizeScale} onChange={setRadialSizeScale} min="0.25" max="4" step="0.05" />
+            <SliderRow label="Speed:" value={radialSpeed} onChange={setRadialSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -1577,100 +998,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             {radialBurstMode === 'burst' ? (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Burst Count:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="3"
-                      max="16"
-                      value={radialBurstCount}
-                      onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="16"
-                      value={radialBurstCount}
-                      onChange={(e) => setRadialBurstCount(Number(e.target.value))}
-                      className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Spread:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      value={radialBurstSpread}
-                      onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="10"
-                      max="100"
-                      value={radialBurstSpread}
-                      onChange={(e) => setRadialBurstSpread(Number(e.target.value))}
-                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Size:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="10"
-                      max="200"
-                      value={radialBurstSize}
-                      onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="10"
-                      max="200"
-                      value={radialBurstSize}
-                      onChange={(e) => setRadialBurstSize(Number(e.target.value))}
-                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
+                <SliderRow label="Burst Count:" value={radialBurstCount} onChange={setRadialBurstCount} min="3" max="16" />
+                <SliderRow label="Spread:" value={radialBurstSpread} onChange={setRadialBurstSpread} min="10" max="100" />
+                <SliderRow label="Size:" value={radialBurstSize} onChange={setRadialBurstSize} min="10" max="200" />
               </>
             ) : (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Fade Length:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input
-                      type="range"
-                      min="10"
-                      max="180"
-                      value={radarFadeLength}
-                      onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="number"
-                      min="10"
-                      max="180"
-                      value={radarFadeLength}
-                      onChange={(e) => setRadarFadeLength(Number(e.target.value))}
-                      className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-white">Beam Width:</label>
-                  <div className="flex items-center gap-1 flex-1 ml-2">
-                    <input type="range" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="1" max="90" value={radarBeamWidth} onChange={(e) => setRadarBeamWidth(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                </div>
+                <SliderRow label="Fade Length:" value={radarFadeLength} onChange={setRadarFadeLength} min="10" max="180" />
+                <SliderRow label="Beam Width:" value={radarBeamWidth} onChange={setRadarBeamWidth} min="1" max="90" />
               </>
             )}
           </div>
@@ -1679,167 +1014,19 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Cell Count:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="3"
-                  max="30"
-                  value={voronoiCellCount}
-                  onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                  className="flex-1"
-                />
-                      <input
-                        type="number"
-                        min="3"
-                        max="30"
-                        value={voronoiCellCount}
-                        onChange={(e) => setVoronoiCellCount(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Distortion:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={voronoiDistortion}
-                  onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={voronoiDistortion}
-                  onChange={(e) => setVoronoiDistortion(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            <SliderRow label="Cell Count:" value={voronoiCellCount} onChange={setVoronoiCellCount} min="3" max="30" />
+            <SliderRow label="Distortion:" value={voronoiDistortion} onChange={setVoronoiDistortion} min="0" max="100" />
           </div>
         )}
 
         {/* Flower Controls */}
         {gradientType === 'flower' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Circles:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="12"
-                  value={flowerCircles}
-                  onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={flowerCircles}
-                  onChange={(e) => setFlowerCircles(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Scale:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={flowerScale}
-                  onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={flowerScale}
-                  onChange={(e) => setFlowerScale(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Spread:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.3"
-                  max="2.5"
-                  step="0.05"
-                  value={flowerSpread}
-                  onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.3"
-                  max="2.5"
-                  step="0.05"
-                  value={flowerSpread}
-                  onChange={(e) => setFlowerSpread(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white whitespace-nowrap" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices">Symmetry:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="3"
-                  max="12"
-                  step="1"
-                  value={flowerSymmetry}
-                  onChange={(e) => setFlowerSymmetry(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="3"
-                  max="12"
-                  step="1"
-                  value={flowerSymmetry}
-                  onChange={(e) => setFlowerSymmetry(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Opacity:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input
-                  type="range"
-                  min="0.2"
-                  max="1.5"
-                  step="0.05"
-                  value={flowerOpacity}
-                  onChange={(e) => setFlowerOpacity(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min="0.2"
-                  max="1.5"
-                  step="0.05"
-                  value={flowerOpacity}
-                  onChange={(e) => setFlowerOpacity(Number(e.target.value))}
-                  className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                />
-              </div>
-            </div>
+            <SliderRow label="Circles:" value={flowerCircles} onChange={setFlowerCircles} min="1" max="12" />
+            <SliderRow label="Scale:" value={flowerScale} onChange={setFlowerScale} min="0.1" max="3" step="0.1" />
+            <SliderRow label="Spread:" value={flowerSpread} onChange={setFlowerSpread} min="0.3" max="2.5" step="0.05" />
+            <SliderRow label="Symmetry:" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices" value={flowerSymmetry} onChange={setFlowerSymmetry} min="3" max="12" step="1" />
+            <SliderRow label="Opacity:" value={flowerOpacity} onChange={setFlowerOpacity} min="0.2" max="1.5" step="0.05" />
           </div>
         )}
 

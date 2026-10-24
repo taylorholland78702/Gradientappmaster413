@@ -3,6 +3,7 @@ import { type ColorRGB } from '../constants/gradientEffects';
 import {
   type ColorBlend, DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
 } from '../utils/color';
+import { SliderRow } from './SliderRow';
 
 // How close two neighboring stops may get — stops must stay in order (the
 // shader and CPU lookups walk them left to right), and a sliver of space keeps
@@ -101,13 +102,11 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
     `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`;
 
   const sliderRow = (label: string, value: number, set: (v: number) => void, hint: string) => (
-    <div className="flex items-center justify-between" title={hint}>
-      <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-      <div className="flex items-center gap-1 flex-1 ml-2">
-        <input type="range" min="0" max="1" step="0.01" value={value} onChange={(e) => set(Number(e.target.value))} className="flex-1" />
-        <input type="number" min="0" max="1" step="0.01" value={value} onChange={(e) => set(clamp(Number(e.target.value) || 0, 0, 1))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-      </div>
-    </div>
+    <SliderRow
+      label={`${label}:`} title={hint} value={value} onChange={set}
+      onNumberChange={(v) => set(clamp(v || 0, 0, 1))}
+      min="0" max="1" step="0.01"
+    />
   );
 
   return (

@@ -6,6 +6,7 @@ import { PALETTE_GROUPS, type PalettePreset } from '../constants/palettePresets'
 import { WAV_MOODS } from '../constants/gradientEffects';
 import { extractPalette } from '../utils/extractPalette';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
+import { SliderRow } from './SliderRow';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
 // swatch row from growing unboundedly if someone just holds down +.
@@ -350,13 +351,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         </div>
         <div className="flex flex-col gap-2">
           {adjustRows.map(({ label, value, set, min, max }) => (
-            <div key={label} className="flex items-center justify-between">
-              <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <input type="range" min={min} max={max} value={value} onChange={(e) => set(Number(e.target.value))} className="flex-1" />
-                <input type="number" min={min} max={max} value={value} onChange={(e) => set(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-              </div>
-            </div>
+            <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} />
           ))}
         </div>
       </section>

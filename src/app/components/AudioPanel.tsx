@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CaretDown, Plus, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, Trash, Check } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
+import { SliderRow } from './SliderRow';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
@@ -561,11 +562,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 which now force both true regardless of what a saved
                 snapshot/preset says). */}
 
-            <div className="flex items-center gap-1">
-              <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-              <input type="range" min="0" max="10" step="0.1" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="flex-1" />
-              <input type="number" min="0" max="10" step="0.1" value={masterSensitivity} onChange={(e) => setMasterSensitivity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-            </div>
+            <SliderRow label="Intensity:" value={masterSensitivity} onChange={setMasterSensitivity} min="0" max="10" step="0.1" />
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
