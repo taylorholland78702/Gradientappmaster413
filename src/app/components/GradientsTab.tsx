@@ -49,6 +49,7 @@ export interface GradientsTabProps {
   stackWidth: number; setStackWidth: (v: number) => void;
   stackLength: number; setStackLength: (v: number) => void;
   stackResponse: number; setStackResponse: (v: number) => void;
+  stackSpeed: number; setStackSpeed: (v: number) => void;
 
   // Hatch
   hatchLayers: number; setHatchLayers: (v: number) => void;
@@ -59,6 +60,7 @@ export interface GradientsTabProps {
   // Caustics
   causticsBrightness: number; setCausticsBrightness: (v: number) => void;
   causticsScale: number; setCausticsScale: (v: number) => void;
+  causticsSpeed: number; setCausticsSpeed: (v: number) => void;
 
   // Lava Lamp
   lavaBlobCount: number; setLavaBlobCount: (v: number) => void;
@@ -69,6 +71,7 @@ export interface GradientsTabProps {
   marbleVeinFreq: number; setMarbleVeinFreq: (v: number) => void;
   marbleTurbulence: number; setMarbleTurbulence: (v: number) => void;
   marbleOctaves: number; setMarbleOctaves: (v: number) => void;
+  marbleSpeed: number; setMarbleSpeed: (v: number) => void;
 
   // Metaballs
   metaballCount: number; setMetaballCount: (v: number) => void;
@@ -79,6 +82,7 @@ export interface GradientsTabProps {
   truchetSize: number; setTruchetSize: (v: number) => void;
   truchetVariation: number; setTruchetVariation: (v: number) => void;
   truchetThickness: number; setTruchetThickness: (v: number) => void;
+  truchetSpeed: number; setTruchetSpeed: (v: number) => void;
 
 
   // Flow Field
@@ -169,6 +173,7 @@ export interface GradientsTabProps {
   juliaImaginary: number; setJuliaImaginary: (v: number) => void;
   juliaZoom: number; setJuliaZoom: (v: number) => void;
   juliaIterations: number; setJuliaIterations: (v: number) => void;
+  juliaSpeed: number; setJuliaSpeed: (v: number) => void;
 
   // Angle / Radial
   angleStartOffset: number; setAngleStartOffset: (v: number) => void;
@@ -184,6 +189,7 @@ export interface GradientsTabProps {
   shapesSides: number; setShapesSides: (v: number) => void;
   shapesMode: 'polygon' | 'polar-grid'; setShapesMode: (v: 'polygon' | 'polar-grid') => void;
   shapesCount: number; setShapesCount: (v: number) => void;
+  shapesSpeed: number; setShapesSpeed: (v: number) => void;
 
   // Windmill (spiral)
   windmillTightness: number; setWindmillTightness: (v: number) => void;
@@ -225,6 +231,7 @@ export interface GradientsTabProps {
   flowerSpread: number; setFlowerSpread: (v: number) => void;
   flowerSymmetry: number; setFlowerSymmetry: (v: number) => void;
   flowerOpacity: number; setFlowerOpacity: (v: number) => void;
+  flowerSpeed: number; setFlowerSpeed: (v: number) => void;
 
   // Helix (conical spiral)
   helixTurns: number; setHelixTurns: (v: number) => void;
@@ -239,13 +246,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse,
+    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed,
     hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchSpeed, setHatchSpeed,
-    causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale,
+    causticsBrightness, setCausticsBrightness, causticsScale, causticsSpeed, setCausticsScale, setCausticsSpeed,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
-    marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves,
+    marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, marbleSpeed, setMarbleOctaves, setMarbleSpeed,
     metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed,
-    truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness,
+    truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, truchetSpeed, setTruchetThickness, setTruchetSpeed,
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness,
     attractorPointCount, setAttractorPointCount, attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
     attractorTrailFade, setAttractorTrailFade,
@@ -260,10 +267,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
-    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
+    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, juliaSpeed, setJuliaIterations, setJuliaSpeed,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
     radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, radialSpeed, setRadialSpeed,
-    concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, setShapesCount, shapesMode, setShapesMode,
+    concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides, shapesCount, shapesSpeed, setShapesCount, setShapesSpeed, shapesMode, setShapesMode,
     windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness,
     windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode,
     drawParamsDirtyRef,
@@ -274,7 +281,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     fadeDirection, setFadeDirection,
     
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
-    flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity,
+    flowerSymmetry, setFlowerSymmetry, flowerOpacity, flowerSpeed, setFlowerOpacity, setFlowerSpeed,
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
@@ -479,10 +486,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
               { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
               { label: 'Length', value: stackLength, set: setStackLength, min: 0.1, max: 2, step: 0.05 },
-              { label: 'Response', value: stackResponse, set: setStackResponse, min: 0, max: 1, step: 0.05 },
+              { label: 'Response', value: stackResponse, stackSpeed, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
+            <SliderRow label="Speed:" value={stackSpeed} onChange={setStackSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -508,10 +516,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {renderFieldMappingRows()}
             {[
               { label: 'Brightness', value: causticsBrightness, set: setCausticsBrightness, min: 0.5, max: 5, step: 0.1 },
-              { label: 'Scale', value: causticsScale, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
+              { label: 'Scale', value: causticsScale, causticsSpeed, set: setCausticsScale, min: 1, max: 12, step: 0.5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
+            <SliderRow label="Speed:" value={causticsSpeed} onChange={setCausticsSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -555,10 +564,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Vein Freq', value: marbleVeinFreq, set: setMarbleVeinFreq, min: 0.5, max: 10, step: 0.5 },
               { label: 'Turbulence', value: marbleTurbulence, set: setMarbleTurbulence, min: 0, max: 5, step: 0.1 },
-              { label: 'Detail', value: marbleOctaves, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
+              { label: 'Detail', value: marbleOctaves, marbleSpeed, set: setMarbleOctaves, min: 1, max: 8, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
+            <SliderRow label="Speed:" value={marbleSpeed} onChange={setMarbleSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -579,10 +589,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Tile Size', value: truchetSize, set: setTruchetSize, min: 15, max: 100, step: 5 },
               { label: 'Variation', value: truchetVariation, set: setTruchetVariation, min: 0, max: 1, step: 0.05 },
-              { label: 'Thickness', value: truchetThickness, set: setTruchetThickness, min: 1, max: 15, step: 1 },
+              { label: 'Thickness', value: truchetThickness, truchetSpeed, set: setTruchetThickness, min: 1, max: 15, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
+            <SliderRow label="Speed:" value={truchetSpeed} onChange={setTruchetSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -734,10 +745,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
               { label: 'Imag (c)', value: juliaImaginary, set: setJuliaImaginary, min: -1, max: 1, step: 0.01 },
               { label: 'Zoom', value: juliaZoom, set: setJuliaZoom, min: 0.3, max: 3, step: 0.1 },
-              { label: 'Detail', value: juliaIterations, set: setJuliaIterations, min: 20, max: 120, step: 5 },
+              { label: 'Detail', value: juliaIterations, juliaSpeed, set: setJuliaIterations, min: 20, max: 120, step: 5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
+            <SliderRow label="Speed:" value={juliaSpeed} onChange={setJuliaSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -787,6 +799,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <SliderRow label="Ring Count:" value={concentricRingCount} onChange={setConcentricRingCount} min="1" max="30" />
               </>
             )}
+            <SliderRow label="Speed:" value={shapesSpeed} onChange={setShapesSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -887,6 +900,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             <SliderRow label="Spread:" value={flowerSpread} onChange={setFlowerSpread} min="0.3" max="2.5" step="0.05" />
             <SliderRow label="Symmetry:" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices" value={flowerSymmetry} onChange={setFlowerSymmetry} min="3" max="12" step="1" />
             <SliderRow label="Opacity:" value={flowerOpacity} onChange={setFlowerOpacity} min="0.2" max="1.5" step="0.05" />
+            <SliderRow label="Speed:" value={flowerSpeed} onChange={setFlowerSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 

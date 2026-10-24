@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 export function useShapesState() {
   const [shapesSides, setShapesSides] = useState(4);
   const [shapesCount, setShapesCount] = useState(8);
+  const [shapesSpeed, setShapesSpeed] = useState(1);
   // 'polygon' is the classic concentric-shapes look (shapesSides/shapesCount/
   // concentricRingWidth); 'polar-grid' folds in the former standalone Polar
   // Grid gradient — circular rings each subdivided into angular sectors
@@ -15,6 +16,8 @@ export function useShapesState() {
     setShapesSides,
     shapesCount,
     setShapesCount,
+    shapesSpeed,
+    setShapesSpeed,
     shapesMode,
     setShapesMode,
   };

@@ -16,13 +16,13 @@ import type { GradientType } from './gradientEffects';
 // (InteractiveGradient.tsx); numeric ones are range-checked in tests against the
 // same limits as the sliders themselves.
 export const LOOK_PARAM_KEYS = [
-  'causticsBrightness', 'causticsScale',
+  'causticsBrightness', 'causticsScale', 'causticsSpeed',
   'lavaBlobCount', 'lavaBlobSize', 'lavaSpeed',
-  'marbleVeinFreq', 'marbleTurbulence', 'marbleOctaves',
+  'marbleVeinFreq', 'marbleTurbulence', 'marbleOctaves', 'marbleSpeed',
   'metaballCount', 'metaballSize', 'metaballSpeed',
   'noiseScale', 'noiseOctaves', 'noiseWarp', 'noiseSpeed', 'noiseType',
   'topographicScale', 'topographicBands', 'topographicLineWidth',
-  'juliaReal', 'juliaImaginary', 'juliaZoom', 'juliaIterations',
+  'juliaReal', 'juliaImaginary', 'juliaZoom', 'juliaIterations', 'juliaSpeed',
   'tilingSize', 'tilingSymmetry', 'tilingComplexity', 'tilingRotation',
   'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
   'voronoiCellCount', 'voronoiDistortion', 'voronoiSpeed',
@@ -31,10 +31,10 @@ export const LOOK_PARAM_KEYS = [
   'windmillMode', 'helixTurns', 'helixTightness',
   'fadeDirection', 'angleStartOffset',
   'flowerCircles', 'flowerScale', 'flowerSpread',
-  'gridRows', 'gridColumns', 'shapesCount', 'shapesSides',
-  'stackCount', 'stackGap', 'stackWidth', 'stackLength', 'stackResponse',
+  'gridRows', 'gridColumns', 'shapesCount', 'shapesSpeed', 'shapesSides',
+  'stackCount', 'stackGap', 'stackWidth', 'stackLength', 'stackResponse', 'stackSpeed',
   'hatchLayers', 'hatchSpacing', 'hatchResponse', 'hatchSpeed',
-  'truchetSize', 'truchetVariation', 'truchetThickness',
+  'truchetSize', 'truchetVariation', 'truchetThickness', 'truchetSpeed',
   'particlesCount', 'particlesSize', 'particlesSpeed', 'particlesTrail', 'particlesGravity',
   'attractorPointCount', 'attractorSpeed', 'attractorScale',
 ] as const;

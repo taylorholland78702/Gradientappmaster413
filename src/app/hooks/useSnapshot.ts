@@ -10,7 +10,7 @@ export function useSnapshot(params: SnapshotParams) {
     asciiSize, auroraBandCount, auroraBandHeight, auroraWaveSpeed, autoGainEnabled, depthLayerEnabled, depthLayerStrength, baseAIColors,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
-    blurType, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
+    blurType, causticsBrightness, causticsScale, causticsSpeed, chromaticAngle, chromaticOffset,
     chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
     concentricRingCount, concentricRingWidth,
@@ -37,7 +37,7 @@ export function useSnapshot(params: SnapshotParams) {
     lightningBoltCount, lightningJitter, lightningBranchiness,
     reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
     topographicScale, topographicBands, topographicLineWidth,
-    juliaReal, juliaImaginary, juliaZoom, juliaIterations, flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity,
+    juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaSpeed, flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity, flowerSpeed,
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity, grainSize,
     gessoWhiteness, gessoTexture, gessoResponse,
     grainType, gridCellAngleStep, gridColumns, gridHardEdge, setGridHardEdge, gridRotation, gridRows, gridShapeSize, gridSides,
@@ -45,7 +45,7 @@ export function useSnapshot(params: SnapshotParams) {
     hexGridSize, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
     linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength, crtIntensity, crtScanlineSpacing,
-    marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
+    marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount,
     noiseDirection, noiseOctaves, noiseScale, noiseType,
@@ -59,7 +59,7 @@ export function useSnapshot(params: SnapshotParams) {
     setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax,
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
-    setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
+    setCausticsScale, setCausticsSpeed, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
@@ -81,8 +81,8 @@ export function useSnapshot(params: SnapshotParams) {
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
-    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
-    setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity,
+    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations, setJuliaSpeed,
+    setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed,
     setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
     setGridCellAngleStep, setGridColumns,
@@ -90,7 +90,7 @@ export function useSnapshot(params: SnapshotParams) {
     setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
-    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleTurbulence,
+    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
     setMidsThreshold, setMirrorMode, setMirrorTileCount,
@@ -99,23 +99,23 @@ export function useSnapshot(params: SnapshotParams) {
     setPolygon2Sides, setPosterizeLevels, 
     setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier,
     setSepiaIntensity,
-    setShakeBeatEnabled, setShapesCount, setShapesSides, setShapesMode, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold,
+    setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesSides, setShapesMode, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold,
     setTurrellAnimTime, setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
+    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setStackSpeed,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchAnimTime, setHatchSpeed,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize,
-    setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength,
+    setTruchetThickness, setTruchetSpeed, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionRotation, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, shapesMode, slitScanDirection, slitScanIntensity, slitScanHistory, solarizeThreshold, windmillRotations,
+    shapesCount, shapesSpeed, shapesSides, shapesMode, slitScanDirection, slitScanIntensity, slitScanHistory, solarizeThreshold, windmillRotations,
     turrellAnimTime, turrellSpeed, turrellGlow,
-    stackCount, stackGap, stackWidth, stackLength, stackResponse,
+    stackCount, stackGap, stackWidth, stackLength, stackResponse, stackSpeed,
     hatchLayers, hatchSpacing, hatchResponse, hatchAnimTime, hatchSpeed,
     windmillThickness, windmillTightness, windmillZoom, windmillZoomResponse, windmillMode, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
-    trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness,
+    trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness, truchetSpeed,
     truchetVariation, twistAmount, vhsGlitchIntensity, vhsJitterAmount, vignetteSoftness, vignetteStrength, voronoiCellCount,
     voronoiDistortion, voronoiSpeed, waveDistortionRotation, waveDistortionStrength,
     zoom, zoomBeatEnabled,
@@ -129,7 +129,7 @@ export function useSnapshot(params: SnapshotParams) {
   // since a missing key never lands in `params` at all.
   if (import.meta.env.DEV) {
     const setters: Record<string, unknown> = {
-      setActiveEffects, setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAngleHardEdge, setGridHardEdge, setRadialHardEdge, setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain, setWatercolorStyle, setDadaPanels, setDadaChaos, setAsciiChars, setAsciiColor, setAsciiSize, setAttractorDotSize, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorTrailFade, setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides, setParticlesMode, setMarksCount, setMarksSize, setMarksDecay, setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset, setWaveInterferenceAnimTime, setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed, setMeshWireframeAnimTime, setVoronoiAnimTime, setFlowerAnimTime, setAuroraAnimTime, setCausticsAnimTime, setLavaAnimTime, setMarbleAnimTime, setMetaballAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime, setTilingAnimTime, setMeshWireframeGridSize, setMeshWireframeJitter, setMeshWireframeLineWidth, setFireworksCount, setFireworksParticleCount, setFireworksTrailFade, setLightningBoltCount, setLightningJitter, setLightningBranchiness, setAudioBindings, setAuroraBandCount, setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax, setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast, setConcentricRingCount, setConcentricRingWidth, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale, setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX, setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom, setFieldContrast, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity, setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGrainSize, setGessoWhiteness, setGessoTexture, setGessoResponse, setGridCellAngleStep, setGridColumns, setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK, setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHelixTightness, setHelixTurns, setHexGridSize, setInvertAmount, setIsAudioEnabled, setIsAudioReactive, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount, setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing, setMidsThreshold, setMirrorMode, setMirrorTileCount, setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setNoiseAnimTime, setNoiseSpeed, setRadialAnimTime, setRadialSpeed, setPaletteBands, setPaletteBeatEnabled, setPaletteMode, setColorBlend, setFieldScale, setFieldSpeed, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp, setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPolygon2Sides, setPosterizeLevels, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setResolutionMultiplier, setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSides, setShapesMode, setFadeMode, setTurrellAnimTime, setTurrellSpeed, setTurrellGlow, setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setHatchLayers, setHatchSpacing, setHatchResponse, setHatchAnimTime, setHatchSpeed, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold, setStructuralSeed, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTrebleBeatSync, setTrebleMax, setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength, setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionRotation, setWaveDistortionStrength, setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setZoom, setZoomBeatEnabled,
+      setActiveEffects, setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAngleHardEdge, setGridHardEdge, setRadialHardEdge, setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain, setWatercolorStyle, setDadaPanels, setDadaChaos, setAsciiChars, setAsciiColor, setAsciiSize, setAttractorDotSize, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorTrailFade, setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides, setParticlesMode, setMarksCount, setMarksSize, setMarksDecay, setTilingSize, setTilingSymmetry, setTilingComplexity, setTilingRotation, setTilingRowOffset, setWaveInterferenceAnimTime, setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed, setMeshWireframeAnimTime, setVoronoiAnimTime, setFlowerAnimTime, setAuroraAnimTime, setCausticsAnimTime, setLavaAnimTime, setMarbleAnimTime, setMetaballAnimTime, setFlowAnimTime, setLiquidAnimTime, setEmojiAnimTime, setAttractorAnimTime, setTilingAnimTime, setMeshWireframeGridSize, setMeshWireframeJitter, setMeshWireframeLineWidth, setFireworksCount, setFireworksParticleCount, setFireworksTrailFade, setLightningBoltCount, setLightningJitter, setLightningBranchiness, setAudioBindings, setAuroraBandCount, setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBaseAIColors, setBassBeatSync, setBassMax, setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast, setConcentricRingCount, setConcentricRingWidth, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale, setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX, setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom, setFieldContrast, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed, setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity, setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGrainSize, setGessoWhiteness, setGessoTexture, setGessoResponse, setGridCellAngleStep, setGridColumns, setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneCMYK, setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHelixTightness, setHelixTurns, setHexGridSize, setInvertAmount, setIsAudioEnabled, setIsAudioReactive, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount, setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing, setMidsThreshold, setMirrorMode, setMirrorTileCount, setNoiseDirection, setNoiseOctaves, setNoiseScale, setNoiseType, setNoiseWarp, setNoiseAnimTime, setNoiseSpeed, setRadialAnimTime, setRadialSpeed, setPaletteBands, setPaletteBeatEnabled, setPaletteMode, setColorBlend, setFieldScale, setFieldSpeed, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp, setPhotoBlendMode, setPhotoOpacity, setPinchStrength, setPixelSize, setPolygon2Sides, setPosterizeLevels, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setResolutionMultiplier, setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesSides, setShapesMode, setFadeMode, setTurrellAnimTime, setTurrellSpeed, setTurrellGlow, setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setStackSpeed, setHatchLayers, setHatchSpacing, setHatchResponse, setHatchAnimTime, setHatchSpeed, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold, setStructuralSeed, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTrebleBeatSync, setTrebleMax, setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength, setVoronoiCellCount, setVoronoiDistortion, setWaveDistortionRotation, setWaveDistortionStrength, setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setZoom, setZoomBeatEnabled,
     };
     for (const name in setters) {
       if (typeof setters[name] !== 'function') {
@@ -207,7 +207,7 @@ export function useSnapshot(params: SnapshotParams) {
       windmillZoomResponse,
       windmillMode,
       shapesSides,
-      shapesCount,
+      shapesCount, shapesSpeed,
       shapesMode,
       turrellAnimTime,
       turrellSpeed,
@@ -216,7 +216,7 @@ export function useSnapshot(params: SnapshotParams) {
       stackGap,
       stackWidth,
       stackLength,
-      stackResponse,
+      stackResponse, stackSpeed,
       hatchLayers,
       hatchSpacing,
       hatchResponse,
@@ -251,7 +251,7 @@ export function useSnapshot(params: SnapshotParams) {
       photoBlendMode, photoOpacity,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
-      causticsBrightness, causticsScale,
+      causticsBrightness, causticsScale, causticsSpeed,
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType, ditherScale,
       oilPaintRadius, oilPaintLevels,
@@ -276,8 +276,8 @@ export function useSnapshot(params: SnapshotParams) {
       lightningBoltCount, lightningJitter, lightningBranchiness,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
-      juliaReal, juliaImaginary, juliaZoom, juliaIterations,
-      flowerCircles, flowerRotation, flowerScale, flowerSpread, flowerSymmetry, flowerOpacity,
+      juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaSpeed,
+      flowerCircles, flowerRotation, flowerScale, flowerSpread, flowerSymmetry, flowerOpacity, flowerSpeed,
       grainType,
       gridShapeSize, gridVariation,
       halftoneCMYK,
@@ -292,7 +292,7 @@ export function useSnapshot(params: SnapshotParams) {
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
       liquidScale, liquidStrength, crtIntensity, crtScanlineSpacing,
-      marbleOctaves, marbleTurbulence, marbleVeinFreq,
+      marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
       mirrorMode, mirrorTileCount,
       noiseType, noiseWarp,
@@ -302,7 +302,7 @@ export function useSnapshot(params: SnapshotParams) {
       radialHardEdge,
       radialAnimTime, radialSpeed,
       slitScanDirection, slitScanIntensity, slitScanHistory,
-      truchetSize, truchetThickness, truchetVariation,
+      truchetSize, truchetThickness, truchetSpeed, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion, voronoiSpeed,
       waveDistortionRotation,
@@ -317,7 +317,7 @@ export function useSnapshot(params: SnapshotParams) {
       sepiaIntensity, solarizeThreshold, gridSides, gridRows, gridColumns,
       duotoneColor3, duotoneThreeColor, vhsGlitchIntensity, vhsJitterAmount,
       polygon2Sides, waveDistortionStrength,
-      windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesMode, turrellAnimTime, turrellSpeed, turrellGlow, stackCount, stackGap, stackWidth, stackLength, stackResponse, hatchLayers, hatchSpacing, hatchResponse, hatchAnimTime, hatchSpeed, concentricRingWidth, concentricRingCount,
+      windmillTightness, windmillRotations, windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesSpeed, shapesMode, turrellAnimTime, turrellSpeed, turrellGlow, stackCount, stackGap, stackWidth, stackLength, stackResponse, stackSpeed, hatchLayers, hatchSpacing, hatchResponse, hatchAnimTime, hatchSpeed, concentricRingWidth, concentricRingCount,
       noiseScale, noiseOctaves, noiseDirection,
       radialBurstCount, radialBurstSpread, radialBurstSize,
       helixTurns, helixTightness, gridRotation, gridCellAngleStep, gridHardEdge,
@@ -328,7 +328,7 @@ export function useSnapshot(params: SnapshotParams) {
       photoBlendMode, photoOpacity,
       auroraBandCount, auroraBandHeight, auroraWaveSpeed,
       bloomIntensity, bloomRadius,
-      causticsBrightness, causticsScale,
+      causticsBrightness, causticsScale, causticsSpeed,
       chromaticAngle, chromaticTrailsDecay, chromaticTrailsOffset,
       ditherLevels, ditherType, ditherScale,
       oilPaintRadius, oilPaintLevels,
@@ -353,8 +353,8 @@ export function useSnapshot(params: SnapshotParams) {
       lightningBoltCount, lightningJitter, lightningBranchiness,
       reactionDiffusionFeed, reactionDiffusionKill, reactionDiffusionSpeed,
       topographicScale, topographicBands, topographicLineWidth,
-      juliaReal, juliaImaginary, juliaZoom, juliaIterations,
-      flowerCircles, flowerRotation, flowerScale, flowerSpread, flowerSymmetry, flowerOpacity,
+      juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaSpeed,
+      flowerCircles, flowerRotation, flowerScale, flowerSpread, flowerSymmetry, flowerOpacity, flowerSpeed,
       grainType,
       gridShapeSize, gridVariation,
       halftoneCMYK,
@@ -369,14 +369,14 @@ export function useSnapshot(params: SnapshotParams) {
       kaleidoscopeRotateSpeed,
       lavaBlobCount, lavaBlobSize, lavaSpeed,
       liquidScale, liquidStrength, crtIntensity, crtScanlineSpacing,
-      marbleOctaves, marbleTurbulence, marbleVeinFreq,
+      marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq,
       metaballCount, metaballSize, metaballSpeed,
       mirrorMode, mirrorTileCount,
       noiseType, noiseWarp, noiseAnimTime, noiseSpeed,
       
       radialSizeScale, radialHardEdge, radialAnimTime, radialSpeed,
       slitScanDirection, slitScanIntensity, slitScanHistory,
-      truchetSize, truchetThickness, truchetVariation,
+      truchetSize, truchetThickness, truchetSpeed, truchetVariation,
       vignetteSoftness,
       voronoiCellCount, voronoiDistortion, voronoiSpeed,
       waveDistortionRotation]);
@@ -461,6 +461,7 @@ export function useSnapshot(params: SnapshotParams) {
     setWindmillMode(snapshot.windmillMode ?? 'blades');
     setShapesSides(snapshot.shapesSides ?? 4);
     setShapesCount(snapshot.shapesCount ?? 8);
+    setShapesSpeed(snapshot.shapesSpeed ?? 1);
     setShapesMode(snapshot.shapesMode ?? 'polygon');
     setTurrellAnimTime(snapshot.turrellAnimTime ?? 0);
     setTurrellSpeed(snapshot.turrellSpeed ?? 1);
@@ -470,6 +471,7 @@ export function useSnapshot(params: SnapshotParams) {
     setStackWidth(snapshot.stackWidth ?? 1);
     setStackLength(snapshot.stackLength ?? 1);
     setStackResponse(snapshot.stackResponse ?? 0.6);
+    setStackSpeed(snapshot.stackSpeed ?? 1);
     setHatchLayers(snapshot.hatchLayers ?? 3);
     setHatchSpacing(snapshot.hatchSpacing ?? 14);
     setHatchResponse(snapshot.hatchResponse ?? 0.5);
@@ -518,6 +520,7 @@ export function useSnapshot(params: SnapshotParams) {
     setBloomRadius(snapshot.bloomRadius ?? 12);
     setCausticsBrightness(snapshot.causticsBrightness ?? 1.5);
     setCausticsScale(snapshot.causticsScale ?? 5);
+    setCausticsSpeed(snapshot.causticsSpeed ?? 1);
     setChromaticAngle(snapshot.chromaticAngle ?? 0);
     setChromaticTrailsDecay(snapshot.chromaticTrailsDecay ?? 0.85);
     setChromaticTrailsOffset(snapshot.chromaticTrailsOffset ?? 8);
@@ -624,10 +627,12 @@ export function useSnapshot(params: SnapshotParams) {
     setJuliaImaginary(snapshot.juliaImaginary ?? 0.27);
     setJuliaZoom(snapshot.juliaZoom ?? 1);
     setJuliaIterations(snapshot.juliaIterations ?? 60);
+    setJuliaSpeed(snapshot.juliaSpeed ?? 1);
     setFlowerCircles(snapshot.flowerCircles ?? 3);
     setFlowerRotation(snapshot.flowerRotation ?? 0);
     setFlowerSymmetry(snapshot.flowerSymmetry ?? 6);
     setFlowerOpacity(snapshot.flowerOpacity ?? 1);
+    setFlowerSpeed(snapshot.flowerSpeed ?? 1);
     setFlowerScale(snapshot.flowerScale ?? 0.8);
     setFlowerSpread(snapshot.flowerSpread ?? 0.6);
     setGrainType(snapshot.grainType ?? 'medium');
@@ -679,6 +684,7 @@ export function useSnapshot(params: SnapshotParams) {
     setCrtIntensity(snapshot.crtIntensity ?? 0.6);
     setCrtScanlineSpacing(snapshot.crtScanlineSpacing ?? 2);
     setMarbleOctaves(snapshot.marbleOctaves ?? 5);
+    setMarbleSpeed(snapshot.marbleSpeed ?? 1);
     setMarbleTurbulence(snapshot.marbleTurbulence ?? 1.5);
     setMarbleVeinFreq(snapshot.marbleVeinFreq ?? 2);
     setMetaballCount(snapshot.metaballCount ?? 6);
@@ -699,6 +705,7 @@ export function useSnapshot(params: SnapshotParams) {
     setSlitScanHistory(snapshot.slitScanHistory ?? 60);
     setTruchetSize(snapshot.truchetSize ?? 40);
     setTruchetThickness(snapshot.truchetThickness ?? 4);
+    setTruchetSpeed(snapshot.truchetSpeed ?? 1);
     setTruchetVariation(snapshot.truchetVariation ?? 0.5);
     setVignetteSoftness(snapshot.vignetteSoftness ?? 50);
     setVoronoiCellCount(snapshot.voronoiCellCount ?? 19);

@@ -5,6 +5,7 @@ export function useJuliaState() {
   const [juliaImaginary, setJuliaImaginary] = useState(0.27);
   const [juliaZoom, setJuliaZoom] = useState(1);
   const [juliaIterations, setJuliaIterations] = useState(60);
+  const [juliaSpeed, setJuliaSpeed] = useState(1);
   const juliaCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   return {
@@ -16,6 +17,8 @@ export function useJuliaState() {
     setJuliaZoom,
     juliaIterations,
     setJuliaIterations,
+    juliaSpeed,
+    setJuliaSpeed,
     juliaCanvasRef,
   };
 }
