@@ -30,7 +30,7 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
   julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
   metaballs: ['Metaballs'],
-  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst', 'Radar'],
+  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], windmill: ['Windmill', 'Helix'],
   stack: ['Stack'], hatch: ['Hatch'],
@@ -140,7 +140,7 @@ export function useRandomization(params: RandomizationParams) {
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
-    setPolygon2Sides, setPosterizeLevels, setRadarBeamWidth, setRadarFadeLength, setRadialBurstCount,
+    setPolygon2Sides, setPosterizeLevels, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
@@ -165,7 +165,7 @@ export function useRandomization(params: RandomizationParams) {
     // stray sliders that had real UI controls but no shuffle path ever
     // touched them, either because they were never destructured here at
     // all or (structuralSeed) only ever got rerolled by a big audio hit.
-    setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, setRadialBurstMode,
+    setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, 
     setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
     setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
     setTriangulateVariation, setEmojiOffsetX,
@@ -174,7 +174,6 @@ export function useRandomization(params: RandomizationParams) {
   const randomizeUncoveredParams = useCallback(() => {
     // Previously-partial gradient types
     setRadialBurstSize(Math.floor(Math.random() * 190) + 10);          // 10–199
-    setRadialBurstMode(Math.random() < 0.5 ? 'burst' : 'sweep');
     setGridShapeSize(Math.floor(Math.random() * 99) + 1);              // 1–99
     setGridVariation(Math.random());                                    // 0–1
     setFadeMode(Math.random() < 0.5 ? 'angle' : 'light');
@@ -258,9 +257,6 @@ export function useRandomization(params: RandomizationParams) {
     setFlowerSymmetry(Math.floor(Math.random() * 10) + 3);             // 3–12
     setFlowerOpacity(Math.random() * 1.3 + 0.2);                       // 0.2–1.5
 
-    // Radar
-    setRadarFadeLength(Math.floor(Math.random() * 170) + 10);          // 10–179
-    setRadarBeamWidth(Math.floor(Math.random() * 89) + 1);             // 1–89
 
     // Light (Fade's slow-crossfade mode) — kept in its own slow, calm
     // range even on Shuffle.
@@ -1020,7 +1016,7 @@ export function useRandomization(params: RandomizationParams) {
     if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'shapes') { setConcentricRingWidth(Math.round(rng(20, 180))); setPolygon2Sides(Math.round(rng(1, 24))); }
-    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); setRadarBeamWidth(Math.round(rng(1, 90))); }
+    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); }
     else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
     else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
     else if (gradientType === 'caustics') setCausticsScale(rng(1, 12));

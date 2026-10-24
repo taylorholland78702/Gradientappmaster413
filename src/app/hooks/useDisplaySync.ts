@@ -109,7 +109,6 @@ export function useDisplaySync({
       if (typeof v.waveInterferenceAnimTime === 'number') av.waveInterferenceAnimTime = v.waveInterferenceAnimTime;
       if (typeof v.meshWireframeAnimTime === 'number') av.meshWireframeAnimTime = v.meshWireframeAnimTime;
       if (typeof v.gridRotation === 'number') av.gridRotation = v.gridRotation;
-      if (typeof v.radarSweepAngle === 'number') av.radarSweepAngle = v.radarSweepAngle;
       av.audioSubBassLevel = v.audioSubBassLevel ?? 0;
       av.audioMidsLevel = v.audioMidsLevel ?? 0;
       av.audioTrebleLevel = v.audioTrebleLevel ?? 0;

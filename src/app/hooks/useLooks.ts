@@ -74,7 +74,6 @@ export interface UseLooksParams {
   setParticlesSpeed: (value: SetStateAction<number>) => void;
   setParticlesTrail: (value: SetStateAction<number>) => void;
   setRadialBurstCount: (value: SetStateAction<number>) => void;
-  setRadialBurstMode: (value: SetStateAction<"burst" | "sweep">) => void;
   setRadialBurstSize: (value: SetStateAction<number>) => void;
   setRadialBurstSpread: (value: SetStateAction<number>) => void;
   setRadialSizeScale: (value: SetStateAction<number>) => void;
@@ -106,7 +105,7 @@ export interface UseLooksParams {
 }
 
 export function useLooks(p: UseLooksParams) {
-  const { colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setWindmillMode } = p;
+  const { colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setWindmillMode } = p;
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
   // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
   // doesn't to their defaults so a look always lands the same way. A palette the
@@ -140,7 +139,7 @@ export function useLooks(p: UseLooksParams) {
         reactionDiffusionFeed: setReactionDiffusionFeed, reactionDiffusionKill: setReactionDiffusionKill, reactionDiffusionSpeed: setReactionDiffusionSpeed,
         voronoiCellCount: setVoronoiCellCount, voronoiDistortion: setVoronoiDistortion,
         radialSizeScale: setRadialSizeScale, radialSpeed: setRadialSpeed,
-        radialBurstMode: setRadialBurstMode, radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,
+        radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,
         windmillMode: setWindmillMode, helixTurns: setHelixTurns, helixTightness: setHelixTightness,
         fadeDirection: setFadeDirection, angleStartOffset: setAngleStartOffset,
         flowerCircles: setFlowerCircles, flowerScale: setFlowerScale, flowerSpread: setFlowerSpread,

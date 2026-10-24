@@ -252,11 +252,7 @@ export interface SnapshotValues {
   pixelSize: number;
   polygon2Sides: number;
   posterizeLevels: number;
-  radarBeamWidth: number;
-  radarFadeLength: number;
-  radarSweepAngle: number;
   radialBurstCount: number;
-  radialBurstMode: "burst" | "sweep";
   radialBurstSize: number;
   radialBurstSpread: number;
   radialSizeScale: number;

@@ -6,7 +6,7 @@ import type { ColorRGB, GradientType, EffectType } from '../constants/gradientEf
 export interface UseMasterClockParams {
   activeEffectsRef: MutableRefObject<EffectType[]>;
   analyzeAudioRef: MutableRefObject<() => void>;
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; radarSweepAngle: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   audioMidsLevelRef: MutableRefObject<number>;
   audioSubBassLevelRef: MutableRefObject<number>;
   drawParamsDirtyRef: MutableRefObject<boolean>;
@@ -24,14 +24,12 @@ export interface UseMasterClockParams {
   isMicActiveRef: MutableRefObject<boolean>;
   isVCRPlayingRef: MutableRefObject<boolean>;
   lerpSyncFrameRef: MutableRefObject<number>;
-  radialBurstModeRef: MutableRefObject<"burst" | "sweep">;
   rotationDirectionRef: MutableRefObject<"clockwise" | "counter">;
   setFlowerAnimTime: (value: SetStateAction<number>) => void;
   setGradientAngle: (value: SetStateAction<number>) => void;
   setGradientColors: (value: SetStateAction<ColorRGB[]>) => void;
   setGridRotation: (value: SetStateAction<number>) => void;
   setMeshWireframeAnimTime: (value: SetStateAction<number>) => void;
-  setRadarSweepAngle: (value: SetStateAction<number>) => void;
   setTargetAngle: (value: SetStateAction<number>) => void;
   setTilingAnimTime: (value: SetStateAction<number>) => void;
   setVoronoiAnimTime: (value: SetStateAction<number>) => void;
@@ -46,7 +44,7 @@ export interface UseMasterClockParams {
 }
 
 export function useMasterClock(p: UseMasterClockParams) {
-  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, radialBurstModeRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setRadarSweepAngle, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, windmillModeRef, zoomRef } = p;
+  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, windmillModeRef, zoomRef } = p;
   useEffect(() => {
     let rafId: number;
     let lastFrameTime = performance.now();
@@ -148,7 +146,7 @@ export function useMasterClock(p: UseMasterClockParams) {
         setGradientColors([...gradientColorsRef.current]);
         setGradientAngle(gradientAngleRef.current);
         setZoom(zoomRef.current);
-        // targetAngle/gridRotation/radarSweepAngle/voronoiAnimTime/
+        // targetAngle/gridRotation/voronoiAnimTime/
         // flowerAnimTime/tilingAnimTime: same batched sync, now that the
         // blocks below write these into their refs directly every frame
         // instead of calling setState. One frame of staleness here (these
@@ -156,7 +154,6 @@ export function useMasterClock(p: UseMasterClockParams) {
         // 15-frame granularity.
         setTargetAngle(targetAngleRef.current);
         setGridRotation(animValuesRef.current.gridRotation);
-        setRadarSweepAngle(animValuesRef.current.radarSweepAngle);
         setVoronoiAnimTime(animValuesRef.current.voronoiAnimTime);
         setFlowerAnimTime(animValuesRef.current.flowerAnimTime);
         setTilingAnimTime(animValuesRef.current.tilingAnimTime);
@@ -228,15 +225,6 @@ export function useMasterClock(p: UseMasterClockParams) {
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
         targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * dtScale;
-      }
-
-      // Radar sweep — PLAY or mic active. Skipped in Display mode; see the
-      // Voronoi comment above — that value is pushed from the controller instead.
-      // Folded into Radial Burst as radialBurstMode === 'sweep'.
-      if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'radial-burst' && radialBurstModeRef.current === 'sweep' && isPlayActive) {
-        const baseSpeed = isAutoModeRef.current || isVCRPlayingRef.current ? 2 * spd : 1.2;
-        const audioBoost = isAudioActiveRef.current ? audioSubBassLevelRef.current * 6 : 0;
-        animValuesRef.current.radarSweepAngle = (animValuesRef.current.radarSweepAngle + (baseSpeed + audioBoost) * dtScale) % 360;
       }
 
       // Flower rotation — only when PLAY is active. Skipped in Display

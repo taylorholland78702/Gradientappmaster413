@@ -45,14 +45,8 @@ export const TWO_PI = Math.PI * 2;
 // Firestore or the local rated-results cache — still contain the old ids,
 // so any external data must be run through this map before use.
 export const ID_MIGRATIONS: Record<string, string> = {
-  // Radar was folded into Radial Burst as a 'sweep' mode (radialBurstMode)
-  // rather than staying a separate gradient type — old presets/results that
-  // reference it by the old id still land on the (now-merged) Radial Burst
-  // gradient instead of silently falling back to a default. The mode itself
-  // isn't migrated here (this only remaps the id string), so an old radar
-  // preset loads as Radial Burst in whatever mode was last selected rather
-  // than specifically 'sweep' — same accepted tradeoff as zoom-blur's
-  // migration into Blur below.
+  // Radar was a gradient of its own, then a 'sweep' mode of Radial Burst, and the sweep has since been removed:
+  // old presets that reference it still open on Radial Burst (as the plain burst) instead of falling back to a default.
   'radar': 'radial-burst',
   // Helix was folded into Windmill as a 'helix' mode (windmillMode) rather
   // than staying a separate gradient type — same reasoning as Radar above.

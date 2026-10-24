@@ -79,8 +79,6 @@ export const SNAPSHOT_LIMITS: Record<string, [number, number]> = {
   pixelSize: [5, 297.5],
   polygon2Sides: [1, 35.5],
   posterizeLevels: [2, 23],
-  radarBeamWidth: [1, 134.5],
-  radarFadeLength: [10, 265],
   radialBurstCount: [3, 22.5],
   radialBurstSize: [10, 295],
   radialBurstSpread: [10, 145],
