@@ -10,13 +10,10 @@ import { STYLE_SHAPE_CONTROLS } from './styleShapeControls';
 import { LIVE_SPEED_KEYS, liveSpeed, publishLiveSpeeds } from './liveSpeeds';
 import { applyAudioBindings } from '../hooks/useCanvasDraw';
 
-// Fireworks and Lightning still have settings here, but neither gradient is in the Gradient tab's list any more.
-const HIDDEN = new Set(['fireworksCount', 'fireworksParticleCount', 'fireworksTrailFade', 'lightningBoltCount', 'lightningJitter', 'lightningBranchiness']);
-
 describe('audio modulation picker tree', () => {
   it('reaches every setting through some gradient or effect', () => {
     const reachable = new Set(MOD_SOURCES.flatMap(s => paramGroups(s).flatMap(g => g.params.map(p => p.param.key))));
-    expect(MODULATABLE_PARAMS.map(p => p.key).filter(k => !reachable.has(k) && !HIDDEN.has(k))).toEqual([]);
+    expect(MODULATABLE_PARAMS.map(p => p.key).filter(k => !reachable.has(k))).toEqual([]);
   });
 
   it('lists every gradient', () => {
@@ -32,7 +29,7 @@ describe('audio modulation picker tree', () => {
   });
 
   it('gives every bound setting its own name, and tells Grid apart from the Grid effect', () => {
-    const names = MODULATABLE_PARAMS.filter(p => !HIDDEN.has(p.key)).map(p => bindingLabel(p.key));
+    const names = MODULATABLE_PARAMS.map(p => bindingLabel(p.key));
     const dupes = names.filter((n, i) => names.indexOf(n) !== i);
     expect(dupes).toEqual([]);
     expect(bindingLabel('gridSides')).toBe('Grid (effect) · Sides');
@@ -61,7 +58,7 @@ describe('shuffle can bind every advanced audio setting', () => {
       ...Object.keys(EFFECT_MOD_CATEGORY).map(e => modCategoriesFor(null, [e], EFFECT_MOD_CATEGORY)),
     ];
     for (const p of MODULATABLE_PARAMS) if (cats.some(c => c.has(p.category))) covered.add(p.key);
-    expect(MODULATABLE_PARAMS.map(p => p.key).filter(k => !covered.has(k) && !HIDDEN.has(k))).toEqual([]);
+    expect(MODULATABLE_PARAMS.map(p => p.key).filter(k => !covered.has(k))).toEqual([]);
   });
 });
 
