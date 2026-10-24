@@ -114,6 +114,7 @@ import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
 import { useShuffleQualityGate } from '../hooks/useShuffleQualityGate';
 import { shuffleLearning } from '../utils/shuffleLearning';
+import { shuffleMarks } from '../utils/shuffleMarks';
 import { ShuffleMarkBar } from './ShuffleMarkBar';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
@@ -833,6 +834,13 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
+  // "I don't like this": a stronger vote than undo, kept for the marking tool's numbers, then a new look.
+  const handleDislikeClick = () => {
+    const meta = shuffleLearning.currentMeta;
+    if (meta && shuffleLearning.dislike()) shuffleMarks.recordDislike(meta);
+    handleWavClick();
+  };
+
   const {
     isAutoShuffleOn, setIsAutoShuffleOn, isNewPresetPending, setIsNewPresetPending,
     autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope,
@@ -1256,6 +1264,7 @@ export function InteractiveGradient() {
     isMobile,
     onWordmarkClick: openAboutPanel,
     handleWavClick,
+    handleDislikeClick,
     isWavPressed,
     isAutoShuffleOn,
     isNewPresetPending,

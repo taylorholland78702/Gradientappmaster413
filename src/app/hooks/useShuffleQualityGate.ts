@@ -105,7 +105,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
         shuffleLearning.commit(keptIndex);
         // For the marking tool: what was kept, with what the frame score made of it.
         const meta = shuffleLearning.currentMeta, features = frames[keptIndex];
-        if (shuffleMarks.active && meta && features) ready = { meta, features, score: candidates[keptIndex].score, dull: candidates[keptIndex].dull };
+        if (meta && features) ready = { meta, features, score: candidates[keptIndex].score, dull: candidates[keptIndex].dull };
         // Each attempt saved the look before it. Keep only the first (what you had before shuffling).
         if (pushed > 1) {
           const drop = pushed - 1;
@@ -120,6 +120,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
         busyRef.current = false;
       }
       // Ready to be marked only once the gate is free again, so marking can start the next shuffle straight away.
+      shuffleMarks.setLatest(ready);
       if (shuffleMarks.active) shuffleMarks.setCurrent(ready);
     })();
   }, [canvasRef, gradientTypeRef, targetColorsRef, undoStackRef, undoIndexRef, setUndoDepth]);

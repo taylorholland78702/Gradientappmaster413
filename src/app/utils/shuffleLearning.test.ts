@@ -46,6 +46,24 @@ describe('what Shuffle learns', () => {
     expect(l.signals).toBe(1);
   });
 
+  it('counts the dislike button at any time, once per look, and more than an undo', () => {
+    vi.useFakeTimers();
+    let t = 1_000_000;
+    const undone = new ShuffleLearning(memory(), () => t), disliked = new ShuffleLearning(memory(), () => t);
+    expect(disliked.dislike()).toBe(false);
+    for (let i = 0; i < 8; i++) {
+      for (const l of [undone, disliked]) { l.begin(meta({ gradient: 'grid' })); l.commit(); }
+      t += 60_000;
+      undone.reject(); expect(disliked.dislike()).toBe(true); expect(disliked.dislike()).toBe(false);
+    }
+    expect(undone.signals).toBe(0);
+    expect(disliked.signals).toBe(8);
+    const a = new ShuffleLearning(memory(), () => t), b = new ShuffleLearning(memory(), () => t);
+    for (const l of [a, b]) for (let i = 0; i < 6; i++) { l.begin(meta({ gradient: 'smoke' })); l.commit(); l.like(1); }
+    for (let i = 0; i < 2; i++) { a.begin(meta({ gradient: 'grid' })); a.commit(); a.reject(); b.begin(meta({ gradient: 'grid' })); b.commit(); b.dislike(); }
+    expect(b.weight('gradient', 'grid')).toBeLessThan(a.weight('gradient', 'grid'));
+  });
+
   it('takes leaving a look alone as a mild vote for it, but not while Auto Shuffle runs', () => {
     vi.useFakeTimers();
     const l = new ShuffleLearning(memory());

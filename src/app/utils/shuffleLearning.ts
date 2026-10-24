@@ -10,6 +10,7 @@ const UNDO_WINDOW_MS = 15_000;
 const DWELL_MS = 25_000;
 const MIN_SIGNALS = 6;       // Below this the odds are left alone.
 const MAX_KEYS = 400;
+const DISLIKE_WEIGHT = 2;    // The dislike button counts twice as much as an undo.
 const DECAY = 0.985;          // Every signal makes older ones count slightly less.
 
 interface Stored { v: 1; up: Record<string, number>; down: Record<string, number>; total: number }
@@ -21,7 +22,9 @@ const idsOf = (m: ShuffleMeta): string[] => [
 export class ShuffleLearning {
   private data: Stored = { v: 1, up: {}, down: {}, total: 0 };
   private attempts: ShuffleMeta[] = [];
-  private current: { meta: ShuffleMeta; at: number; judged: boolean } | null = null;
+  private current: { meta: ShuffleMeta; at: number; judged: boolean; disliked: boolean } | null = null;
+  private listeners = new Set<() => void>();
+  private version = 0;
   private dwellTimer: ReturnType<typeof setTimeout> | null = null;
   // While Auto Shuffle runs the looks change on a timer, so leaving one alone says nothing about it.
   paused = false;
@@ -63,20 +66,25 @@ export class ShuffleLearning {
   }
 
   // A shuffle was rolled (it may be one of several the quality gate tries).
-  begin(meta: ShuffleMeta) { this.attempts.push(meta); this.current = null; this.clearTimer(); }
+  begin(meta: ShuffleMeta) { this.attempts.push(meta); const had = this.current; this.current = null; this.clearTimer(); if (had) this.emit(); }
 
   // The shuffle that stayed on screen, `index` of those rolled since the last commit (the last one when omitted).
   commit(index?: number) {
     const meta = this.attempts[index ?? this.attempts.length - 1];
     this.attempts = [];
     if (!meta) return;
-    this.current = { meta, at: this.now(), judged: false };
+    this.current = { meta, at: this.now(), judged: false, disliked: false };
     this.clearTimer();
+    this.emit();
     this.dwellTimer = setTimeout(() => this.like(0.5), DWELL_MS);
   }
 
   // Forget the rolls so far (the gate asks for a clean start).
   reset() { this.attempts = []; }
+
+  private emit() { this.version++; this.listeners.forEach(l => l()); }
+  subscribe = (l: () => void) => { this.listeners.add(l); return () => { this.listeners.delete(l); }; };
+  getVersion = () => this.version;
 
   // The look that stayed on screen after the last shuffle, once it has been committed.
   get currentMeta(): ShuffleMeta | null { return this.current?.meta ?? null; }
@@ -87,6 +95,16 @@ export class ShuffleLearning {
     if (!c) return;
     c.judged = true; this.clearTimer();
     this.note(direction, c.meta);
+  }
+
+  // The dislike button: a stronger vote than an undo, at any time, once per look. Returns whether it counted.
+  dislike(): boolean {
+    const c = this.current;
+    if (!c || c.disliked) return false;
+    c.judged = true; c.disliked = true; this.clearTimer();
+    this.note('down', c.meta, DISLIKE_WEIGHT);
+    this.emit();
+    return true;
   }
 
   // You undid it. Counts only soon after the shuffle.
@@ -106,7 +124,7 @@ export class ShuffleLearning {
   }
 
   private clearTimer() { if (this.dwellTimer) { clearTimeout(this.dwellTimer); this.dwellTimer = null; } }
-  clear() { this.data = { v: 1, up: {}, down: {}, total: 0 }; this.attempts = []; this.current = null; this.clearTimer(); this.save(); }
+  clear() { this.data = { v: 1, up: {}, down: {}, total: 0 }; this.attempts = []; this.current = null; this.clearTimer(); this.save(); this.emit(); }
   // For tests and the settings panel.
   get signals() { return this.data.total; }
 }
