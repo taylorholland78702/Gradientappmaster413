@@ -77,3 +77,21 @@ frame is not lit (dark-ground gradients keep their lit-share band), and zero for
 It ranks 60-69% on kept looks, a weak signal. `GOOD_ENOUGH` is 0.2, about the 35th percentile of all marked looks, so it only
 triggers a retry for a poor roll and no longer shops among decent ones. What has held up is not the score: every look has at
 least 3 effects, and the keep rate went from 43% to 60-87%.
+
+## All 240 marks (sessions 1-8)
+
+Kept 162 of 240 (67%), loved 20. Detail again ranks keeps above skips (kept 0.089 vs 0.044). Loved looks were darker (mean 87
+vs 125, lit 0.66 vs 0.85), higher in contrast (sd 57 vs 41) and had more detail (0.12 vs 0.07).
+
+- **The score works as a floor.** In the latest session (new score live) every look scoring under 0.2 was skipped (4 of 4) and none
+  of the kept looks scored that low.
+- **Effects.** Loved at a rate far above the 8% average: ascii 6 of 14, halftone 4 of 13. Kept every time: kaleidoscope 13 of 13,
+  emoji 16 of 16, gesso 6 of 6; crt 14 of 15, mirror 22 of 26, grain 48 of 57. Weakest: grid-effect 1 of 5, vhs 14 of 26, slit-scan
+  6 of 11. The taste table now favours ascii and halftone more (+2 on pattern and dark-ground gradients), no longer marks down emoji or
+  kaleidoscope there, and no longer favours vhs.
+- **Variety.** Without learning, 3000 simulated shuffles spread evenly over all 46 gradients (2.2% each; the most common was 2.9%),
+  yet radial-burst and grid were 17% each of the marked looks. The cause is not the taste table. The code path that still read
+  saved ratings from the old 1-10 rating feature (`gradientRatings` in the browser, which nothing writes any more) steered up to
+  60% of shuffles toward the gradients, effects and palettes of those old ratings, with fast random speeds and sometimes no
+  effects. It is switched off. Check with `JSON.parse(localStorage.gradientRatings || '[]').length` in the console.
+- **Palettes and speed** have no data yet: the session was marked before the speed and palette fields were live.
