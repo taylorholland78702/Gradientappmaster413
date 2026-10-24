@@ -8,7 +8,9 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "baseline": "node scripts/baseline.mjs",
+    "baseline:check": "node scripts/baseline.mjs --check"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.2",
