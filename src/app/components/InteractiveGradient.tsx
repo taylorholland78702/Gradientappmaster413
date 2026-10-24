@@ -16,7 +16,6 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Camera, Circle, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useDisplaySync } from '../hooks/useDisplaySync';
@@ -135,6 +134,7 @@ import { addGradientStops as addGradientStopsTo } from '../utils/gradientStops';
 import { adjustColorArrayLength } from '../utils/color';
 import { NoticeToast } from './NoticeToast';
 import { WavHint } from './WavHint';
+import { RailPopouts } from './RailPopouts';
 import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
 import { useStructuralSeedState } from '../hooks/state/useStructuralSeedState';
 import { useTopographicState } from '../hooks/state/useTopographicState';
@@ -151,10 +151,6 @@ import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
 
 import { AboutPanel } from './AboutPanel';
-import { PopoverPortal } from './PopoverPortal';
-import { ExportPopout } from './ExportPopout';
-import { RecordPopout } from './RecordPopout';
-import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
@@ -991,56 +987,6 @@ export function InteractiveGradient() {
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openRecordPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
-  const renderAutoShufflePopover = () => {
-    if (!autoShufflePopoverAnchor) return null;
-    const closePopover = () => setAutoShufflePopoverAnchor(null);
-    const iconCls = 'w-4 h-4 shrink-0';
-    const popout = {
-      export: {
-        title: 'Save & share',
-        icon: <Camera weight="regular" className={iconCls} />,
-        body: (
-          <ExportPopout
-            isMobile={isMobile}
-            exportSize={exportSize} setExportSize={setExportSize}
-            exportAspect={exportAspect} setExportAspect={setExportAspect}
-            exportAsPNG={exportAsPNG} closePopover={closePopover}
-            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
-          />
-        ),
-      },
-      record: {
-        title: 'Record video',
-        icon: <Circle weight="regular" className={iconCls} />,
-        body: (
-          <RecordPopout
-            videoSize={videoSize} setVideoSize={setVideoSize}
-            videoLength={videoLength} setVideoLength={setVideoLength}
-            isRecording={isRecording} startVideoTake={() => { startVideoTake(); closePopover(); }}
-          />
-        ),
-      },
-      autoShuffle: {
-        title: 'Auto Shuffle',
-        icon: <InfinityIcon weight="regular" className={iconCls} />,
-        body: (
-          <AutoShufflePopout
-            isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
-            autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
-            autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
-          />
-        ),
-      },
-    }[popoverMode];
-    return (
-      <PopoverPortal
-        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
-        title={popout.title} icon={popout.icon}
-      >
-        {popout.body}
-      </PopoverPortal>
-    );
-  };
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
@@ -1548,48 +1494,49 @@ export function InteractiveGradient() {
   // below, so the canvas area actually shrinks to share the frame with it
   // instead of being covered. Built once here and placed on whichever side
   // matches the layout (left of canvas on desktop, below it on mobile).
+  const controlRailProps = {
+    isMobile,
+    onWordmarkClick: openAboutPanel,
+    handleWavClick,
+    isWavPressed,
+    isAutoShuffleOn,
+    isNewPresetPending,
+    autoShuffleIntervalSec,
+    formatAutoShuffleInterval,
+    autoShufflePopoverAnchor,
+    setAutoShufflePopoverAnchor,
+    openAutoShufflePopover,
+    openExportPopover,
+    openRecordPopover,
+    exportAsPNG,
+    toggleGifRecording,
+    isFinalizingGif,
+    isRecordingGif,
+    undoLastChange,
+    redoLastChange,
+    undoDepth,
+    redoDepth,
+    activeTab,
+    setActiveTab,
+    isMicActive,
+    liveSubBassLevel,
+    liveBassLevel,
+    liveMidsLevel,
+    liveTrebleLevel,
+    audioEnergy,
+    isRecording,
+    isEncoding,
+    encodingProgress,
+    toggleVCRRecording,
+  };
+
   const dock = (
     <div
       data-role="dock"
       className={isMobile ? 'flex-shrink-0 w-full flex flex-col' : 'flex-shrink-0 h-full flex flex-row'}
     >
       {!isMobile && (
-        <ControlRail
-          ref={panelRef}
-          isMobile={isMobile}
-          onWordmarkClick={openAboutPanel}
-          handleWavClick={handleWavClick}
-          isWavPressed={isWavPressed}
-          isAutoShuffleOn={isAutoShuffleOn}
-          isNewPresetPending={isNewPresetPending}
-          autoShuffleIntervalSec={autoShuffleIntervalSec}
-          formatAutoShuffleInterval={formatAutoShuffleInterval}
-          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
-          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
-          openAutoShufflePopover={openAutoShufflePopover}
-          openExportPopover={openExportPopover}
-          openRecordPopover={openRecordPopover}
-          exportAsPNG={exportAsPNG}
-          toggleGifRecording={toggleGifRecording}
-          isFinalizingGif={isFinalizingGif}
-          isRecordingGif={isRecordingGif}
-          undoLastChange={undoLastChange}
-          redoLastChange={redoLastChange}
-          undoDepth={undoDepth}
-          redoDepth={redoDepth}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isMicActive={isMicActive}
-          liveSubBassLevel={liveSubBassLevel}
-          liveBassLevel={liveBassLevel}
-          liveMidsLevel={liveMidsLevel}
-          liveTrebleLevel={liveTrebleLevel}
-          audioEnergy={audioEnergy}
-          isRecording={isRecording}
-          isEncoding={isEncoding}
-          encodingProgress={encodingProgress}
-          toggleVCRRecording={toggleVCRRecording}
-        />
+        <ControlRail ref={panelRef} {...controlRailProps} />
       )}
 
       <ControlDrawer
@@ -1603,42 +1550,7 @@ export function InteractiveGradient() {
       />
 
       {isMobile && (
-        <ControlRail
-          ref={panelRef}
-          isMobile={isMobile}
-          onWordmarkClick={openAboutPanel}
-          handleWavClick={handleWavClick}
-          isWavPressed={isWavPressed}
-          isAutoShuffleOn={isAutoShuffleOn}
-          isNewPresetPending={isNewPresetPending}
-          autoShuffleIntervalSec={autoShuffleIntervalSec}
-          formatAutoShuffleInterval={formatAutoShuffleInterval}
-          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
-          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
-          openAutoShufflePopover={openAutoShufflePopover}
-          openExportPopover={openExportPopover}
-          openRecordPopover={openRecordPopover}
-          exportAsPNG={exportAsPNG}
-          toggleGifRecording={toggleGifRecording}
-          isFinalizingGif={isFinalizingGif}
-          isRecordingGif={isRecordingGif}
-          undoLastChange={undoLastChange}
-          redoLastChange={redoLastChange}
-          undoDepth={undoDepth}
-          redoDepth={redoDepth}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isMicActive={isMicActive}
-          liveSubBassLevel={liveSubBassLevel}
-          liveBassLevel={liveBassLevel}
-          liveMidsLevel={liveMidsLevel}
-          liveTrebleLevel={liveTrebleLevel}
-          audioEnergy={audioEnergy}
-          isRecording={isRecording}
-          isEncoding={isEncoding}
-          encodingProgress={encodingProgress}
-          toggleVCRRecording={toggleVCRRecording}
-        />
+        <ControlRail ref={panelRef} {...controlRailProps} />
       )}
     </div>
   );
@@ -1764,7 +1676,13 @@ export function InteractiveGradient() {
           it from either trigger (collapsed cluster or expanded top row,
           only one of which is ever mounted+clickable at a time) never
           produces two portaled copies. */}
-      {renderAutoShufflePopover()}
+      <RailPopouts
+        mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
+        setAnchor={setAutoShufflePopoverAnchor}
+        exportProps={{ exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, copiedKey, copyText, currentPlayerUrl }}
+        recordProps={{ videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake }}
+        autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
+      />
 
       <NoticeToast />
 
