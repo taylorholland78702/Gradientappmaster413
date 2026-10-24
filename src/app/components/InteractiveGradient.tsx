@@ -127,6 +127,7 @@ import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
 import { useSliderFill } from '../hooks/useSliderFill';
 import { useAnimClocks } from '../hooks/useAnimClocks';
+import { useRefMirrors } from '../hooks/useRefMirrors';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
@@ -680,39 +681,7 @@ export function InteractiveGradient() {
 
   // Audio reactivity and mic functions are now in useAudioReactivity hook
 
-  // Keep target/mode refs in sync with state so the master RAF loop can read them without restarts.
-  useEffect(() => { targetColorsRef.current = targetColors; }, [targetColors]);
-  useEffect(() => { targetAngleRef.current = targetAngle; }, [targetAngle]);
-  useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
-  // gridRotation/radarSweepAngle/voronoiAnimTime/flowerAnimTime/tilingAnimTime:
-  // same pattern as targetAngleRef above — the main loop now writes these
-  // directly into animValuesRef every frame instead of calling setState (see
-  // the loop below), so state only changes from EXTERNAL setters (shuffle
-  // randomization, snapshot/undo restore) or the loop's own periodic
-  // ref→state sync (every 15 frames, for UI/snapshot freshness). Either way
-  // this effect only fires a few times a second, not 60x/sec, and syncing
-  // the ref back to a value it may already hold (when triggered by the
-  // loop's own periodic sync) is a harmless no-op, not a feedback loop.
-  useEffect(() => { animValuesRef.current.gridRotation = gridRotation; }, [gridRotation]);
-  useEffect(() => { animValuesRef.current.radarSweepAngle = radarSweepAngle; }, [radarSweepAngle]);
-  useEffect(() => { animValuesRef.current.voronoiAnimTime = voronoiAnimTime; }, [voronoiAnimTime]);
-  useEffect(() => { animValuesRef.current.flowerAnimTime = flowerAnimTime; }, [flowerAnimTime]);
-  useEffect(() => { animValuesRef.current.tilingAnimTime = tilingAnimTime; }, [tilingAnimTime]);
-  useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
-  useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
-  useEffect(() => { rotationDirectionRef.current = rotationDirection; }, [rotationDirection]);
-  useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
-  useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
-
-  useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
-
-
-  // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
-  useEffect(() => {
-    if (isMicActive && gradientType === 'windmill') {
-      setTargetColors([...gradientColorsRef.current]);
-    }
-  }, [isMicActive, gradientType]);
+  useRefMirrors({ animValuesRef, flowerAnimTime, gradientColorsRef, gradientType, gridRotation, isAudioActiveRef, isAudioEnabled, isAudioReactive, isAutoColor, isAutoColorRef, isAutoMode, isAutoModeRef, isMicActive, isVCRPlaying, isVCRPlayingRef, radarSweepAngle, rotationDirection, rotationDirectionRef, setTargetColors, targetAngle, targetAngleRef, targetColors, targetColorsRef, targetZoom, targetZoomRef, tilingAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, voronoiAnimTime });
 
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
   // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
