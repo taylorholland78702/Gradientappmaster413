@@ -1,12 +1,11 @@
 import { Fragment, type RefObject } from 'react';
 import { Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { Kbd } from './Kbd';
-import { SwitchTrack } from './Switch';
+import { Switch, SwitchTrack } from './Switch';
 import { TOUCH_GESTURES, KEY_GESTURES } from '../constants/gestureGuide';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC } from '../constants/autoShuffle';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { motionSensorsSupported } from '../utils/motionPermission';
-import { choice } from './choice';
 
 export function AboutPanel({
   isMobile, railRect, dialogRef, onClose,
@@ -143,14 +142,10 @@ export function AboutPanel({
                 ]).map(m => (
                   <div key={m.kind} className="flex items-center justify-between gap-2">
                     <span>{m.label}</span>
-                    <button
-                      onClick={() => toggleMotion(m.kind)}
-                      aria-pressed={m.on}
-                      className={choice(m.on)}
-                    >{m.on ? 'On' : 'Off'}</button>
+                    <Switch on={m.on} onChange={() => toggleMotion(m.kind)} label={m.label} />
                   </div>
                 ))}
-                {motionDenied && <p className="text-xs text-red-300">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
+                {motionDenied && <p className="text-xs text-wav-error">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
                 <p className="text-xs text-wav-text-3">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
               </div>
             )}

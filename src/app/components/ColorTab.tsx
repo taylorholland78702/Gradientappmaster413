@@ -231,7 +231,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                   onClick={() => removeSwatch(i)}
                   title={`Remove color ${i + 1}`}
                   aria-label={`Remove color ${i + 1}`}
-                  className="wav-hit absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-wav-line text-white flex items-center justify-center hover:bg-red-500/70 transition-colors"
+                  className="wav-hit absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-wav-line text-white flex items-center justify-center hover:bg-wav-recording transition-colors"
                 ><X weight="bold" className="w-2 h-2" /></button>
               )}
             </div>
@@ -267,7 +267,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           <div className="max-h-72 overflow-y-auto flex flex-col gap-2 pr-0.5">
             {PALETTE_GROUPS.map(g => (
               <div key={g.group} className="flex flex-col gap-1">
-                <span className="text-[9px] uppercase tracking-wide text-wav-text-3">{g.group}</span>
+                <span className="text-[10px] text-wav-text-3">{g.group}</span>
                 <div className="grid grid-cols-2 gap-1">
                   {g.palettes.map(p => (
                     <button
@@ -306,7 +306,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               className="px-2 py-2 text-[10px] text-white bg-wav-field hover:bg-wav-hover border border-wav-line transition-all"
             >Choose an image…</button>
             <p className="text-[10px] text-wav-text-3">Takes {gradientColors.length} dominant colors, dark to light. The image stays on your device.</p>
-            {imageError && <p role="alert" className="text-[10px] text-red-300">{imageError}</p>}
+            {imageError && <p role="alert" className="text-[10px] text-wav-error">{imageError}</p>}
           </div>
         )}
       </section>

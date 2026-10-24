@@ -6,6 +6,7 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
+import { Switch } from './Switch';
 import { choice } from './choice';
 
 export interface EffectsTabProps {
@@ -235,7 +236,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               aria-pressed={isMultiFxMode}
               className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-wav-line-strong ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
               title="Toggle Multi-FX (M)"
-            >MULTI</button>
+            >Multi</button>
             <button
               onClick={randomizeEffects}
               className="wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center border-r border-wav-line-strong"
@@ -246,7 +247,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
               className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
-            >RESET</button>
+            >Reset</button>
           </div>
           {(() => {
             // Derived from the single per-effect registry (constants/effectRegistry.ts)
@@ -332,13 +333,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1"
                     />
                     <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
-                    <button
-                      onClick={() => setAsciiColor(!asciiColor)}
-                      aria-pressed={asciiColor}
-                      className={choice(asciiColor, 'shrink-0')}
-                    >
-                      {asciiColor ? 'ON' : 'OFF'}
-                    </button>
+                    <Switch on={asciiColor} onChange={setAsciiColor} label="ASCII color" />
                   </div>
                 </EffectSection>
               )}
@@ -504,13 +499,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Tritone:</label>
-                    <button
-                      onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
-                      aria-pressed={duotoneThreeColor}
-                      className={choice(duotoneThreeColor)}
-                    >
-                      {duotoneThreeColor ? 'ON' : 'OFF'}
-                    </button>
+                    <Switch on={duotoneThreeColor} onChange={setDuotoneThreeColor} label="Tritone" />
                   </div>
                   {duotoneThreeColor && (
                     <div className="flex items-center justify-between gap-1">
@@ -545,12 +534,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     {isEmojiPickerOpen && (
                       <button
                         onClick={() => setIsEmojiPickerOpen(false)}
-                        className="shrink-0 text-[10px] text-white bg-wav-hover hover:bg-wav-active rounded px-1.5 py-1"
+                        className="shrink-0 text-[10px] text-white bg-wav-hover hover:bg-wav-active px-1.5 py-1"
                       >Done</button>
                     )}
                   </div>
                   {isEmojiPickerOpen && (
-                    <div className="mt-1 border border-wav-line rounded bg-wav-field">
+                    <div className="mt-1 border border-wav-line bg-wav-field">
                       <input
                         type="text"
                         value={emojiPickerSearch}
@@ -572,7 +561,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                                   <button
                                     key={`${cat.label}-${i}`}
                                     onClick={() => setEmojiChars(prev => prev + em.char)}
-                                    className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-wav-hover transition-all"
+                                    className="w-7 h-7 flex items-center justify-center text-lg hover:bg-wav-hover transition-all"
                                     title={em.name}
                                     aria-label={em.name}
                                   >{em.char}</button>
@@ -713,23 +702,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
-                      <button
-                        onClick={() => setHalftoneMove(!halftoneMove)}
-                        aria-pressed={halftoneMove}
-                        className={choice(halftoneMove)}
-                      >
-                        {halftoneMove ? 'ON' : 'OFF'}
-                      </button>
+                      <Switch on={halftoneMove} onChange={setHalftoneMove} label="Halftone move" />
                     </div>
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
-                      <button
-                        onClick={() => setHalftoneCMYK(!halftoneCMYK)}
-                        aria-pressed={halftoneCMYK}
-                        className={choice(halftoneCMYK)}
-                      >
-                        {halftoneCMYK ? 'ON' : 'OFF'}
-                      </button>
+                      <Switch on={halftoneCMYK} onChange={setHalftoneCMYK} label="Halftone CMYK" />
                     </div>
                   </div>
                 </EffectSection>
@@ -787,7 +764,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handlePhotoFileClick}
-                      className="flex-1 px-2 py-1 rounded text-[10px] font-semibold bg-wav-hover text-white hover:bg-wav-active transition-all truncate"
+                      className="flex-1 px-2 py-1 text-[10px] font-semibold bg-wav-hover text-white hover:bg-wav-active transition-all truncate"
                       title={photoFileName || 'Upload a photo'}
                     >{photoFileName ? `📷 ${photoFileName}` : 'Upload Photo…'}</button>
                   </div>

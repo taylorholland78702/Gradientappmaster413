@@ -6,6 +6,7 @@ import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 import { SliderRow } from './SliderRow';
+import { Switch } from './Switch';
 import { choice } from './choice';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
@@ -331,13 +332,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const renderHardEdgeToggle = (value: boolean, setValue: (v: boolean) => void) => (
     <div className="flex items-center justify-between">
       <label className="text-[10px] text-white whitespace-nowrap" title="Flat solid bands with hard cuts instead of a smooth blend">Hard Edge:</label>
-      <button
-        onClick={() => setValue(!value)}
-        aria-pressed={value}
-        className={choice(value)}
-      >
-        {value ? 'On' : 'Off'}
-      </button>
+      <Switch on={value} onChange={setValue} label="Hard edge" />
     </div>
   );
 

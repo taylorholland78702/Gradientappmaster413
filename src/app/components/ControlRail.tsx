@@ -231,7 +231,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           // with the old light-theme panel this component replaced), so
           // this silently did nothing. Plain Tailwind classes here instead.
           className={`${iconCls} transition-colors ${isMicActive
-            ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'text-green-500' : 'text-red-500')
+            ? (Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy) > 0.04 ? 'text-wav-ok' : 'text-wav-recording')
             : ''}`}
         />
       </button>
@@ -275,7 +275,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
             />
           </svg>
         ) : (
-          <Circle weight={isRecording ? 'fill' : 'regular'} className={`${iconCls} ${isRecording ? 'text-red-500' : ''}`} />
+          <Circle weight={isRecording ? 'fill' : 'regular'} className={`${iconCls} ${isRecording ? 'text-wav-recording' : ''}`} />
         )}
       </button>
       <button
@@ -299,7 +299,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
             <path d="M8 2 A6 6 0 0 1 14 8" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         ) : isRecordingGif ? (
-          <Circle weight="fill" className={`${iconCls} text-red-500 animate-pulse`} />
+          <Circle weight="fill" className={`${iconCls} text-wav-recording animate-pulse`} />
         ) : (
           <Gif weight="regular" className={iconCls} />
         )}

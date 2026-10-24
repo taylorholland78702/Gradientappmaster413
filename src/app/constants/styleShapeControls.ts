@@ -37,7 +37,7 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   'flow-mesh': [{ label: 'Flow', hint: 'How strongly the flow bends the colors' }, { label: 'Silk', hint: 'Strength of the satin folds' }],
   ribbon: [{ label: 'Width', hint: 'Width of the ribbon' }, { label: 'Twist', hint: 'How much the color twists along it' }],
   strands: [{ label: 'Spacing', hint: 'Gap between strands' }, { label: 'Thickness', hint: 'Thickness of each strand' }],
-  iridescent: [{ label: 'Swirl', hint: 'Scale of the oil-slick swirls' }, { label: 'Film', hint: 'How many color cycles the film runs through' }],
+  iridescent: [{ label: 'Swirl size', hint: 'Scale of the oil-slick swirls' }, { label: 'Film', hint: 'How many color cycles the film runs through' }],
   embers: [{ label: 'Ember size', hint: 'Size of the glowing sparks' }, { label: 'Density', hint: 'How many sparks' }],
   bands: [{ label: 'Waviness', hint: 'How much the bands undulate' }, { label: 'Softness', hint: 'How soft the edges between bands are' }],
   sheen: [{ label: 'Streak', hint: 'How long and brushed the streaks are' }, { label: 'Gloss', hint: 'Strength of the highlight bands' }],

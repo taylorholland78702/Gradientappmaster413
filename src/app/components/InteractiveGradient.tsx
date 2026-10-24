@@ -215,7 +215,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   // The current gradient's two shape sliders, read out of the per-gradient map.
   const fieldShapeA = fieldShapes[gradientType]?.[0] ?? 1;
   const fieldShapeB = fieldShapes[gradientType]?.[1] ?? 1;
@@ -1922,31 +1922,7 @@ export function InteractiveGradient() {
     });
   }, [buildSnapshot, isAudioEnabled, isAudioReactive]);
   
-  // Submit rating for current result
-  const submitRating = useCallback((rating: number) => {
-    if (pendingRatingState) {
-      const newRatedResult = { rating, data: pendingRatingState };
-      const updatedRatings = [...ratedResults, newRatedResult];
-      setRatedResults(updatedRatings);
-      // Never let a full localStorage quota (shared with presets) throw
-      // uncaught here — this ran as a side effect of rating, not something
-      // the user consciously "saved", so it should degrade quietly rather
-      // than surface an alert.
-      try {
-        localStorage.setItem('gradientRatings', JSON.stringify(updatedRatings));
-      } catch (err) {
-        console.error('Failed to persist gradientRatings to localStorage:', err);
-      }
-    }
-    setShowRatingUI(false);
-    setPendingRatingState(null);
-  }, [pendingRatingState, ratedResults]);
   
-  // Skip rating
-  const skipRating = useCallback(() => {
-    setShowRatingUI(false);
-    setPendingRatingState(null);
-  }, []);
   
   // Capture state when rating UI is shown (fallback if not already captured)
   useEffect(() => {
@@ -1955,12 +1931,6 @@ export function InteractiveGradient() {
     }
   }, [showRatingUI, pendingRatingState, captureCurrentStateForRating]);
 
-  // Save to presets from rating UI
-  const saveRatingAsPreset = useCallback(() => {
-    submitRating(10);
-    setActiveTab('presets');
-    setIsPresetsDropdownOpen(true);
-  }, [submitRating, setIsPresetsDropdownOpen]);
 
   // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
   // BEAT/FX-on-Beat toggles), matching each control's actual slider range.
@@ -3419,53 +3389,6 @@ export function InteractiveGradient() {
       </div>
 
       
-      {/* Rating UI overlay — temporarily hidden */}
-      {false && showRatingUI && (
-        <div
-          className="absolute pointer-events-auto z-[9999]"
-          style={{ left: 231, top: 16 }}
-        >
-          <div
-            className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl shadow-sm"
-            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-wav-text-2 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
-              {isAudioEnabled && isAudioReactive && <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-semibold">🎤 Audio</span>}
-            </div>
-            <div className="flex gap-2">
-              {[['👎', 2, 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.4)'], ['😐', 6, 'rgba(234,179,8,0.2)', 'rgba(234,179,8,0.4)'], ['👍', 8, 'rgba(34,197,94,0.2)', 'rgba(34,197,94,0.4)'], ['🔥', 10, 'rgba(168,85,247,0.2)', 'rgba(168,85,247,0.4)']].map(([emoji, rating, bg, border]) => (
-                <button
-                  key={String(rating)}
-                  onClick={() => submitRating(Number(rating))}
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
-                  style={{ background: String(bg), border: `1px solid ${String(border)}` }}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2 w-full">
-              <button
-                onClick={saveRatingAsPreset}
-                className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(to right, #9333ea, #ec4899, #facc15)' }}
-              >
-                ❤️ Save to Presets
-              </button>
-              <button
-                onClick={skipRating}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-wav-text-3 hover:text-wav-text-2 transition-all"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
-              >
-                Skip
-              </button>
-            </div>
-            <span className="text-wav-text-3 text-[10px]">{ratedResults.length} rated</span>
-          </div>
-        </div>
-      )}
-
       {/* First-run hint — floats near wherever the rail currently is
           (railRect), same content/dismiss logic as before, just
           repositioned now that it can't sit inline under the wordmark
@@ -3517,7 +3440,7 @@ export function InteractiveGradient() {
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
       {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
         <div
-          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-wav-field border border-wav-line text-wav-text-2 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
+          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 bg-wav-field border border-wav-line text-wav-text-2 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
           style={isMobile
             ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
             : { left: railRect.right + 12, top: railRect.top }}

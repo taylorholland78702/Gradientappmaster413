@@ -302,13 +302,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               <div className="flex gap-1 text-[10px]">
                 <button
                   onClick={() => { setEmailMode('signin'); clearAuthError(); }}
-                  className={`px-2 py-0.5 rounded transition-all ${emailMode === 'signin' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
+                  className={`px-2 py-0.5 transition-all ${emailMode === 'signin' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
                 >
                   Sign in
                 </button>
                 <button
                   onClick={() => { setEmailMode('signup'); clearAuthError(); }}
-                  className={`px-2 py-0.5 rounded transition-all ${emailMode === 'signup' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
+                  className={`px-2 py-0.5 transition-all ${emailMode === 'signup' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
                 >
                   Sign up
                 </button>
@@ -331,13 +331,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                 <button
                   onClick={submitEmailForm}
                   disabled={authBusy || !email.trim() || !password}
-                  className="px-3 py-1.5 text-[10px] bg-white text-black rounded font-bold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-[10px] bg-white text-black font-bold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {emailMode === 'signup' ? 'Create account' : 'Sign in'}
                 </button>
             </div>
             {authError && (
-              <p className="text-[10px] text-red-300 leading-snug">{authError}</p>
+              <p className="text-[10px] text-wav-error leading-snug">{authError}</p>
             )}
           </div>
         )}
@@ -465,7 +465,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   <div className={`flex items-center transition-opacity flex-shrink-0 ${isMobile ? 'opacity-60' : 'opacity-0 group-hover:opacity-100'}`}>
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenamingFolder(folder); setRenamingFolderValue(folder); }}
-                      className="px-1.5 py-1 rounded text-wav-text-3 hover:text-wav-text-2 hover:bg-wav-hover transition-colors flex-shrink-0"
+                      className="px-1.5 py-1 text-wav-text-3 hover:text-wav-text-2 hover:bg-wav-hover transition-colors flex-shrink-0"
                       title="Rename folder"
                       aria-label="Rename folder"
                     >
@@ -473,7 +473,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteFolder(folder); }}
-                      className="px-1.5 py-1 rounded text-wav-text-3 hover:text-red-400 hover:bg-wav-hover transition-colors flex-shrink-0"
+                      className="px-1.5 py-1 text-wav-text-3 hover:text-wav-error hover:bg-wav-hover transition-colors flex-shrink-0"
                       title="Delete folder (presets move to Uncategorized)"
                       aria-label="Delete folder (presets move to Uncategorized)"
                     >
@@ -515,7 +515,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   <div className={`flex items-center transition-opacity flex-shrink-0 ${copiedLinkId === preset.id ? 'opacity-100' : isMobile ? 'opacity-60' : 'opacity-0 group-hover:opacity-100'}`}>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCopyLink(preset); }}
-                    className={`px-1.5 py-1 rounded hover:bg-wav-hover transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-green-400' : 'text-wav-text-3 hover:text-wav-text-2'}`}
+                    className={`px-1.5 py-1 hover:bg-wav-hover transition-colors flex-shrink-0 ${copiedLinkId === preset.id ? 'text-wav-ok' : 'text-wav-text-3 hover:text-wav-text-2'}`}
                     title={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
                     aria-label={copiedLinkId === preset.id ? 'Link copied!' : 'Copy shareable link'}
                   >
@@ -525,7 +525,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenStandalone(preset); }}
-                    className="px-1.5 py-1 rounded text-wav-text-3 hover:text-wav-text-2 hover:bg-wav-hover transition-colors flex-shrink-0"
+                    className="px-1.5 py-1 text-wav-text-3 hover:text-wav-text-2 hover:bg-wav-hover transition-colors flex-shrink-0"
                     title="Open as standalone player (new window, no controls, self-animating)"
                     aria-label="Open as standalone player"
                   >
@@ -533,7 +533,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleUpdatePreset(preset.id); }}
-                    className={`px-1.5 py-1 rounded hover:bg-wav-hover transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-green-400' : 'text-wav-text-3 hover:text-wav-text-2'}`}
+                    className={`px-1.5 py-1 hover:bg-wav-hover transition-colors flex-shrink-0 ${savedPresetId === preset.id ? 'text-wav-ok' : 'text-wav-text-3 hover:text-wav-text-2'}`}
                     title={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
                     aria-label={savedPresetId === preset.id ? 'Saved!' : 'Save current settings to this preset'}
                   >
@@ -543,7 +543,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}
-                    className="px-1.5 py-1 rounded text-wav-text-3 hover:text-red-400 hover:bg-wav-hover transition-colors flex-shrink-0"
+                    className="px-1.5 py-1 text-wav-text-3 hover:text-wav-error hover:bg-wav-hover transition-colors flex-shrink-0"
                     title="Delete preset"
                     aria-label="Delete preset"
                   >
