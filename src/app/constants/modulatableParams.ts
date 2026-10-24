@@ -24,9 +24,23 @@ export interface ModulatableParam {
   // entry (it identifies the binding and the <option>) while `target` points
   // every one of them at the shared value. See resolveModulationKey.
   target?: string;
+  // Scales the binding's Amount for settings whose range is much wider than 0-1 (hue in degrees, say), so the
+  // same Amount reads similarly across settings. Default 1.
+  gain?: number;
 }
 
 export const MODULATABLE_PARAMS: ModulatableParam[] = [
+  // Global settings: every look has them, so they are not tied to one gradient or effect.
+  { key: 'paletteHue', label: 'Palette Hue', category: 'Palette', min: -180.0, max: 180.0, gain: 40 },
+  { key: 'paletteSaturation', label: 'Palette Saturation', category: 'Palette', min: 30.0, max: 200.0, gain: 15 },
+  { key: 'paletteBrightness', label: 'Palette Brightness', category: 'Palette', min: -25.0, max: 25.0, gain: 8 },
+  { key: 'paletteContrast', label: 'Palette Contrast', category: 'Palette', min: -25.0, max: 25.0, gain: 8 },
+  { key: 'fieldContrast', label: 'Palette Mapping Contrast', category: 'Palette Mapping', min: 0.3, max: 3.0 },
+  { key: 'paletteBands', label: 'Palette Mapping Bands', category: 'Palette Mapping', min: 2.0, max: 16.0, gain: 3 },
+  { key: 'fieldExposure', label: 'Finishing Exposure', category: 'Finishing', min: -2.0, max: 2.0 },
+  { key: 'fieldGradeBrightness', label: 'Finishing Brightness', category: 'Finishing', min: 0.5, max: 1.5 },
+  { key: 'fieldGradeContrast', label: 'Finishing Contrast', category: 'Finishing', min: 0.5, max: 1.5 },
+  { key: 'fieldGradeSaturation', label: 'Finishing Saturation', category: 'Finishing', min: 0.0, max: 2.0 },
   { key: 'asciiSize', label: 'Ascii Size', category: 'ASCII', min: 6.0, max: 40.0 },
   { key: 'angleCenterX', label: 'Angle Center X', category: 'Angle', min: 0.0, max: 100.0 },
   { key: 'angleCenterY', label: 'Angle Center Y', category: 'Angle', min: 0.0, max: 100.0 },
@@ -74,12 +88,16 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'edgeGlowScale', label: 'Edge Glow Scale', category: 'Edge Glow', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'edgeGlowSpeed', label: 'Edge Glow Speed', category: 'Edge Glow', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'fieldSwirl', label: 'Styled Gradients Swirl', category: 'Styled gradients', min: 0.0, max: 2.0 },
+  { key: 'fieldShapeA', label: 'Styled Gradients Shape 1', category: 'Styled gradients', min: 0.4, max: 2.0 },
+  { key: 'fieldShapeB', label: 'Styled Gradients Shape 2', category: 'Styled gradients', min: 0.4, max: 2.0 },
   { key: 'embersScale', label: 'Embers Scale', category: 'Embers', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'embersSpeed', label: 'Embers Speed', category: 'Embers', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'emojiRotateSpeed', label: 'Emoji Rotate Speed', category: 'Emoji', min: 0.0, max: 180.0 },
   { key: 'emojiSize', label: 'Emoji Size', category: 'Emoji', min: 10.0, max: 60.0 },
   { key: 'emojiSizeVariation', label: 'Emoji Size Variation', category: 'Emoji', min: 0.0, max: 100.0 },
+  { key: 'emojiOffsetX', label: 'Emoji Row Offset', category: 'Emoji', min: -80.0, max: 80.0, gain: 10 },
   { key: 'feedbackDecay', label: 'Feedback Decay', category: 'Feedback', min: 0.5, max: 0.97 },
+  { key: 'feedbackRotation', label: 'Feedback Spin', category: 'Feedback', min: -10.0, max: 10.0, gain: 3 },
   { key: 'feedbackZoom', label: 'Feedback Zoom', category: 'Feedback', min: 0.0, max: 5.0 },
   { key: 'fireworksCount', label: 'Fireworks Count', category: 'Fireworks', min: 1.0, max: 30.0 },
   { key: 'fireworksParticleCount', label: 'Fireworks Particle Count', category: 'Fireworks', min: 8.0, max: 400.0 },
@@ -94,6 +112,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'flowerScale', label: 'Flower Scale', category: 'Flower', min: 0.1, max: 3.0 },
   { key: 'flowerSpread', label: 'Flower Spread', category: 'Flower', min: 0.3, max: 2.5 },
   { key: 'flowerSpeed', label: 'Flower Speed', category: 'Flower', min: 0.1, max: 3.0 },
+  { key: 'flowerOpacity', label: 'Flower Opacity', category: 'Flower', min: 0.2, max: 1.5 },
+  { key: 'flowerSymmetry', label: 'Flower Symmetry', category: 'Flower', min: 3.0, max: 12.0, gain: 3 },
   { key: 'glassScale', label: 'Glass Scale', category: 'Glass', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'glassSpeed', label: 'Glass Speed', category: 'Glass', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'dustCrackleIntensity', label: 'Dust Crackle Intensity', category: 'Grain', min: 0.0, max: 1.0 },
@@ -101,8 +121,10 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'gessoTexture', label: 'Gesso Texture', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'gessoResponse', label: 'Gesso Response', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'grainIntensity', label: 'Grain Intensity', category: 'Grain', min: 0.0, max: 1.0 },
+  { key: 'dustCrackleLength', label: 'Grain Crack Length', category: 'Grain', min: 0.3, max: 3.0 },
   { key: 'grainSize', label: 'Grain Size', category: 'Grain', min: 1.0, max: 6.0 },
   { key: 'gridColumns', label: 'Grid Columns', category: 'Grid', min: 2.0, max: 50.0 },
+  { key: 'gridCellAngleStep', label: 'Grid Cell Angle Step', category: 'Grid', min: 0.0, max: 90.0, gain: 20 },
   { key: 'gridRows', label: 'Grid Rows', category: 'Grid', min: 2.0, max: 50.0 },
   // Sides/Variation/Shape Size only affect the Grid *effect*, not the Grid
   // *gradient* (drawGrid.ts only reads gridRows/gridColumns) — a separate
@@ -128,12 +150,15 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'helixTurns', label: 'Helix Turns', category: 'Helix', min: 1.0, max: 20.0 },
   { key: 'invertAmount', label: 'Invert Amount', category: 'Invert', min: 0.0, max: 1.0 },
   { key: 'juliaIterations', label: 'Julia Iterations', category: 'Julia Set', min: 20.0, max: 120.0 },
+  { key: 'juliaReal', label: 'Julia Real', category: 'Julia Set', min: -1.0, max: 1.0 },
+  { key: 'juliaImaginary', label: 'Julia Imaginary', category: 'Julia Set', min: -1.0, max: 1.0 },
   { key: 'juliaSpeed', label: 'Julia Set Speed', category: 'Julia Set', min: 0.1, max: 3.0 },
   { key: 'juliaZoom', label: 'Julia Zoom', category: 'Julia Set', min: 0.3, max: 3.0 },
   { key: 'kaleidoscopeRotateSpeed', label: 'Kaleidoscope Rotate Speed', category: 'Kaleidoscope', min: 0.0, max: 5.0 },
   { key: 'kaleidoscopeSegments', label: 'Kaleidoscope Segments', category: 'Kaleidoscope', min: 2.0, max: 50.0 },
   { key: 'lavaBlobCount', label: 'Lava Blob Count', category: 'Lava Lamp', min: 2.0, max: 12.0 },
   { key: 'lavaBlobSize', label: 'Lava Blob Size', category: 'Lava Lamp', min: 0.05, max: 0.4 },
+  { key: 'lavaSpeed', label: 'Lava Speed', category: 'Lava Lamp', min: 0.1, max: 5.0 },
   { key: 'lightningBoltCount', label: 'Lightning Bolt Count', category: 'Lightning', min: 1.0, max: 8.0 },
   { key: 'lightningJitter', label: 'Lightning Jitter', category: 'Lightning', min: 0.1, max: 1.0 },
   { key: 'lightningBranchiness', label: 'Lightning Branchiness', category: 'Lightning', min: 0.0, max: 0.85 },
@@ -199,6 +224,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'stackLength', label: 'Stack Length', category: 'Stack', min: 0.1, max: 2.0 },
   { key: 'hatchLayers', label: 'Hatch Layers', category: 'Hatch', min: 1.0, max: 4.0 },
   { key: 'hatchSpacing', label: 'Hatch Spacing', category: 'Hatch', min: 3.0, max: 40.0 },
+  { key: 'hatchResponse', label: 'Hatch Response', category: 'Hatch', min: 0.0, max: 1.0 },
   { key: 'hatchSpeed', label: 'Hatch Speed', category: 'Hatch', min: 0.1, max: 3.0 },
   { key: 'stackResponse', label: 'Stack Response', category: 'Stack', min: 0.0, max: 1.0 },
   { key: 'stackSpeed', label: 'Stack Speed', category: 'Stack', min: 0.1, max: 3.0 },
@@ -214,6 +240,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'topographicLineWidth', label: 'Topographic Line Width', category: 'Topographic', min: 0.01, max: 0.15 },
   { key: 'topographicScale', label: 'Topographic Scale', category: 'Topographic', min: 10.0, max: 100.0 },
   { key: 'triangleSize', label: 'Triangle Size', category: 'Triangulate', min: 10.0, max: 200.0 },
+  { key: 'triangulateVariation', label: 'Triangulate Variation', category: 'Triangulate', min: 0.0, max: 1.0 },
   { key: 'truchetSize', label: 'Truchet Size', category: 'Truchet', min: 15.0, max: 100.0 },
   { key: 'truchetThickness', label: 'Truchet Thickness', category: 'Truchet', min: 1.0, max: 15.0 },
   { key: 'truchetSpeed', label: 'Truchet Speed', category: 'Truchet', min: 0.1, max: 3.0 },
@@ -237,6 +264,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'wavesSpeed', label: 'Waves Speed', category: 'Waves', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'windmillRotations', label: 'Windmill Rotations', category: 'Windmill', min: 1.0, max: 10.0 },
   { key: 'windmillThickness', label: 'Windmill Thickness', category: 'Windmill', min: 5.0, max: 100.0 },
+  { key: 'windmillZoomResponse', label: 'Windmill Zoom Response', category: 'Windmill', min: 0.0, max: 1.0 },
   { key: 'windmillTightness', label: 'Windmill Tightness', category: 'Windmill', min: 1.0, max: 20.0 },
 ];
 
@@ -262,4 +290,9 @@ export const MODULATABLE_PARAMS_BY_CATEGORY: { category: string; params: Modulat
 const TARGET_BY_KEY: Record<string, string> = Object.fromEntries(
   MODULATABLE_PARAMS.filter((p) => p.target).map((p) => [p.key, p.target as string]),
 );
+// Amount multiplier per setting (see ModulatableParam.gain).
+export const MODULATION_GAIN: Record<string, number> = Object.fromEntries(
+  MODULATABLE_PARAMS.filter((p) => p.gain).map((p) => [p.key, p.gain as number]),
+);
+
 export const resolveModulationKey = (key: string): string => TARGET_BY_KEY[key] ?? key;

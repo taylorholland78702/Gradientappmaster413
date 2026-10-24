@@ -1,12 +1,13 @@
 import { MODULATABLE_PARAMS, type ModulatableParam } from './modulatableParams';
-import { GRADIENT_MOD_CATEGORY, STYLED_GRADIENTS_CATEGORY } from './gradientModCategories';
+import { GRADIENT_MOD_CATEGORY, STYLED_GRADIENTS_CATEGORY, GLOBAL_CATEGORIES } from './gradientModCategories';
+import { STYLE_SHAPE_CONTROLS } from './styleShapeControls';
 import { EFFECT_MOD_CATEGORY, EFFECT_LABELS } from './effectRegistry';
 import { FULL_GRADIENT_TYPES, GRADIENT_DISPLAY_NAMES, STYLE_FIELD_GRADIENT_TYPES, familyOf } from './gradientEffects';
 
 // The Advanced audio picker is a tree: Type (Gradient / Effect) > Source (one gradient or effect, merged gradients
 // grouped under their family) > Parameter (grouped by the mode it belongs to when the source has several).
 
-export type ModKind = 'gradient' | 'effect';
+export type ModKind = 'gradient' | 'effect' | 'global';
 
 export interface ModSource {
   kind: ModKind;
@@ -43,6 +44,7 @@ export const MOD_SOURCES: ModSource[] = (() => {
   for (const [id, categories] of Object.entries(EFFECT_MOD_CATEGORY)) {
     if (categories.length) out.push({ kind: 'effect', id, label: EFFECT_LABELS[id] ?? id, name: EFFECT_LABELS[id] ?? id, categories });
   }
+  for (const category of GLOBAL_CATEGORIES) out.push({ kind: 'global', id: category, label: category, name: category, categories: [category] });
   return out;
 })();
 
@@ -79,11 +81,17 @@ export function shortLabel(param: ModulatableParam, ...owners: string[]): string
   return w.slice(best).join(' ');
 }
 
+// The two shape sliders of a styled gradient carry that gradient's own names (Smoke's Cloud and Stars).
+function shapeLabel(param: ModulatableParam, source: ModSource): string | null {
+  const index = param.key === 'fieldShapeA' ? 0 : param.key === 'fieldShapeB' ? 1 : -1;
+  return index >= 0 ? STYLE_SHAPE_CONTROLS[source.id]?.[index]?.label ?? null : null;
+}
+
 // What a source's parameters look like in the third select: one group per category when it has several.
 export function paramGroups(source: ModSource): { title: string | null; params: { param: ModulatableParam; label: string }[] }[] {
   const groups = source.categories.map(category => ({
     title: source.categories.length > 1 ? (MODE_TITLES[category] ?? (category === source.categories[0] ? 'Settings' : category)) : null,
-    params: MODULATABLE_PARAMS.filter(p => p.category === category).map(param => ({ param, label: shortLabel(param, category, source.label) })).sort((a, b) => a.label.localeCompare(b.label)),
+    params: MODULATABLE_PARAMS.filter(p => p.category === category).map(param => ({ param, label: shapeLabel(param, source) ?? shortLabel(param, category, source.label) })).sort((a, b) => a.label.localeCompare(b.label)),
   })).filter(g => g.params.length > 0);
   return groups;
 }

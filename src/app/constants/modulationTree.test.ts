@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import canvasDrawTypesSource from '../hooks/canvasDrawTypes.ts?raw';
-import { MODULATABLE_PARAMS, resolveModulationKey } from './modulatableParams';
+import interactiveGradientSource from '../components/InteractiveGradient.tsx?raw';
+import { MODULATABLE_PARAMS, MODULATION_GAIN, resolveModulationKey } from './modulatableParams';
 import { MOD_SOURCES, paramGroups, bindingLabel, groupedSources, sourcesOf, shortLabel } from './modulationTree';
 import { modCategoriesFor } from './gradientModCategories';
 import { EFFECT_MOD_CATEGORY } from './effectRegistry';
 import { FULL_GRADIENT_TYPES } from './gradientEffects';
+import { STYLE_SHAPE_CONTROLS } from './styleShapeControls';
 import { LIVE_SPEED_KEYS, liveSpeed, publishLiveSpeeds } from './liveSpeeds';
 import { applyAudioBindings } from '../hooks/useCanvasDraw';
 
@@ -86,5 +88,44 @@ describe('clock-driven speeds follow audio bindings', () => {
     expect(liveSpeed({ noiseSpeed: -3 }, 'noiseSpeed', 1)).toBe(0);
     expect(liveSpeed({}, 'noiseSpeed', 1.5)).toBe(1.5);
     expect(liveSpeed(undefined, 'noiseSpeed', 0.4)).toBe(0.4);
+  });
+});
+
+describe('every bindable setting reaches the draw', () => {
+  // A binding only changes a setting the draw context already carries, so each one has to be handed to useCanvasDraw.
+  const handedToDraw = (() => {
+    const start = interactiveGradientSource.indexOf('useCanvasDraw({');
+    let depth = 0, end = start;
+    for (let i = interactiveGradientSource.indexOf('(', start); i < interactiveGradientSource.length; i++) {
+      if (interactiveGradientSource[i] === '(') depth++;
+      else if (interactiveGradientSource[i] === ')' && --depth === 0) { end = i; break; }
+    }
+    const memoStart = interactiveGradientSource.indexOf('const drawParams = useMemo(');
+    const text = interactiveGradientSource.slice(start, end) + interactiveGradientSource.slice(memoStart, interactiveGradientSource.indexOf('}), [', memoStart));
+    return new Set(text.match(/\b\w+\b/g));
+  })();
+  // Put together inside useCanvasDraw from a larger object.
+  const VIRTUAL = new Set(['fieldGradeBrightness', 'fieldGradeContrast', 'fieldGradeSaturation']);
+
+  it('is passed to useCanvasDraw', () => {
+    const missing = MODULATABLE_PARAMS.map(p => resolveModulationKey(p.key)).filter(k => !handedToDraw.has(k) && !VIRTUAL.has(k));
+    expect(missing).toEqual([]);
+  });
+
+  it('scales wide-range settings so one Amount feels alike across them', () => {
+    expect(MODULATION_GAIN.paletteHue).toBeGreaterThan(1);
+    expect(MODULATION_GAIN.noiseScale).toBeUndefined();
+  });
+
+  it('names the two shape sliders of a styled gradient after that gradient', () => {
+    const smoke = MOD_SOURCES.find(s => s.id === 'smoke')!;
+    const labels = paramGroups(smoke).flatMap(g => g.params.map(p => p.label));
+    expect(labels).toEqual(expect.arrayContaining([STYLE_SHAPE_CONTROLS.smoke[0].label, STYLE_SHAPE_CONTROLS.smoke[1].label, 'Swirl']));
+  });
+
+  it('offers the palette, palette mapping and finishing settings under Global', () => {
+    expect(sourcesOf('global').map(s => s.label).sort()).toEqual(['Finishing', 'Palette', 'Palette Mapping']);
+    expect(bindingLabel('paletteHue')).toBe('Palette · Hue');
+    expect(bindingLabel('fieldExposure')).toBe('Finishing · Exposure');
   });
 });
