@@ -1,6 +1,7 @@
 import { MODULATABLE_PARAMS } from './modulatableParams';
 import { EFFECT_MOD_CATEGORY } from './effectRegistry';
 import { GRADIENT_MOD_CATEGORY } from '../hooks/useRandomization';
+import { STYLE_FIELD_GRADIENT_TYPES } from './gradientEffects';
 
 // Which saved settings matter to a given look. A share link carries only the settings that can change what the
 // look shows, so it stays short: a Rays gradient with Grain does not need Julia's Real/Imaginary values or the
@@ -73,6 +74,8 @@ const MODULATABLE_CATEGORY: ReadonlyMap<string, string> = new Map(MODULATABLE_PA
 // The modulation categories a look uses: its gradient's and its effects'.
 export function activeCategories(gradientType: string, effects: readonly string[]): Set<string> {
   const out = new Set<string>(GRADIENT_MOD_CATEGORY[gradientType] ?? []);
+  // Swirl is shared by every styled gradient but belongs to none of their own categories.
+  if ((STYLE_FIELD_GRADIENT_TYPES as readonly string[]).includes(gradientType)) out.add('Styled gradients');
   for (const e of effects) for (const c of EFFECT_MOD_CATEGORY[e] ?? []) out.add(c);
   return out;
 }

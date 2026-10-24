@@ -3,6 +3,10 @@ import snapshotTypesSource from '../hooks/snapshotTypes.ts?raw';
 import { compactLook, expandLook, readShareParam, shareParam } from './shareLink';
 import { SHARE_DEFAULTS_V1 } from '../constants/shareDefaults';
 import { isClassified } from '../constants/shareRelevance';
+import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
+import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
+import { GRADIENT_MOD_CATEGORY } from '../hooks/useRandomization';
 import { encodePresetData } from './presetShare';
 import { deflateSync } from 'fflate';
 import sharedSnapshot from './__fixtures__/sharedSnapshot.json';
@@ -63,6 +67,18 @@ describe('share link format', () => {
     expect(back.noiseSpeed).toBe(2.5);
     expect(back.grainIntensity).toBe(0.9);
     expect(compactLook({ gradientType: 'noise', juliaZoom: 3 }).juliaZoom).toBeUndefined();
+  });
+
+  it('keeps Swirl for every styled gradient, and drops it elsewhere', () => {
+    for (const id of STYLE_FIELD_GRADIENT_TYPES) {
+      expect(compactLook({ gradientType: id, fieldSwirl: 1.5, gradientColors: [{ r: 1, g: 2, b: 3 }] }).fieldSwirl, id).toBe(1.5);
+    }
+    expect(compactLook({ gradientType: 'angle', fieldSwirl: 1.5 }).fieldSwirl).toBeUndefined();
+  });
+
+  it('every audio-modulation category belongs to a gradient or an effect, so its settings are carried when that one is in use', () => {
+    const owned = new Set<string>([...Object.values(GRADIENT_MOD_CATEGORY).flat(), ...Object.values(EFFECT_MOD_CATEGORY).flat(), 'Styled gradients']);
+    expect(MODULATABLE_PARAMS_BY_CATEGORY.map(g => g.category).filter(c => !owned.has(c))).toEqual([]);
   });
 
   it('still opens the old long links', () => {
