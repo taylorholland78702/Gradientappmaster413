@@ -125,6 +125,7 @@ import { useLooks } from '../hooks/useLooks';
 import { useGestureActions } from '../hooks/useGestureActions';
 import { useSharedPresetLink } from '../hooks/useSharedPresetLink';
 import { useDrawerTouchScroll } from '../hooks/useDrawerTouchScroll';
+import { useFullscreenSync } from '../hooks/useFullscreenSync';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
@@ -1176,40 +1177,7 @@ export function InteractiveGradient() {
 
   // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
 
-  useEffect(() => {
-    const currentRef = containerRef.current;
-    if (currentRef) {
-      const handleFullScreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement);
-          };
-
-      currentRef.addEventListener('fullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('mozfullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('webkitfullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('msfullscreenchange', handleFullScreenChange);
-
-      return () => {
-        currentRef.removeEventListener('fullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('mozfullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('msfullscreenchange', handleFullScreenChange);
-      };
-    }
-  }, []);
-
-  // Preset load effect, savePreset, loadPreset, deletePreset, renamePreset, updatePreset are now in usePresets hook
-
-  // Listen for fullscreen changes (e.g., user pressing ESC)
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, []);
+  useFullscreenSync({ containerRef, setIsFullscreen });
 
   useGlobalHotkeys({ shuffleAudiovisuals, gradientTypeRef, undoLastChange, redoLastChange, shuffleGradientType, randomizeEffects, setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults, toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection, evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab, isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook, goBack, goForward });
 
