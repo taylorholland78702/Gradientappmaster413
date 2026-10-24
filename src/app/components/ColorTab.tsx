@@ -224,7 +224,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                 onChange={(e) => setSwatch(i, e.target.value)}
                 title={`Color ${i + 1}`}
                 aria-label={`Palette color ${i + 1}`}
-                className="w-11 h-11 lg:w-6 lg:h-6 rounded-none cursor-pointer border border-wav-line bg-transparent p-0"
+                className="w-11 h-11 lg:w-7 lg:h-7 rounded-none cursor-pointer border border-wav-line bg-transparent p-0"
               />
               {gradientColors.length > MIN_PALETTE_COLORS && (
                 <button

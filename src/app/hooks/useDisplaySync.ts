@@ -52,7 +52,7 @@ export function useDisplaySync({
       }
     };
 
-    applyRaw(localStorage.getItem(DISPLAY_SYNC_KEY));
+    try { applyRaw(localStorage.getItem(DISPLAY_SYNC_KEY)); } catch { /* storage blocked: rely on BroadcastChannel */ }
 
     const handleStorage = (e: StorageEvent) => {
       if (e.key === DISPLAY_SYNC_KEY) applyRaw(e.newValue);

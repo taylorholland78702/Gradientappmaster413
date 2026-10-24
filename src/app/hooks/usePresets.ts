@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getFirebase } from '../../firebase';
+import { notify } from '../utils/notify';
 
 // Firestore (and its `db`/`auth.currentUser` dependency) is loaded lazily —
 // presets already work fully offline via localStorage below, so nothing in
@@ -86,12 +87,16 @@ function safeSetLocalStorage(key: string, value: string): boolean {
     return true;
   } catch (err) {
     console.error(`Failed to persist ${key} to localStorage:`, err);
-    alert(
+    notify(
       "Couldn't save — your browser's local storage is full. " +
       'Try deleting a few old presets (or rated results) and saving again.'
     );
     return false;
   }
+}
+
+function safeGetLocalStorage(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
 }
 
 export function usePresets(params: UsePresetsParams) {
@@ -137,7 +142,7 @@ export function usePresets(params: UsePresetsParams) {
     const migrate = (list: SavedPreset[]): SavedPreset[] =>
       list.map(p => (p.id ? p : { ...p, id: genId() }));
 
-    const local = localStorage.getItem('gradientPresets');
+    const local = safeGetLocalStorage('gradientPresets');
     if (local) {
       try {
         const parsed = migrate(JSON.parse(local));
@@ -151,13 +156,13 @@ export function usePresets(params: UsePresetsParams) {
         // data, but at least tells the user what happened instead of just
         // "my presets are all gone" with no explanation.
         console.error('Failed to parse stored gradientPresets:', err);
-        alert(
+        notify(
           "Couldn't load your saved presets — the saved data looks corrupted. " +
           "They haven't been deleted, but can't be read right now."
         );
       }
     }
-    const localFolders = localStorage.getItem('gradientPresetFolders');
+    const localFolders = safeGetLocalStorage('gradientPresetFolders');
     if (localFolders) {
       try { setFolderNames(JSON.parse(localFolders)); } catch (err) {
         if (import.meta.env.DEV) console.warn('Failed to parse stored gradientPresetFolders:', err);
@@ -219,7 +224,7 @@ export function usePresets(params: UsePresetsParams) {
   // Save preset
   const savePreset = async () => {
     if (!presetName.trim()) {
-      alert('Please enter a preset name');
+      notify('Please enter a preset name');
       return;
     }
     await savePresetWithName(presetName.trim());
@@ -258,7 +263,7 @@ export function usePresets(params: UsePresetsParams) {
       applyPresetData(sanitizePresetData(preset.data) as PresetData);
     } catch (err) {
       console.error('Failed to load preset:', err);
-      alert(`Couldn't load "${preset.name}" — this preset's data looks corrupted.`);
+      notify(`Couldn't load "${preset.name}" — this preset's data looks corrupted.`);
       return;
     }
     setIsPresetModalOpen(false);

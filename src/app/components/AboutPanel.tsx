@@ -60,9 +60,7 @@ export function AboutPanel({
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="font-semibold text-white">Rail icons</p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — hide the control rail</span><Kbd label="H" /></p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
+            <p className="font-semibold text-white">Rail buttons</p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
             <button
               onClick={() => setIsAutoShuffleOn(prev => !prev)}
@@ -101,16 +99,18 @@ export function AboutPanel({
               />
               <span className="text-[10px] text-wav-text-3 shrink-0">sec</span>
             </div>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save PNG — save the current frame; the button opens size and aspect, S saves right away</span><Kbd label="S" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation; the button opens size and length</span><Kbd label="V" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="font-semibold text-white">Playback row</p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
+            <p className="font-semibold text-white">Keyboard only</p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Stop weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / stop — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</span><Kbd label="D" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reverse — flip the rotation direction</span><Kbd label="D" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Hide or show the control rail</span><Kbd label="H" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — open it for live/projector output with no UI</span><Kbd label="Shift+P" /></p>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -118,7 +118,7 @@ export function AboutPanel({
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick, generate or extract a color palette</span><Kbd label="C" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
           </div>
 

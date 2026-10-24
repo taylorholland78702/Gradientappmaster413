@@ -147,6 +147,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
           <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-white transition-all ${isMicActive ? 'hover:bg-wav-hover' : 'opacity-40'}`}>
             {isMicActive && (
               <select
+                aria-label="Audio input device"
                 value={selectedAudioDeviceId}
                 onChange={(e) => {
                   setSelectedAudioDeviceId(e.target.value);
@@ -349,6 +350,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                         <div key={b.id} className="flex items-center gap-1.5 bg-wav-field px-1.5 py-1">
                           <span className="text-[10px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
                           <select
+                            aria-label={`Audio band for ${meta ? meta.label : b.param}`}
                             value={b.band}
                             onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
                             className="text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-0.5 flex-shrink-0"
@@ -380,6 +382,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 )}
                 <div className="flex items-center gap-1">
                   <select
+                    aria-label="Parameter to modulate"
                     value={modParam}
                     onChange={(e) => setModParam(e.target.value)}
                     className="flex-[4] min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
@@ -393,6 +396,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     ))}
                   </select>
                   <select
+                    aria-label="Audio band"
                     value={modBand}
                     onChange={(e) => setModBand(e.target.value as AudioBinding['band'])}
                     className="text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1 flex-shrink-0"
@@ -403,6 +407,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </select>
                   <input
                     type="number"
+                    aria-label="Modulation amount"
                     min="-10" max="10" step="0.1"
                     value={modAmount}
                     onChange={(e) => setModAmount(Number(e.target.value))}

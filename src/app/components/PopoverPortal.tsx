@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode, RefObject } from 'react';
 import { POPOVER_SCALE } from '../constants/autoShuffle';
@@ -8,6 +9,13 @@ export type PopoverAnchor = { top?: number; bottom?: number; left: number; width
 export function PopoverPortal({ anchor, popoverRef, isMobile, title, icon, children }: {
   anchor: PopoverAnchor; popoverRef: RefObject<HTMLDivElement>; isMobile: boolean; title: string; icon?: ReactNode; children: ReactNode;
 }) {
+  // The popout is portaled to the end of <body>, so keyboard users would otherwise Tab away from it.
+  // Move focus into it on open and hand it back to the control that opened it on close.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    popoverRef.current?.focus({ preventScroll: true });
+    return () => { if (opener && document.contains(opener)) opener.focus({ preventScroll: true }); };
+  }, [popoverRef]);
   // Styled to match the panel's other popouts (bg-wav-surface, white text,
   // same corner treatment as the drawer) — this popover is portaled to
   // document.body, outside the dock's own DOM subtree, so it doesn't get
@@ -16,10 +24,13 @@ export function PopoverPortal({ anchor, popoverRef, isMobile, title, icon, child
   return createPortal(
     <div
       ref={popoverRef}
+      role="dialog"
+      aria-label={title}
+      tabIndex={-1}
       // Fixed flush to the rail now (like the drawer) instead of
       // floating free — square on the edge touching the rail, rounded
       // on the edge facing the canvas.
-      className={`fixed z-50 shadow-sm bg-wav-surface rounded-none border border-wav-line ${isMobile ? 'wav-mobile' : ''}`}
+      className={`fixed z-50 shadow-sm bg-wav-surface rounded-none border border-wav-line outline-none ${isMobile ? 'wav-mobile' : ''}`}
       style={{
         top: anchor.top,
         bottom: anchor.bottom,
