@@ -9,6 +9,7 @@
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const MAX_BALLS = 14;
 
@@ -48,7 +49,7 @@ export function detectMetaballsGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: DrawCtx) {
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     metaballAnimTime, metaballCount, metaballSize, gradientAngle, zoom,
@@ -97,7 +98,7 @@ function renderMetaballsStage(gl: WebGL2RenderingContext, outputFramebuffer: Web
   drawFieldFullscreen(gl);
 }
 
-export function drawMetaballsGL(P: any): CanvasGradient | undefined {
+export function drawMetaballsGL(P: DrawCtx): CanvasGradient | undefined {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -113,7 +114,7 @@ export function drawMetaballsGL(P: any): CanvasGradient | undefined {
 
 // Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
 // glEffectPipeline.ts. Background fill skipped here (see Caustics comment).
-export function getMetaballsGLStage(P: any): GLEffectStage {
+export function getMetaballsGLStage(P: DrawCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'metaballs',

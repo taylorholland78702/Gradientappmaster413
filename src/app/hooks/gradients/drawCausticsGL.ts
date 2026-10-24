@@ -14,6 +14,7 @@
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -54,7 +55,7 @@ export function detectCausticsGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: DrawCtx) {
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     causticsAnimTime, causticsScale, causticsBrightness, gradientAngle, zoom,
@@ -106,7 +107,7 @@ function renderCausticsStage(gl: WebGL2RenderingContext, outputFramebuffer: WebG
   drawFieldFullscreen(gl);
 }
 
-export function drawCausticsGL(P: any): CanvasGradient | undefined {
+export function drawCausticsGL(P: DrawCtx): CanvasGradient | undefined {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -125,7 +126,7 @@ export function drawCausticsGL(P: any): CanvasGradient | undefined {
 // The '#000814' background fill the standalone path does before blitting
 // is skipped here — the shader is a fullscreen opaque pass, so that fill
 // is fully overdrawn either way; it's dead weight, not a visible layer.
-export function getCausticsGLStage(P: any): GLEffectStage {
+export function getCausticsGLStage(P: DrawCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'caustics',

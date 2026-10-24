@@ -31,6 +31,7 @@ import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
 import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
 import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type StyleFieldId } from './drawStyleFieldGL';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // Lazily code-split the heaviest, least-often-selected gradients (large
 // simulation-based implementations that are rarely anyone's first pick —
@@ -43,9 +44,9 @@ import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type 
 // path bundle/parse time, not about deferring real work. Until a chunk
 // resolves, its lazy wrapper returns undefined (same as any other gradient
 // draw fn returning nothing for a frame) rather than throwing.
-function lazyGradient<T extends (P: any) => CanvasGradient | undefined>( // eslint-disable-line @typescript-eslint/no-explicit-any
+function lazyGradient<T extends (P: DrawCtx) => CanvasGradient | undefined>(
   load: () => Promise<T>,
-): (P: any) => CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+): (P: DrawCtx) => CanvasGradient | undefined {
   let impl: T | null = null;
   load().then((fn) => { impl = fn; });
   return (P) => (impl ? impl(P) : undefined);
@@ -60,7 +61,7 @@ const drawReactionDiffusionLazy = lazyGradient(() =>
     // drawAngleAuto etc. below) — WebGL when supported, CPU fallback on
     // any failure — just constructed once both chunks have arrived instead
     // of at module-load time.
-    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    (P: DrawCtx) => {
       if (gl.detectRDGLSupport()) {
         try {
           return gl.drawReactionDiffusionGL(P);
@@ -75,7 +76,7 @@ const drawReactionDiffusionLazy = lazyGradient(() =>
 
 const drawFireworksLazy = lazyGradient(() =>
   Promise.all([import('./drawFireworks'), import('./drawFireworksGL')]).then(([cpu, gl]) =>
-    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    (P: DrawCtx) => {
       if (gl.detectFireworksGLSupport()) {
         try {
           return gl.drawFireworksGL(P);
@@ -90,7 +91,7 @@ const drawFireworksLazy = lazyGradient(() =>
 
 const drawLightningLazy = lazyGradient(() =>
   Promise.all([import('./drawLightning'), import('./drawLightningGL')]).then(([cpu, gl]) =>
-    (P: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    (P: DrawCtx) => {
       if (gl.detectLightningGLSupport()) {
         try {
           return gl.drawLightningGL(P);
@@ -103,7 +104,7 @@ const drawLightningLazy = lazyGradient(() =>
   ),
 );
 
-function drawNoiseAuto(P: any): CanvasGradient | undefined {
+function drawNoiseAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectNoiseGLSupport()) {
     try {
       return drawNoiseGL(P);
@@ -114,7 +115,7 @@ function drawNoiseAuto(P: any): CanvasGradient | undefined {
   return drawNoise(P);
 }
 
-function drawAngleAuto(P: any): CanvasGradient | undefined {
+function drawAngleAuto(P: DrawCtx): CanvasGradient | undefined {
   // Hard Edge has no GL implementation (the shader always blends) — skip
   // straight to the CPU path, which does implement it, rather than
   // silently rendering the smooth GL version with the toggle ignored.
@@ -128,7 +129,7 @@ function drawAngleAuto(P: any): CanvasGradient | undefined {
   return drawAngle(P);
 }
 
-function drawCausticsAuto(P: any): CanvasGradient | undefined {
+function drawCausticsAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectCausticsGLSupport()) {
     try {
       return drawCausticsGL(P);
@@ -139,7 +140,7 @@ function drawCausticsAuto(P: any): CanvasGradient | undefined {
   return drawCaustics(P);
 }
 
-function drawMarbleAuto(P: any): CanvasGradient | undefined {
+function drawMarbleAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectMarbleGLSupport()) {
     try {
       return drawMarbleGL(P);
@@ -150,7 +151,7 @@ function drawMarbleAuto(P: any): CanvasGradient | undefined {
   return drawMarble(P);
 }
 
-function drawLavaLampAuto(P: any): CanvasGradient | undefined {
+function drawLavaLampAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectLavaLampGLSupport()) {
     try {
       return drawLavaLampGL(P);
@@ -161,7 +162,7 @@ function drawLavaLampAuto(P: any): CanvasGradient | undefined {
   return drawLavaLamp(P);
 }
 
-function drawJuliaAuto(P: any): CanvasGradient | undefined {
+function drawJuliaAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectJuliaGLSupport()) {
     try {
       return drawJuliaGL(P);
@@ -172,7 +173,7 @@ function drawJuliaAuto(P: any): CanvasGradient | undefined {
   return drawJulia(P);
 }
 
-function drawMetaballsAuto(P: any): CanvasGradient | undefined {
+function drawMetaballsAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectMetaballsGLSupport()) {
     try {
       return drawMetaballsGL(P);
@@ -187,7 +188,7 @@ function drawMetaballsAuto(P: any): CanvasGradient | undefined {
 // default burst mode already composites via native canvas gradients (see
 // drawRadialBurstGL.ts) — so this checks the mode before even attempting
 // the GL path, unlike the other Auto wrappers here.
-function drawRadialBurstAuto(P: any): CanvasGradient | undefined {
+function drawRadialBurstAuto(P: DrawCtx): CanvasGradient | undefined {
   if (P.radialBurstMode === 'sweep' && detectRadialBurstGLSupport()) {
     try {
       return drawRadialBurstSweepGL(P);
@@ -198,7 +199,7 @@ function drawRadialBurstAuto(P: any): CanvasGradient | undefined {
   return drawRadialBurst(P);
 }
 
-function drawTilingAuto(P: any): CanvasGradient | undefined {
+function drawTilingAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectTilingGLSupport()) {
     try {
       return drawTilingGL(P);
@@ -209,7 +210,7 @@ function drawTilingAuto(P: any): CanvasGradient | undefined {
   return drawTiling(P);
 }
 
-function drawTopographicAuto(P: any): CanvasGradient | undefined {
+function drawTopographicAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectTopographicGLSupport()) {
     try {
       return drawTopographicGL(P);
@@ -220,7 +221,7 @@ function drawTopographicAuto(P: any): CanvasGradient | undefined {
   return drawTopographic(P);
 }
 
-function drawVoronoiAuto(P: any): CanvasGradient | undefined {
+function drawVoronoiAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectVoronoiGLSupport()) {
     try {
       return drawVoronoiGL(P);
@@ -234,7 +235,7 @@ function drawVoronoiAuto(P: any): CanvasGradient | undefined {
 // Only the 'helix' submode has a genuine per-pixel loop worth porting —
 // the default 'blades' mode already draws via vector paths, same reasoning
 // as Radial Burst's sweep-only port above.
-function drawWindmillAuto(P: any): CanvasGradient | undefined {
+function drawWindmillAuto(P: DrawCtx): CanvasGradient | undefined {
   if (P.windmillMode === 'helix' && detectWindmillGLSupport()) {
     try {
       return drawWindmillHelixGL(P);
@@ -249,7 +250,7 @@ function drawWindmillAuto(P: any): CanvasGradient | undefined {
 // no WebGL2, or if a style's shader won't compile on this device, they fall
 // back to a CPU stand-in (drawStyleFieldCPU.ts: same family of picture, simpler math) — still animated and palette-driven — rather
 // than leaving the canvas blank.
-function styleFieldAuto(id: StyleFieldId, P: any): CanvasGradient | undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+function styleFieldAuto(id: StyleFieldId, P: DrawCtx): CanvasGradient | undefined {
   if (!hasStyleFieldFailed(id) && detectStyleFieldGLSupport()) {
     try {
       return drawStyleFieldGL(id, P);
@@ -261,7 +262,7 @@ function styleFieldAuto(id: StyleFieldId, P: any): CanvasGradient | undefined { 
 }
 
 // Alphabetical by id — keep new entries sorted in.
-export const GRADIENT_DRAW_FNS: Record<string, (P: any) => CanvasGradient | undefined> = {
+export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | undefined> = {
   'angle': drawAngleAuto,
   'attractor': drawAttractorLazy,
   'bokeh': (P) => styleFieldAuto('bokeh', P),

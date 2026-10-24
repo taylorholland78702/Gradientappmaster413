@@ -17,9 +17,9 @@ const isColor = (c: unknown): boolean => {
 // Cleans a snapshot that came from outside the app (a ?preset= link, a stored or synced preset) before
 // it reaches applySnapshot: numbers are clamped to their control's range, unknown ids are dropped, and
 // effect lists are capped to the cost budget. Returns a new object; never throws.
-export function sanitizeSnapshot<T extends Record<string, any>>(input: T): T { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const src: Record<string, any> = input && typeof input === 'object' && !Array.isArray(input) ? input : {}; // eslint-disable-line @typescript-eslint/no-explicit-any
-  const out: Record<string, any> = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+export function sanitizeSnapshot<T extends object>(input: T): T {
+  const src = (input && typeof input === 'object' && !Array.isArray(input) ? input : {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(src)) {
     const limit = SNAPSHOT_LIMITS[key];
     if (limit) {

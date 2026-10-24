@@ -1,3 +1,4 @@
+import type { CanvasDrawParams, DrawCtx, EffectCtx } from './canvasDrawTypes';
 import { useEffect, useRef } from 'react';
 import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
@@ -38,7 +39,7 @@ import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL
 // default modes already draw via native canvas ops and aren't part of
 // this). Mirrors each gradient's own Auto-wrapper eligibility check in
 // gradients/_registry.ts.
-function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+function getGradientGLStage(gradientType: string, drawCtx: DrawCtx): GLEffectStage | null {
   switch (gradientType) {
     case 'noise': return detectNoiseGLSupport() ? getNoiseGLStage(drawCtx) : null;
     // angleHardEdge forces the CPU path below (drawAngle.ts) since the GL
@@ -67,7 +68,7 @@ function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>):
 // their standalone Auto wrappers (effectRegistry.ts) already uses, just
 // surfaced here so a *run* of them can be detected before any of them
 // actually draws.
-function getGLStageForEffect(effectType: string, effectCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+function getGLStageForEffect(effectType: string, effectCtx: EffectCtx): GLEffectStage | null {
   if (effectType === 'liquid' && detectLiquidGLSupport()) {
     return getLiquidGLStage(effectCtx);
   }
@@ -108,7 +109,8 @@ function getScratchOffscreen(key: string, width: number, height: number): Offscr
 // without wiring a bind-icon onto each individual slider row — the context
 // already holds every slider value under that same key via the `...params`
 // spread the caller built it with.
-function applyAudioBindings(target: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+function applyAudioBindings(targetObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+  const target = targetObj as Record<string, unknown>;
   for (const binding of bindings) {
     const key = resolveModulationKey(binding.param);
     const base = target[key];
@@ -126,7 +128,8 @@ function applyAudioBindings(target: Record<string, any>, bindings: { param: stri
 // result into each effect's context avoids re-running the same bindings
 // lookup+math once per active effect for a result that never changes within
 // the frame.
-function computeAudioBoundOverrides(base: Record<string, any>, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
+function computeAudioBoundOverrides(baseObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }): Record<string, number> {
+  const base = baseObj as Record<string, unknown>;
   const overrides: Record<string, number> = {};
   for (const binding of bindings) {
     const key = resolveModulationKey(binding.param);
@@ -179,14 +182,7 @@ export function rotateHue(colors: { r: number; g: number; b: number }[], degrees
   });
 }
 
-// Loosely typed for the same reason as useRandomization.ts/useSnapshot.ts's
-// params: this hook wires together ~180 values/refs/setters spanning
-// nearly every piece of gradient/effect state plus live audio levels and
-// animation refs, since the draw function reads all of it. The build
-// doesn't type-check (esbuild transpile only) — matches the existing
-// PresetData = Record<string, any> convention in usePresets.ts.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CanvasDrawParams = Record<string, any>;
+export type { CanvasDrawParams };
 
 // Draw gradient on canvas — stored imperatively in drawRef so the master RAF
 // can call it without triggering React reconciliation. Only re-assigned
@@ -208,7 +204,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
-    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorPins, colorShiftHue,
+    chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue,
     paletteHue = 0, paletteSaturation = 100, paletteBrightness = 0, paletteContrast = 0, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
@@ -223,11 +219,11 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     halftoneTimeRef, halftoneVariation, isAudioEnabled,
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
     lavaBlobCount, lavaBlobSize, lavaSpeed, liquidScale,
-    liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq, meshGridSize,
-    meshJitter, metaballCount, metaballSize, mirrorMode, mirrorTileCount,
+    liquidStrength, marbleOctaves, marbleTurbulence, marbleVeinFreq,
+    metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
-    plasmaComplexity, plasmaZoomScale, polygon2Sides, posterizeLevels,
+    polygon2Sides, posterizeLevels,
     radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
     resolutionMultiplier,
@@ -545,7 +541,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       hue: paletteHue, saturation: paletteSaturation, brightness: paletteBrightness, contrast: paletteContrast,
     });
 
-    const drawCtx: Record<string, any> = {
+    const drawCtx: DrawCtx = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       fieldAnimTime, auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
       flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime, hatchAnimTime, noiseAnimTime, radialAnimTime,
@@ -589,8 +585,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // Safe because every effect draws synchronously within this same frame
     // before the cache is discarded, and everything the context is built
     // from (params, renderColors, audioBoundOverrides) is frame-constant.
-    const effectCtxCache = new Map<number, Record<string, any> | null>();
-    const buildEffectCtx = (effectType: string, index: number): Record<string, any> | null => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const effectCtxCache = new Map<number, EffectCtx | null>();
+    const buildEffectCtx = (effectType: string, index: number): EffectCtx | null => {
       if (effectCtxCache.has(index)) return effectCtxCache.get(index)!;
       const isFirstEffect = index === 0;
       const audioModulation = (isAudioEnabled && isAudioReactive && isFirstEffect)
@@ -628,7 +624,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       return built;
     };
 
-    const runSingleEffect = (effectType: string, effectCtx: Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const runSingleEffect = (effectType: string, effectCtx: EffectCtx) => {
       ctx.save();
       try {
         const effectDrawFn = EFFECT_DRAW_FNS[effectType];

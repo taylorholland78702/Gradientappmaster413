@@ -14,6 +14,7 @@
 // to the CPU implementation if WebGL2 isn't available or this throws.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 const ZOOM_STEPS = 10;
 const RADIAL_STEPS = 12;
@@ -100,7 +101,7 @@ function renderRadialStage(gl: WebGL2RenderingContext, inputTexture: WebGLTextur
   drawFullscreen(gl);
 }
 
-export function applyBlurZoomGL(P: any): void {
+export function applyBlurZoomGL(P: EffectCtx): void {
   const { canvas, ctx, displayWidth, displayHeight, blurRadialAmount, isAudioReactive, audioMidsLevel } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
@@ -113,7 +114,7 @@ export function applyBlurZoomGL(P: any): void {
   ctx.drawImage(glCanvas, 0, 0, glCanvas.width, glCanvas.height, 0, 0, displayWidth, displayHeight);
 }
 
-export function applyBlurRadialGL(P: any): void {
+export function applyBlurRadialGL(P: EffectCtx): void {
   const { canvas, ctx, displayWidth, displayHeight, blurRadialAmount, isFirstEffect, isAudioReactive, audioMidsLevel } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
@@ -129,7 +130,7 @@ export function applyBlurRadialGL(P: any): void {
 // Used by glEffectPipeline.ts when Blur (zoom/radial) is part of a
 // contiguous run of GL-eligible effects — see that file for why chaining
 // avoids a per-effect canvas round-trip.
-export function getBlurZoomGLStage(P: any): GLEffectStage {
+export function getBlurZoomGLStage(P: EffectCtx): GLEffectStage {
   const { blurRadialAmount, isAudioReactive, audioMidsLevel } = P;
   const amt = Math.min(0.5, (blurRadialAmount / 100) * (isAudioReactive ? 1 + audioMidsLevel * 2 : 1));
   return {
@@ -139,7 +140,7 @@ export function getBlurZoomGLStage(P: any): GLEffectStage {
   };
 }
 
-export function getBlurRadialGLStage(P: any): GLEffectStage {
+export function getBlurRadialGLStage(P: EffectCtx): GLEffectStage {
   const { blurRadialAmount, isFirstEffect, isAudioReactive, audioMidsLevel } = P;
   const sweep = (blurRadialAmount / 50) * (Math.PI / 4) * (isFirstEffect && isAudioReactive ? 1 + audioMidsLevel * 2 : 1);
   return {

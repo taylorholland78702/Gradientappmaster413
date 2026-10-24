@@ -5,7 +5,7 @@ export function useFireworksState() {
   const [fireworksParticleCount, setFireworksParticleCount] = useState(70);
   const [fireworksTrailFade, setFireworksTrailFade] = useState(0.09);
   const fireworksBufferRef = useRef<HTMLCanvasElement | null>(null);
-  const fireworksParticlesRef = useRef<{ x: number; y: number; vx: number; vy: number; life: number; maxLife: number; r: number; g: number; b: number }[]>([]);
+  const fireworksParticlesRef = useRef<{ x: number; y: number; vx: number; vy: number; life: number; maxLife: number; colorIndex: number }[]>([]);
 
   return {
     fireworksCount,

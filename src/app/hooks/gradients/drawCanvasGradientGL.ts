@@ -14,6 +14,7 @@
 // Both entry points return false when WebGL2 is unavailable or the shader
 // fails, and the caller keeps its native-gradient path as the fallback.
 import { FULLSCREEN_VERT_SRC, MAX_FIELD_COLORS, BLEND_COLORS_GLSL, DITHER_GLSL, linkProgram, drawFieldFullscreen, getSharedFieldGL, detectFieldGLSupport, setPaletteMapUniforms } from './glShared';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -50,7 +51,7 @@ type Spec =
   | { shape: 'radial'; cx: number; cy: number; radius: number }
   | { shape: 'linear'; x0: number; y0: number; x1: number; y1: number };
 
-function fillGL(P: any, spec: Spec, colors: RGB[]): boolean { // eslint-disable-line @typescript-eslint/no-explicit-any
+function fillGL(P: DrawCtx, spec: Spec, colors: RGB[]): boolean {
   if (failed || colors.length === 0 || !detectFieldGLSupport()) return false;
   const { canvas, ctx, displayWidth, displayHeight } = P;
   if (canvas.width === 0 || canvas.height === 0) return false;
@@ -102,10 +103,10 @@ function fillGL(P: any, spec: Spec, colors: RGB[]): boolean { // eslint-disable-
   }
 }
 
-export function fillRadialGL(P: any, geom: { cx: number; cy: number; radius: number }, colors: RGB[]): boolean { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function fillRadialGL(P: DrawCtx, geom: { cx: number; cy: number; radius: number }, colors: RGB[]): boolean {
   return fillGL(P, { shape: 'radial', ...geom }, colors);
 }
 
-export function fillLinearGL(P: any, x0: number, y0: number, x1: number, y1: number, colors: RGB[]): boolean { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function fillLinearGL(P: DrawCtx, x0: number, y0: number, x1: number, y1: number, colors: RGB[]): boolean {
   return fillGL(P, { shape: 'linear', x0, y0, x1, y1 }, colors);
 }

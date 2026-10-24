@@ -1,3 +1,4 @@
+import type { RatedSnapshot } from '../snapshotTypes';
 import { useState, useRef } from 'react';
 import type { ColorRGB, GradientType, EffectType } from '../../constants/gradientEffects';
 import { DEFAULT_COLORS, migrateId, migrateIds } from '../../constants/gradientEffects';
@@ -100,11 +101,11 @@ export function useMiscState() {
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [baseAIColors, setBaseAIColors] = useState<ColorRGB[] | null>(null);
   const [showRatingUI, setShowRatingUI] = useState(false);
-  const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: any}>>(() => {
+  const [ratedResults, setRatedResults] = useState<Array<{rating: number; data: RatedSnapshot}>>(() => {
     try {
       const parsed = JSON.parse(localStorage.getItem('gradientRatings') || '[]');
       // Migrate any pre-rename ids in cached rating data (see ID_MIGRATIONS).
-      return parsed.map((r: { rating: number; data: any }) => ({
+      return parsed.map((r: { rating: number; data: RatedSnapshot }) => ({
         ...r,
         data: {
           ...r.data,
@@ -114,7 +115,7 @@ export function useMiscState() {
       }));
     } catch { return []; }
   });
-  const [pendingRatingState, setPendingRatingState] = useState<any>(null);
+  const [pendingRatingState, setPendingRatingState] = useState<RatedSnapshot | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const lastManualZoomTime = useRef<number>(0);

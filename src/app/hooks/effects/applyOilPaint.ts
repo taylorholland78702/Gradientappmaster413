@@ -1,5 +1,6 @@
 import { oilPaintPixels } from './oilPaintPixels';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 // Oil Paint's neighborhood scan is O(width * height * radius^2) — see
 // downscaleCapture.ts for why this cap exists.
@@ -9,7 +10,7 @@ const MAX_DIM = 420;
 // no undo/redo or Display-mode value depends on it.
 let oilPaintTime = 0;
 
-export function applyOilPaint(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function applyOilPaint(P: EffectCtx): void {
   const { displayWidth, displayHeight, oilPaintRadius, oilPaintLevels, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
   const { w, h } = getDownscaleWorkingSize(displayWidth, displayHeight, MAX_DIM);

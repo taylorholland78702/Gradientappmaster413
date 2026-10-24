@@ -1,14 +1,8 @@
+import type { Snapshot, SnapshotParams } from './snapshotTypes';
 import { useCallback } from 'react';
 import { type GradientType, DEFAULT_COLORS, migrateId } from '../constants/gradientEffects';
 
-// Loosely typed for the same reason as useRandomization.ts's params: this
-// hook wires together ~380 values/setters covering every persistable piece
-// of app state (buildSnapshot/applySnapshot are the single source of truth
-// for undo/redo AND presets, so they touch nearly everything by design).
-// The build doesn't type-check (esbuild transpile only) — matches the
-// existing PresetData = Record<string, any> convention in usePresets.ts.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SnapshotParams = Record<string, any>;
+export type { SnapshotParams };
 
 export function useSnapshot(params: SnapshotParams) {
   const {
@@ -389,7 +383,7 @@ export function useSnapshot(params: SnapshotParams) {
       voronoiCellCount, voronoiDistortion,
       waveDistortionRotation]);
 
-  const applySnapshot = useCallback((snapshot: any) => {
+  const applySnapshot = useCallback((snapshot: Snapshot) => {
     const colors = snapshot.gradientColors || DEFAULT_COLORS;
     const targets = snapshot.targetColors || colors;
     setGradientColors(colors);

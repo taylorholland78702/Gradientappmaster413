@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getFirebase } from '../../firebase';
 import { notify } from '../utils/notify';
+import type { Snapshot } from './snapshotTypes';
 
 // Firestore (and its `db`/`auth.currentUser` dependency) is loaded lazily —
 // presets already work fully offline via localStorage below, so nothing in
@@ -24,8 +25,7 @@ export interface ColorRGB {
 // every gradient/effect parameter, not just the ~20 fields from before most
 // of the app's sliders existed. Left loose here since this hook doesn't need
 // to know the exact shape, only that it's a JSON-serializable object.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type PresetData = Record<string, any>;
+export type PresetData = Snapshot;
 
 export interface SavedPreset {
   // Stable identity, independent of array position — the Firestore doc ID.
@@ -175,8 +175,7 @@ export function usePresets(params: UsePresetsParams) {
       const { db, collection, doc, getDoc, getDocs } = await firestore();
       const snap = await getDocs(collection(db, 'users', uid, 'presets'));
       if (!snap.empty) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fromFirestore = migrate(snap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
+        const fromFirestore = migrate(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as SavedPreset));
         // getDocs returns docs sorted by document ID, not creation order —
         // reorder to match whatever's already on screen (from localStorage)
         // so this async update doesn't silently reshuffle the list under a

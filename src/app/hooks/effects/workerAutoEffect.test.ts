@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createWorkerAutoEffect } from './workerAutoEffect';
+import type { EffectCtx } from '../canvasDrawTypes';
+
+// The wrapper only reads these four fields; the test supplies just those.
+const asCtx = (p: object) => p as unknown as EffectCtx;
 
 // Minimal stand-ins for the browser APIs the worker wrapper touches.
 class FakeWorker {
@@ -28,7 +32,7 @@ function setup(snapshotBeforePaint: boolean | undefined) {
     cpuFallback: () => { order.push('cpu'); },
     buildRequest: () => { order.push('snapshot'); return { buffer: new ArrayBuffer(W * H * 4), extra: {} }; },
   });
-  const P = () => ({
+  const P = () => asCtx({
     displayWidth: W, displayHeight: H,
     putScaledImageData: () => { order.push('paint'); },
     drawParamsDirtyRef: { current: false },
@@ -82,7 +86,7 @@ describe('createWorkerAutoEffect', () => {
       cpuFallback: () => { order.push('cpu'); },
       buildRequest: () => { throw new Error('no 2d context'); },
     });
-    const P = { displayWidth: W, displayHeight: H, putScaledImageData: () => {}, drawParamsDirtyRef: { current: false } };
+    const P = asCtx({ displayWidth: W, displayHeight: H, putScaledImageData: () => {}, drawParamsDirtyRef: { current: false } });
     effect(P);
     effect(P);
     expect(order).toEqual(['cpu', 'cpu']);

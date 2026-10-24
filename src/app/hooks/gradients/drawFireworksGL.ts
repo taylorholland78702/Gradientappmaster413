@@ -16,6 +16,7 @@
 // _registry.ts falls back to the CPU implementation if WebGL2 isn't
 // available or this throws.
 import { initPersistentGL, detectParticleGLSupport, drawFadeQuad, drawPoints, toClipSpace, PersistentGLState } from './glParticleShared';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const MAX_PARTICLES = 20000;
 
@@ -26,7 +27,7 @@ export function detectFireworksGLSupport(): boolean {
   return detectParticleGLSupport();
 }
 
-export function drawFireworksGL(P: any): CanvasGradient | undefined {
+export function drawFireworksGL(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx, canvas, displayWidth, displayHeight, gradientColors,
     isAudioEnabled, isAudioReactive, audioSubBassLevel, audioMidsLevel, audioTrebleLevel,

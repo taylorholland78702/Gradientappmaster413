@@ -11,6 +11,7 @@
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -67,7 +68,7 @@ export function detectTilingGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: DrawCtx) {
   const {
     gradientColors, tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset,
   } = P;
@@ -104,7 +105,7 @@ function renderTilingStage(gl: WebGL2RenderingContext, outputFramebuffer: WebGLF
   drawFieldFullscreen(gl);
 }
 
-export function drawTilingGL(P: any): CanvasGradient | undefined {
+export function drawTilingGL(P: DrawCtx): CanvasGradient | undefined {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -118,7 +119,7 @@ export function drawTilingGL(P: any): CanvasGradient | undefined {
 
 // Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
 // glEffectPipeline.ts for why chaining avoids a per-stage canvas round-trip.
-export function getTilingGLStage(P: any): GLEffectStage {
+export function getTilingGLStage(P: DrawCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'tiling',

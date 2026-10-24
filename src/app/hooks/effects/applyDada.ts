@@ -2,6 +2,7 @@ import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2 } from '../../utils/valueNoise';
 import { TWO_PI } from '../../constants/gradientEffects';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 // Working resolution cap — see downscaleCapture.ts. Keeps cost roughly
 // constant regardless of the real canvas size, and keeps panel/border sizes
@@ -20,7 +21,7 @@ let dadaTime = 0;
 // panels — the classic Dada technique of recombining found material into
 // something incongruous, applied to the gradient itself rather than
 // requiring an uploaded photo.
-export function applyDada(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function applyDada(P: EffectCtx): void {
   const { displayWidth, displayHeight, dadaPanels, dadaChaos, ctx, canvas, putLowResImageData } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 

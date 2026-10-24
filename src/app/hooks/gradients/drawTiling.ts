@@ -1,5 +1,6 @@
 import { getMappedColor } from '../../utils/fieldCurve';
 import { getScratchImageData } from '../../utils/scratchCanvas';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 // Wallpaper-group symmetric tiling — distinct from Truchet's random-tile
 // approach: every tile shares one kaleidoscope-folded motif (angle mirrored
@@ -7,7 +8,7 @@ import { getScratchImageData } from '../../utils/scratchCanvas';
 // style between neighbors, producing a repeating, non-random pattern.
 // Half-res + putLowResImageData like Plasma/Julia, since the per-pixel
 // trig here is too expensive at full display resolution every frame.
-export function drawTiling(P: any): CanvasGradient | undefined {
+export function drawTiling(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,

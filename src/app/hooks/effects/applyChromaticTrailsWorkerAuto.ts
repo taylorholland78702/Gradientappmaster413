@@ -9,6 +9,7 @@
 import { getScratchCanvas } from '../../utils/scratchCanvas';
 import { applyChromaticTrails } from './applyChromaticTrails';
 import type { ChromaticTrailsWorkerRequest, ChromaticTrailsWorkerResponse } from './chromaticTrailsWorker';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 let worker: Worker | null = null;
 let workerFailed = false;
@@ -40,7 +41,7 @@ function getWorker(): Worker {
   return worker;
 }
 
-export function applyChromaticTrailsWorkerAuto(P: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function applyChromaticTrailsWorkerAuto(P: EffectCtx): void {
   if (!detectChromaticTrailsWorkerSupport()) {
     applyChromaticTrails(P);
     return;

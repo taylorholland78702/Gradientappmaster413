@@ -6,6 +6,7 @@
 // available or this throws.
 import { FULLSCREEN_VERT_SRC, JS_MOD_GLSL, colorMappingGLSL, linkProgram, drawFieldFullscreen, setColorUniforms, detectFieldGLSupport, DITHER_GLSL, setSizeUniform, getSharedFieldGL } from './glShared';
 import type { GLEffectStage } from '../effects/glEffectPipeline';
+import type { DrawCtx } from '../canvasDrawTypes';
 
 const FRAG_SRC = `#version 300 es
 precision highp float;
@@ -56,7 +57,7 @@ export function detectTopographicGLSupport(): boolean {
   return detectFieldGLSupport();
 }
 
-function deriveUniforms(P: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function deriveUniforms(P: DrawCtx) {
   const {
     fieldContrast, paletteMode, paletteBands, gradientColors, structuralSeed,
     topographicScale, topographicBands, topographicLineWidth, gradientAngle,
@@ -97,7 +98,7 @@ function renderTopographicStage(gl: WebGL2RenderingContext, outputFramebuffer: W
   drawFieldFullscreen(gl);
 }
 
-export function drawTopographicGL(P: any): CanvasGradient | undefined {
+export function drawTopographicGL(P: DrawCtx): CanvasGradient | undefined {
   const { canvas, ctx, displayWidth, displayHeight } = P;
   const gradient: CanvasGradient | undefined = undefined;
   if (canvas.width === 0 || canvas.height === 0) return gradient;
@@ -113,7 +114,7 @@ export function drawTopographicGL(P: any): CanvasGradient | undefined {
 
 // Used by useCanvasDraw.ts's gradient-pipeline eligibility check — see
 // glEffectPipeline.ts. Background fill skipped here (see Caustics comment).
-export function getTopographicGLStage(P: any): GLEffectStage {
+export function getTopographicGLStage(P: DrawCtx): GLEffectStage {
   const u = deriveUniforms(P);
   return {
     type: 'topographic',

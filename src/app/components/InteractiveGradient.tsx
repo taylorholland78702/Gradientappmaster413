@@ -31,6 +31,7 @@ import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
+import type { PresetData } from '../hooks/usePresets';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
 import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
@@ -41,7 +42,7 @@ import { LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constant
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
-  type ColorRGB, type GradientType,
+  type ColorRGB, type GradientType, type EffectType,
   DEFAULT_COLORS,
   migrateId, migrateIds,
   GRADIENT_DISPLAY_NAMES,
@@ -591,12 +592,12 @@ export function InteractiveGradient() {
     // presets now reuse them directly instead of maintaining a second,
     // perpetually-stale field list.
     getCurrentState: () => buildSnapshot(),
-    applyPresetData: (rawData: any) => {
+    applyPresetData: (rawData: PresetData) => {
       const data = sanitizeSnapshot(rawData);
       applySnapshot({
         ...data,
-        gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
-        activeEffects: migrateIds(data.activeEffects),
+        gradientType: data.gradientType ? migrateId(data.gradientType) as GradientType : 'angle',
+        activeEffects: migrateIds(data.activeEffects) as EffectType[],
       });
       // Snap the refs the draw loop actually reads straight to the saved
       // values instead of letting them ease in from whatever was on screen
@@ -629,11 +630,11 @@ export function InteractiveGradient() {
     const encoded = params.get('preset');
     if (!encoded) return;
     try {
-      const data = sanitizeSnapshot(decodePresetData(encoded) as Record<string, any>);
+      const data = sanitizeSnapshot(decodePresetData(encoded) as PresetData);
       applySnapshot({
         ...data,
-        gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
-        activeEffects: migrateIds(data.activeEffects),
+        gradientType: data.gradientType ? migrateId(data.gradientType) as GradientType : 'angle',
+        activeEffects: migrateIds(data.activeEffects) as EffectType[],
       });
       // Same instant-snap as applyPresetData above — see that comment.
       const restoredColors = data.gradientColors || DEFAULT_COLORS;

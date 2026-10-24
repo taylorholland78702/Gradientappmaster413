@@ -10,6 +10,7 @@
 // remaining smoothness gap against Brik's shader-only pipeline.
 import { FULLSCREEN_VERT_SRC, linkProgram, drawFullscreen, getSharedEffectGL, uploadCanvasTexture, detectEffectGLSupport, setSizeUniform } from './glEffectShared';
 import type { GLEffectStage } from './glEffectPipeline';
+import type { EffectCtx } from '../canvasDrawTypes';
 
 const LIQUID_FRAG_SRC = `#version 300 es
 precision highp float;
@@ -71,7 +72,7 @@ function renderLiquidStage(
   drawFullscreen(gl);
 }
 
-export function applyLiquidGL(P: any): void {
+export function applyLiquidGL(P: EffectCtx): void {
   const { canvas, ctx, displayWidth, displayHeight, liquidScale, liquidAnimTime, liquidStrength } = P;
   if (canvas.width === 0 || canvas.height === 0) return;
 
@@ -86,7 +87,7 @@ export function applyLiquidGL(P: any): void {
 // Used by glEffectPipeline.ts when Liquid is part of a contiguous run of
 // GL-eligible effects — see that file for why chaining avoids a per-effect
 // canvas round-trip.
-export function getLiquidGLStage(P: any): GLEffectStage {
+export function getLiquidGLStage(P: EffectCtx): GLEffectStage {
   const { liquidScale, liquidAnimTime, liquidStrength } = P;
   const scale = liquidScale * 0.006;
   const time = liquidAnimTime;

@@ -1,3 +1,4 @@
+import type { DrawCtx } from '../canvasDrawTypes';
 // Rocket bursts scattering particles into a persistent fading-trail buffer —
 // same buffer/fade mechanic as Attractor/Flow Field, but the particles are
 // short-lived (explode outward under gravity, fade, die) instead of an
@@ -5,7 +6,7 @@
 // ambient drifting pattern. Bass hits trigger extra bursts; treble brightens
 // sparkle. Drawn with fillRect per particle, not a pixel loop, so cost scales
 // with particle count, not canvas resolution.
-export function drawFireworks(P: any): CanvasGradient | undefined {
+export function drawFireworks(P: DrawCtx): CanvasGradient | undefined {
   const {
     ctx,
     canvas,
