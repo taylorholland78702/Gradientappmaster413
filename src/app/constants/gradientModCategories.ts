@@ -11,8 +11,8 @@ import { STYLE_FIELD_GRADIENT_TYPES } from './gradientEffects';
 // pools since it's a no-op with no uploaded image.
 export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   angle: ['Angle'], attractor: ['Attractor'], caustics: ['Caustics'],
-  fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
-  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
+  flower: ['Flower'], grid: ['Grid'],
+  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], marble: ['Marble'],
   metaballs: ['Metaballs'],
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
