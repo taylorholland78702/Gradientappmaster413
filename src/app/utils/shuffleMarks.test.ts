@@ -95,3 +95,25 @@ describe('a marking session', () => {
     expect(new ShuffleMarks(store).allMarks).toHaveLength(0);
   });
 });
+
+describe('dislikes', () => {
+  const l = look(0.4);
+  it('are recorded with the frame measurements, kept, exported and cleared', () => {
+    const store = memory();
+    const marks = new ShuffleMarks(store, () => 5);
+    marks.setLatest(l);
+    marks.recordDislike(l.meta);
+    marks.recordDislike({ gradient: 'grid', effects: [], mood: 'bold' });
+    expect(marks.allDislikes.map(d => d.score)).toEqual([0.4, undefined]);
+    expect(new ShuffleMarks(store).allDislikes).toHaveLength(2);
+    expect(JSON.parse(marks.export()).dislikes).toHaveLength(2);
+    marks.clear();
+    expect(marks.allDislikes).toHaveLength(0);
+    expect(new ShuffleMarks(store).allDislikes).toHaveLength(0);
+  });
+  it('leave the keep/skip summary alone', () => {
+    const marks = new ShuffleMarks(memory());
+    marks.recordDislike(l.meta);
+    expect(JSON.parse(marks.export()).summary.total).toBe(0);
+  });
+});

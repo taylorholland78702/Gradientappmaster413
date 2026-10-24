@@ -7,10 +7,15 @@ import { shuffleLearning, type ShuffleMeta } from './shuffleLearning';
 
 export type Verdict = 'keep' | 'skip';
 export interface PendingLook { meta: ShuffleMeta; score: number; dull: boolean; features: FrameFeatures }
+// A look disliked with the dislike button, outside a marking session. The frame measurements are there when the
+// quality gate measured the look.
+export interface Dislike { meta: ShuffleMeta; score?: number; dull?: boolean; features?: FrameFeatures; at: number }
 export interface Mark extends PendingLook { verdict: Verdict; at: number }
 
 const KEY = 'wavShuffleMarks';
+const DISLIKE_KEY = 'wavShuffleDislikes';
 const MAX_MARKS = 300;
+const MAX_DISLIKES = 200;
 export const DEFAULT_TARGET = 30;
 
 // Probability that a randomly chosen kept look scored higher than a randomly chosen skipped one: 0.5 is no
@@ -79,6 +84,8 @@ type Listener = () => void;
 export class ShuffleMarks {
   private marks: Mark[] = [];
   private pending: PendingLook | null = null;
+  private latest: PendingLook | null = null;
+  private dislikes: Dislike[] = [];
   private listeners = new Set<Listener>();
   private state = { active: false, target: DEFAULT_TARGET, sessionStart: 0, version: 0 };
 
@@ -87,6 +94,11 @@ export class ShuffleMarks {
       const raw = this.storage?.getItem(KEY);
       const parsed = raw ? JSON.parse(raw) : null;
       if (Array.isArray(parsed)) this.marks = parsed.filter(m => m && (m.verdict === 'keep' || m.verdict === 'skip') && m.meta && m.features);
+    } catch { /* start fresh */ }
+    try {
+      const raw = this.storage?.getItem(DISLIKE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) this.dislikes = parsed.filter(d => d && d.meta && typeof d.at === 'number');
     } catch { /* start fresh */ }
   }
 
@@ -100,12 +112,25 @@ export class ShuffleMarks {
   // The marks made since the session started (the summary is about these), and all stored marks.
   get sessionMarks() { return this.marks.filter(m => m.at >= this.state.sessionStart); }
   get allMarks() { return this.marks; }
+  get allDislikes() { return this.dislikes; }
 
   start(target = DEFAULT_TARGET) { this.pending = null; this.state = { ...this.state, active: true, target, sessionStart: this.now() }; this.emit(); }
   stop() { this.pending = null; this.state = { ...this.state, active: false }; this.emit(); }
 
   // The look now on screen has been judged by the quality gate and is ready to be marked.
   setCurrent(look: PendingLook | null) { this.pending = look; this.emit(); }
+
+  // The look the quality gate last settled on, marking session or not, so the dislike button can record its measurements.
+  setLatest(look: PendingLook | null) { this.latest = look; }
+
+  // The dislike button was pressed on the look now on screen (`meta`). The learner has already been told.
+  recordDislike(meta: ShuffleMeta) {
+    const l = this.latest && this.latest.meta === meta ? this.latest : null;
+    const entry: Dislike = l ? { meta, score: l.score, dull: l.dull, features: l.features, at: this.now() } : { meta, at: this.now() };
+    this.dislikes = [...this.dislikes, entry].slice(-MAX_DISLIKES);
+    try { this.storage?.setItem(DISLIKE_KEY, JSON.stringify(this.dislikes)); } catch { /* not persisted */ }
+    this.emit();
+  }
 
   mark(verdict: Verdict): Mark | null {
     const look = this.pending;
@@ -120,12 +145,14 @@ export class ShuffleMarks {
     return mark;
   }
 
-  clear() { this.marks = []; this.pending = null; try { this.storage?.removeItem(KEY); } catch { /* ignore */ } this.emit(); }
+  clear() { this.marks = []; this.dislikes = []; this.pending = null; this.latest = null; try { this.storage?.removeItem(KEY); this.storage?.removeItem(DISLIKE_KEY); } catch { /* ignore */ } this.emit(); }
 
   // The results as text to paste back: the session's summary and every mark, with the frame measurements.
   export(): string {
     const marks = this.sessionMarks.length ? this.sessionMarks : this.marks;
-    return JSON.stringify({ app: 'wav-shuffle-marks', version: 1, summary: summarize(marks), marks }, null, 1);
+    const since = this.sessionMarks.length ? this.state.sessionStart : 0;
+    const dislikes = this.dislikes.filter(d => d.at >= since);
+    return JSON.stringify({ app: 'wav-shuffle-marks', version: 1, summary: summarize(marks), marks, dislikes }, null, 1);
   }
 }
 
