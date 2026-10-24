@@ -52,11 +52,9 @@ describe('blendRgb', () => {
     }
   });
 
-  it('keeps the blue to yellow midpoint saturated where a plain lerp collapses to grey', () => {
-    const lerp = { r: (blue.r + yellow.r) / 2, g: (blue.g + yellow.g) / 2, b: (blue.b + yellow.b) / 2 };
-    const oklab = blendRgb(blue, yellow, 0.5);
-    expect(Math.max(lerp.r, lerp.g, lerp.b) - Math.min(lerp.r, lerp.g, lerp.b)).toBeCloseTo(0, 5);
-    expect(Math.max(oklab.r, oklab.g, oklab.b) - Math.min(oklab.r, oklab.g, oklab.b)).toBeGreaterThan(5);
+  it('is the plain per-channel lerp', () => {
+    expect(blendRgb(blue, yellow, 0.5)).toEqual({ r: 127.5, g: 127.5, b: 127.5 });
+    expect(blendRgb(blue, yellow, 0.25)).toEqual({ r: 63.75, g: 63.75, b: 191.25 });
   });
 
   it('stays inside the 0-255 byte range for out-of-gamut midpoints', () => {
@@ -138,10 +136,7 @@ describe('palette mapping', () => {
   it('samples a preview strip through the same mapping', () => {
     const colors = [{ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 }];
     const strip = samplePalette(colors, null, 0.5, 0, 5);
-    // Blended in OKLab, so the ramp from black to white is not a straight line in sRGB, but it is monotonic and hits both ends.
-    expect(strip.map((c) => Math.round(c.r))[0]).toBe(0);
-    expect(Math.round(strip[4].r)).toBe(255);
-    for (let i = 1; i < strip.length; i++) expect(strip[i].r).toBeGreaterThan(strip[i - 1].r);
+    expect(strip.map((c) => Math.round(c.r))).toEqual([0, 64, 128, 191, 255]);
     const hard = samplePalette(colors, [0, 1], 0.5, 1, 5);
     expect(hard[0].r).toBeCloseTo(0, 5);
     expect(hard[4].r).toBeCloseTo(255, 5);
