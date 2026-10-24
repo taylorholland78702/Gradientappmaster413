@@ -34,7 +34,7 @@ export const STYLED_GRADIENTS_CATEGORY = 'Styled gradients';
 
 // Settings every look has (palette adjustments, how the palette maps onto a gradient, the finishing pass), not tied to
 // one gradient or effect. They are part of every look, so Shuffle and share links always include them.
-export const GLOBAL_CATEGORIES = ['Palette', 'Palette Mapping', 'Finishing'] as const;
+export const GLOBAL_CATEGORIES = ['Palette', 'Palette Mapping'] as const;
 
 // The modulation categories a look uses: its gradient's, the styled gradients' shared one, and its effects'.
 // Shuffle draws its random audio bindings from these, and share links carry only these settings.

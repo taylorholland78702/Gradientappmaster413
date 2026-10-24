@@ -545,9 +545,10 @@ export function useSnapshot(params: SnapshotParams) {
     setFieldScale(snapshot.fieldScale ?? 1);
     setFieldSpeed(snapshot.fieldSpeed ?? 1);
     setFieldShapes(snapshot.fieldShapes ?? {});
-    setFieldExposure(snapshot.fieldExposure ?? 0);
+    // The Finishing sliders (exposure, brightness, contrast, saturation) are gone, so a saved value cannot be changed back.
+    setFieldExposure(0);
     setFieldTone(snapshot.fieldTone ?? 'off');
-    setFieldGrade(snapshot.fieldGrade ?? { brightness: 1, contrast: 1, saturation: 1 });
+    setFieldGrade({ brightness: 1, contrast: 1, saturation: 1 });
     setFieldSwirl(snapshot.fieldSwirl ?? 0);
     setPaletteStops(snapshot.paletteStops ?? null);
     setPaletteBias(snapshot.paletteBias ?? 0.5);

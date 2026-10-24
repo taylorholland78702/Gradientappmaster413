@@ -453,19 +453,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
           </div>
         </div>
-        {/* Finishing — exposure in stops, then brightness, contrast and saturation. Every gradient has it: the
-            styled ones apply it inside their shaders, the rest through a GPU pass right
-            after the gradient is drawn. */}
-        <div className="w-full flex flex-col gap-2 px-1.5 py-1">
-          <SliderRow label="Exposure:" title="Brightens or darkens in stops (each +1 doubles the light) before the tone curve" value={fieldExposure} onChange={setFieldExposure} onNumberChange={(v) => setFieldExposure(Math.max(-2, Math.min(2, v || 0)))} min={-2} max={2} step={0.05} />
-          {([
-            { key: 'brightness' as const, label: 'Brightness', min: 0.5, max: 1.5 },
-            { key: 'contrast' as const, label: 'Contrast', min: 0.5, max: 1.5 },
-            { key: 'saturation' as const, label: 'Saturation', min: 0, max: 2 },
-          ]).map(g => (
-            <SliderRow key={g.key} label={`${g.label}:`} title={`${g.label} of the finished picture (1 leaves it as is)`} value={fieldGrade[g.key]} onChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v })} onNumberChange={(v) => setFieldGrade({ ...fieldGrade, [g.key]: v || 1 })} min={g.min} max={g.max} step={0.01} />
-          ))}
-        </div>
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
