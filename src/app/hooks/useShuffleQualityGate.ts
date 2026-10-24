@@ -6,6 +6,7 @@ import { scoreFrame, bestCandidate, GOOD_ENOUGH, type FrameCandidate } from '../
 import { shuffleLearning } from '../utils/shuffleLearning';
 import { shuffleMarks, type PendingLook } from '../utils/shuffleMarks';
 import type { FrameFeatures } from '../utils/frameScore';
+import { paletteStats, type PaletteStats } from '../utils/paletteStats';
 import type { Snapshot } from './snapshotTypes';
 
 // A full shuffle rolls a look at random. This wraps it: it rolls, waits a few frames, scores what was drawn, and keeps the
@@ -50,15 +51,19 @@ export interface ShuffleQualityGateParams {
   undoStackRef: MutableRefObject<Snapshot[]>;
   undoIndexRef: MutableRefObject<number>;
   setUndoDepth: Dispatch<SetStateAction<number>>;
+  // The playback speed now in force, for the marking tool.
+  getSpeed?: () => number;
 }
 
-export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targetColorsRef, getSnapshot, applyCandidate, undoStackRef, undoIndexRef, setUndoDepth }: ShuffleQualityGateParams) {
+export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targetColorsRef, getSnapshot, applyCandidate, undoStackRef, undoIndexRef, setUndoDepth, getSpeed }: ShuffleQualityGateParams) {
   const evolveRef = useRef(evolve);
   evolveRef.current = evolve;
   const getSnapshotRef = useRef(getSnapshot);
   getSnapshotRef.current = getSnapshot;
   const applyCandidateRef = useRef(applyCandidate);
   applyCandidateRef.current = applyCandidate;
+  const getSpeedRef = useRef(getSpeed);
+  getSpeedRef.current = getSpeed;
   const busyRef = useRef(false);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => () => { overlayRef.current?.remove(); }, []);
@@ -82,6 +87,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
       try {
         const candidates: FrameCandidate<Snapshot>[] = [];
         const frames: (FrameFeatures | null)[] = [];
+        const rolls: { speed?: number; palette?: PaletteStats }[] = [];
         shuffleLearning.reset();
         for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
           const topBefore = undoStackRef.current[undoStackRef.current.length - 1];
@@ -94,6 +100,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
           const score = measured ? scoreFrame(measured.features, type) : 0.5;
           candidates.push({ score, dull, value: getSnapshotRef.current() });
           frames.push(measured ? measured.features : null);
+          rolls.push({ speed: getSpeedRef.current?.(), palette: paletteStats(targetColorsRef.current) ?? undefined });
           if (!dull && score >= GOOD_ENOUGH) break;
           if (candidates.length >= MAX_CANDIDATES && candidates.some(c => !c.dull)) break;
         }
@@ -105,7 +112,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
         shuffleLearning.commit(keptIndex);
         // For the marking tool: what was kept, with what the frame score made of it.
         const meta = shuffleLearning.currentMeta, features = frames[keptIndex];
-        if (meta && features) ready = { meta, features, score: candidates[keptIndex].score, dull: candidates[keptIndex].dull };
+        if (meta && features) ready = { meta, features, score: candidates[keptIndex].score, dull: candidates[keptIndex].dull, ...rolls[keptIndex] };
         // Each attempt saved the look before it. Keep only the first (what you had before shuffling).
         if (pushed > 1) {
           const drop = pushed - 1;

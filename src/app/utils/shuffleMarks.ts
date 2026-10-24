@@ -1,4 +1,5 @@
 import type { FrameFeatures } from './frameScore';
+import { contrastBucket, lightnessBucket, saturationBucket, speedBucket, type PaletteStats } from './paletteStats';
 import { shuffleLearning, type ShuffleMeta } from './shuffleLearning';
 
 // The marking tool's data: a session where you shuffle, mark each look Keep or Skip, and Shuffle gets calibrated
@@ -9,10 +10,11 @@ import { shuffleLearning, type ShuffleMeta } from './shuffleLearning';
 export type Verdict = 'keep' | 'skip' | 'love';
 const isKept = (m: { verdict: Verdict }) => m.verdict !== 'skip';
 const LOVE_WEIGHT = 2;
-export interface PendingLook { meta: ShuffleMeta; score: number; dull: boolean; features: FrameFeatures }
+// `speed` (playback speed) and `palette` (how the colours read) were added later, so older marks do not have them.
+export interface PendingLook { meta: ShuffleMeta; score: number; dull: boolean; features: FrameFeatures; speed?: number; palette?: PaletteStats }
 // A look disliked with the dislike button, outside a marking session. The frame measurements are there when the
 // quality gate measured the look.
-export interface Dislike { meta: ShuffleMeta; score?: number; dull?: boolean; features?: FrameFeatures; at: number }
+export interface Dislike { meta: ShuffleMeta; score?: number; dull?: boolean; features?: FrameFeatures; speed?: number; palette?: PaletteStats; at: number }
 export interface Mark extends PendingLook { verdict: Verdict; at: number }
 
 const KEY = 'wavShuffleMarks';
@@ -55,6 +57,8 @@ export interface MarkSummary {
   // The score threshold that would have sorted these marks most accurately, with how many it would get right.
   bestThreshold: { threshold: number; accuracy: number } | null;
   gradients: RateRow[]; effects: RateRow[]; moods: RateRow[];
+  // How often looks were kept by playback speed and by how the palette read (only marks that recorded them).
+  speeds: RateRow[]; palettes: RateRow[];
   // Which frame measurements differ most between kept and skipped looks (difference of means over the pooled spread).
   features: { name: string; keptMean: number; skippedMean: number; effect: number }[];
   // The looks marked Love against all the rest: how many, whether the score put them on top, and what set them apart.
@@ -91,6 +95,8 @@ export function summarize(marks: readonly Mark[]): MarkSummary {
     gradients: byRate(rates(marks, m => [m.meta.gradient], 2)),
     effects: byRate(rates(marks, m => m.meta.effects, 3)),
     moods: byRate(rates(marks, m => [m.meta.mood], 2)),
+    speeds: byRate(rates(marks, m => (m.speed === undefined ? [] : [speedBucket(m.speed)]), 2)),
+    palettes: byRate(rates(marks, m => (m.palette ? [lightnessBucket(m.palette.lightness), saturationBucket(m.palette.saturation), contrastBucket(m.palette.contrast)] : []), 3)),
   };
 }
 
@@ -141,7 +147,7 @@ export class ShuffleMarks {
   // The dislike button was pressed on the look now on screen (`meta`). The learner has already been told.
   recordDislike(meta: ShuffleMeta) {
     const l = this.latest && this.latest.meta === meta ? this.latest : null;
-    const entry: Dislike = l ? { meta, score: l.score, dull: l.dull, features: l.features, at: this.now() } : { meta, at: this.now() };
+    const entry: Dislike = l ? { meta, score: l.score, dull: l.dull, features: l.features, speed: l.speed, palette: l.palette, at: this.now() } : { meta, at: this.now() };
     this.dislikes = [...this.dislikes, entry].slice(-MAX_DISLIKES);
     try { this.storage?.setItem(DISLIKE_KEY, JSON.stringify(this.dislikes)); } catch { /* not persisted */ }
     this.emit();

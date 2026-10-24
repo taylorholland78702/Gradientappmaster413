@@ -820,7 +820,7 @@ export function InteractiveGradient() {
     if (snap.gradientAngle !== undefined) gradientAngleRef.current = snap.gradientAngle;
     if (snap.zoom !== undefined) zoomRef.current = snap.zoom;
   };
-  const evolveWithFactor = useShuffleQualityGate({ evolve: evolveRaw, canvasRef, gradientTypeRef, targetColorsRef, getSnapshot: () => buildSnapshot(), applyCandidate: applyShuffleCandidate, undoStackRef, undoIndexRef, setUndoDepth });
+  const evolveWithFactor = useShuffleQualityGate({ evolve: evolveRaw, canvasRef, gradientTypeRef, targetColorsRef, getSnapshot: () => buildSnapshot(), applyCandidate: applyShuffleCandidate, undoStackRef, undoIndexRef, setUndoDepth, getSpeed: () => vcrPlaybackSpeedRef.current });
 
   // Shuffle click handler — single click = full remix, shared by both the
   // collapsed-cluster button and the expanded panel's tab-row shuffle
