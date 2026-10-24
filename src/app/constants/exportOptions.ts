@@ -35,3 +35,13 @@ export const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 export const EXPORT_MAX_EDGE = 8192;
 export const EXPORT_MAX_PIXELS = 40_000_000;
+
+// "Wallpaper": a PNG at this device's own screen resolution (CSS size x pixel ratio), whatever shape the window is,
+// scaled down only if it would pass the canvas ceilings above.
+export function wallpaperTarget(screenWidth: number, screenHeight: number, pixelRatio: number): { w: number; h: number } {
+  let w = Math.max(1, Math.round(screenWidth * pixelRatio));
+  let h = Math.max(1, Math.round(screenHeight * pixelRatio));
+  const k = Math.min(1, EXPORT_MAX_EDGE / Math.max(w, h), Math.sqrt(EXPORT_MAX_PIXELS / (w * h)));
+  if (k < 1) { w = Math.max(1, Math.floor(w * k)); h = Math.max(1, Math.floor(h * k)); }
+  return { w, h };
+}

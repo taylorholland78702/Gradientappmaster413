@@ -112,6 +112,7 @@ import { useStackState } from '../hooks/state/useStackState';
 import { useHatchState } from '../hooks/state/useHatchState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
+import { useLoopExport } from '../hooks/useLoopExport';
 import { useShuffleQualityGate } from '../hooks/useShuffleQualityGate';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
@@ -837,11 +838,12 @@ export function InteractiveGradient() {
     exportSize, setExportSize, exportAspect, setExportAspect,
     videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
-    savePreview, setSavePreview, exportAsPNG,
+    savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,
   } = useExportControls({
     canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
   });
+  const loop = useLoopExport({ canvasRef });
   // Clicking the Auto Shuffle button opens this popover (on/off toggle +
   // interval slider) instead of directly toggling on/off — the interval
   // control used to live only in the Info panel, which turned out to be too
@@ -1287,7 +1289,7 @@ export function InteractiveGradient() {
     audioPanelState={audioPanelState} audioRef={audioRef} autoShuffleIntervalSec={autoShuffleIntervalSec} autoShufflePopoverAnchor={autoShufflePopoverAnchor}
     autoShufflePopoverRef={autoShufflePopoverRef} autoShuffleScope={autoShuffleScope} canvasRef={canvasRef} containerRef={containerRef}
     controlDrawerTabProps={controlDrawerTabProps} controlRailProps={controlRailProps} copiedKey={copiedKey} copyText={copyText}
-    currentPlayerUrl={currentPlayerUrl} dismissWavHint={dismissWavHint} drawerRef={drawerRef} exportAsPNG={exportAsPNG}
+    currentPlayerUrl={currentPlayerUrl} dismissWavHint={dismissWavHint} drawerRef={drawerRef} exportAsPNG={exportAsPNG} saveWallpaper={saveWallpaper} loop={loop}
     exportAspect={exportAspect} exportSize={exportSize} fileInputRef={fileInputRef} handleFileUpload={handleFileUpload}
     handleMouseDown={handleMouseDown} handleMouseMove={handleMouseMove} handleMouseUp={handleMouseUp} handlePhotoFileChange={handlePhotoFileChange}
     handleTouchCancel={handleTouchCancel} handleTouchEnd={handleTouchEnd} handleTouchMove={handleTouchMove} handleTouchStart={handleTouchStart}
