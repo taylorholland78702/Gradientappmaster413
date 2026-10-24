@@ -10,7 +10,7 @@ const ALLOWED: Record<string, number> = {
   './components/InteractiveGradient.tsx': 1,
 };
 
-const ANY = /(?::\s*any\b|\bas any\b|<any>|\bany\[\])/g;
+const ANY = /(?::\s*any\b|=>\s*any\b|\bas any\b|<any>|\bany\[\])/g;
 
 describe('type rules', () => {
   it('is looking at the source', () => {

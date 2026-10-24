@@ -7,7 +7,7 @@ import type { Snapshot } from './snapshotTypes';
 export function useUndoRedo({
   buildSnapshot, applySnapshot, undoStackRef, undoIndexRef, setUndoDepth, redoStackRef, setRedoDepth,
 }: {
-  buildSnapshot: () => any;
+  buildSnapshot: () => Snapshot;
   applySnapshot: (snapshot: Snapshot) => void;
   undoStackRef: ReturnType<typeof useUndoState>['undoStackRef'];
   undoIndexRef: ReturnType<typeof useUndoState>['undoIndexRef'];
