@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createQualityController, QUALITY_STEPS } from './adaptiveQuality';
+import { createQualityController, EMERGENCY_FLOORS, QUALITY_STEPS } from './adaptiveQuality';
 
 const run = (c: ReturnType<typeof createQualityController>, ms: number, frames: number) => {
   let s = c.scale;
@@ -76,5 +76,46 @@ describe('adaptive quality controller', () => {
     run(c, 40, 300);
     c.reset();
     expect(c.scale).toBe(QUALITY_STEPS[0]);
+  });
+});
+
+describe('emergency steps for the costliest gradients', () => {
+  it('a normal controller never goes below the usual floor', () => {
+    const c = createQualityController();
+    run(c, 60, 4000);
+    expect(c.floor).toBe(1);
+    expect(c.scale).toBe(QUALITY_STEPS[QUALITY_STEPS.length - 1]);
+  });
+
+  it('an emergency controller keeps stepping down when frames stay slow, below the display size', () => {
+    const c = createQualityController({ emergency: true });
+    run(c, 60, 4000);
+    expect(c.scale).toBe(QUALITY_STEPS[QUALITY_STEPS.length - 1]);
+    expect(c.floor).toBe(EMERGENCY_FLOORS[EMERGENCY_FLOORS.length - 1]);
+  });
+
+  it('uses the emergency steps one at a time, only after the normal steps', () => {
+    const c = createQualityController({ emergency: true });
+    let sawNormalFloorBeforeEmergency = true;
+    for (let i = 0; i < 4000; i++) {
+      c.update(60);
+      if (c.floor < 1 && c.scale !== QUALITY_STEPS[QUALITY_STEPS.length - 1]) sawNormalFloorBeforeEmergency = false;
+    }
+    expect(sawNormalFloorBeforeEmergency).toBe(true);
+  });
+
+  it('recovers all the way back to full quality when frames are fast again', () => {
+    const c = createQualityController({ emergency: true });
+    run(c, 60, 3000);
+    run(c, 8, 20000);
+    expect(c.scale).toBe(QUALITY_STEPS[0]);
+    expect(c.floor).toBe(1);
+  });
+
+  it('a steady 60fps never uses an emergency step', () => {
+    const c = createQualityController({ emergency: true });
+    run(c, 16.7, 3000);
+    expect(c.floor).toBe(1);
+    expect(c.scale).toBe(1);
   });
 });

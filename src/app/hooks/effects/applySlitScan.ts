@@ -1,5 +1,15 @@
 import { getScratchCanvas, getScratchImageData } from '../../utils/scratchCanvas';
 import type { EffectCtx } from '../canvasDrawTypes';
+import { buildSlitScanMap, gatherSlitScan, slitScanMapKey, type SlitScanMap } from './slitScanSampling';
+
+// ImageData viewed as 32-bit pixels, so a pixel copies in one read and write.
+const views = new WeakMap<ImageData, Uint32Array>();
+const pixels32 = (img: ImageData): Uint32Array => {
+  let v = views.get(img);
+  if (!v || v.buffer !== img.data.buffer) { v = new Uint32Array(img.data.buffer); views.set(img, v); }
+  return v;
+};
+let slitScanMap: SlitScanMap | null = null;
 
 export function applySlitScan(P: EffectCtx): void {
   const {
@@ -234,131 +244,16 @@ export function applySlitScan(P: EffectCtx): void {
 
             if (slitScanBufferRef.current.length >= MIN_BUFFERED_FRAMES) {
               const out = getScratchImageData('slit-scan', ctx, displayWidth, displayHeight);
-              const int = slitScanIntensity;
               const buf = slitScanBufferRef.current;
 
-              // Frame selection stays bounded to the buffer's actual range (raising
-              // Intensity past 1 would otherwise make fi blow past buf.length and
-              // clamp to the same last frame across the whole screen, collapsing
-              // the banding). The raw (uncapped) intensity is used separately below
-              // for the shift/twist magnitude, which is what "Intensity" now scales.
-              const frameSel = Math.min(int, 1);
-              const midBuf = (buf.length - 1) / 2;
-              // Buffered frames are ssBufW x ssBufH (see the downsampled
-              // capture above), so sample coordinates — computed at full
-              // display resolution below, unchanged — need scaling down by
-              // ssDownsample before indexing into a buffered frame.
-              const sampleBuf = (sf: ImageData, sx: number, sy: number) => {
-                const bx = Math.max(0, Math.min(ssBufW - 1, Math.round(sx * ssDownsample)));
-                const by = Math.max(0, Math.min(ssBufH - 1, Math.round(sy * ssDownsample)));
-                return (by * ssBufW + bx) * 4;
+              // Which buffered frame, and which pixel of it, each output pixel reads depends only on the
+              // settings and canvas size, so it is built once (slitScanSampling.ts) and every frame is a gather.
+              const settings = {
+                direction: slitScanDirection, width: displayWidth, height: displayHeight, bufLen: buf.length,
+                intensity: slitScanIntensity, bufW: ssBufW, bufH: ssBufH, downsample: ssDownsample,
               };
-
-              if (slitScanDirection === 'horizontal') {
-                for (let y = 0; y < displayHeight; y++) {
-                  const fi = Math.min(Math.floor((y / displayHeight) * (buf.length - 1) * frameSel), buf.length - 1);
-                  const sf = buf[fi];
-                  // Shift scales with canvas width (not a fixed px amount) and the
-                  // slider's full range now maps to a much larger max displacement
-                  // so Intensity actually feels intense at the high end.
-                  const shift = Math.round(((fi - midBuf) / midBuf) * int * displayWidth * 0.35);
-                  for (let x = 0; x < displayWidth; x++) {
-                    // Wrap instead of clamp — clamping collapsed many source columns
-                    // onto the same edge pixel, producing a solid stripe artifact.
-                    const sx = ((x + shift) % displayWidth + displayWidth) % displayWidth;
-                    const i = (y * displayWidth + x) * 4;
-                    const si = sampleBuf(sf, sx, y);
-                    out.data[i] = sf.data[si];
-                    out.data[i+1] = sf.data[si+1];
-                    out.data[i+2] = sf.data[si+2];
-                    out.data[i+3] = sf.data[si+3];
-                  }
-                }
-              } else if (slitScanDirection === 'vertical') {
-                for (let x = 0; x < displayWidth; x++) {
-                  const fi = Math.min(Math.floor((x / displayWidth) * (buf.length - 1) * frameSel), buf.length - 1);
-                  const sf = buf[fi];
-                  const shift = Math.round(((fi - midBuf) / midBuf) * int * displayHeight * 0.35);
-                  for (let y = 0; y < displayHeight; y++) {
-                    const sy = ((y + shift) % displayHeight + displayHeight) % displayHeight;
-                    const i = (y * displayWidth + x) * 4;
-                    const si = sampleBuf(sf, x, sy);
-                    out.data[i] = sf.data[si];
-                    out.data[i+1] = sf.data[si+1];
-                    out.data[i+2] = sf.data[si+2];
-                    out.data[i+3] = sf.data[si+3];
-                  }
-                }
-              } else if (slitScanDirection === 'radial') {
-                // Rings that expand/contract in radius AND twist tangentially, so
-                // at higher intensity they read as spiraling/folding in on
-                // themselves instead of just breathing in and out.
-                const cx = displayWidth / 2, cy = displayHeight / 2;
-                const md = Math.sqrt(cx*cx + cy*cy);
-                for (let y = 0; y < displayHeight; y++) {
-                  for (let x = 0; x < displayWidth; x++) {
-                    const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                    const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * frameSel), buf.length - 1);
-                    const sf = buf[fi];
-                    // Continuous (not bucketed) offset for the geometric shift/twist —
-                    // fi still selects which buffered frame supplies the temporal
-                    // streaking texture, but deriving the displacement from fi too
-                    // means every pixel in a bucket gets the exact same shift, and the
-                    // innermost bucket covers by far the largest disc (small d already
-                    // rounds to fi=0), showing up as a solid unwarped circle at the
-                    // center with a hard edge against the first real ring.
-                    const normOffset = Math.min((d / md) * frameSel, 1) * 2 - 1;
-                    const shift = normOffset * int * md * 0.35;
-                    // Wrap instead of reflecting — same fix as horizontal/vertical's
-                    // x/y wrap above. Reflecting (sd = -sd when negative) sent every
-                    // pixel at the reflection radius (sd === 0) to the exact same
-                    // source pixel — the buffered frame's own center point — which
-                    // collapsed an entire ring of pixels onto one color, showing up
-                    // as a visible ring/halo seam at that radius.
-                    let sd = ((d + shift) % md + md) % md;
-                    const angle = Math.atan2(y - cy, x - cx);
-                    const twist = normOffset * int * 1.4;
-                    const sAngle = angle + twist;
-                    const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
-                    const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
-                    const i = (y * displayWidth + x) * 4;
-                    const si = sampleBuf(sf, sx, sy);
-                    out.data[i] = sf.data[si];
-                    out.data[i+1] = sf.data[si+1];
-                    out.data[i+2] = sf.data[si+2];
-                    out.data[i+3] = sf.data[si+3];
-                  }
-                }
-              } else {
-                // circular: sample frame based on angle around center, with the
-                // sample point itself rotated AND pulled toward/away from center by
-                // the assigned frame's time offset — at high intensity this reads
-                // as rings spinning and folding inward rather than a flat rotation.
-                const cx = displayWidth / 2, cy = displayHeight / 2;
-                for (let y = 0; y < displayHeight; y++) {
-                  for (let x = 0; x < displayWidth; x++) {
-                    const angle = Math.atan2(y - cy, x - cx); // -PI to PI
-                    const norm = (angle + Math.PI) / (Math.PI * 2); // 0..1
-                    const fi = Math.min(Math.floor(norm * (buf.length - 1) * frameSel), buf.length - 1);
-                    const sf = buf[fi];
-                    const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-                    // Continuous, same reasoning as the radial branch above.
-                    const normOffset = Math.min(norm * frameSel, 1) * 2 - 1;
-                    const angleShift = normOffset * int * 1.6;
-                    const sAngle = angle + angleShift;
-                    let sd = d * (1 - normOffset * int * 0.25);
-                    if (sd < 0) sd = -sd;
-                    const sx = Math.max(0, Math.min(displayWidth - 1, Math.round(cx + Math.cos(sAngle) * sd)));
-                    const sy = Math.max(0, Math.min(displayHeight - 1, Math.round(cy + Math.sin(sAngle) * sd)));
-                    const i = (y * displayWidth + x) * 4;
-                    const si = sampleBuf(sf, sx, sy);
-                    out.data[i] = sf.data[si];
-                    out.data[i+1] = sf.data[si+1];
-                    out.data[i+2] = sf.data[si+2];
-                    out.data[i+3] = sf.data[si+3];
-                  }
-                }
-              }
+              if (!slitScanMap || slitScanMap.key !== slitScanMapKey(settings)) slitScanMap = buildSlitScanMap(settings);
+              gatherSlitScan(pixels32(out), buf.map(pixels32), slitScanMap, slitScanIntensity);
               putScaledImageData(out);
             }
 }
