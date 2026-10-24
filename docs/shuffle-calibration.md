@@ -53,3 +53,27 @@ tops up to the same).
   gradients keep the lit-share band). On sessions 1-3 it ranks keeps above skips 67%, on session 6 62%, and the loved looks
   above the rest 80% of the time. This is fitted to those sessions, so it is optimistic; more Love marks will tell.
 - GOOD_ENOUGH is 0.45, about the median of all marked looks.
+
+## Session 7: the recalibrated score did not hold
+
+Session 7 (30 looks, 18 kept, 6 loved) was the first marked with the session-6 score live, so it was a true test of it. It ranked
+keeps above skips only 46% of the time (50% is chance) and loved above the rest 62%. Fitting weights to one session and
+testing on the next had now failed twice (session 6 against the first fit, session 7 against the second).
+
+Across sessions, how well each single measurement ranks kept looks above skipped ones (sessions 1-3 pooled / 6 / 7):
+
+| measurement | 1-3 | 6 | 7 |
+| --- | --- | --- | --- |
+| detail | 0.69 | 0.65 | 0.60 |
+| brightness spread (sd) | 0.60 | 0.54 | 0.46 |
+| colourfulness | 0.33 | 0.70 | 0.44 |
+| entropy | 0.60 | 0.42 | 0.39 |
+
+Only detail pointed the same way every time. Colourfulness, contrast and entropy flip, so they are noise at this sample size.
+Loved looks were darker in both sessions that had Love (mean 86 and 73 against 114 and 119).
+
+So the frame score is now just `alive * (0.7 * detail + 0.3 * shadow)`: detail (up to 0.3, then falling off), plus how much of the
+frame is not lit (dark-ground gradients keep their lit-share band), and zero for a frame with no brightness spread.
+It ranks 60-69% on kept looks, a weak signal. `GOOD_ENOUGH` is 0.2, about the 35th percentile of all marked looks, so it only
+triggers a retry for a poor roll and no longer shops among decent ones. What has held up is not the score: every look has at
+least 3 effects, and the keep rate went from 43% to 60-87%.
