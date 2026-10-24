@@ -16,6 +16,7 @@ import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { generatePalette, pickPalette } from '../utils/shufflePalette';
+import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
@@ -815,13 +816,16 @@ export function useRandomization(params: RandomizationParams) {
       const fam = colorFamilyRef?.current;
       const anchor = fam?.enabled ? (fam.anchor ?? (fam.anchor = paletteFamily(gradientColors))) : null;
       const roll = Math.random();
+      let lookSeeded = false;
       if (anchor) {
         const okLooks = (looks ?? []).filter(l => inFamily(l.colors.map(hexToRgb), anchor));
         const okPalettes = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS).filter(p => inFamily(p.colors.map(hexToRgb), anchor));
-        if (okLooks.length && roll < 0.35) {
+        if (okLooks.length && roll < 0.6) {
           const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
           shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
-          applyLookValues(look, adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
+          // The family is fixed, so the Look's colours are kept as they are; its numbers still vary a little.
+          applyLookValues(varyLook(look, lookVariation(mood.strength)), adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
+          lookSeeded = true;
         } else if (okPalettes.length && roll < 0.7) {
           const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
           shuffleHistory.record('palette', palette.name);
@@ -829,16 +833,26 @@ export function useRandomization(params: RandomizationParams) {
         } else {
           setTargetColors(generateFamilyPalette(anchor, gradientColors.length, dark));
         }
-      } else if (looks?.length && roll < 0.4) {
+      } else if (looks?.length && roll < 0.65) {
+        // A curated Look is the starting point: its numbers move a little, and its palette turns a few degrees about
+        // half the time, so no two shuffles from the same Look are alike but it stays recognisably what was tuned.
         const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
         shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
-        const lookColors = look.colors.map(hexToRgb);
-        applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
-      } else if (roll < (looks?.length ? 0.75 : 0.5)) {
+        const turn = Math.random() < 0.5 ? (Math.random() * 2 - 1) * (10 + 20 * mood.strength) : 0;
+        const lookColors = nudgeHue(look.colors.map(hexToRgb), turn);
+        applyLookValues(varyLook(look, lookVariation(mood.strength)), adjustColorArrayLength(lookColors, gradientColors.length));
+        lookSeeded = true;
+      } else if (roll < (looks?.length ? 0.85 : 0.5)) {
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
         const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
         if (palette) shuffleHistory.record('palette', palette.name);
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
+      }
+      // Starting from a Look, the styled gradients' shape sliders stay near their tuned position instead of wandering.
+      if (lookSeeded && finalGradientType && STYLE_SHAPE_CONTROLS[finalGradientType]) {
+        const near = () => Math.round((1 + (Math.random() - 0.5) * 0.2) * 20) / 20;
+        setFieldShapes({ [finalGradientType]: [near(), near()] });
+        setFieldSwirl(0);
       }
     }
     // Remix randomizes every gradient/effect slider already — extend that to
