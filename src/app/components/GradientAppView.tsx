@@ -5,9 +5,6 @@ import { NoticeToast } from './NoticeToast';
 import { RailPopouts } from './RailPopouts';
 import { WavHint } from './WavHint';
 import { AboutPanel } from './AboutPanel';
-import type { useLoopExport } from '../hooks/useLoopExport';
-
-type LoopExport = ReturnType<typeof useLoopExport>;
 import type { AutoShuffleScope } from '../constants/autoShuffle';
 import type { ExportAspect, ExportSize, VideoLength, VideoSize } from '../constants/exportOptions';
 
@@ -34,7 +31,6 @@ export interface GradientAppViewParams {
   drawerRef: MutableRefObject<HTMLDivElement>;
   exportAsPNG: (mode?: "download" | "preview") => Promise<void>;
   saveWallpaper: () => Promise<void>;
-  loop: LoopExport;
   exportAspect: "screen" | "1:1" | "4:5" | "16:9" | "9:16";
   exportSize: "screen" | "1080" | "4k" | "8k";
   fileInputRef: MutableRefObject<HTMLInputElement>;
@@ -83,7 +79,7 @@ export interface GradientAppViewParams {
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, loop, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, setVideoLength, setVideoSize, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion, videoLength, videoSize } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, setVideoLength, setVideoSize, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion, videoLength, videoSize } = p;
   const dock = (
     <div
       data-role="dock"
@@ -222,7 +218,6 @@ export function GradientAppView(p: GradientAppViewParams) {
         <audio
           ref={audioRef}
           src={audioFile}
-          loop
         />
       )}
 
@@ -233,7 +228,7 @@ export function GradientAppView(p: GradientAppViewParams) {
       <RailPopouts
         mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
         setAnchor={setAutoShufflePopoverAnchor}
-        exportProps={{ exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, copiedKey, copyText, currentPlayerUrl, saveWallpaper, ...loop }}
+        exportProps={{ exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
         recordProps={{ videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake }}
         autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
       />

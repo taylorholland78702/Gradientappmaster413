@@ -3,7 +3,8 @@
 // stateful session (start/frame/finish) instead of one-shot request/response,
 // since a GIF encoder accumulates state (palette history, written frames)
 // across the whole recording rather than processing each frame independently.
-import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import { GIFEncoder } from 'gifenc';
+import { quantizeFrame } from '../utils/gifDither';
 
 export type GifWorkerRequest =
   | { type: 'start' }
@@ -27,8 +28,7 @@ self.onmessage = (e: MessageEvent<GifWorkerRequest>) => {
     if (msg.type === 'frame') {
       if (!gif) gif = GIFEncoder();
       const data = new Uint8ClampedArray(msg.buffer);
-      const palette = quantize(data, 256);
-      const index = applyPalette(data, palette);
+      const { palette, index } = quantizeFrame(data, msg.width, msg.height);
       gif.writeFrame(index, msg.width, msg.height, { palette, delay: msg.delay });
       const response: GifWorkerResponse = { type: 'frameDone' };
       (self as unknown as Worker).postMessage(response);

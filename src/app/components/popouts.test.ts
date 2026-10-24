@@ -14,8 +14,6 @@ const exportProps = (over: Partial<Parameters<typeof ExportPopout>[0]> = {}) => 
   exportAsPNG: noop, closePopover: noop,
   copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
   saveWallpaper: noop,
-  loopSeconds: 5 as const, setLoopSeconds: noop, loopFormat: 'gif' as const, setLoopFormat: noop,
-  loopPhase: 'idle' as const, loopProgress: 0, startLoop: noop, cancelLoop: noop,
   ...over,
 });
 
@@ -45,7 +43,7 @@ describe('ExportPopout', () => {
     expect(groupLabels(html, 'Export aspect')).toEqual(['Screen', '1:1', '4:5', '16:9', '9:16']);
   });
 
-  it('has Save PNG and the embed buttons, and nothing about video recording or palettes', () => {
+  it('has Save PNG, the wallpaper button and the embed buttons', () => {
     expect(html).toContain('Save PNG');
     expect(html).toContain('Box 16:9');
     expect(html).toContain('Background');
@@ -69,29 +67,8 @@ describe('ExportPopout', () => {
     expect(html).toMatch(/Save as wallpaper · \d+×\d+/);
   });
 
-  it('has a looping clip section with lengths and a Record loop button', () => {
-    expect(groupLabels(html, 'Loop length')).toEqual(['3s', '5s', '8s']);
-    expect(groupLabels(html, 'Loop format')[0]).toBe('GIF');
-    expect(html).toContain('Record loop');
-    expect(html).toContain('A GIF repeats on its own.');
-  });
-
-  it('marks the chosen loop length pressed', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ loopSeconds: 8 })));
-    expect(h.match(/aria-pressed="true"[^>]*>(8s)</g)?.length).toBe(1);
-  });
-
-  it('while a loop is recording the button shows progress and cancels', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ loopPhase: 'recording', loopProgress: 0.4 })));
-    expect(h).toContain('Recording… 40% · Cancel');
-    expect(h).not.toContain('Record loop');
-    const enc = renderToStaticMarkup(createElement(ExportPopout, exportProps({ loopPhase: 'encoding' })));
-    expect(enc).toContain('Encoding…');
-  });
-
-  it('explains that an MP4 plays once', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ loopFormat: 'mp4' })));
-    expect(h).toContain('turn on Loop in your player');
+  it('is stills only: no looping clip, GIF, MP4 or video controls', () => {
+    for (const word of ['Looping clip', 'Record loop', 'Loop length', 'Loop format', 'MP4', 'GIF', 'Video']) expect(html).not.toContain(word);
   });
 
   it('shows Copied on the embed button that was just copied', () => {

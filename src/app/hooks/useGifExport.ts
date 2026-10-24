@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import { GIFEncoder } from 'gifenc';
+import { quantizeFrame } from '../utils/gifDither';
 import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 
 // Downscale target for the encoded GIF — full-canvas-resolution GIFs (this
@@ -117,8 +118,7 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
       // correlate multiple in-flight requests.
       const encodeFrame = (data: Uint8ClampedArray): Promise<void> => {
         if (!worker) {
-          const palette = quantize(data, 256);
-          const index = applyPalette(data, palette);
+          const { palette, index } = quantizeFrame(data, width, height);
           fallbackGif!.writeFrame(index, width, height, { palette, delay: FRAME_DELAY });
           return Promise.resolve();
         }
