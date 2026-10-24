@@ -3,7 +3,8 @@ import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
-import { EffectSection, EMOJI_PICKER_CATEGORIES } from './InteractiveGradient';
+import { EffectSection } from './EffectSection';
+import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 
 export interface EffectsTabProps {
   isMobile: boolean;

@@ -15,11 +15,15 @@
  * 
  * - Mouse wheel scroll zoom
  */
-import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { CaretDown, Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon, X } from '@phosphor-icons/react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Shuffle, X } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
+import { useTouchGestures } from '../hooks/useTouchGestures';
+import { useDisplaySync } from '../hooks/useDisplaySync';
+import { useUndoRedo } from '../hooks/useUndoRedo';
+import { useAutoShuffle } from '../hooks/useAutoShuffle';
+import { useExportControls } from '../hooks/useExportControls';
 import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
@@ -29,23 +33,19 @@ import { useRandomization } from '../hooks/useRandomization';
 import { decodePresetData } from '../utils/presetShare';
 import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
 import { haptic } from '../utils/haptics';
-import { renderLoopToMp4, evenMultiplier, webCodecsAvailable } from '../utils/loopExport';
-import { loopRender } from '../hooks/gradients/drawStyleFieldGL';
 import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
-import { encodePresetData } from '../utils/presetShare';
-import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { useMotionGestures } from '../hooks/useMotionGestures';
-import { motionSensorsSupported, requestMotionPermission } from '../utils/motionPermission';
+import { requestMotionPermission } from '../utils/motionPermission';
 import { GRADIENT_LOOKS, LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
 import { useSnapshot } from '../hooks/useSnapshot';
-import { useCanvasDraw, exportRender } from '../hooks/useCanvasDraw';
+import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
-  type ColorRGB, type GradientType, type EffectType,
-  DEFAULT_COLORS, DEG_TO_RAD, TWO_PI,
-  ID_MIGRATIONS, migrateId, migrateIds,
-  WAV_MOODS, GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES, FEELING_LUCKY_GRADIENT_TYPES,
-  ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
+  type ColorRGB, type GradientType,
+  DEFAULT_COLORS,
+  migrateId, migrateIds,
+  GRADIENT_DISPLAY_NAMES,
+  NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
 } from '../constants/gradientEffects';
 import { totalCost, resolutionForEffectCost, costOf, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
@@ -140,229 +140,17 @@ import { useVoronoiState } from '../hooks/state/useVoronoiState';
 import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
 
-type BlendMode = 'none' | 'double-exposure' | 'screen' | 'multiply' | 'overlay' | 'soft-light' | 'hard-light' | 'difference' | 'exclusion';
+import { AboutPanel } from './AboutPanel';
+import { PopoverPortal } from './PopoverPortal';
+import { ExportPopout } from './ExportPopout';
+import { AutoShufflePopout } from './AutoShufflePopout';
+import { formatAutoShuffleInterval } from '../utils/autoShuffle';
+import { EffectSection } from './EffectSection';
+import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
+import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY } from '../constants/displayMode';
 
-// Recording frame interface
-interface RecordingFrame {
-  colors: ColorRGB[];
-  angle: number;
-  zoom: number;
-  timestamp: number;
-}
-
-// Curated emoji set for the Emoji-effect picker, grouped by category. Not the
-// full ~3,700-emoji Unicode registry (that'd need a dedicated data package)
-// but a substantially expanded, close-to-iOS-keyboard-parity selection
-// across every category — the "Chars"-style text field can still be freely
-// hand-edited to extend with any other emoji via keyboard/OS picker. Each
-// entry pairs the glyph with a short searchable name rather than being a
-// bare string, so the picker's search box has something to match against.
-type EmojiEntry = { char: string; name: string };
-export const EMOJI_PICKER_CATEGORIES: { label: string; emojis: EmojiEntry[] }[] = [
-  { label: 'Smileys', emojis: [
-    { char: '😀', name: 'grinning' }, { char: '😃', name: 'smiley' }, { char: '😄', name: 'happy' }, { char: '😁', name: 'grin' }, { char: '😆', name: 'laughing' }, { char: '😅', name: 'sweat smile' }, { char: '🤣', name: 'rofl' }, { char: '😂', name: 'joy tears' }, { char: '🙂', name: 'slight smile' }, { char: '🙃', name: 'upside down' }, { char: '🫠', name: 'melting' }, { char: '😉', name: 'wink' }, { char: '😊', name: 'blush' }, { char: '😇', name: 'angel innocent' }, { char: '🥰', name: 'smiling hearts' }, { char: '😍', name: 'heart eyes' }, { char: '🤩', name: 'star struck' }, { char: '😘', name: 'kiss' }, { char: '😗', name: 'kissing' }, { char: '☺️', name: 'smiling' }, { char: '😚', name: 'kissing closed eyes' }, { char: '😙', name: 'kissing smiling' }, { char: '🥲', name: 'smiling tear' }, { char: '😋', name: 'yum' }, { char: '😛', name: 'tongue' }, { char: '😜', name: 'winking tongue' }, { char: '🤪', name: 'zany crazy' }, { char: '😝', name: 'squint tongue' }, { char: '🤑', name: 'money mouth' }, { char: '🤗', name: 'hug' }, { char: '🤭', name: 'hand over mouth' }, { char: '🫢', name: 'gasp' }, { char: '🫣', name: 'peeking' }, { char: '🤫', name: 'shush quiet' }, { char: '🤔', name: 'thinking' }, { char: '🫡', name: 'saluting' }, { char: '🤐', name: 'zipper mouth' }, { char: '🤨', name: 'raised eyebrow' }, { char: '😐', name: 'neutral' }, { char: '😑', name: 'expressionless' }, { char: '😶', name: 'no mouth' }, { char: '🫥', name: 'dotted line' }, { char: '😏', name: 'smirk' }, { char: '😒', name: 'unamused' }, { char: '🙄', name: 'eye roll' }, { char: '😬', name: 'grimace' }, { char: '🤥', name: 'lying pinocchio' }, { char: '😌', name: 'relieved' }, { char: '😔', name: 'pensive' }, { char: '😪', name: 'sleepy' }, { char: '🤤', name: 'drooling' }, { char: '😴', name: 'sleeping' }, { char: '😷', name: 'mask sick' }, { char: '🤒', name: 'thermometer fever' }, { char: '🤕', name: 'head bandage hurt' }, { char: '🤢', name: 'nauseated' }, { char: '🤮', name: 'vomiting' }, { char: '🤧', name: 'sneezing' }, { char: '🥵', name: 'hot' }, { char: '🥶', name: 'cold freezing' }, { char: '🥴', name: 'woozy dizzy' }, { char: '😵', name: 'dizzy face' }, { char: '😵‍💫', name: 'spiral eyes' }, { char: '🤯', name: 'mind blown' }, { char: '🤠', name: 'cowboy' }, { char: '🥳', name: 'party celebrate' }, { char: '🥸', name: 'disguise' }, { char: '😎', name: 'sunglasses cool' }, { char: '🤓', name: 'nerd' }, { char: '🧐', name: 'monocle' }, { char: '😕', name: 'confused' }, { char: '🫤', name: 'diagonal mouth' }, { char: '😟', name: 'worried' }, { char: '🙁', name: 'frown' }, { char: '☹️', name: 'sad frowning' }, { char: '😮', name: 'open mouth wow' }, { char: '😯', name: 'hushed' }, { char: '😲', name: 'astonished' }, { char: '😳', name: 'flushed' }, { char: '🥺', name: 'pleading puppy eyes' }, { char: '🥹', name: 'holding back tears' }, { char: '😦', name: 'frowning open mouth' }, { char: '😧', name: 'anguished' }, { char: '😨', name: 'fearful' }, { char: '😰', name: 'anxious sweat' }, { char: '😥', name: 'sad relieved' }, { char: '😢', name: 'crying' }, { char: '😭', name: 'sobbing' }, { char: '😱', name: 'scream shocked' }, { char: '😖', name: 'confounded' }, { char: '😣', name: 'persevere' }, { char: '😞', name: 'disappointed' }, { char: '😓', name: 'downcast sweat' }, { char: '😩', name: 'weary' }, { char: '😫', name: 'tired' }, { char: '🥱', name: 'yawning' }, { char: '😤', name: 'triumph huff' }, { char: '😡', name: 'pouting angry' }, { char: '😠', name: 'angry mad' }, { char: '🤬', name: 'cursing' }, { char: '😈', name: 'smiling devil' }, { char: '👿', name: 'angry devil' }, { char: '💀', name: 'skull' }, { char: '☠️', name: 'skull crossbones' }, { char: '💩', name: 'poop' }, { char: '🤡', name: 'clown' }, { char: '👹', name: 'ogre' }, { char: '👺', name: 'goblin' }, { char: '👻', name: 'ghost' }, { char: '👽', name: 'alien' }, { char: '👾', name: 'space invader' }, { char: '🤖', name: 'robot' },
-  ] },
-  { label: 'Gestures & Body', emojis: [
-    { char: '👋', name: 'wave hello bye' }, { char: '🤚', name: 'raised back hand' }, { char: '🖐️', name: 'hand fingers splayed' }, { char: '✋', name: 'raised hand stop' }, { char: '🖖', name: 'vulcan spock' }, { char: '🫱', name: 'rightwards hand' }, { char: '🫲', name: 'leftwards hand' }, { char: '🫳', name: 'palm down' }, { char: '🫴', name: 'palm up' }, { char: '👌', name: 'ok hand' }, { char: '🤌', name: 'pinched fingers' }, { char: '🤏', name: 'pinching small' }, { char: '✌️', name: 'peace victory' }, { char: '🤞', name: 'crossed fingers luck' }, { char: '🫰', name: 'finger heart' }, { char: '🤟', name: 'love you gesture' }, { char: '🤘', name: 'rock on horns' }, { char: '🤙', name: 'call me shaka' }, { char: '👈', name: 'point left' }, { char: '👉', name: 'point right' }, { char: '👆', name: 'point up' }, { char: '🖕', name: 'middle finger' }, { char: '👇', name: 'point down' }, { char: '☝️', name: 'index up' }, { char: '🫵', name: 'point at viewer' }, { char: '👍', name: 'thumbs up' }, { char: '👎', name: 'thumbs down' }, { char: '✊', name: 'fist raised' }, { char: '👊', name: 'punch fist bump' }, { char: '🤛', name: 'fist bump left' }, { char: '🤜', name: 'fist bump right' }, { char: '👏', name: 'clap applause' }, { char: '🙌', name: 'raised hands celebrate' }, { char: '🫶', name: 'heart hands' }, { char: '👐', name: 'open hands' }, { char: '🤲', name: 'palms together' }, { char: '🤝', name: 'handshake deal' }, { char: '🙏', name: 'pray thanks' }, { char: '✍️', name: 'writing hand' }, { char: '💅', name: 'nail polish' }, { char: '🤳', name: 'selfie' }, { char: '💪', name: 'flex muscle strong' }, { char: '🦾', name: 'mechanical arm' }, { char: '🦿', name: 'mechanical leg' }, { char: '🦵', name: 'leg' }, { char: '🦶', name: 'foot' }, { char: '👂', name: 'ear' }, { char: '🦻', name: 'ear hearing aid' }, { char: '👃', name: 'nose' }, { char: '🧠', name: 'brain' }, { char: '🫀', name: 'heart organ' }, { char: '🫁', name: 'lungs' }, { char: '🦷', name: 'tooth' }, { char: '🦴', name: 'bone' }, { char: '👀', name: 'eyes' }, { char: '👁️', name: 'eye' }, { char: '👅', name: 'tongue' }, { char: '👄', name: 'mouth lips' }, { char: '🫦', name: 'biting lip' }, { char: '👶', name: 'baby' }, { char: '🧒', name: 'child' }, { char: '👦', name: 'boy' }, { char: '👧', name: 'girl' }, { char: '🧑', name: 'person' }, { char: '👱', name: 'blond person' }, { char: '👨', name: 'man' }, { char: '🧔', name: 'beard person' }, { char: '👩', name: 'woman' }, { char: '🧓', name: 'older person' }, { char: '👴', name: 'old man' }, { char: '👵', name: 'old woman' }, { char: '🙍', name: 'frowning person' }, { char: '🙎', name: 'pouting person' }, { char: '🙅', name: 'no gesture' }, { char: '🙆', name: 'ok gesture' }, { char: '💁', name: 'tipping hand' }, { char: '🙋', name: 'raising hand' }, { char: '🧏', name: 'deaf person' }, { char: '🙇', name: 'bowing' }, { char: '🤦', name: 'facepalm' }, { char: '🤷', name: 'shrug' }, { char: '👮', name: 'police officer' }, { char: '🕵️', name: 'detective spy' }, { char: '💂', name: 'guard' }, { char: '🥷', name: 'ninja' }, { char: '👷', name: 'construction worker' }, { char: '🫅', name: 'royalty person' }, { char: '🤴', name: 'prince' }, { char: '👸', name: 'princess' }, { char: '👳', name: 'turban person' }, { char: '👲', name: 'skullcap person' }, { char: '🧕', name: 'headscarf person' }, { char: '🤵', name: 'tuxedo person' }, { char: '👰', name: 'bride veil' }, { char: '🤰', name: 'pregnant' }, { char: '🤱', name: 'breastfeeding' }, { char: '👼', name: 'baby angel' }, { char: '🎅', name: 'santa' }, { char: '🤶', name: 'mrs claus' }, { char: '🦸', name: 'superhero' }, { char: '🦹', name: 'supervillain' }, { char: '🧙', name: 'wizard mage' }, { char: '🧚', name: 'fairy' }, { char: '🧛', name: 'vampire' }, { char: '🧜', name: 'mermaid merman' }, { char: '🧝', name: 'elf' }, { char: '🧞', name: 'genie' }, { char: '🧟', name: 'zombie' }, { char: '💆', name: 'massage relax' }, { char: '💇', name: 'haircut' }, { char: '🚶', name: 'walking' }, { char: '🧍', name: 'standing' }, { char: '🧎', name: 'kneeling' }, { char: '🏃', name: 'running' }, { char: '💃', name: 'dancer woman' }, { char: '🕺', name: 'dancer man' }, { char: '🧖', name: 'sauna steam' }, { char: '👯', name: 'bunny ears dancers' }, { char: '👭', name: 'women holding hands' }, { char: '👫', name: 'couple holding hands' }, { char: '👬', name: 'men holding hands' }, { char: '💏', name: 'kiss couple' }, { char: '💑', name: 'couple with heart' }, { char: '👪', name: 'family' },
-  ] },
-  { label: 'Hearts', emojis: [
-    { char: '❤️', name: 'red heart love' }, { char: '🧡', name: 'orange heart' }, { char: '💛', name: 'yellow heart' }, { char: '💚', name: 'green heart' }, { char: '💙', name: 'blue heart' }, { char: '💜', name: 'purple heart' }, { char: '🖤', name: 'black heart' }, { char: '🤍', name: 'white heart' }, { char: '🤎', name: 'brown heart' }, { char: '💔', name: 'broken heart' }, { char: '❣️', name: 'heart exclamation' }, { char: '💕', name: 'two hearts' }, { char: '💞', name: 'revolving hearts' }, { char: '💓', name: 'beating heart' }, { char: '💗', name: 'growing heart' }, { char: '💖', name: 'sparkling heart' }, { char: '💘', name: 'cupid arrow heart' }, { char: '💝', name: 'gift heart' }, { char: '💟', name: 'heart decoration' }, { char: '♥️', name: 'heart suit' }, { char: '💌', name: 'love letter' }, { char: '💋', name: 'kiss mark lipstick' }, { char: '❤️‍🔥', name: 'heart on fire' }, { char: '❤️‍🩹', name: 'mending heart' },
-  ] },
-  { label: 'Animals', emojis: [
-    { char: '🐶', name: 'dog' }, { char: '🐱', name: 'cat' }, { char: '🐭', name: 'mouse' }, { char: '🐹', name: 'hamster' }, { char: '🐰', name: 'rabbit bunny' }, { char: '🦊', name: 'fox' }, { char: '🐻', name: 'bear' }, { char: '🐼', name: 'panda' }, { char: '🐨', name: 'koala' }, { char: '🐯', name: 'tiger' }, { char: '🦁', name: 'lion' }, { char: '🐮', name: 'cow' }, { char: '🐷', name: 'pig' }, { char: '🐽', name: 'pig nose' }, { char: '🐸', name: 'frog' }, { char: '🐵', name: 'monkey' }, { char: '🙈', name: 'see no evil' }, { char: '🙉', name: 'hear no evil' }, { char: '🙊', name: 'speak no evil' }, { char: '🐒', name: 'monkey face' }, { char: '🐔', name: 'chicken' }, { char: '🐧', name: 'penguin' }, { char: '🐦', name: 'bird' }, { char: '🐤', name: 'baby chick' }, { char: '🐣', name: 'hatching chick' }, { char: '🐥', name: 'front facing chick' }, { char: '🦆', name: 'duck' }, { char: '🦅', name: 'eagle' }, { char: '🦉', name: 'owl' }, { char: '🦇', name: 'bat' }, { char: '🐺', name: 'wolf' }, { char: '🐗', name: 'boar' }, { char: '🐴', name: 'horse face' }, { char: '🦄', name: 'unicorn' }, { char: '🫎', name: 'moose' }, { char: '🫏', name: 'donkey' }, { char: '🐝', name: 'bee' }, { char: '🪱', name: 'worm' }, { char: '🐛', name: 'caterpillar bug' }, { char: '🦋', name: 'butterfly' }, { char: '🐌', name: 'snail' }, { char: '🐞', name: 'ladybug' }, { char: '🐜', name: 'ant' }, { char: '🪰', name: 'fly' }, { char: '🪲', name: 'beetle' }, { char: '🪳', name: 'cockroach' }, { char: '🦟', name: 'mosquito' }, { char: '🦗', name: 'cricket' }, { char: '🕷️', name: 'spider' }, { char: '🕸️', name: 'spider web' }, { char: '🦂', name: 'scorpion' }, { char: '🐢', name: 'turtle' }, { char: '🐍', name: 'snake' }, { char: '🦎', name: 'lizard' }, { char: '🦖', name: 'trex dinosaur' }, { char: '🦕', name: 'sauropod dinosaur' }, { char: '🐙', name: 'octopus' }, { char: '🦑', name: 'squid' }, { char: '🦐', name: 'shrimp' }, { char: '🦞', name: 'lobster' }, { char: '🦀', name: 'crab' }, { char: '🐡', name: 'pufferfish' }, { char: '🐠', name: 'tropical fish' }, { char: '🐟', name: 'fish' }, { char: '🐬', name: 'dolphin' }, { char: '🐳', name: 'whale spouting' }, { char: '🐋', name: 'whale' }, { char: '🦈', name: 'shark' }, { char: '🐊', name: 'crocodile' }, { char: '🐅', name: 'tiger face' }, { char: '🐆', name: 'leopard' }, { char: '🦓', name: 'zebra' }, { char: '🦍', name: 'gorilla' }, { char: '🦧', name: 'orangutan' }, { char: '🦣', name: 'mammoth' }, { char: '🐘', name: 'elephant' }, { char: '🦛', name: 'hippo' }, { char: '🦏', name: 'rhino' }, { char: '🐪', name: 'camel' }, { char: '🐫', name: 'two hump camel' }, { char: '🦒', name: 'giraffe' }, { char: '🦘', name: 'kangaroo' }, { char: '🦬', name: 'bison' }, { char: '🐃', name: 'water buffalo' }, { char: '🐂', name: 'ox' }, { char: '🐄', name: 'cow face' }, { char: '🐎', name: 'horse' }, { char: '🐖', name: 'pig face' }, { char: '🐏', name: 'ram' }, { char: '🐑', name: 'sheep' }, { char: '🦙', name: 'llama' }, { char: '🐐', name: 'goat' }, { char: '🦌', name: 'deer' }, { char: '🐕', name: 'dog face' }, { char: '🐩', name: 'poodle' }, { char: '🦮', name: 'guide dog' }, { char: '🐈', name: 'cat face' }, { char: '🐈‍⬛', name: 'black cat' }, { char: '🪶', name: 'feather' }, { char: '🐓', name: 'rooster' }, { char: '🦃', name: 'turkey' }, { char: '🦤', name: 'dodo' }, { char: '🦚', name: 'peacock' }, { char: '🦜', name: 'parrot' }, { char: '🦢', name: 'swan' }, { char: '🦩', name: 'flamingo' }, { char: '🕊️', name: 'dove peace' }, { char: '🐇', name: 'rabbit' }, { char: '🦝', name: 'raccoon' }, { char: '🦨', name: 'skunk' }, { char: '🦡', name: 'badger' }, { char: '🦫', name: 'beaver' }, { char: '🦦', name: 'otter' }, { char: '🐁', name: 'mouse face' }, { char: '🐀', name: 'rat' }, { char: '🐿️', name: 'chipmunk squirrel' }, { char: '🦔', name: 'hedgehog' },
-  ] },
-  { label: 'Nature & Plants', emojis: [
-    { char: '💐', name: 'bouquet flowers' }, { char: '🌸', name: 'cherry blossom' }, { char: '💮', name: 'white flower' }, { char: '🪷', name: 'lotus' }, { char: '🏵️', name: 'rosette' }, { char: '🌹', name: 'rose' }, { char: '🥀', name: 'wilted flower' }, { char: '🌺', name: 'hibiscus' }, { char: '🌻', name: 'sunflower' }, { char: '🌼', name: 'blossom daisy' }, { char: '🌷', name: 'tulip' }, { char: '🪻', name: 'hyacinth' }, { char: '🌱', name: 'seedling sprout' }, { char: '🪴', name: 'potted plant' }, { char: '🌲', name: 'evergreen tree' }, { char: '🌳', name: 'deciduous tree' }, { char: '🌴', name: 'palm tree' }, { char: '🌵', name: 'cactus' }, { char: '🌾', name: 'sheaf rice' }, { char: '🌿', name: 'herb' }, { char: '☘️', name: 'shamrock' }, { char: '🍀', name: 'four leaf clover lucky' }, { char: '🍁', name: 'maple leaf' }, { char: '🍂', name: 'fallen leaf autumn' }, { char: '🍃', name: 'leaves wind' }, { char: '🪹', name: 'empty nest' }, { char: '🪺', name: 'nest with eggs' }, { char: '🍄', name: 'mushroom' }, { char: '🌰', name: 'chestnut' }, { char: '🪸', name: 'coral' }, { char: '🪨', name: 'rock' }, { char: '🌍', name: 'earth globe' }, { char: '🌎', name: 'earth americas' }, { char: '🌏', name: 'earth asia' }, { char: '🌐', name: 'globe meridians' }, { char: '🪐', name: 'ringed planet' }, { char: '🌑', name: 'new moon' }, { char: '🌒', name: 'waxing crescent moon' }, { char: '🌓', name: 'first quarter moon' }, { char: '🌔', name: 'waxing gibbous moon' }, { char: '🌕', name: 'full moon' }, { char: '🌖', name: 'waning gibbous moon' }, { char: '🌗', name: 'last quarter moon' }, { char: '🌘', name: 'waning crescent moon' }, { char: '🌙', name: 'crescent moon' }, { char: '🌛', name: 'first quarter face moon' }, { char: '🌜', name: 'last quarter face moon' }, { char: '🌚', name: 'new moon face' }, { char: '🌝', name: 'full moon face' }, { char: '☀️', name: 'sun' }, { char: '🌞', name: 'sun face' }, { char: '⭐', name: 'star' }, { char: '🌟', name: 'glowing star' }, { char: '💫', name: 'dizzy stars' }, { char: '✨', name: 'sparkles' }, { char: '☄️', name: 'comet' }, { char: '☁️', name: 'cloud' }, { char: '⛅', name: 'sun behind cloud' }, { char: '⛈️', name: 'thunderstorm' }, { char: '🌤️', name: 'sun small cloud' }, { char: '🌥️', name: 'sun behind large cloud' }, { char: '🌦️', name: 'sun behind rain cloud' }, { char: '🌧️', name: 'rain cloud' }, { char: '🌨️', name: 'snow cloud' }, { char: '🌩️', name: 'lightning cloud' }, { char: '🌪️', name: 'tornado' }, { char: '🌫️', name: 'fog' }, { char: '🌬️', name: 'wind face' }, { char: '🌀', name: 'cyclone' }, { char: '🌈', name: 'rainbow' }, { char: '🌂', name: 'closed umbrella' }, { char: '☂️', name: 'umbrella' }, { char: '☔', name: 'umbrella rain' }, { char: '⛱️', name: 'umbrella beach' }, { char: '⚡', name: 'lightning bolt' }, { char: '❄️', name: 'snowflake' }, { char: '☃️', name: 'snowman' }, { char: '⛄', name: 'snowman no snow' }, { char: '☄️', name: 'comet' }, { char: '🔥', name: 'fire flame' }, { char: '💧', name: 'droplet water' }, { char: '🌊', name: 'wave ocean' },
-  ] },
-  { label: 'Food & Drink', emojis: [
-    { char: '🍏', name: 'green apple' }, { char: '🍎', name: 'red apple' }, { char: '🍐', name: 'pear' }, { char: '🍊', name: 'tangerine orange' }, { char: '🍋', name: 'lemon' }, { char: '🍌', name: 'banana' }, { char: '🍉', name: 'watermelon' }, { char: '🍇', name: 'grapes' }, { char: '🍓', name: 'strawberry' }, { char: '🫐', name: 'blueberries' }, { char: '🍈', name: 'melon' }, { char: '🍒', name: 'cherries' }, { char: '🍑', name: 'peach' }, { char: '🥭', name: 'mango' }, { char: '🍍', name: 'pineapple' }, { char: '🥥', name: 'coconut' }, { char: '🥝', name: 'kiwi' }, { char: '🍅', name: 'tomato' }, { char: '🍆', name: 'eggplant' }, { char: '🥑', name: 'avocado' }, { char: '🥦', name: 'broccoli' }, { char: '🥬', name: 'leafy greens lettuce' }, { char: '🥒', name: 'cucumber' }, { char: '🌶️', name: 'hot pepper chili' }, { char: '🫑', name: 'bell pepper' }, { char: '🌽', name: 'corn' }, { char: '🥕', name: 'carrot' }, { char: '🫒', name: 'olive' }, { char: '🧄', name: 'garlic' }, { char: '🧅', name: 'onion' }, { char: '🥔', name: 'potato' }, { char: '🍠', name: 'sweet potato' }, { char: '🥐', name: 'croissant' }, { char: '🥯', name: 'bagel' }, { char: '🍞', name: 'bread' }, { char: '🥖', name: 'baguette' }, { char: '🥨', name: 'pretzel' }, { char: '🧀', name: 'cheese' }, { char: '🥚', name: 'egg' }, { char: '🍳', name: 'fried egg cooking' }, { char: '🧈', name: 'butter' }, { char: '🥞', name: 'pancakes' }, { char: '🧇', name: 'waffle' }, { char: '🥓', name: 'bacon' }, { char: '🥩', name: 'steak meat' }, { char: '🍗', name: 'poultry leg' }, { char: '🍖', name: 'meat bone' }, { char: '🌭', name: 'hot dog' }, { char: '🍔', name: 'hamburger burger' }, { char: '🍟', name: 'fries' }, { char: '🍕', name: 'pizza' }, { char: '🫓', name: 'flatbread' }, { char: '🥪', name: 'sandwich' }, { char: '🌮', name: 'taco' }, { char: '🌯', name: 'burrito' }, { char: '🫔', name: 'tamale' }, { char: '🥙', name: 'stuffed flatbread' }, { char: '🧆', name: 'falafel' }, { char: '🥗', name: 'salad' }, { char: '🍿', name: 'popcorn' }, { char: '🧈', name: 'butter' }, { char: '🧂', name: 'salt' }, { char: '🥫', name: 'canned food' }, { char: '🍱', name: 'bento box' }, { char: '🍘', name: 'rice cracker' }, { char: '🍙', name: 'rice ball' }, { char: '🍚', name: 'cooked rice' }, { char: '🍛', name: 'curry rice' }, { char: '🍜', name: 'ramen noodles' }, { char: '🍝', name: 'spaghetti pasta' }, { char: '🍠', name: 'sweet potato' }, { char: '🍢', name: 'oden skewer' }, { char: '🍣', name: 'sushi' }, { char: '🍤', name: 'fried shrimp tempura' }, { char: '🍥', name: 'fish cake' }, { char: '🥮', name: 'mooncake' }, { char: '🍡', name: 'dango' }, { char: '🥟', name: 'dumpling' }, { char: '🥠', name: 'fortune cookie' }, { char: '🥡', name: 'takeout box' }, { char: '🦀', name: 'crab' }, { char: '🦞', name: 'lobster' }, { char: '🦐', name: 'shrimp' }, { char: '🦑', name: 'squid' }, { char: '🍦', name: 'soft ice cream' }, { char: '🍧', name: 'shaved ice' }, { char: '🍨', name: 'ice cream' }, { char: '🍩', name: 'donut' }, { char: '🍪', name: 'cookie' }, { char: '🎂', name: 'birthday cake' }, { char: '🍰', name: 'cake slice' }, { char: '🧁', name: 'cupcake' }, { char: '🥧', name: 'pie' }, { char: '🍫', name: 'chocolate bar' }, { char: '🍬', name: 'candy' }, { char: '🍭', name: 'lollipop' }, { char: '🍮', name: 'custard flan' }, { char: '🍯', name: 'honey' }, { char: '🍼', name: 'baby bottle' }, { char: '🥛', name: 'milk glass' }, { char: '☕', name: 'coffee' }, { char: '🫖', name: 'teapot' }, { char: '🍵', name: 'tea' }, { char: '🧃', name: 'juice box' }, { char: '🥤', name: 'cup with straw soda' }, { char: '🧋', name: 'bubble tea' }, { char: '🍶', name: 'sake' }, { char: '🍺', name: 'beer' }, { char: '🍻', name: 'beers cheers' }, { char: '🥂', name: 'clinking glasses champagne' }, { char: '🍷', name: 'wine' }, { char: '🥃', name: 'whiskey' }, { char: '🍸', name: 'cocktail martini' }, { char: '🍹', name: 'tropical drink' }, { char: '🧉', name: 'mate drink' }, { char: '🍾', name: 'champagne bottle' }, { char: '🧊', name: 'ice cube' }, { char: '🥄', name: 'spoon' }, { char: '🍴', name: 'fork knife' }, { char: '🍽️', name: 'plate fork knife' }, { char: '🥢', name: 'chopsticks' },
-  ] },
-  { label: 'Activities & Sports', emojis: [
-    { char: '⚽', name: 'soccer ball' }, { char: '🏀', name: 'basketball' }, { char: '🏈', name: 'football' }, { char: '⚾', name: 'baseball' }, { char: '🥎', name: 'softball' }, { char: '🎾', name: 'tennis' }, { char: '🏐', name: 'volleyball' }, { char: '🏉', name: 'rugby' }, { char: '🎱', name: 'pool 8 ball' }, { char: '🏓', name: 'ping pong table tennis' }, { char: '🏸', name: 'badminton' }, { char: '🥅', name: 'goal net' }, { char: '⛳', name: 'golf flag' }, { char: '🏹', name: 'bow arrow archery' }, { char: '🎣', name: 'fishing rod' }, { char: '🤿', name: 'diving mask' }, { char: '🥊', name: 'boxing glove' }, { char: '🥋', name: 'martial arts' }, { char: '🎽', name: 'running shirt' }, { char: '🛹', name: 'skateboard' }, { char: '🛼', name: 'roller skate' }, { char: '🎿', name: 'ski' }, { char: '⛷️', name: 'skier' }, { char: '🏂', name: 'snowboarder' }, { char: '🪂', name: 'parachute' }, { char: '🏋️', name: 'weightlifting' }, { char: '🤸', name: 'cartwheel gymnastics' }, { char: '⛹️', name: 'bouncing ball' }, { char: '🤺', name: 'fencing' }, { char: '🤾', name: 'handball' }, { char: '🏌️', name: 'golfing' }, { char: '🏇', name: 'horse racing' }, { char: '🧘', name: 'yoga meditation' }, { char: '🏄', name: 'surfing' }, { char: '🏊', name: 'swimming' }, { char: '🤽', name: 'water polo' }, { char: '🚣', name: 'rowing boat' }, { char: '🧗', name: 'climbing' }, { char: '🚵', name: 'mountain biking' }, { char: '🚴', name: 'cycling' }, { char: '🏆', name: 'trophy' }, { char: '🥇', name: 'gold medal first' }, { char: '🥈', name: 'silver medal second' }, { char: '🥉', name: 'bronze medal third' }, { char: '🏅', name: 'medal sports' }, { char: '🎖️', name: 'military medal' }, { char: '🏵️', name: 'rosette' }, { char: '🎗️', name: 'ribbon awareness' }, { char: '🎫', name: 'ticket' }, { char: '🎟️', name: 'admission tickets' }, { char: '🎪', name: 'circus tent' }, { char: '🤹', name: 'juggling' }, { char: '🎭', name: 'theater masks' }, { char: '🩰', name: 'ballet shoes' }, { char: '🎨', name: 'palette art' }, { char: '🎬', name: 'clapper film' }, { char: '🎤', name: 'microphone sing' }, { char: '🎧', name: 'headphones music' }, { char: '🎼', name: 'musical score' }, { char: '🎹', name: 'piano keyboard' }, { char: '🥁', name: 'drum' }, { char: '🪘', name: 'long drum' }, { char: '🎷', name: 'saxophone' }, { char: '🎺', name: 'trumpet' }, { char: '🎸', name: 'guitar' }, { char: '🪕', name: 'banjo' }, { char: '🎻', name: 'violin' }, { char: '🪗', name: 'accordion' }, { char: '🪈', name: 'flute' }, { char: '🎲', name: 'dice game' }, { char: '♟️', name: 'chess pawn' }, { char: '🎯', name: 'dart target' }, { char: '🎳', name: 'bowling' }, { char: '🎮', name: 'video game controller' }, { char: '🎰', name: 'slot machine' }, { char: '🧩', name: 'puzzle piece' }, { char: '🪀', name: 'yo-yo' }, { char: '🪁', name: 'kite' },
-  ] },
-  { label: 'Travel & Places', emojis: [
-    { char: '🚗', name: 'car automobile' }, { char: '🚕', name: 'taxi' }, { char: '🚙', name: 'suv' }, { char: '🚌', name: 'bus' }, { char: '🚎', name: 'trolleybus' }, { char: '🏎️', name: 'race car' }, { char: '🚓', name: 'police car' }, { char: '🚑', name: 'ambulance' }, { char: '🚒', name: 'fire truck' }, { char: '🚐', name: 'minibus van' }, { char: '🛻', name: 'pickup truck' }, { char: '🚚', name: 'delivery truck' }, { char: '🚛', name: 'articulated truck' }, { char: '🚜', name: 'tractor' }, { char: '🛵', name: 'scooter moped' }, { char: '🏍️', name: 'motorcycle' }, { char: '🛺', name: 'auto rickshaw' }, { char: '🚲', name: 'bicycle bike' }, { char: '🛴', name: 'kick scooter' }, { char: '🚨', name: 'police light siren' }, { char: '🚔', name: 'oncoming police car' }, { char: '🚍', name: 'oncoming bus' }, { char: '🚘', name: 'oncoming automobile' }, { char: '🚖', name: 'oncoming taxi' }, { char: '🚡', name: 'aerial tramway' }, { char: '🚠', name: 'mountain cableway' }, { char: '🚟', name: 'suspension railway' }, { char: '🚃', name: 'railway carriage' }, { char: '🚋', name: 'tram car' }, { char: '🚞', name: 'mountain railway' }, { char: '🚝', name: 'monorail' }, { char: '🚄', name: 'high speed train' }, { char: '🚅', name: 'bullet train' }, { char: '🚈', name: 'light rail' }, { char: '🚂', name: 'locomotive train' }, { char: '🚆', name: 'train' }, { char: '🚇', name: 'metro subway' }, { char: '🚊', name: 'tram' }, { char: '✈️', name: 'airplane' }, { char: '🛫', name: 'airplane departure' }, { char: '🛬', name: 'airplane arrival' }, { char: '🛩️', name: 'small airplane' }, { char: '💺', name: 'seat' }, { char: '🚀', name: 'rocket' }, { char: '🛸', name: 'ufo flying saucer' }, { char: '🚁', name: 'helicopter' }, { char: '🛶', name: 'canoe' }, { char: '⛵', name: 'sailboat' }, { char: '🚤', name: 'speedboat' }, { char: '🛥️', name: 'motor boat' }, { char: '🛳️', name: 'cruise ship' }, { char: '⛴️', name: 'ferry' }, { char: '🚢', name: 'ship' }, { char: '⚓', name: 'anchor' }, { char: '🛟', name: 'ring buoy' }, { char: '⛽', name: 'fuel pump gas' }, { char: '🚧', name: 'construction barrier' }, { char: '🚦', name: 'traffic light' }, { char: '🚥', name: 'horizontal traffic light' }, { char: '🗺️', name: 'world map' }, { char: '🗿', name: 'moai statue' }, { char: '🗽', name: 'statue of liberty' }, { char: '🗼', name: 'tokyo tower' }, { char: '🏰', name: 'castle' }, { char: '🏯', name: 'japanese castle' }, { char: '🏟️', name: 'stadium' }, { char: '🎡', name: 'ferris wheel' }, { char: '🎢', name: 'roller coaster' }, { char: '🎠', name: 'carousel horse' }, { char: '⛱️', name: 'beach umbrella' }, { char: '🏖️', name: 'beach' }, { char: '🏝️', name: 'desert island' }, { char: '🏔️', name: 'snow mountain' }, { char: '⛰️', name: 'mountain' }, { char: '🌋', name: 'volcano' }, { char: '🗻', name: 'mount fuji' }, { char: '🏕️', name: 'camping tent' }, { char: '🏜️', name: 'desert' }, { char: '🏛️', name: 'classical building' }, { char: '🏗️', name: 'building construction' }, { char: '🏘️', name: 'houses' }, { char: '🏚️', name: 'derelict house' }, { char: '🏠', name: 'house' }, { char: '🏡', name: 'house garden' }, { char: '🏢', name: 'office building' }, { char: '🏣', name: 'post office' }, { char: '🏤', name: 'post office europe' }, { char: '🏥', name: 'hospital' }, { char: '🏦', name: 'bank' }, { char: '🏨', name: 'hotel' }, { char: '🏩', name: 'love hotel' }, { char: '🏪', name: 'convenience store' }, { char: '🏫', name: 'school' }, { char: '🏬', name: 'department store' }, { char: '🏭', name: 'factory' }, { char: '💒', name: 'wedding chapel' }, { char: '🕌', name: 'mosque' }, { char: '🕍', name: 'synagogue' }, { char: '⛩️', name: 'shinto shrine' }, { char: '🕋', name: 'kaaba' }, { char: '⛪', name: 'church' }, { char: '🌅', name: 'sunrise' }, { char: '🌄', name: 'sunrise mountains' }, { char: '🌆', name: 'cityscape dusk' }, { char: '🌇', name: 'sunset' }, { char: '🌉', name: 'bridge night' }, { char: '🌃', name: 'night city stars' }, { char: '🌌', name: 'milky way' },
-  ] },
-  { label: 'Objects', emojis: [
-    { char: '⌚', name: 'watch' }, { char: '📱', name: 'phone mobile' }, { char: '💻', name: 'laptop computer' }, { char: '⌨️', name: 'keyboard' }, { char: '🖥️', name: 'desktop computer' }, { char: '🖨️', name: 'printer' }, { char: '🖱️', name: 'computer mouse' }, { char: '💽', name: 'minidisc' }, { char: '💾', name: 'floppy disk save' }, { char: '💿', name: 'cd disk' }, { char: '📀', name: 'dvd' }, { char: '📷', name: 'camera' }, { char: '📸', name: 'camera flash' }, { char: '📹', name: 'video camera' }, { char: '🎥', name: 'movie camera' }, { char: '📞', name: 'telephone receiver' }, { char: '☎️', name: 'telephone' }, { char: '📟', name: 'pager' }, { char: '📠', name: 'fax machine' }, { char: '📺', name: 'television tv' }, { char: '📻', name: 'radio' }, { char: '🎙️', name: 'studio microphone' }, { char: '🎚️', name: 'level slider' }, { char: '🎛️', name: 'control knobs' }, { char: '⏰', name: 'alarm clock' }, { char: '⏱️', name: 'stopwatch' }, { char: '⏲️', name: 'timer clock' }, { char: '🕰️', name: 'mantelpiece clock' }, { char: '⌛', name: 'hourglass done' }, { char: '⏳', name: 'hourglass flowing' }, { char: '💡', name: 'light bulb idea' }, { char: '🔦', name: 'flashlight' }, { char: '🏮', name: 'lantern' }, { char: '🪔', name: 'diya lamp' }, { char: '📔', name: 'notebook decorative' }, { char: '📕', name: 'closed book' }, { char: '📗', name: 'green book' }, { char: '📘', name: 'blue book' }, { char: '📙', name: 'orange book' }, { char: '📓', name: 'notebook' }, { char: '📒', name: 'ledger' }, { char: '📃', name: 'page curl' }, { char: '📜', name: 'scroll' }, { char: '📄', name: 'page document' }, { char: '📰', name: 'newspaper' }, { char: '🗞️', name: 'rolled newspaper' }, { char: '📑', name: 'bookmark tabs' }, { char: '🔖', name: 'bookmark' }, { char: '🏷️', name: 'label tag' }, { char: '💰', name: 'money bag' }, { char: '🪙', name: 'coin' }, { char: '💴', name: 'yen banknote' }, { char: '💵', name: 'dollar banknote' }, { char: '💶', name: 'euro banknote' }, { char: '💷', name: 'pound banknote' }, { char: '💸', name: 'money wings' }, { char: '💳', name: 'credit card' }, { char: '🧾', name: 'receipt' }, { char: '💎', name: 'gem diamond' }, { char: '⚖️', name: 'balance scale' }, { char: '🪜', name: 'ladder' }, { char: '🧰', name: 'toolbox' }, { char: '🔧', name: 'wrench' }, { char: '🔨', name: 'hammer' }, { char: '⚒️', name: 'hammer and pick' }, { char: '🛠️', name: 'hammer and wrench' }, { char: '⛏️', name: 'pick' }, { char: '🔩', name: 'nut and bolt' }, { char: '⚙️', name: 'gear settings' }, { char: '🧲', name: 'magnet' }, { char: '🔫', name: 'water gun' }, { char: '💣', name: 'bomb' }, { char: '🧨', name: 'firecracker' }, { char: '🔪', name: 'kitchen knife' }, { char: '🗡️', name: 'dagger' }, { char: '⚔️', name: 'crossed swords' }, { char: '🛡️', name: 'shield' }, { char: '🚬', name: 'cigarette' }, { char: '⚰️', name: 'coffin' }, { char: '🪦', name: 'headstone' }, { char: '⚱️', name: 'funeral urn' }, { char: '🏺', name: 'amphora vase' }, { char: '🔮', name: 'crystal ball' }, { char: '📿', name: 'prayer beads' }, { char: '🧿', name: 'nazar amulet' }, { char: '🪬', name: 'hamsa' }, { char: '💈', name: 'barber pole' }, { char: '⚗️', name: 'alembic' }, { char: '🔭', name: 'telescope' }, { char: '🔬', name: 'microscope' }, { char: '🕳️', name: 'hole' }, { char: '🩻', name: 'x-ray' }, { char: '💊', name: 'pill medicine' }, { char: '💉', name: 'syringe' }, { char: '🩸', name: 'blood drop' }, { char: '🌡️', name: 'thermometer' }, { char: '🧬', name: 'dna' }, { char: '🔑', name: 'key' }, { char: '🗝️', name: 'old key' }, { char: '🚪', name: 'door' }, { char: '🪑', name: 'chair' }, { char: '🛏️', name: 'bed' }, { char: '🛋️', name: 'couch sofa' }, { char: '🚽', name: 'toilet' }, { char: '🚿', name: 'shower' }, { char: '🛁', name: 'bathtub' }, { char: '🪒', name: 'razor' }, { char: '🧴', name: 'lotion bottle' }, { char: '🧷', name: 'safety pin' }, { char: '🧹', name: 'broom' }, { char: '🧺', name: 'basket' }, { char: '🧻', name: 'toilet paper' }, { char: '🪣', name: 'bucket' }, { char: '🧼', name: 'soap' }, { char: '🪥', name: 'toothbrush' }, { char: '🧽', name: 'sponge' }, { char: '🧯', name: 'fire extinguisher' }, { char: '🛒', name: 'shopping cart' }, { char: '🎁', name: 'gift present' },
-  ] },
-  { label: 'Clothing', emojis: [
-    { char: '👑', name: 'crown' }, { char: '👒', name: 'sun hat' }, { char: '🎩', name: 'top hat' }, { char: '🎓', name: 'graduation cap' }, { char: '🧢', name: 'baseball cap' }, { char: '🪖', name: 'military helmet' }, { char: '⛑️', name: 'rescue helmet' }, { char: '📿', name: 'prayer beads' }, { char: '👓', name: 'glasses' }, { char: '🕶️', name: 'sunglasses' }, { char: '🥽', name: 'goggles' }, { char: '👔', name: 'necktie' }, { char: '👕', name: 'tshirt shirt' }, { char: '👖', name: 'jeans pants' }, { char: '🧣', name: 'scarf' }, { char: '🧤', name: 'gloves' }, { char: '🧥', name: 'coat' }, { char: '🧦', name: 'socks' }, { char: '👗', name: 'dress' }, { char: '👘', name: 'kimono' }, { char: '🥻', name: 'sari' }, { char: '🩱', name: 'swimsuit' }, { char: '🩲', name: 'briefs' }, { char: '🩳', name: 'shorts' }, { char: '👙', name: 'bikini' }, { char: '👚', name: 'blouse' }, { char: '🪭', name: 'folding hand fan' }, { char: '👛', name: 'purse' }, { char: '👜', name: 'handbag' }, { char: '👝', name: 'clutch bag' }, { char: '🛍️', name: 'shopping bags' }, { char: '🎒', name: 'backpack' }, { char: '🩴', name: 'thong sandal' }, { char: '👞', name: 'shoe mens' }, { char: '👟', name: 'sneaker' }, { char: '🥾', name: 'hiking boot' }, { char: '🥿', name: 'flat shoe' }, { char: '👠', name: 'high heel' }, { char: '👡', name: 'sandal womens' }, { char: '🩰', name: 'ballet shoes' }, { char: '👢', name: 'boot' }, { char: '👑', name: 'crown' }, { char: '💄', name: 'lipstick' }, { char: '💍', name: 'ring' }, { char: '💎', name: 'gem' },
-  ] },
-  { label: 'Symbols & Weather', emojis: [
-    { char: '✨', name: 'sparkles' }, { char: '🎉', name: 'party popper celebrate' }, { char: '🎊', name: 'confetti ball' }, { char: '🎈', name: 'balloon' }, { char: '🎁', name: 'gift' }, { char: '🏆', name: 'trophy' }, { char: '⭐', name: 'star' }, { char: '🌟', name: 'glowing star' }, { char: '💫', name: 'dizzy' }, { char: '⚡', name: 'lightning' }, { char: '🔥', name: 'fire' }, { char: '💥', name: 'explosion boom' }, { char: '💢', name: 'anger symbol' }, { char: '💦', name: 'sweat splash' }, { char: '💨', name: 'dashing wind' }, { char: '🕳️', name: 'hole' }, { char: '💬', name: 'speech bubble' }, { char: '💭', name: 'thought bubble' }, { char: '🗯️', name: 'anger bubble' }, { char: '♻️', name: 'recycle' }, { char: '⚠️', name: 'warning' }, { char: '🚫', name: 'no entry prohibited' }, { char: '✅', name: 'check mark' }, { char: '☑️', name: 'checkbox' }, { char: '✔️', name: 'check' }, { char: '❌', name: 'cross mark x' }, { char: '❎', name: 'cross mark button' }, { char: '❓', name: 'question mark' }, { char: '❔', name: 'white question mark' }, { char: '❗', name: 'exclamation mark' }, { char: '❕', name: 'white exclamation' }, { char: '‼️', name: 'double exclamation' }, { char: '⁉️', name: 'question exclamation' }, { char: '💯', name: 'hundred points' }, { char: '🔆', name: 'bright' }, { char: '🔅', name: 'dim' }, { char: '🔴', name: 'red circle' }, { char: '🟠', name: 'orange circle' }, { char: '🟡', name: 'yellow circle' }, { char: '🟢', name: 'green circle' }, { char: '🔵', name: 'blue circle' }, { char: '🟣', name: 'purple circle' }, { char: '⚫', name: 'black circle' }, { char: '⚪', name: 'white circle' }, { char: '🟥', name: 'red square' }, { char: '🟧', name: 'orange square' }, { char: '🟨', name: 'yellow square' }, { char: '🟩', name: 'green square' }, { char: '🟦', name: 'blue square' }, { char: '🟪', name: 'purple square' }, { char: '⬛', name: 'black square' }, { char: '⬜', name: 'white square' }, { char: '🔺', name: 'red triangle up' }, { char: '🔻', name: 'red triangle down' }, { char: '💠', name: 'diamond dot' }, { char: '🔶', name: 'orange diamond' }, { char: '🔷', name: 'blue diamond' }, { char: '🔔', name: 'bell' }, { char: '🔕', name: 'bell mute' }, { char: '📢', name: 'loudspeaker' }, { char: '📣', name: 'megaphone' }, { char: '📯', name: 'postal horn' }, { char: '🔊', name: 'speaker loud' }, { char: '🔇', name: 'speaker muted' }, { char: '🎵', name: 'musical note' }, { char: '🎶', name: 'musical notes' }, { char: '🌈', name: 'rainbow' }, { char: '☀️', name: 'sun' }, { char: '🌤️', name: 'sun cloud' }, { char: '⛅', name: 'partly cloudy' }, { char: '🌥️', name: 'cloudy sun' }, { char: '☁️', name: 'cloud' }, { char: '🌦️', name: 'sun rain' }, { char: '🌧️', name: 'rain' }, { char: '⛈️', name: 'thunderstorm' }, { char: '🌩️', name: 'lightning cloud' }, { char: '🌨️', name: 'snow' }, { char: '❄️', name: 'snowflake' }, { char: '☃️', name: 'snowman' }, { char: '⛄', name: 'snowman' }, { char: '🌊', name: 'wave' }, { char: '💧', name: 'droplet' },
-  ] },
-  { label: 'Flags', emojis: [
-    { char: '🏳️', name: 'white flag' }, { char: '🏴', name: 'black flag' }, { char: '🏁', name: 'checkered flag racing' }, { char: '🚩', name: 'triangular flag' }, { char: '🏳️‍🌈', name: 'rainbow pride flag' }, { char: '🏳️‍⚧️', name: 'transgender flag' }, { char: '🏴‍☠️', name: 'pirate flag' }, { char: '🇺🇸', name: 'united states usa flag' }, { char: '🇬🇧', name: 'united kingdom uk flag' }, { char: '🇨🇦', name: 'canada flag' }, { char: '🇲🇽', name: 'mexico flag' }, { char: '🇧🇷', name: 'brazil flag' }, { char: '🇦🇷', name: 'argentina flag' }, { char: '🇫🇷', name: 'france flag' }, { char: '🇩🇪', name: 'germany flag' }, { char: '🇮🇹', name: 'italy flag' }, { char: '🇪🇸', name: 'spain flag' }, { char: '🇵🇹', name: 'portugal flag' }, { char: '🇳🇱', name: 'netherlands flag' }, { char: '🇧🇪', name: 'belgium flag' }, { char: '🇸🇪', name: 'sweden flag' }, { char: '🇳🇴', name: 'norway flag' }, { char: '🇩🇰', name: 'denmark flag' }, { char: '🇫🇮', name: 'finland flag' }, { char: '🇮🇸', name: 'iceland flag' }, { char: '🇮🇪', name: 'ireland flag' }, { char: '🇨🇭', name: 'switzerland flag' }, { char: '🇦🇹', name: 'austria flag' }, { char: '🇬🇷', name: 'greece flag' }, { char: '🇵🇱', name: 'poland flag' }, { char: '🇺🇦', name: 'ukraine flag' }, { char: '🇷🇺', name: 'russia flag' }, { char: '🇹🇷', name: 'turkey flag' }, { char: '🇮🇱', name: 'israel flag' }, { char: '🇸🇦', name: 'saudi arabia flag' }, { char: '🇦🇪', name: 'uae flag' }, { char: '🇮🇳', name: 'india flag' }, { char: '🇨🇳', name: 'china flag' }, { char: '🇯🇵', name: 'japan flag' }, { char: '🇰🇷', name: 'south korea flag' }, { char: '🇹🇭', name: 'thailand flag' }, { char: '🇻🇳', name: 'vietnam flag' }, { char: '🇵🇭', name: 'philippines flag' }, { char: '🇮🇩', name: 'indonesia flag' }, { char: '🇲🇾', name: 'malaysia flag' }, { char: '🇸🇬', name: 'singapore flag' }, { char: '🇦🇺', name: 'australia flag' }, { char: '🇳🇿', name: 'new zealand flag' }, { char: '🇿🇦', name: 'south africa flag' }, { char: '🇪🇬', name: 'egypt flag' }, { char: '🇳🇬', name: 'nigeria flag' }, { char: '🇰🇪', name: 'kenya flag' }, { char: '🇲🇦', name: 'morocco flag' }, { char: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'england flag' }, { char: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', name: 'scotland flag' }, { char: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', name: 'wales flag' },
-  ] },
-];
-
-// Flat pool used to draw a fresh random emoji set for the Emoji effect
-// whenever a shuffle (Effects-tab or WAV button) lands on it.
-const EMOJI_POOL: string[] = EMOJI_PICKER_CATEGORIES.flatMap(cat => cat.emojis.map(e => e.char));
-export function pickRandomEmojiSet(count: number): string {
-  const pool = EMOJI_POOL;
-  const usedIdx = new Set<number>();
-  const picked: string[] = [];
-  while (picked.length < count && picked.length < pool.length) {
-    const idx = Math.floor(Math.random() * pool.length);
-    if (usedIdx.has(idx)) continue;
-    usedIdx.add(idx);
-    picked.push(pool[idx]);
-  }
-  return picked.join('');
-}
-
-// Splits a string into visual emoji units instead of raw codepoints. Flags
-// (regional-indicator pairs like 🇮🇹) and ZWJ sequences (🏳️‍🌈, 🏴‍☠️, skin-tone
-// modifiers) are made of 2+ codepoints each — Array.from(str) splits those
-// apart, and an isolated regional-indicator letter has no visible glyph on
-// most systems, so a flag in the Emoji effect's character ramp silently
-// rendered nothing every cell it was picked for (black canvas, no error).
-// Intl.Segmenter's grapheme granularity groups these correctly; it's been
-// supported in every major browser since 2021+ so no fallback is needed.
-export function splitGraphemes(str: string): string[] {
-  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-    return Array.from(segmenter.segment(str), (s) => s.segment);
-  }
-  return Array.from(str);
-}
-
-// Small pill showing a hotkey label, used in the About/Info panel's shortcut list
-function Kbd({ label }: { label: string }) {
-  return (
-    <span className="shrink-0 text-[10px] text-white/70 bg-white/10 border border-white/15 rounded px-1.5 py-0.5 font-mono">
-      {label}
-    </span>
-  );
-}
-
-export function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
-  id: string; label: string; isMulti: boolean;
-  expanded: boolean; onToggle: (id: string) => void;
-  children: React.ReactNode;
-}) {
-  if (!isMulti) return <>{children}</>;
-  return (
-    <div className="border-b border-white/50 last:border-0">
-      <button
-        onClick={() => onToggle(id)}
-        className="flex items-center justify-between w-full py-2.5 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
-      >
-        <span className="text-[10px] text-white/80 font-medium">{label}</span>
-        <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
-      </button>
-      {expanded && <div className="flex flex-col gap-2 pb-3">{children}</div>}
-    </div>
-  );
-}
-
-// Live-performance "Display" window: a second, UI-less tab that mirrors the
-// controller's canvas so the operator can drive the app from one screen
-// while a clean, hotkey-only-hidden output projects on another. Synced via
-// localStorage + the 'storage' event rather than BroadcastChannel — popups
-// opened via window.open can land in a different agent cluster (browsers
-// vary on this, especially under COOP), which silently breaks
-// BroadcastChannel between opener and popup even same-origin; localStorage
-// is origin-scoped and doesn't have that failure mode. The 'storage' event
-// conveniently never fires in the tab that made the write, so no echo
-// filtering is needed. Read once at module load — the URL flag never
-// changes mid-session.
-// Save PNG options. Size is the exported image's long edge; Aspect crops the
-// center of what's on screen to that shape ('screen' keeps the window's own).
-type ExportSize = 'screen' | '1080' | '4k' | '8k';
-type ExportAspect = 'screen' | '1:1' | '4:5' | '16:9' | '9:16';
-const EXPORT_SIZES: { id: ExportSize; label: string; longEdge: number }[] = [
-  { id: 'screen', label: 'Screen', longEdge: 0 },
-  { id: '1080', label: '1080p', longEdge: 1920 },
-  { id: '4k', label: '4K', longEdge: 3840 },
-  { id: '8k', label: '8K', longEdge: 7680 },
-];
-const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[] = [
-  { id: 'screen', label: 'Screen', ratio: 0 },
-  { id: '1:1', label: '1:1', ratio: 1 },
-  { id: '4:5', label: '4:5', ratio: 4 / 5 },
-  { id: '16:9', label: '16:9', ratio: 16 / 9 },
-  { id: '9:16', label: '9:16', ratio: 9 / 16 },
-];
-// Save Video options. Size is the recorded video's long edge (the artwork is re-rendered at that
-// size for the take); Length stops the take for you, or leaves it to the Record button.
-type VideoSize = 'screen' | '720' | '1080' | '4k';
-type VideoLength = 'manual' | '5' | '10' | '30';
-const VIDEO_SIZES: { id: VideoSize; label: string; longEdge: number }[] = [
-  { id: 'screen', label: 'Screen', longEdge: 0 },
-  { id: '720', label: '720p', longEdge: 1280 },
-  { id: '1080', label: '1080p', longEdge: 1920 },
-  { id: '4k', label: '4K', longEdge: 3840 },
-];
-const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[] = [
-  { id: 'manual', label: 'Until I stop', seconds: 0 },
-  { id: '5', label: '5s', seconds: 5 },
-  { id: '10', label: '10s', seconds: 10 },
-  { id: '30', label: '30s', seconds: 30 },
-];
-
-// Seamless loop export: lengths, and the effects that remember earlier frames (a loop can't repeat
-// through those, so a seam shows).
-type LoopSeconds = '4' | '6' | '8' | '10';
-const LOOP_LENGTHS: { id: LoopSeconds; label: string }[] = [
-  { id: '4', label: '4s' }, { id: '6', label: '6s' }, { id: '8', label: '8s' }, { id: '10', label: '10s' },
-];
-const HISTORY_EFFECTS = ['feedback', 'chromatic-trails', 'slit-scan'];
-
-// Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
-const EXPORT_MAX_EDGE = 8192;
-const EXPORT_MAX_PIXELS = 40_000_000;
-
-// What the About panel's gesture guide lists (touch first, then keys).
-const TOUCH_GESTURES: [string, string][] = [
-  ['Flick left', 'Forward: redo, or a new Shuffle'],
-  ['Flick right', 'Back: undo'],
-  ['Pinch', 'Zoom'],
-  ['Twist two fingers', 'Rotate'],
-  ['Double-tap', 'Pause / play'],
-  ['Press and hold', 'Hide / show the controls'],
-  ['Three-finger tap', 'Save the image (press and hold it, then Add to Photos)'],
-  ['Drag in a circle', 'Spin the gradient, re-roll colors'],
-  ['Shake', 'Shuffle (turn on below)'],
-  ['Tilt', 'Rotate the gradient (turn on below)'],
-];
-const KEY_GESTURES: [string, string][] = [
-  ['→', 'Forward: redo, or a new Shuffle'],
-  ['←', 'Back: undo'],
-  ['Space', 'Pause / play'],
-  ['H', 'Hide / show the controls'],
-  ['Scroll', 'Zoom'],
-];
-
-// Matches ControlDrawer's desktop scale, so popouts read at the same type size as the tabs.
-const POPOVER_SCALE = 1.3;
-
-type AutoShuffleScope = 'all' | 'gradient' | 'effects' | 'colors';
-const AUTO_SHUFFLE_SCOPES: { id: AutoShuffleScope; label: string; hint: string }[] = [
-  { id: 'all', label: 'All', hint: 'A full remix each time' },
-  { id: 'gradient', label: 'Gradient', hint: 'Only swap the gradient' },
-  { id: 'effects', label: 'Effects', hint: 'Only reshuffle the effects' },
-  { id: 'colors', label: 'Colors', hint: 'Only roll a new palette' },
-];
-
-const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
-// Standalone playback: a ?display=1&preset=<encoded> link carries its own
-// frozen preset instead of depending on a live controller tab to broadcast
-// state (the mirror behavior IS_DISPLAY_MODE was originally built for).
-// Read once at module load, same as IS_DISPLAY_MODE — the preset-loader
-// effect below strips the `preset` param from the URL after applying it,
-// so re-checking window.location.search later in the session would miss it.
-const IS_STANDALONE_DISPLAY = IS_DISPLAY_MODE && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('preset');
-const DISPLAY_SYNC_KEY = 'wav-display-sync';
-// Separate, higher-frequency channel just for the handful of continuously-
-// ticking "AnimTime" fields (marble swirl, aurora bands, etc.) that
-// live outside buildSnapshot. Kept off the main config channel/localStorage
-// on purpose — these tick every 16ms while playing, far too often for
-// localStorage writes, and mixing them into buildSnapshot would make ITS
-// identity (and therefore every undo/preset snapshot) change every frame.
-const DISPLAY_ANIM_SYNC_KEY = 'wav-display-sync-anim';
+// Re-exported so existing importers keep working.
+export { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes, EffectSection };
 
 export function InteractiveGradient() {
   const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge } = useAngleState();
@@ -388,8 +176,8 @@ export function InteractiveGradient() {
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
     paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
   } = useColorState();
-  const { diffusionSpeed, setDiffusionSpeed, diffusionFeed, setDiffusionFeed, diffusionKill, setDiffusionKill, diffusionAnimTrigger, setDiffusionAnimTrigger } = useDiffusionState();
-  const { diffusionGridRef } = useDiffusionGridState();
+  useDiffusionState();
+  useDiffusionGridState();
   const { digitalNoiseIntensity, setDigitalNoiseIntensity } = useDigitalNoiseState();
   const { ditherType, setDitherType, ditherLevels, setDitherLevels, ditherScale, setDitherScale } = useDitherState();
   const { oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels } = useOilPaintState();
@@ -398,7 +186,7 @@ export function InteractiveGradient() {
   const { watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle } = useWatercolorState();
   const { dadaPanels, setDadaPanels, dadaChaos, setDadaChaos } = useDadaState();
   const { duotoneIntensity, setDuotoneIntensity, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor } = useDuotoneState();
-  const { dustCrackleIntensity, setDustCrackleIntensity, dustSize, setDustSize, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor } = useDustState();
+  const { dustCrackleIntensity, setDustCrackleIntensity, dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor } = useDustState();
   const { emojiSize, setEmojiSize, emojiChars, setEmojiChars, emojiRotateSpeed, setEmojiRotateSpeed, emojiAnimTime, setEmojiAnimTime, emojiOffsetX, setEmojiOffsetX, emojiSizeVariation, setEmojiSizeVariation, emojiPickerSearch, setEmojiPickerSearch } = useEmojiState();
   const { fadeDirection, setFadeDirection, fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow, turrellSmoothRef } = useFadeState();
   const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
@@ -417,7 +205,7 @@ export function InteractiveGradient() {
   const { hexGridSize, setHexGridSize } = useHexGridState();
   const { invertAmount, setInvertAmount } = useInvertState();
   const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations, juliaCanvasRef } = useJuliaState();
-  const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeReflections, setKaleidoscopeReflections, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
+  const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
   const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
   const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
@@ -427,7 +215,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isDropdownOpen, setIsDropdownOpen, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, wavRandomGradient, setWavRandomGradient, isAIPromptOpen, setIsAIPromptOpen, isUploadDropdownOpen, setIsUploadDropdownOpen, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, isExportDropdownOpen, setIsExportDropdownOpen, showWavHint, setShowWavHint, isGradientsOpen, setIsGradientsOpen, isEffectsOpen, setIsEffectsOpen, activeTab, setActiveTab, isAIColorPickerOpen, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, scanType, setScanType, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, isFullscreen, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   // The current gradient's two shape sliders, read out of the per-gradient map.
   const fieldShapeA = fieldShapes[gradientType]?.[0] ?? 1;
   const fieldShapeB = fieldShapes[gradientType]?.[1] ?? 1;
@@ -484,9 +272,9 @@ export function InteractiveGradient() {
   }, [isAboutOpen]);
   const { photoBlendMode, setPhotoBlendMode, photoOpacity, setPhotoOpacity, photoFileName, setPhotoFileName, photoVersion, setPhotoVersion, photoImageRef, photoInputRef } = usePhotoState();
   const { pinchStrength, setPinchStrength } = usePinchState();
-  const { pixelSize, setPixelSize, pixelateScaleDirection, setPixelateScaleDirection } = usePixelState();
+  const { pixelSize, setPixelSize } = usePixelState();
   const { polygon2Sides, setPolygon2Sides } = usePolygon2State();
-  const { posterizeLevels, setPosterizeLevels, posterizeSolarize, setPosterizeSolarize } = usePosterizeState();
+  const { posterizeLevels, setPosterizeLevels } = usePosterizeState();
   const { radarSweepAngle, setRadarSweepAngle, radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth } = useRadarState();
   const { radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, radialAnimTime, setRadialAnimTime, radialSpeed, setRadialSpeed } = useRadialState();
   const { radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize, radialBurstMode, setRadialBurstMode } = useRadialBurstState();
@@ -511,7 +299,7 @@ export function InteractiveGradient() {
   const { undoStackRef, undoIndexRef, undoDepth, setUndoDepth } = useUndoState();
   const { vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount } = useVhsState();
   const { vignetteStrength, setVignetteStrength, vignetteSoftness, setVignetteSoftness } = useVignetteState();
-  const { voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion, voronoiMorphSpeed, setVoronoiMorphSpeed, voronoiAnimTime, setVoronoiAnimTime } = useVoronoiState();
+  const { voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion, voronoiAnimTime, setVoronoiAnimTime } = useVoronoiState();
   const { waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation } = useWaveState();
   const { windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations, windmillThickness, setWindmillThickness, windmillZoom, setWindmillZoom, windmillZoomResponse, setWindmillZoomResponse, windmillMode, setWindmillMode } = useWindmillState();
   const windmillModeRef = useRef(windmillMode);
@@ -731,12 +519,6 @@ export function InteractiveGradient() {
   // Minimum time between color changes (in milliseconds)
   const CHANGE_INTERVAL = 300;
 
-  // Helper function to calculate slider progress percentage
-  const getSliderStyle = (value: number, min: number, max: number) => {
-    const percentage = ((value - min) / (max - min)) * 100;
-    return { '--slider-progress': `${percentage}%` } as React.CSSProperties;
-  };
-
   // Memoized helper for generating random hex colors
   const randomHexColor = useCallback(() => {
     const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
@@ -771,21 +553,21 @@ export function InteractiveGradient() {
   // Destructure audio hook values for use throughout this component
   const {
     isAudioEnabled, setIsAudioEnabled,
-    audioFile, setAudioFile,
-    audioFileName, setAudioFileName,
-    audioFileMetadata, setAudioFileMetadata,
-    waveformData, setWaveformData,
+    audioFile,
+    audioFileName,
+    audioFileMetadata,
+    waveformData,
     isAudioReactive, setIsAudioReactive,
-    isMicActive, setIsMicActive,
+    isMicActive,
     micError, setMicError,
-    audioSubBassLevel, setAudioSubBassLevel,
-    audioMidsLevel, setAudioMidsLevel,
-    audioTrebleLevel, setAudioTrebleLevel,
-    audioEnergy, setAudioEnergy,
+    audioSubBassLevel,
+    audioMidsLevel,
+    audioTrebleLevel,
+    audioEnergy,
     subBassOnsetTick,
     bassOnsetTick,
     musicIntensityRef,
-    audioInputDevices, setAudioInputDevices,
+    audioInputDevices,
     selectedAudioDeviceId, setSelectedAudioDeviceId,
     bassMultiplier, setBassMultiplier,
     midsMultiplier, setMidsMultiplier,
@@ -812,20 +594,10 @@ export function InteractiveGradient() {
     subBassMultiplier, setSubBassMultiplier,
     subBassBeatSync, setSubBassBeatSync,
     liveSubBassLevel,
-    bpm, setBpm,
-    bassOpen, setBassOpen,
-    midsOpen, setMidsOpen,
-    trebleOpen, setTrebleOpen,
-    bassFlash, setBassFlash,
-    midsFlash, setMidsFlash,
-    trebleFlash, setTrebleFlash,
-    bpmFlash, setBpmFlash,
-    liveBassLevel, setLiveBassLevel,
-    liveMidsLevel, setLiveMidsLevel,
-    liveTrebleLevel, setLiveTrebleLevel,
-    isAudiovisualsOpen, setIsAudiovisualsOpen,
+    liveBassLevel,
+    liveMidsLevel,
+    liveTrebleLevel,
     isAudioControlsOpen, setIsAudioControlsOpen,
-    audioReactiveColors, setAudioReactiveColors,
     audioRef,
     analyserRef,
     analyzeAudioRef,
@@ -834,8 +606,6 @@ export function InteractiveGradient() {
     handleFileUpload,
     startMicVisualization,
     stopMicVisualization,
-    toggleAudio,
-    initAudioContext,
   } = audio;
 
   // AudioPanel exposes one "Reaction Smoothing" control (matching Brik's
@@ -871,22 +641,11 @@ export function InteractiveGradient() {
   });
 
   const {
-    isVCRRecording, setIsVCRRecording,
+    setIsVCRRecording,
     isVCRPlaying, setIsVCRPlaying,
-    vcrRecordedFrames, setVcrRecordedFrames,
     vcrPlaybackSpeed, setVcrPlaybackSpeed,
-    vcrPlaybackIndex, setVcrPlaybackIndex,
-    vcrRecordingStartTime,
-    vcrPlaybackStartTime,
-    mediaRecorderRef,
-    recordedChunksRef,
-    recordingAnimationRef,
-    recordCanvasRef,
-    startRecording,
-    stopRecording,
     toggleVCRRecording,
     toggleVCRPlayback,
-    handleStop,
     isEncoding, encodingProgress,
   } = vcr;
 
@@ -970,15 +729,12 @@ export function InteractiveGradient() {
   }, []);
 
   const {
-    isPresetModalOpen, setIsPresetModalOpen,
-    presetName, setPresetName,
-    savedPresets, setSavedPresets,
+    savedPresets,
     renamingPresetId, setRenamingPresetId,
     renamingPresetValue, setRenamingPresetValue,
     isPresetsDropdownOpen, setIsPresetsDropdownOpen,
-    openNewPresetSignal, setOpenNewPresetSignal,
+    openNewPresetSignal,
     folderNames,
-    savePreset,
     savePresetWithName,
     loadPreset,
     deletePreset,
@@ -1660,18 +1416,9 @@ export function InteractiveGradient() {
 
 
   // Save current state for undo (defined early for use in other functions)
-  const saveCurrentState = useCallback(() => {
-    const snapshot = buildSnapshot();
-    // Push snapshot onto a 10-item stack, discarding any forward history
-    const stack = undoStackRef.current;
-    const newIndex = undoIndexRef.current + 1;
-    undoStackRef.current = [...stack.slice(0, newIndex), snapshot].slice(-10);
-    undoIndexRef.current = undoStackRef.current.length - 1;
-    setUndoDepth(undoIndexRef.current);
-    // A fresh edit invalidates any redo history
-    redoStackRef.current = [];
-    setRedoDepth(0);
-  }, [buildSnapshot]);
+  const { saveCurrentState, undoLastChange, redoLastChange } = useUndoRedo({
+    buildSnapshot, applySnapshot, undoStackRef, undoIndexRef, setUndoDepth, redoStackRef, setRedoDepth,
+  });
 
   // Randomize all colors
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
@@ -1743,7 +1490,6 @@ export function InteractiveGradient() {
   const colorFamilyRef = useRef<{ enabled: boolean; anchor: Family | null }>({ enabled: keepFamily, anchor: null });
   colorFamilyRef.current.enabled = keepFamily;
   if (keepFamily && !colorFamilyRef.current.anchor && gradientColorsRef.current.length) colorFamilyRef.current.anchor = paletteFamily(gradientColorsRef.current);
-  const reanchorFamily = () => { colorFamilyRef.current.anchor = null; };
   const setKeepFamily = (v: boolean) => {
     colorFamilyRef.current.anchor = v ? paletteFamily(gradientColorsRef.current) : null;
     setKeepFamilyState(v);
@@ -1787,24 +1533,6 @@ export function InteractiveGradient() {
     const pick = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length ? choices.length : pool.length))];
     if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick, { fromShuffle: true }); }
   }, [applyPalette, saveCurrentState, setTargetColors, setPaletteStops]);
-
-  const randomizeAllColors = useCallback(() => {
-    saveCurrentState();
-    setTargetColors(gradientColors.map(() => randomColor()));
-    setBaseAIColors(null); // Clear base AI colors when randomizing
-    setSubmittedAIPrompt(''); // Clear submitted prompt when randomizing
-    
-    // Also randomize duotone colors
-    const randomHexColor = () => {
-      const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const g = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      const b = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-      return `#${r}${g}${b}`;
-    };
-    setDuotoneColor1(randomHexColor());
-    setDuotoneColor2(randomHexColor());
-    setDuotoneColor3(randomHexColor());
-  }, [gradientColors, randomColor, saveCurrentState]);
 
   // Gradient display names, and the full/feeling-lucky type lists, now live
   // in constants/gradientEffects.ts (GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES,
@@ -1863,8 +1591,8 @@ export function InteractiveGradient() {
   // piece of gradient/effect state, since randomization touches everything
   // by design.
   const {
-    randomizeUncoveredParams, shuffleGradientType, randomizeEffects,
-    feelingLucky, evolveWithFactor, shuffleAudiovisuals,
+    shuffleGradientType, randomizeEffects,
+    evolveWithFactor, shuffleAudiovisuals,
   } = useRandomization({
     colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
@@ -1939,53 +1667,23 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
-  // Auto-shuffle: repeatedly triggers a full wāv remix (same as clicking the
-  // wordmark) on a timer, so the artwork keeps evolving
-  // hands-free. evolveWithFactor(1) sets new target values that the master
-  // RAF loop lerps toward over time — that lerp IS the fade between one
-  // result and the next, so no separate opacity/crossfade code is needed.
-  const [isAutoShuffleOn, setIsAutoShuffleOn] = useState(false);
-  // True while the "name this new preset" field is open (see PresetsPanel's
-  // onAddingPresetChange) — pauses Auto Shuffle for that window so it can't
-  // randomize the very state the user is trying to save out from under them.
-  const [isNewPresetPending, setIsNewPresetPending] = useState(false);
-  // Auto Shuffle's remix interval, adjustable from 1s up to an hour via the
-  // slider in the Info panel. Persisted so it survives a reload.
-  const AUTO_SHUFFLE_MIN_SEC = 1;
-  const AUTO_SHUFFLE_MAX_SEC = 3600;
-  const [autoShuffleIntervalSec, setAutoShuffleIntervalSecState] = useState(() => {
-    try {
-      const saved = localStorage.getItem('autoShuffleIntervalSec');
-      const n = saved ? Number(saved) : NaN;
-      if (Number.isFinite(n) && n >= AUTO_SHUFFLE_MIN_SEC) return Math.min(AUTO_SHUFFLE_MAX_SEC, n);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to read autoShuffleIntervalSec:', err);
-    }
-    return 7;
+  const {
+    isAutoShuffleOn, setIsAutoShuffleOn, isNewPresetPending, setIsNewPresetPending,
+    autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope,
+    isAutoShuffleOnRef,
+  } = useAutoShuffle({
+    shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors,
+    gradientColorsRef, evolveWithFactor,
   });
-  const setAutoShuffleIntervalSec = (sec: number) => {
-    const clamped = Math.min(AUTO_SHUFFLE_MAX_SEC, Math.max(AUTO_SHUFFLE_MIN_SEC, Math.round(sec)));
-    setAutoShuffleIntervalSecState(clamped);
-    try { localStorage.setItem('autoShuffleIntervalSec', String(clamped)); } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to persist autoShuffleIntervalSec:', err);
-    }
-  };
-  // Log-scale mapping so the slider gives useful precision across the whole
-  // 1s-3600s range instead of a linear scale where the first few seconds
-  // (the most commonly used values) would be squeezed into a sliver of the
-  // track.
-  const autoShuffleSliderMax = 1000;
-  const autoShuffleLogRange = Math.log(AUTO_SHUFFLE_MAX_SEC) - Math.log(AUTO_SHUFFLE_MIN_SEC);
-  const autoShuffleSecToSlider = (sec: number) =>
-    Math.round(autoShuffleSliderMax * (Math.log(Math.max(AUTO_SHUFFLE_MIN_SEC, sec)) - Math.log(AUTO_SHUFFLE_MIN_SEC)) / autoShuffleLogRange);
-  const autoShuffleSliderToSec = (v: number) =>
-    Math.round(Math.exp(Math.log(AUTO_SHUFFLE_MIN_SEC) + autoShuffleLogRange * (v / autoShuffleSliderMax)));
-  const formatAutoShuffleInterval = (sec: number) => {
-    if (sec < 60) return `${sec}s`;
-    const minutes = Math.floor(sec / 60);
-    const remainder = sec % 60;
-    return remainder === 0 ? `${minutes}m` : `${minutes}m ${remainder}s`;
-  };
+  const {
+    exportSize, setExportSize, exportAspect, setExportAspect,
+    videoSize, setVideoSize, videoLength, setVideoLength,
+    copiedKey, copyText, currentPlayerUrl,
+    savePreview, setSavePreview, exportAsPNG,
+    startVideoTake,
+  } = useExportControls({
+    canvasRef, drawParamsDirtyRef, buildSnapshot, isRecording, toggleVCRRecording,
+  });
   // Clicking the Auto Shuffle button opens this popover (on/off toggle +
   // interval slider) instead of directly toggling on/off — the interval
   // control used to live only in the Info panel, which turned out to be too
@@ -2005,65 +1703,6 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const [autoShuffleScope, setAutoShuffleScopeState] = useState<AutoShuffleScope>(() => {
-    try {
-      const saved = localStorage.getItem('autoShuffleScope');
-      return AUTO_SHUFFLE_SCOPES.some(o => o.id === saved) ? (saved as AutoShuffleScope) : 'all';
-    } catch { return 'all'; }
-  });
-  const setAutoShuffleScope = (scope: AutoShuffleScope) => {
-    setAutoShuffleScopeState(scope);
-    try { localStorage.setItem('autoShuffleScope', scope); } catch { /* storage unavailable: the choice just won't persist */ }
-  };
-  const [exportSize, setExportSizeState] = useState<ExportSize>(() => {
-    try { const v = localStorage.getItem('exportSize'); return EXPORT_SIZES.some(o => o.id === v) ? (v as ExportSize) : 'screen'; } catch { return 'screen'; }
-  });
-  const [exportAspect, setExportAspectState] = useState<ExportAspect>(() => {
-    try { const v = localStorage.getItem('exportAspect'); return EXPORT_ASPECTS.some(o => o.id === v) ? (v as ExportAspect) : 'screen'; } catch { return 'screen'; }
-  });
-  const setExportSize = (v: ExportSize) => { setExportSizeState(v); try { localStorage.setItem('exportSize', v); } catch { /* not persisted */ } };
-  const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
-  const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
-  exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
-  const [videoSize, setVideoSizeState] = useState<VideoSize>(() => {
-    try { const v = localStorage.getItem('videoSize'); return VIDEO_SIZES.some(o => o.id === v) ? (v as VideoSize) : 'screen'; } catch { return 'screen'; }
-  });
-  const [videoLength, setVideoLengthState] = useState<VideoLength>(() => {
-    try { const v = localStorage.getItem('videoLength'); return VIDEO_LENGTHS.some(o => o.id === v) ? (v as VideoLength) : 'manual'; } catch { return 'manual'; }
-  });
-  const setVideoSize = (v: VideoSize) => { setVideoSizeState(v); try { localStorage.setItem('videoSize', v); } catch { /* not persisted */ } };
-  const setVideoLength = (v: VideoLength) => { setVideoLengthState(v); try { localStorage.setItem('videoLength', v); } catch { /* not persisted */ } };
-  // True from the moment a take is started from the Save popout until it ends, so the larger render
-  // size can be put back and the length timer cleared however the take stops.
-  const videoTakeRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; sized: boolean } | null>(null);
-  const isRecordingNowRef = useRef(false);
-  isRecordingNowRef.current = isRecording;
-  // "Copied" feedback for the share buttons in the Save popout: which one, for a moment.
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const copyText = async (key: string, text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      // Older browsers / insecure contexts: fall back to a temporary textarea.
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch { /* nothing more to try */ }
-      document.body.removeChild(ta);
-    }
-    setCopiedKey(key);
-    window.setTimeout(() => setCopiedKey(k => (k === key ? null : k)), 1500);
-  };
-  // The player link for what is on screen right now (?display=1&preset=…: the look with no controls).
-  // Numbers are rounded to 3 decimals first: the snapshot carries floats like 240.40263068951,
-  // which roughly doubled the link for no visible difference.
-  const currentPlayerUrl = () => {
-    const compact = JSON.parse(JSON.stringify(buildSnapshot(), (_k, v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v)));
-    return `${window.location.origin}${window.location.pathname}?display=1&preset=${encodePresetData(compact)}`;
-  };
   // Which popout the shared anchor below is showing.
   const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
@@ -2148,494 +1787,37 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    // Styled to match the panel's other popouts (bg-black/75, white text,
-    // same corner treatment as the drawer) — this popover is portaled to
-    // document.body, outside the dock's own DOM subtree, so it doesn't get
-    // that theme CSS applied automatically; the colors below are written
-    // out directly instead.
-    return createPortal(
-      <div
-        ref={autoShufflePopoverRef}
-        // Fixed flush to the rail now (like the drawer) instead of
-        // floating free — square on the edge touching the rail, rounded
-        // on the edge facing the canvas.
-        className="fixed z-50 shadow-sm bg-black/75 rounded-none"
-        style={{
-          top: autoShufflePopoverAnchor.top,
-          bottom: autoShufflePopoverAnchor.bottom,
-          left: autoShufflePopoverAnchor.left,
-          width: isMobile ? autoShufflePopoverAnchor.width : autoShufflePopoverAnchor.width * POPOVER_SCALE,
-          height: autoShufflePopoverAnchor.height,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          maxHeight: 'calc(100vh - 16px)',
-          overflowY: 'auto',
-        }}
-      >
-        {/* On desktop the tab drawers render at 1.3x (ControlDrawer's scale wrapper);
-            zoom gives this popout the same type size, with layout following it. */}
-        <div className="p-3 flex flex-col gap-2" style={isMobile ? undefined : { zoom: POPOVER_SCALE }}>
-        {popoverMode === 'export' ? (<>
-        <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save &amp; share</span>
-        {([
-          { label: 'Size', options: EXPORT_SIZES, value: exportSize, set: setExportSize, hint: 'Long edge of the saved image. Re-renders the artwork at that size.' },
-          { label: 'Aspect', options: EXPORT_ASPECTS, value: exportAspect, set: setExportAspect, hint: 'Crops the center of what you see to this shape.' },
-        ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void; hint: string }[]).map(g => (
-          <div key={g.label} className="flex flex-col gap-1" title={g.hint}>
-            <span className="text-[10px] text-white/60">{g.label}</span>
-            <div className="flex flex-wrap gap-1" role="group" aria-label={`Export ${g.label.toLowerCase()}`}>
-              {g.options.map(o => (
-                <button
-                  key={o.id}
-                  onClick={() => g.set(o.id as never)}
-                  aria-pressed={g.value === o.id}
-                  className="px-2 py-1 text-[10px] transition-all"
-                  style={g.value === o.id
-                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-                >{o.label}</button>
-              ))}
-            </div>
-          </div>
-        ))}
-        <button
-          onClick={() => { exportAsPNG(); setAutoShufflePopoverAnchor(null); }}
-          className="py-1.5 text-[11px] font-semibold transition-all"
-          style={{ backgroundColor: '#ffffff', color: '#000000' }}
-        >Save PNG</button>
-        {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="Records the live artwork, with sound if audio is on, as an MP4">Record video</span>
-          {([
-            { label: 'Size', options: VIDEO_SIZES, value: videoSize, set: setVideoSize },
-            { label: 'Length', options: VIDEO_LENGTHS, value: videoLength, set: setVideoLength },
-          ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void }[]).map(g => (
-            <div key={g.label} className="flex flex-wrap gap-1" role="group" aria-label={`Video ${g.label.toLowerCase()}`}>
-              {g.options.map(o => (
-                <button
-                  key={o.id}
-                  onClick={() => g.set(o.id as never)}
-                  aria-pressed={g.value === o.id}
-                  disabled={isRecording}
-                  className="px-2 py-1 text-[10px] transition-all disabled:opacity-50"
-                  style={g.value === o.id
-                    ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                    : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-                >{o.label}</button>
-              ))}
-            </div>
-          ))}
-          <button
-            onClick={startVideoTake}
-            className="py-1.5 text-[11px] font-semibold transition-all"
-            style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
-          >{isRecording ? 'Stop recording' : 'Start recording'}</button>
-          {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
-        </div>
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="An MP4 whose end leads straight back into its start, for a background that plays forever">Seamless loop</span>
-          <div className="flex gap-1" role="group" aria-label="Loop length">
-            {LOOP_LENGTHS.map(o => (
-              <button
-                key={o.id}
-                onClick={() => setLoopSeconds(o.id)}
-                aria-pressed={loopSeconds === o.id}
-                disabled={loopProgress !== null}
-                className="flex-1 px-2 py-1 text-[10px] transition-all disabled:opacity-50"
-                style={loopSeconds === o.id
-                  ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                  : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{o.label}</button>
-            ))}
-          </div>
-          <button
-            onClick={exportLoop}
-            disabled={!loopable && loopProgress === null}
-            className="py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40"
-            style={loopProgress !== null ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
-          >{loopProgress !== null ? `Rendering ${Math.round(loopProgress * 100)}% — Cancel` : 'Export loop'}</button>
-          <p className="text-[10px] text-white/50">
-            {!loopable
-              ? 'Loops work with the shader gradients (Smoke, Glass, Ring, Mesh and the like) — not the simulations.'
-              : activeEffects.some(e => HISTORY_EFFECTS.includes(e))
-                ? 'Feedback, Chromatic Trails and Slit-Scan remember past frames, so this loop will show a seam. Uses the video Size above; audio is ignored.'
-                : 'Uses the video Size above. Audio is ignored and auto-drifts are paused while it renders.'}
-          </p>
-          {loopError && <p role="alert" className="text-[10px] text-red-300">{loopError}</p>}
-        </div>
-        <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
-          <div className="flex gap-1">
-            {([['box', 'Box 16:9'], ['background', 'Background']] as [EmbedKind, string][]).map(([kind, label]) => (
-              <button
-                key={kind}
-                onClick={() => copyText(`embed-${kind}`, embedSnippet(currentPlayerUrl(), kind))}
-                title={kind === 'box' ? 'A responsive 16:9 frame' : 'Pinned behind the whole page'}
-                className="flex-1 px-2 py-1 text-[10px] transition-all"
-                style={copiedKey === `embed-${kind}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{copiedKey === `embed-${kind}` ? 'Copied' : label}</button>
-            ))}
-          </div>
-          <span className="text-[10px] text-white/60 pt-1">Copy palette as</span>
-          <div className="flex gap-1">
-            {([['hex', 'Hex'], ['css', 'CSS'], ['tailwind', 'Tailwind'], ['json', 'JSON']] as [PaletteFormat, string][]).map(([fmt, label]) => (
-              <button
-                key={fmt}
-                onClick={() => copyText(`palette-${fmt}`, formatPalette(gradientColors, paletteStops, fmt))}
-                className="flex-1 px-1 py-1 text-[10px] transition-all"
-                style={copiedKey === `palette-${fmt}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{copiedKey === `palette-${fmt}` ? 'Copied' : label}</button>
-            ))}
-          </div>
-        </div>
-        </>) : (<>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
-          <button
-            onClick={() => setIsAutoShuffleOn(prev => !prev)}
-            aria-pressed={isAutoShuffleOn}
-            aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
-            className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
-            style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.15)' }}
-          >
-            <span
-              className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
-              style={{ backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff', transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
-            />
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="range"
-            min={0}
-            max={autoShuffleSliderMax}
-            value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
-            onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
-            className="flex-1"
-            aria-label="Auto Shuffle interval"
+    return (
+      <PopoverPortal anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}>
+        {popoverMode === 'export' ? (
+          <ExportPopout
+            isMobile={isMobile}
+            exportSize={exportSize} setExportSize={setExportSize}
+            exportAspect={exportAspect} setExportAspect={setExportAspect}
+            exportAsPNG={exportAsPNG} closePopover={() => setAutoShufflePopoverAnchor(null)}
+            videoSize={videoSize} setVideoSize={setVideoSize}
+            videoLength={videoLength} setVideoLength={setVideoLength}
+            isRecording={isRecording} startVideoTake={startVideoTake}
+            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
+            gradientColors={gradientColors} paletteStops={paletteStops}
           />
-          <input
-            type="number"
-            min={AUTO_SHUFFLE_MIN_SEC}
-            max={AUTO_SHUFFLE_MAX_SEC}
-            value={autoShuffleIntervalSec}
-            onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-            className="text-[10px] w-12 text-right rounded px-1 text-white"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
-            aria-label="Auto Shuffle interval in seconds"
+        ) : (
+          <AutoShufflePopout
+            isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
+            autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+            autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
           />
-        </div>
-        <div className="flex gap-1" role="group" aria-label="What Auto Shuffle changes">
-          {AUTO_SHUFFLE_SCOPES.map(o => (
-            <button
-              key={o.id}
-              onClick={() => setAutoShuffleScope(o.id)}
-              aria-pressed={autoShuffleScope === o.id}
-              title={o.hint}
-              className="flex-1 py-1 text-[10px] transition-all"
-              style={autoShuffleScope === o.id
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{o.label}</button>
-          ))}
-        </div>
-        <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
-          {[5, 15, 60, 300].map(sec => (
-            <button
-              key={sec}
-              onClick={() => setAutoShuffleIntervalSec(sec)}
-              aria-pressed={autoShuffleIntervalSec === sec}
-              className="flex-1 py-1 text-[10px] transition-all"
-              style={autoShuffleIntervalSec === sec
-                ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-            >{formatAutoShuffleInterval(sec)}</button>
-          ))}
-        </div>
-        <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
-        </>)}
-        </div>
-      </div>,
-      document.body,
+        )}
+      </PopoverPortal>
     );
   };
-  // Read through a ref rather than depending on evolveWithFactor directly —
-  // it's recreated ~4x/sec (gradientColors syncs back from refs every 15
-  // frames, and that's one of its deps), which was tearing down and
-  // restarting this interval on every recreation, so it never survived long
-  // enough to actually fire at 5s.
-  const evolveWithFactorRef = useRef(evolveWithFactor);
-  evolveWithFactorRef.current = evolveWithFactor;
-  // Slows the master RAF loop's color/angle/zoom lerp while auto-shuffle is
-  // running, so each result has a longer, more overlapping cross-fade into
-  // the next instead of the ~2s ease used for a manual nudge/remix.
-  const isAutoShuffleOnRef = useRef(false);
-  useEffect(() => { isAutoShuffleOnRef.current = isAutoShuffleOn; }, [isAutoShuffleOn]);
-  // What each Auto Shuffle tick changes: everything (a full remix), or just the
-  // gradient, the effects or the colors. Read through a ref so changing the scope
-  // doesn't restart the timer.
-  const autoShuffleScopeRef = useRef(autoShuffleScope);
-  autoShuffleScopeRef.current = autoShuffleScope;
-  const autoShuffleActionsRef = useRef({ shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors });
-  autoShuffleActionsRef.current = { shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors };
-  const runAutoShuffleTick = () => {
-    const a = autoShuffleActionsRef.current;
-    switch (autoShuffleScopeRef.current) {
-      case 'gradient': a.shuffleGradientType(); break;
-      case 'effects': a.randomizeEffects(); break;
-      case 'colors': a.saveCurrentState(); a.setTargetColors(gradientColorsRef.current.map(() => a.randomColor())); break;
-      default: evolveWithFactorRef.current(1);
-    }
-  };
-  const runAutoShuffleTickRef = useRef(runAutoShuffleTick);
-  runAutoShuffleTickRef.current = runAutoShuffleTick;
-  useEffect(() => {
-    if (!isAutoShuffleOn || isNewPresetPending) return;
-    runAutoShuffleTickRef.current();
-    const id = setInterval(() => runAutoShuffleTickRef.current(), autoShuffleIntervalSec * 1000);
-    return () => clearInterval(id);
-  }, [isAutoShuffleOn, autoShuffleIntervalSec, isNewPresetPending]);
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
-  // Display-window sync: the controller tab periodically diffs its own
-  // buildSnapshot() and pushes changes out to any ?display=1 tab. Sent over
-  // BOTH BroadcastChannel and localStorage — redundant on purpose. Neither
-  // is bulletproof alone: BroadcastChannel can be isolated across a
-  // window.open() popup/opener pair in some browsers (the reason we moved
-  // off window.open entirely), while localStorage's 'storage' event has
-  // been reported unreliable between fully independent top-level windows
-  // (as opposed to tabs) in at least one real setup. Between two ordinary,
-  // independently-opened tabs/windows of the same origin — which is what
-  // the copy-link flow produces — BroadcastChannel is the more standard
-  // mechanism, so it's primary; localStorage is the fallback. Polling
-  // (rather than wiring into every setter) reuses the existing snapshot
-  // machinery instead of duplicating its huge dependency surface a third
-  // time.
-  useEffect(() => {
-    // Standalone playback has no controller to receive from, and must not
-    // let a stale DISPLAY_SYNC_KEY value from some earlier, unrelated
-    // controller session (or a real one that happens to be open in another
-    // tab) stomp the preset this window was opened to play.
-    if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) return;
-    const applyRaw = (raw: string | null | undefined) => {
-      if (!raw) return;
-      try {
-        applySnapshot(JSON.parse(raw));
-      } catch {
-        // Ignore a partial/corrupt write — the next tick will overwrite it.
-      }
-    };
-
-    applyRaw(localStorage.getItem(DISPLAY_SYNC_KEY));
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === DISPLAY_SYNC_KEY) applyRaw(e.newValue);
-    };
-    window.addEventListener('storage', handleStorage);
-
-    let channel: BroadcastChannel | null = null;
-    if (typeof BroadcastChannel !== 'undefined') {
-      channel = new BroadcastChannel(DISPLAY_SYNC_KEY);
-      channel.onmessage = (e) => applyRaw(e.data);
-    }
-
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      channel?.close();
-    };
-  }, [applySnapshot]);
-
-  // Receive the anim-time fields (Display mode only) — written straight into
-  // animValuesRef, the same ref draw() actually reads (see useCanvasDraw.ts),
-  // instead of through their React state setters. This used to call a
-  // setState per field per incoming message (~60/sec while the controller is
-  // animating), forcing this whole component to re-render every single
-  // message; a state→ref mirror effect further down used to be what
-  // actually got those state updates into animValuesRef for rendering. Both
-  // sides now write the ref directly — the controller's main loop writes it
-  // every frame locally, this receiver writes it every message here — so
-  // neither needs the state round-trip, and the mirror effect is gone.
-  useEffect(() => {
-    if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY || typeof BroadcastChannel === 'undefined') return;
-    const channel = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
-    channel.onmessage = (e) => {
-      const v = e.data;
-      if (!v) return;
-      const av = animValuesRef.current;
-      if (typeof v.voronoiAnimTime === 'number') av.voronoiAnimTime = v.voronoiAnimTime;
-      if (typeof v.flowerAnimTime === 'number') av.flowerAnimTime = v.flowerAnimTime;
-      if (typeof v.tilingAnimTime === 'number') av.tilingAnimTime = v.tilingAnimTime;
-      if (typeof v.auroraAnimTime === 'number') av.auroraAnimTime = v.auroraAnimTime;
-      if (typeof v.turrellAnimTime === 'number') av.turrellAnimTime = v.turrellAnimTime;
-      if (typeof v.causticsAnimTime === 'number') av.causticsAnimTime = v.causticsAnimTime;
-      if (typeof v.lavaAnimTime === 'number') av.lavaAnimTime = v.lavaAnimTime;
-      if (typeof v.marbleAnimTime === 'number') av.marbleAnimTime = v.marbleAnimTime;
-      if (typeof v.fieldAnimTime === 'number') av.fieldAnimTime = v.fieldAnimTime;
-      if (typeof v.metaballAnimTime === 'number') av.metaballAnimTime = v.metaballAnimTime;
-      if (typeof v.flowAnimTime === 'number') av.flowAnimTime = v.flowAnimTime;
-      if (typeof v.liquidAnimTime === 'number') av.liquidAnimTime = v.liquidAnimTime;
-      if (typeof v.emojiAnimTime === 'number') av.emojiAnimTime = v.emojiAnimTime;
-      if (typeof v.attractorAnimTime === 'number') av.attractorAnimTime = v.attractorAnimTime;
-      if (typeof v.hatchAnimTime === 'number') av.hatchAnimTime = v.hatchAnimTime;
-      if (typeof v.noiseAnimTime === 'number') av.noiseAnimTime = v.noiseAnimTime;
-      if (typeof v.radialAnimTime === 'number') av.radialAnimTime = v.radialAnimTime;
-      if (typeof v.waveInterferenceAnimTime === 'number') av.waveInterferenceAnimTime = v.waveInterferenceAnimTime;
-      if (typeof v.meshWireframeAnimTime === 'number') av.meshWireframeAnimTime = v.meshWireframeAnimTime;
-      if (typeof v.gridRotation === 'number') av.gridRotation = v.gridRotation;
-      if (typeof v.radarSweepAngle === 'number') av.radarSweepAngle = v.radarSweepAngle;
-      av.audioSubBassLevel = v.audioSubBassLevel ?? 0;
-      av.audioMidsLevel = v.audioMidsLevel ?? 0;
-      av.audioTrebleLevel = v.audioTrebleLevel ?? 0;
-      av.audioEnergy = v.audioEnergy ?? 0;
-      // Write the live, already-eased color straight into the ref the draw
-      // loop actually reads (see gradientColorsRef above) — not through
-      // setGradientColors/applySnapshot, which only update React state and
-      // would leave this tab re-easing from its own stale ref position.
-      if (v.gradientColors) gradientColorsRef.current = v.gradientColors;
-      if (typeof v.halftoneTime === 'number') halftoneTimeRef.current = v.halftoneTime;
-      // Same idea as gradientColorsRef above, but for Reaction-Diffusion's
-      // whole simulation grid — overwrite the ref's `v` array directly
-      // rather than restarting the sim locally, so Display renders the
-      // controller's actual field instead of an independently-seeded one.
-      // The step loop itself is skipped in Display mode (see the
-      // IS_DISPLAY_MODE guard in drawReactionDiffusion.ts), so nothing
-      // fights this update the way it would if Display kept stepping too.
-      if (v.reactionDiffusionV) {
-        if (!reactionDiffusionGridRef.current) {
-          const RD_W = 220, RD_H = 140;
-          const gridCanvas = document.createElement('canvas');
-          gridCanvas.width = RD_W;
-          gridCanvas.height = RD_H;
-          reactionDiffusionGridRef.current = {
-            u: new Float32Array(RD_W * RD_H).fill(1),
-            v: v.reactionDiffusionV,
-            u2: new Float32Array(RD_W * RD_H),
-            v2: new Float32Array(RD_W * RD_H),
-            canvas: gridCanvas,
-            time: 0,
-          };
-        } else {
-          reactionDiffusionGridRef.current.v = v.reactionDiffusionV;
-        }
-      }
-    };
-    return () => channel.close();
-  }, []);
-
-  // Broadcast the anim-time fields (controller only) on every
-  // requestAnimationFrame tick rather than setInterval — rAF keeps running
-  // for a visible-but-unfocused window in every major browser, unlike
-  // setInterval, which is exactly the throttling that broke the main config
-  // sync before it was switched to an event-driven broadcast. Was throttled
-  // to every 3rd frame (~20fps) to keep messaging light, but that meant the
-  // Display tab was always trailing by roughly that interval — a small,
-  // constant, noticeable-in-a-live-performance-context lag. A same-origin
-  // BroadcastChannel message is cheap enough to just send every frame.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE || typeof BroadcastChannel === 'undefined') return;
-    animSyncChannelRef.current = new BroadcastChannel(DISPLAY_ANIM_SYNC_KEY);
-    let rafId: number;
-    const tick = () => {
-      animSyncChannelRef.current?.postMessage({
-        ...animValuesRef.current,
-        gradientColors: gradientColorsRef.current,
-        halftoneTime: halftoneTimeRef.current,
-        // Reaction-Diffusion's whole Gray-Scott field (not just a scalar
-        // clock) — without this, Display seeds its own grid with
-        // Math.random() on mount and runs an entirely independent
-        // simulation from frame one, not just a phase-drifted one like the
-        // other clocks here. Sending only `v` (what's actually rendered,
-        // see getMappedColor(t = v[i] * 3, ...) in drawReactionDiffusion.ts)
-        // keeps this to one Float32Array (~123KB) per frame instead of two.
-        reactionDiffusionV: reactionDiffusionGridRef.current?.v,
-      });
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(rafId);
-      animSyncChannelRef.current?.close();
-      animSyncChannelRef.current = null;
-    };
-  }, []);
-
-  // Open the broadcast channel once for the controller's lifetime.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
-    syncChannelRef.current = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(DISPLAY_SYNC_KEY) : null;
-    return () => { syncChannelRef.current?.close(); syncChannelRef.current = null; };
-  }, []);
-
-  // Broadcast immediately whenever buildSnapshot's identity changes (i.e.
-  // on every real state change), rather than polling on a setInterval.
-  // Chrome (and others) throttle setInterval/setTimeout in windows that
-  // aren't OS-focused — even if fully visible on screen — which silently
-  // stalled the old polling loop the moment the user's focus moved to the
-  // newly-opened Display window. An effect fired off React's commit phase,
-  // itself triggered synchronously by the user's click in the controller,
-  // isn't subject to that same timer throttling.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
-    try {
-      const snapshot = buildSnapshot();
-      const serialized = JSON.stringify(snapshot);
-      if (serialized === lastBroadcastSnapshotRef.current) return;
-      lastBroadcastSnapshotRef.current = serialized;
-      localStorage.setItem(DISPLAY_SYNC_KEY, serialized);
-      syncChannelRef.current?.postMessage(serialized);
-    } catch (err) {
-      // A bad snapshot must not permanently break future broadcasts.
-      console.error('wāv display sync failed:', err);
-    }
-  }, [buildSnapshot]);
-
-  // Shift+P: copy the Display link — a second, always-fully-hidden-UI tab
-  // that mirrors this one, for live/projector use. Deliberately does NOT
-  // call window.open(): popup blockers treat keydown-triggered opens as
-  // untrusted in several browsers (confirmed directly — even a real
-  // keyboard-dispatched window.open() came back null), so the window would
-  // silently fail to appear. Copying the link and letting the user open it
-  // themselves (new tab, or drag to a second monitor) always works.
-  const toggleDisplayWindow = useCallback(() => {
-    if (IS_DISPLAY_MODE) return;
-    const url = `${window.location.origin}${window.location.pathname}?display=1`;
-    navigator.clipboard?.writeText(url).catch(() => {});
-    setIsDisplayLinkCopied(true);
-    setTimeout(() => setIsDisplayLinkCopied(false), 2500);
-  }, []);
-
-  const undoLastChange = useCallback(() => {
-    if (undoIndexRef.current < 0) return;
-    const snapshot = undoStackRef.current[undoIndexRef.current];
-    undoIndexRef.current -= 1;
-    setUndoDepth(undoIndexRef.current);
-    if (!snapshot) return;
-
-    // Capture the live state onto the redo stack before overwriting it
-    const currentSnapshot = buildSnapshot();
-    redoStackRef.current = [...redoStackRef.current, currentSnapshot].slice(-10);
-    setRedoDepth(redoStackRef.current.length);
-
-    applySnapshot(snapshot);
-  }, [buildSnapshot, applySnapshot]);
-
-  const redoLastChange = useCallback(() => {
-    const redoStack = redoStackRef.current;
-    if (redoStack.length === 0) return;
-    const snapshot = redoStack[redoStack.length - 1];
-    redoStackRef.current = redoStack.slice(0, -1);
-    setRedoDepth(redoStackRef.current.length);
-
-    // Push the live state back onto the undo stack so it can be undone again
-    const currentSnapshot = buildSnapshot();
-    const stack = undoStackRef.current;
-    const newIndex = undoIndexRef.current + 1;
-    undoStackRef.current = [...stack.slice(0, newIndex), currentSnapshot].slice(-10);
-    undoIndexRef.current = undoStackRef.current.length - 1;
-    setUndoDepth(undoIndexRef.current);
-
-    applySnapshot(snapshot);
-  }, [buildSnapshot, applySnapshot]);
+  const { toggleDisplayWindow } = useDisplaySync({
+    applySnapshot, buildSnapshot, animValuesRef, gradientColorsRef, halftoneTimeRef, reactionDiffusionGridRef,
+    lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, setIsDisplayLinkCopied,
+  });
 
   // ---- Gesture feedback and the shared actions behind swipes, arrow keys and taps ----------
   // ---- Shared actions behind swipes, arrow keys and taps (each gives a haptic tap, no on-screen message) ----
@@ -2709,13 +1891,6 @@ export function InteractiveGradient() {
       setTargetAngle(tiltBaseRef.current.angle + (gamma - tiltBaseRef.current.gamma) * 2.2);
     },
   });
-
-  // Jump all the way back to the oldest snapshot in the stack
-  const undoAll = useCallback(() => {
-    if (undoIndexRef.current < 0) return;
-    undoIndexRef.current = 0;
-    undoLastChange();
-  }, [undoLastChange]);
 
   // Reset everything to defaults — shared by the Reset button and the Shift+R hotkey
   const resetToDefaults = useCallback(() => {
@@ -3640,157 +2815,11 @@ export function InteractiveGradient() {
     handleInteraction(e.clientX, e.clientY);
   }, [handleInteraction]);
 
-  // ---- Touch gestures on the canvas -------------------------------------------------
-  //   flick left / right     forward (redo, else Shuffle) / back (Undo)
-  //   pinch                  zoom
-  //   twist with two fingers rotate
-  //   double-tap             pause / play
-  //   press and hold         hide / show the controls
-  //   drag in a circle       spin the gradient and re-roll the color under the finger (as before)
-  // Once a touch is clearly horizontal it stops driving that drag and puts back whatever the
-  // first few pixels changed, so a flick doesn't leave stray color changes. Slow horizontal
-  // drags therefore do nothing; vertical and circular drags work as before.
-  interface TouchGesture {
-    x: number; y: number; t: number;
-    horizontal: boolean; moved: boolean; longFired: boolean; wasPinch: boolean; threeFinger: boolean; threeMoved?: boolean;
-    longTimer: ReturnType<typeof setTimeout> | null;
-    colors: ColorRGB[]; angle: number;
-    pinch: { d0: number; a0: number; zoom0: number; angle0: number } | null;
-  }
-  const gestureRef = useRef<TouchGesture | null>(null);
-  const lastTapRef = useRef<{ t: number; x: number; y: number } | null>(null);
-  const SWIPE_MIN_PX = 70;
-  const SWIPE_MAX_MS = 700;
-  const LONG_PRESS_MS = 550;
-  const MOVE_SLOP_PX = 10;
-  const DOUBLE_TAP_MS = 320;
-
-  const clearLongTimer = (g: TouchGesture | null) => {
-    if (g?.longTimer) { clearTimeout(g.longTimer); g.longTimer = null; }
-  };
-  const pinchMetrics = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    const a = e.touches[0], b = e.touches[1];
-    const dx = b.clientX - a.clientX, dy = b.clientY - a.clientY;
-    return { d: Math.max(1, Math.hypot(dx, dy)), a: (Math.atan2(dy, dx) * 180) / Math.PI };
-  };
-
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (activeTab) setActiveTab(null);
-    setIsDragging(true);
-    previousPosition.current = null;
-    const prev = gestureRef.current;
-    if (e.touches.length >= 2 && prev) {
-      // A second finger: this is a pinch/twist, not a tap, swipe or hold. A third makes it a
-      // three-finger tap instead (see touchend), so the pinch is dropped.
-      clearLongTimer(prev);
-      prev.moved = true; prev.horizontal = false; prev.wasPinch = true;
-      if (e.touches.length >= 3) { prev.threeFinger = true; prev.pinch = null; return; }
-      const m = pinchMetrics(e);
-      prev.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
-      return;
-    }
-    clearLongTimer(prev);
-    const t = e.touches[0];
-    if (!t) { gestureRef.current = null; return; }
-    const g: TouchGesture = {
-      x: t.clientX, y: t.clientY, t: performance.now(),
-      horizontal: false, moved: false, longFired: false, wasPinch: false, threeFinger: false, longTimer: null,
-      colors: targetColorsRef.current.map(c => ({ ...c })), angle: targetAngleRef.current, pinch: null,
-    };
-    g.longTimer = setTimeout(() => {
-      g.longTimer = null;
-      if (g.moved || g.longFired) return;
-      g.longFired = true;
-      gestureActionsRef.current.toggleControls();
-    }, LONG_PRESS_MS);
-    gestureRef.current = g;
-  }, [activeTab, setActiveTab]);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    setIsDragging(false);
-    previousPosition.current = null;
-    const g = gestureRef.current;
-    if (!g) return;
-    clearLongTimer(g);
-    if (e.touches.length > 0) return; // fingers still down: the gesture isn't over
-    gestureRef.current = null;
-    // Three fingers down and up together, without sliding: Save PNG (the S key's job).
-    if (g.threeFinger && !g.threeMoved && performance.now() - g.t < 600) {
-      haptic('success');
-      exportAsPNG('preview');
-      return;
-    }
-    if (g.wasPinch || g.longFired) return;
-    const t = e.changedTouches[0];
-    if (!t) return;
-    const elapsed = performance.now() - g.t;
-    const dx = t.clientX - g.x;
-    // Flick: forward / back.
-    if (g.horizontal && Math.abs(dx) >= SWIPE_MIN_PX && elapsed <= SWIPE_MAX_MS) {
-      if (dx < 0) gestureActionsRef.current.goForward();
-      else gestureActionsRef.current.goBack();
-      return;
-    }
-    // Tap: a second one close behind the first is a double-tap (pause / play).
-    if (!g.moved && elapsed < 260) {
-      const now = performance.now();
-      const last = lastTapRef.current;
-      if (last && now - last.t < DOUBLE_TAP_MS && Math.hypot(t.clientX - last.x, t.clientY - last.y) < 40) {
-        lastTapRef.current = null;
-        gestureActionsRef.current.togglePause();
-      } else {
-        lastTapRef.current = { t: now, x: t.clientX, y: t.clientY };
-      }
-    }
-  }, []);
-
-  const handleTouchCancel = useCallback(() => {
-    setIsDragging(false);
-    previousPosition.current = null;
-    clearLongTimer(gestureRef.current);
-    gestureRef.current = null;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    const g = gestureRef.current;
-    if (e.touches.length >= 2) {
-      if (!g) return;
-      clearLongTimer(g);
-      g.moved = true; g.horizontal = false; g.wasPinch = true;
-      if (g.threeFinger || e.touches.length >= 3) {
-        g.threeFinger = true;
-        // Any real slide turns the three-finger touch into nothing (not a tap).
-        if (Math.hypot(e.touches[0].clientX - g.x, e.touches[0].clientY - g.y) > 24) g.threeMoved = true;
-        return;
-      }
-      const m = pinchMetrics(e);
-      if (!g.pinch) g.pinch = { d0: m.d, a0: m.a, zoom0: targetZoomRef.current, angle0: targetAngleRef.current };
-      // Pinch scales zoom by how far the fingers have spread; twisting adds the change in
-      // the angle between them to the gradient's angle.
-      lastManualZoomTime.current = Date.now();
-      setTargetZoom(Math.max(0.05, Math.min(20, g.pinch.zoom0 * (m.d / g.pinch.d0))));
-      let dA = m.a - g.pinch.a0;
-      if (dA > 180) dA -= 360; else if (dA < -180) dA += 360;
-      setTargetAngle(g.pinch.angle0 + dA);
-      return;
-    }
-    if (e.touches.length > 0) {
-      const touch = e.touches[0];
-      if (g) {
-        const dx = touch.clientX - g.x, dy = touch.clientY - g.y;
-        if (!g.moved && Math.hypot(dx, dy) > MOVE_SLOP_PX) { g.moved = true; clearLongTimer(g); }
-        if (!g.horizontal && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-          g.horizontal = true;
-          // Undo what the first pixels of this flick already did to the colors and angle.
-          setTargetColors(g.colors.map(c => ({ ...c })));
-          setTargetAngle(g.angle);
-        }
-        if (g.horizontal) return;
-      }
-      handleInteraction(touch.clientX, touch.clientY);
-    }
-  }, [handleInteraction, isAutoMode]);
-
+  const { handleTouchStart, handleTouchEnd, handleTouchCancel, handleTouchMove } = useTouchGestures({
+    activeTab, setActiveTab, setIsDragging, previousPosition, targetZoomRef, targetAngleRef, targetColorsRef,
+    gestureActionsRef, exportAsPNG, lastManualZoomTime, setTargetZoom, setTargetAngle, setTargetColors,
+    handleInteraction, isAutoMode,
+  });
   const handleWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
     // ctrlKey signals a trackpad pinch gesture — ignore it
     if (e.ctrlKey) { e.preventDefault(); return; }
@@ -3801,415 +2830,10 @@ export function InteractiveGradient() {
     setTargetZoom(prev => Math.max(0.05, Math.min(20, prev + zoomDelta)));
   }, [isAutoMode]);
 
-  // Export gradient as JPG
-  const exportGradient = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Convert canvas to JPG and download
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gradient-${Date.now()}.jpg`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/jpeg', 0.95);
-  }, []);
-
-  // Export gradient as PNG. With a size picked, the artwork is re-rendered at that
-  // size (full-resolution gradients, no pixel budget) for a few frames, the
-  // wanted region is copied out, and normal rendering resumes. Effects that keep
-  // history between frames (Feedback, Chromatic Trails, Slit-Scan) restart when
-  // the canvas changes size, so they come out as a fresh frame.
-  const isExportingRef = useRef(false);
-  // `preview` (the three-finger tap) doesn't download: it opens a sheet showing the image, because
-  // a web page can't write to the photo library. Pressing and holding the image on an iPhone or
-  // Android offers Add to Photos, which the share sheet's file route (Files, Drive) does not.
-  const [savePreview, setSavePreview] = useState<{ url: string; blob: Blob; name: string } | null>(null);
-  const exportAsPNG = useCallback(async (mode: 'download' | 'preview' = 'download') => {
-    const canvas = canvasRef.current;
-    if (!canvas || isExportingRef.current) return;
-    isExportingRef.current = true;
-    const { size, aspect } = exportSettingsRef.current;
-    const cssW = canvas.clientWidth || canvas.width;
-    const cssH = canvas.clientHeight || canvas.height;
-    // The region to keep, in CSS pixels, centered.
-    const ratio = EXPORT_ASPECTS.find(a => a.id === aspect)?.ratio ?? 0;
-    let cropW = cssW, cropH = cssH;
-    if (ratio > 0) {
-      if (cssW / cssH > ratio) cropW = cssH * ratio; else cropH = cssW / ratio;
-    }
-    const longEdge = EXPORT_SIZES.find(o => o.id === size)?.longEdge ?? 0;
-    const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
-    try {
-      if (longEdge > 0) {
-        const want = longEdge / Math.max(cropW, cropH);
-        const mult = Math.min(want, EXPORT_MAX_EDGE / Math.max(cssW, cssH), Math.sqrt(EXPORT_MAX_PIXELS / (cssW * cssH)));
-        exportRender.multiplier = mult;
-        drawParamsDirtyRef.current = true;
-        // Wait for the canvas to actually reach that size, then two more frames so
-        // the render at that size is on it.
-        for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
-        await nextFrame();
-        await nextFrame();
-      }
-      const k = canvas.width / cssW;
-      const outW = Math.max(1, Math.round(cropW * k));
-      const outH = Math.max(1, Math.round(cropH * k));
-      const out = document.createElement('canvas');
-      out.width = outW;
-      out.height = outH;
-      const octx = out.getContext('2d');
-      if (!octx) return;
-      octx.drawImage(canvas, Math.round((canvas.width - outW) / 2), Math.round((canvas.height - outH) / 2), outW, outH, 0, 0, outW, outH);
-      const blob = await new Promise<Blob | null>(r => out.toBlob(r, 'image/png'));
-      if (blob) {
-        const name = `gradient-${outW}x${outH}-${Date.now()}.png`;
-        if (mode === 'preview') {
-          setSavePreview(prev => { if (prev) URL.revokeObjectURL(prev.url); return { url: URL.createObjectURL(blob), blob, name }; });
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = name;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    } finally {
-      exportRender.multiplier = 0;
-      drawParamsDirtyRef.current = true;
-      isExportingRef.current = false;
-    }
-  }, []);
-
-  // Seamless loop: renders the shader gradient frame by frame into an MP4 whose last frame leads straight
-  // back into its first (the picture is cross-faded with itself one loop earlier; see loopRender).
-  const [loopSeconds, setLoopSecondsState] = useState<LoopSeconds>(() => {
-    try { const v = localStorage.getItem('loopSeconds'); return LOOP_LENGTHS.some(o => o.id === v) ? (v as LoopSeconds) : '6'; } catch { return '6'; }
-  });
-  const setLoopSeconds = (v: LoopSeconds) => { setLoopSecondsState(v); try { localStorage.setItem('loopSeconds', v); } catch { /* not persisted */ } };
-  const [loopProgress, setLoopProgress] = useState<number | null>(null);
-  const [loopError, setLoopError] = useState<string | null>(null);
-  const loopCancelRef = useRef(false);
-  const loopable = STYLE_FIELD_GRADIENT_TYPES.includes(gradientType as GradientType);
-  const exportLoop = async () => {
-    if (loopProgress !== null) { loopCancelRef.current = true; return; }
-    const canvas = canvasRef.current;
-    if (!canvas || !loopable) return;
-    setLoopError(null);
-    if (!webCodecsAvailable()) { setLoopError('This browser can’t encode video (it needs WebCodecs).'); return; }
-    loopCancelRef.current = false;
-    setLoopProgress(0);
-    // Freeze everything that drifts on its own, so the only thing moving is the loop.
-    const wasAutoColor = isAutoColorRef.current, wasAuto = isAutoModeRef.current, wasShuffle = isAutoShuffleOn;
-    if (wasAutoColor) setIsAutoColor(false);
-    if (wasAuto) setIsAutoMode(false);
-    if (wasShuffle) setIsAutoShuffleOn(false);
-    const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
-    try {
-      await nextFrame();
-      const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
-      const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
-      const mult = evenMultiplier(cssW, cssH, longEdge || Math.max(cssW, cssH) * (canvas.width / cssW));
-      exportRender.multiplier = mult;
-      const seconds = Number(loopSeconds);
-      // Shader time runs at (playback speed x this gradient's Speed) per real second.
-      const speed = vcrPlaybackSpeedRef.current * (animValuesRef.current.fieldSpeedLive ?? 1);
-      loopRender.base = animValuesRef.current.fieldAnimTime ?? 0;
-      loopRender.T = Math.max(0.001, seconds * speed);
-      loopRender.phase = 0;
-      loopRender.active = true;
-      drawParamsDirtyRef.current = true;
-      for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
-      await nextFrame();
-      const blob = await renderLoopToMp4({
-        canvas, seconds, fps: 30,
-        drawFrame: async (phase) => { loopRender.phase = phase; drawParamsDirtyRef.current = true; await nextFrame(); await nextFrame(); },
-        onProgress: setLoopProgress,
-        isCancelled: () => loopCancelRef.current,
-      });
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `wav-loop-${canvas.width}x${canvas.height}-${seconds}s.mp4`;
-        link.click();
-        URL.revokeObjectURL(url);
-        haptic('success');
-      }
-    } catch (err) {
-      console.error('Loop export failed:', err);
-      setLoopError(err instanceof Error ? err.message : 'The loop could not be rendered.');
-    } finally {
-      loopRender.active = false;
-      exportRender.multiplier = 0;
-      drawParamsDirtyRef.current = true;
-      if (wasAutoColor) setIsAutoColor(true);
-      if (wasAuto) setIsAutoMode(true);
-      if (wasShuffle) setIsAutoShuffleOn(true);
-      setLoopProgress(null);
-    }
-  };
-
-  // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
-  // size first, since the encoder is fixed to the canvas size at the moment recording begins.
-  const startVideoTake = async () => {
-    if (isRecording) { toggleVCRRecording(); return; }
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
-    let sized = false;
-    if (longEdge > 0) {
-      const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
-      // H.264 wants even width and height: nudge the scale until both come out even.
-      let mult = Math.min(longEdge / Math.max(cssW, cssH), EXPORT_MAX_EDGE / Math.max(cssW, cssH));
-      for (let k = 0; k < 60; k++, mult += 0.0007) {
-        if (Math.floor(cssW * mult) % 2 === 0 && Math.floor(cssH * mult) % 2 === 0) break;
-      }
-      exportRender.multiplier = mult;
-      drawParamsDirtyRef.current = true;
-      sized = true;
-      const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
-      for (let i = 0; i < 90 && canvas.width < Math.floor(cssW * mult); i++) await nextFrame();
-      await nextFrame();
-      await nextFrame();
-    }
-    videoTakeRef.current = { timer: null, sized };
-    toggleVCRRecording();
-    const seconds = VIDEO_LENGTHS.find(o => o.id === videoLength)?.seconds ?? 0;
-    if (seconds > 0) videoTakeRef.current.timer = setTimeout(() => toggleVCRRecording(), seconds * 1000);
-    // If recording never actually began (encoders unavailable, permission refused), put the size back.
-    setTimeout(() => {
-      const take = videoTakeRef.current;
-      if (take && !isRecordingNowRef.current) {
-        videoTakeRef.current = null;
-        if (take.timer) clearTimeout(take.timer);
-        if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
-      }
-    }, 6000);
-  };
-  // Whenever recording ends (length reached, or the Record button pressed), undo the take's setup.
-  useEffect(() => {
-    if (isRecording || !videoTakeRef.current) return;
-    const take = videoTakeRef.current;
-    videoTakeRef.current = null;
-    if (take.timer) clearTimeout(take.timer);
-    if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
-  }, [isRecording]);
-
   // Export animated GIF
   const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
 
-  // Export as video (MP4/WebM) with audio
-  const exportAsVideo = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const recordDuration = 10000; // 10 seconds
-
-    try {
-      const videoStream = canvas.captureStream(60);
-      let finalStream: MediaStream = videoStream;
-
-      if (audioFile && audioRef.current) {
-        try {
-          if (audioContextRef.current && analyserRef.current) {
-            // Audio is already in Web Audio graph — tap the analyser output
-            const dest = audioContextRef.current.createMediaStreamDestination();
-            analyserRef.current.connect(dest);
-            const audioTracks = dest.stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
-            }
-          } else {
-            // Audio not yet in Web Audio graph — safe to call createMediaElementSource
-            const audioCtx = new AudioContext();
-            const source = audioCtx.createMediaElementSource(audioRef.current);
-            const dest = audioCtx.createMediaStreamDestination();
-            source.connect(dest);
-            source.connect(audioCtx.destination);
-            const audioTracks = dest.stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              finalStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
-            }
-          }
-        } catch (audioErr) {
-          console.warn('Audio capture failed, exporting video only:', audioErr);
-        }
-      }
-
-      const HIGH_BITRATE = 40_000_000; // 40 Mbps
-      let options: MediaRecorderOptions;
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
-        options = { mimeType: 'video/mp4;codecs=avc1', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-        options = { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-        options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: HIGH_BITRATE };
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { mimeType: 'video/mp4', videoBitsPerSecond: HIGH_BITRATE };
-      } else {
-        options = { mimeType: 'video/webm', videoBitsPerSecond: HIGH_BITRATE };
-      }
-
-      const mediaRecorder = new MediaRecorder(finalStream, options);
-      const chunks: Blob[] = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
-        link.download = `gradient-video-${Date.now()}.${ext}`;
-        link.click();
-        URL.revokeObjectURL(url);
-      };
-
-      mediaRecorder.start();
-      setTimeout(() => { mediaRecorder.stop(); }, recordDuration);
-
-    } catch (error) {
-      console.error('Video export failed:', error);
-    }
-  };
-
-  // Export as mobile home screen wallpaper
-  const exportAsMobileWallpaper = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Create a new canvas with mobile wallpaper dimensions (1170x2532 for iPhone)
-    const mobileCanvas = document.createElement('canvas');
-    mobileCanvas.width = 1170;
-    mobileCanvas.height = 2532;
-    const ctx = mobileCanvas.getContext('2d');
-    
-    if (!ctx) return;
-
-    // Save context state
-    ctx.save();
-    
-    // Rotate 90 degrees clockwise and translate to correct position
-    // Move to center of canvas
-    ctx.translate(mobileCanvas.width / 2, mobileCanvas.height / 2);
-    // Rotate 90 degrees clockwise
-    ctx.rotate(90 * DEG_TO_RAD);
-    // Translate back, accounting for swapped dimensions
-    ctx.translate(-mobileCanvas.height / 2, -mobileCanvas.width / 2);
-    
-    // Now calculate aspect ratios (with swapped dimensions due to rotation)
-    const sourceAspect = canvas.width / canvas.height;
-    const targetAspect = mobileCanvas.height / mobileCanvas.width; // Swapped for rotation
-    
-    let drawWidth, drawHeight, offsetX, offsetY;
-    
-    // Cover mode: scale to fill, crop edges if needed (no distortion)
-    if (sourceAspect > targetAspect) {
-      // Source is wider - fit height, crop width
-      drawHeight = mobileCanvas.width; // Swapped due to rotation
-      drawWidth = drawHeight * sourceAspect;
-      offsetX = (mobileCanvas.height - drawWidth) / 2; // Swapped due to rotation
-      offsetY = 0;
-    } else {
-      // Source is taller - fit width, crop height
-      drawWidth = mobileCanvas.height; // Swapped due to rotation
-      drawHeight = drawWidth / sourceAspect;
-      offsetX = 0;
-      offsetY = (mobileCanvas.width - drawHeight) / 2; // Swapped due to rotation
-    }
-    
-    // Draw with cover behavior (no distortion)
-    ctx.drawImage(canvas, offsetX, offsetY, drawWidth, drawHeight);
-    
-    // Restore context state
-    ctx.restore();
-
-    // Download
-    mobileCanvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gradient-mobile-wallpaper-${Date.now()}.png`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/png');
-  };
-
   // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
-
-  // Toggle full screen
-  const toggleFullScreen = () => {
-    const currentRef = containerRef.current;
-    if (!currentRef) return;
-    
-    try {
-      if (isFullscreen) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          (document as any).mozCancelFullScreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen();
-        }
-      } else {
-        if (currentRef.requestFullscreen) {
-          currentRef.requestFullscreen().catch(() => {
-            alert(
-              '️ Full Screen Not Available\n\n' +
-              '⚠️ This feature cannot work in Figma Make\'s preview environment.\n' +
-              'Browsers block fullscreen API in embedded/iframe content for security.\n\n' +
-              '✅ All other features work great:\n' +
-              '• Interactive gradient (click & drag)\n' +
-              '• All gradient types (Linear, Radial, etc.)\n' +
-              '• Auto mode\n' +
-              '• Export Image (JPG)\n' +
-              '• Record Video\n\n' +
-              'The full screen feature would work if this app were deployed to a web server.'
-            );
-          });
-        } else if ((currentRef as any).mozRequestFullScreen) {
-          (currentRef as any).mozRequestFullScreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else if ((currentRef as any).webkitRequestFullscreen) {
-          (currentRef as any).webkitRequestFullscreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else if ((currentRef as any).msRequestFullscreen) {
-          (currentRef as any).msRequestFullscreen().catch(() => {
-            throw new Error('Fullscreen not supported');
-          });
-        } else {
-          throw new Error('Fullscreen not supported');
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling fullscreen:', error);
-      alert(
-        '🖥️ Full Screen Not Available\n\n' +
-        '⚠️ This feature doesn\'t work in preview environments.\n\n' +
-        '✅ All other features work great:\n' +
-        '• Click & drag to change colors\n' +
-        '• Switch gradient types\n' +
-        '• Auto mode animations\n' +
-        '• Export images\n' +
-        '• Record videos'
-      );
-    }
-  };
 
   useEffect(() => {
     const currentRef = containerRef.current;
@@ -4234,24 +2858,6 @@ export function InteractiveGradient() {
 
   // Preset load effect, savePreset, loadPreset, deletePreset, renamePreset, updatePreset are now in usePresets hook
 
-  // Toggle fullscreen
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch((err) => {
-        // Silently fail if fullscreen is not allowed by permissions policy
-        console.log('Fullscreen not available:', err.message);
-      });
-    } else {
-      document.exitFullscreen().then(() => {
-        setIsFullscreen(false);
-      }).catch((err) => {
-        console.error('Error attempting to exit fullscreen:', err);
-      });
-    }
-  }, []);
-  
   // Listen for fullscreen changes (e.g., user pressing ESC)
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -4959,174 +3565,12 @@ export function InteractiveGradient() {
           underneath isn't blurred out; only the card itself keeps its own
           surface. */}
       {isAboutOpen && (
-        <div className="absolute inset-0 pointer-events-auto z-50">
-          <div className="absolute inset-0" onClick={() => setIsAboutOpen(false)} />
-          <div
-            ref={aboutDialogRef}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-label="About wāv"
-            className={
-              isMobile
-                ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
-                : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
-            }
-            style={isMobile ? undefined : (railRect
-              ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }
-              : { top: 16, left: 16 })}
-          >
-            <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed mt-6">
-              <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
-              <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
-              <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
-              <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, <strong>wāv</strong> can transform your audio experience into a spectacle.</p>
-            </div>
-
-            <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Rail</p>
-                <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen.</p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Rail icons</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Eye weight="regular" className="w-4 h-4 shrink-0" /> Eye — hide the control rail</span><Kbd label="H" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><EyeSlash weight="regular" className="w-4 h-4 shrink-0" /> Copy Display link — fully hide all UI for live/projector output</span><Kbd label="Shift+P" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Shuffle weight="regular" className="w-4 h-4 shrink-0" /> Shuffle — remix everything at once: gradient, colors, and effects</span><Kbd label="Shift+W" /></p>
-                <button
-                  onClick={() => setIsAutoShuffleOn(prev => !prev)}
-                  className="flex items-center justify-between gap-2 text-left"
-                  aria-pressed={isAutoShuffleOn}
-                >
-                  <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
-                  <span className="flex items-center gap-2">
-                    <Kbd label="⌥⇧W" />
-                    <span
-                      className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/15'}`}
-                    >
-                      <span
-                        className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform ${isAutoShuffleOn ? 'bg-black translate-x-[18px]' : 'bg-white translate-x-[2px]'}`}
-                      />
-                    </span>
-                  </span>
-                </button>
-                {/* Auto Shuffle interval — log-scale slider (see
-                    autoShuffleSecToSlider/autoShuffleSliderToSec) so 1s-3600s
-                    are all reachable with useful precision, plus a direct
-                    number input for typing an exact value. Adjustable
-                    whether Auto Shuffle is currently on or off. */}
-                <div className="flex items-center gap-2 pl-6">
-                  <input
-                    type="range"
-                    min={0}
-                    max={autoShuffleSliderMax}
-                    value={autoShuffleSecToSlider(autoShuffleIntervalSec)}
-                    onChange={(e) => setAutoShuffleIntervalSec(autoShuffleSliderToSec(Number(e.target.value)))}
-                    className="flex-1"
-                    aria-label="Auto Shuffle interval"
-                  />
-                  <input
-                    type="number"
-                    min={AUTO_SHUFFLE_MIN_SEC}
-                    max={AUTO_SHUFFLE_MAX_SEC}
-                    value={autoShuffleIntervalSec}
-                    onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-                    className="text-[10px] text-white w-12 text-right bg-white/10 border border-white/20 rounded px-1"
-                    aria-label="Auto Shuffle interval in seconds"
-                  />
-                  <span className="text-[10px] text-white/50 shrink-0">sec</span>
-                </div>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Playback row</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation</span><Kbd label="V" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Play weight="regular" className="w-4 h-4 shrink-0" /><Stop weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Play / stop — start or stop all motion and audio reactivity</span><Kbd label="Space" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Rewind weight="regular" className="w-4 h-4 shrink-0" /><FastForward weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Slower / faster — adjust playback speed</span><Kbd label="[ / ]" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowClockwise weight="regular" className="w-4 h-4 shrink-0" /> Direction arrow — reverse the rotation direction</span><Kbd label="D" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Tabs</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gradient weight="regular" className="w-4 h-4 shrink-0" /> Gradient — choose the base pattern and tune its sliders</span><Kbd label="G" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><MagicWand weight="regular" className="w-4 h-4 shrink-0" /> Effects — layer on effects; toggle Multi to stack several at once</span><Kbd label="F" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><SpeakerHigh weight="regular" className="w-4 h-4 shrink-0" /> Audio — connect a microphone or audio file so the artwork reacts to sound</span><Kbd label="A" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Palette weight="regular" className="w-4 h-4 shrink-0" /> Color — pick or generate a color palette, or turn on Auto Play to colors looks automatically</span><Kbd label="C" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><FloppyDisk weight="regular" className="w-4 h-4 shrink-0" /> Presets — save the current look by name and reload it anytime</span><Kbd label="P" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Touch gestures</p>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-                  {TOUCH_GESTURES.map(([k, v]) => (
-                    <Fragment key={k}>
-                      <span className="text-white font-medium whitespace-nowrap">{k}</span>
-                      <span>{v}</span>
-                    </Fragment>
-                  ))}
-                </div>
-                <p className="text-xs text-white/50">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
-                {motionSensorsSupported() && (
-                  <div className="flex flex-col gap-2 pt-1">
-                    <p className="text-white font-medium">Motion</p>
-                    {([
-                      { kind: 'shake' as const, label: 'Shake to Shuffle', on: shakeEnabled },
-                      { kind: 'tilt' as const, label: 'Tilt to rotate', on: tiltEnabled },
-                    ]).map(m => (
-                      <div key={m.kind} className="flex items-center justify-between gap-2">
-                        <span>{m.label}</span>
-                        <button
-                          onClick={() => toggleMotion(m.kind)}
-                          aria-pressed={m.on}
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${m.on ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
-                        >{m.on ? 'On' : 'Off'}</button>
-                      </div>
-                    ))}
-                    {motionDenied && <p className="text-xs text-red-300">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
-                    <p className="text-xs text-white/50">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Arrows and keys</p>
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-                  {KEY_GESTURES.map(([k, v]) => (
-                    <Fragment key={k}>
-                      <span className="flex"><Kbd label={k} /></span>
-                      <span>{v}</span>
-                    </Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">Randomizing</p>
-                <p>Five ways to randomize, from smallest to biggest change:</p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Nudge</span> — a small drift in color, angle, and zoom. Never changes the gradient type or which effects are active.</span><Kbd label="W" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Effects</span> — reshuffles which effects are active and their sliders. Gradient type and colors stay put.</span><Kbd label="Shift+F" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Gradient</span> — reshuffles the gradient type and its sliders. Effects and colors stay put.</span><Kbd label="Shift+G" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Shuffle Audio Controls</span> — reshuffles sensitivity, band multipliers, beat-sync toggles, and Modulation bindings (scoped to the current gradient and active effects). Gradient, effects, and colors stay put.</span><Kbd label="Shift+A" /></p>
-                <p className="flex items-center justify-between gap-2"><span><span className="text-white font-semibold">Remix</span> — click Shuffle to randomize everything at once: gradient, colors, and effects.</span><Kbd label="Shift+W" /></p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-white">More shortcuts</p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowUUpLeft weight="regular" className="w-4 h-4 shrink-0" /><ArrowUUpRight weight="regular" className="w-4 h-4 shrink-0 -ml-1" /> Undo / redo — step backward or forward</span><Kbd label="⌘Z / ⌘⇧Z" /></p>
-                <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><ArrowsClockwise weight="regular" className="w-4 h-4 shrink-0" /> Reset to defaults</span><Kbd label="Shift+R" /></p>
-                <p className="flex items-center justify-between gap-2"><span>On a touch screen: swipe left to Shuffle, right to Undo</span><Kbd label="← →" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Toggle Multi-FX mode</span><Kbd label="M" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Next / previous Look for the current gradient</span><Kbd label="L" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
-                <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
-                <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AboutPanel
+          isMobile={isMobile} railRect={railRect} dialogRef={aboutDialogRef} onClose={() => setIsAboutOpen(false)}
+          isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
+          autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+          shakeEnabled={shakeEnabled} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} motionDenied={motionDenied}
+        />
       )}
 
     </div>

@@ -742,8 +742,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 value: i === 0 ? fieldShapeA : fieldShapeB, set: i === 0 ? setFieldShapeA : setFieldShapeB,
                 min: SHAPE_MIN, max: SHAPE_MAX, step: 0.05,
               }))),
-            ].map(({ label, value, set, min, max, step, hint }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string }) => (
-              <div key={label} className="flex items-center justify-between" title={hint}>
+            ].map(({ label, value, set, min, max, step, hint }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string }, i) => (
+              <div key={`${label}-${i}`} className="flex items-center justify-between" title={hint}>
                 <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
                 <div className="flex items-center gap-1 flex-1 ml-2">
                   <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} className="flex-1" />
