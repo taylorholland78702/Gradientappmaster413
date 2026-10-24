@@ -55,19 +55,25 @@ export function frameFeatures(data: ArrayLike<number>, width: number, height: nu
 const band = (v: number, lo: number, hi: number, softLow: number, softHigh = softLow) =>
   clamp01(1 - (v < lo ? (lo - v) / softLow : v > hi ? (v - hi) / softHigh : 0));
 
-// 0 to 1. Roughly: under 0.3 is poor, over 0.6 is good.
+// 0 to 1. Roughly: under 0.3 is poor, over 0.6 is good. The weights come from 60 looks marked Keep or Skip
+// (docs/shuffle-calibration.md): kept looks had more detail and contrast and clearly less colour than skipped ones, so
+// colour counts against a frame once it is more than gently saturated.
 export function scoreFrame(f: FrameFeatures, gradient: GradientType | string): number {
   const kind = gradientKind(gradient);
   const sparse = kind === 'particles';
   const darkGround = kind === 'dark-ground' || sparse;
-  const contrast = clamp01(f.sd / (darkGround ? 45 : 55));
-  const colour = clamp01(f.colourfulness / 0.55);
-  const richness = clamp01(f.entropy / 0.8);
-  // Detail: a gentle field has a little, a pattern more; none is flat and a lot is noise.
-  const detail = sparse ? band(f.detail, 0.002, 0.08, 0.002, 0.05) : kind === 'pattern' ? band(f.detail, 0.02, 0.14, 0.02, 0.08) : band(f.detail, 0.004, 0.07, 0.004, 0.05);
+  const contrast = clamp01(f.sd / (darkGround ? 45 : 60));
+  const richness = clamp01(f.entropy / 0.85);
+  // Detail: more is better up to about a pattern's worth, then it starts to read as noise; sparse points are judged on a narrow band.
+  const detail = sparse ? band(f.detail, 0.002, 0.08, 0.002, 0.05) : band(f.detail, 0.12, 0.2, 0.12, 0.1);
+  // Colour: a touch is good (pure grey is a little worse), then it falls away, reaching 0 at 1.8.
+  const colour = f.colourfulness < 0.15 ? 0.7 + 2 * f.colourfulness : clamp01(1 - (f.colourfulness - 0.15) / 1.65);
+  // Colour only counts for a frame that has some brightness spread: flat and near-black frames score near zero.
+  const base = 0.25 * contrast + 0.25 * detail + 0.1 * richness + 0.4 * colour * clamp01(f.sd / 12);
   // Shapes on black should light a fair part of the frame, but not all of it.
-  const lit = sparse ? band(f.lit, 0.02, 0.35, 0.2) : darkGround ? band(f.lit, 0.12, 0.7, 0.25) : band(f.lit, 0.55, 1, 0.3);
-  return 0.25 * contrast + 0.2 * colour + 0.1 * richness + 0.25 * detail + 0.2 * lit;
+  if (!darkGround) return base;
+  const lit = sparse ? band(f.lit, 0.02, 0.35, 0.2) : band(f.lit, 0.12, 0.7, 0.25);
+  return 0.85 * base + 0.15 * lit;
 }
 
 // Picks the frame to keep: the best-scoring one that is not dull, or, when every one was dull, the best-scoring.
@@ -79,4 +85,4 @@ export function bestCandidate<T>(candidates: readonly FrameCandidate<T>[]): Fram
 }
 
 // Score at or above which a look is good enough to stop trying others.
-export const GOOD_ENOUGH = 0.62;
+export const GOOD_ENOUGH = 0.5;
