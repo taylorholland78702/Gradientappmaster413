@@ -111,6 +111,16 @@ describe('dislikes', () => {
     expect(marks.allDislikes).toHaveLength(0);
     expect(new ShuffleMarks(store).allDislikes).toHaveLength(0);
   });
+  it('are all exported, including ones from before the marking session', () => {
+    let t = 1;
+    const marks = new ShuffleMarks(memory(), () => t);
+    marks.recordDislike(l.meta);
+    t = 100; marks.start(); marks.setCurrent(l); marks.mark('keep');
+    t = 200; marks.recordDislike(l.meta);
+    const out = JSON.parse(marks.export());
+    expect(out.marks).toHaveLength(1);
+    expect(out.dislikes.map((d: { at: number }) => d.at)).toEqual([1, 200]);
+  });
   it('leave the keep/skip summary alone', () => {
     const marks = new ShuffleMarks(memory());
     marks.recordDislike(l.meta);
