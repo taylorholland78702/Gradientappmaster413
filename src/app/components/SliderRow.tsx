@@ -27,6 +27,7 @@ export function SliderRow({ label, title, value, onChange, onNumberChange, min, 
       />
       <input
         type="number" min={min} max={max} step={step} value={value}
+        aria-label={typeof label === 'string' ? `${label.replace(/:$/, '')} value` : undefined}
         onChange={(e) => (onNumberChange ?? onChange)(Number(e.target.value))}
         className="wav-slider-value text-[10px] text-white w-full min-w-0 text-right bg-wav-field border border-wav-line rounded px-1"
       />

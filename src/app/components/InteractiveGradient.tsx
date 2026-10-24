@@ -124,6 +124,9 @@ import { useStackState } from '../hooks/state/useStackState';
 import { useHatchState } from '../hooks/state/useHatchState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
+import { notify } from '../utils/notify';
+import { NoticeToast } from './NoticeToast';
+import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
 import { useStructuralSeedState } from '../hooks/state/useStructuralSeedState';
 import { useTopographicState } from '../hooks/state/useTopographicState';
 import { useWaveInterferenceState } from '../hooks/state/useWaveInterferenceState';
@@ -448,6 +451,13 @@ export function InteractiveGradient() {
       photoImageRef.current = scaledCanvas;
       setPhotoVersion(v => v + 1);
     };
+    const previousName = photoFileName;
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setPhotoFileName(photoImageRef.current ? previousName : '');
+      if (!photoImageRef.current) setActiveEffects(prev => prev.filter(e => e !== 'photo'));
+      notify(`Couldn't open "${file.name}" — it isn't a readable image.`);
+    };
     img.src = url;
     setPhotoFileName(file.name);
     // Auto-activate the Photo effect so a drop (or a picker upload) shows
@@ -462,7 +472,7 @@ export function InteractiveGradient() {
       }
       return ['photo'];
     });
-  }, [isMultiFxMode]);
+  }, [isMultiFxMode, photoFileName]);
   const handlePhotoFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) loadPhotoFile(file);
@@ -663,7 +673,8 @@ export function InteractiveGradient() {
     // presets now reuse them directly instead of maintaining a second,
     // perpetually-stale field list.
     getCurrentState: () => buildSnapshot(),
-    applyPresetData: (data: any) => {
+    applyPresetData: (rawData: any) => {
+      const data = sanitizeSnapshot(rawData);
       applySnapshot({
         ...data,
         gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
@@ -700,7 +711,7 @@ export function InteractiveGradient() {
     const encoded = params.get('preset');
     if (!encoded) return;
     try {
-      const data = decodePresetData(encoded) as Record<string, any>;
+      const data = sanitizeSnapshot(decodePresetData(encoded) as Record<string, any>);
       applySnapshot({
         ...data,
         gradientType: data.gradientType ? migrateId(data.gradientType) : 'angle',
@@ -3363,9 +3374,11 @@ export function InteractiveGradient() {
       {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
           so the dock's translucent background genuinely shows the gradient
           through it, instead of just the root's opaque black. */}
-      <div ref={shakeWrapperRef} className="fixed inset-0 z-0">
+      <main ref={shakeWrapperRef} className="fixed inset-0 z-0" aria-label="Gradient canvas">
         <canvas
           ref={canvasRef}
+          role="img"
+          aria-label="Animated gradient artwork"
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -3378,7 +3391,7 @@ export function InteractiveGradient() {
           className="w-full h-full"
           style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
         />
-      </div>
+      </main>
       {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
       {/* Pure flex spacer — no content, so it must not intercept pointer
           events. Without pointer-events-none, this (relative, DOM-order
@@ -3491,6 +3504,8 @@ export function InteractiveGradient() {
           only one of which is ever mounted+clickable at a time) never
           produces two portaled copies. */}
       {renderAutoShufflePopover()}
+
+      <NoticeToast />
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (

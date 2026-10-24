@@ -228,7 +228,7 @@ const EFFECT_REGISTRY = {
 // it defensively.
 export type EffectType = keyof typeof EFFECT_REGISTRY | 'none';
 
-const EFFECT_IDS = Object.keys(EFFECT_REGISTRY) as EffectType[];
+export const EFFECT_IDS = Object.keys(EFFECT_REGISTRY) as EffectType[];
 
 // Every effect that has a button in the Effects tab, in the order the grid
 // renders them.
