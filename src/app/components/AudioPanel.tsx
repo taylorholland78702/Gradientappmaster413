@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CaretDown, Plus, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
 import { findSource, sourcesOf, paramGroups, bindingLabel } from '../constants/modulationTree';
 import { AudioParamPicker } from './AudioParamPicker';
@@ -104,6 +104,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     const src = findSource('gradient', gradientType ?? '') ?? sourcesOf('gradient')[0];
     return paramGroups(src)[0].params[0].param.key;
   });
+  // The field follows the gradient on screen until a setting is picked by hand.
+  useEffect(() => {
+    const src = findSource('gradient', gradientType ?? '');
+    if (src) setModParam(paramGroups(src)[0].params[0].param.key);
+  }, [gradientType]);
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
   const [modAmount, setModAmount] = useState(1);
   // Modulation (the only thing behind this toggle) opens by default now —
@@ -355,7 +360,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                       const bindingName = bindingLabel(b.param);
                       return (
                         <div key={b.id} className="flex items-center gap-1.5 bg-wav-field px-1.5 py-1">
-                          <span className="text-[10px] text-white flex-1 truncate" title={bindingName}>{bindingName}</span>
+                          <span className="text-[10px] text-white flex-1 min-w-0 break-words">{bindingName}</span>
                           <select
                             aria-label={`Audio band for ${bindingName}`}
                             value={b.band}

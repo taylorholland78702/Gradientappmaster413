@@ -118,7 +118,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'gessoTexture', label: 'Gesso Texture', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'gessoResponse', label: 'Gesso Response', category: 'Gesso', min: 0.0, max: 1.0 },
   { key: 'grainIntensity', label: 'Grain Intensity', category: 'Grain', min: 0.0, max: 1.0 },
-  { key: 'dustCrackleLength', label: 'Grain Crack Length', category: 'Grain', min: 0.3, max: 3.0 },
+  { key: 'dustCrackleLength', label: 'Dust Crackle Length', category: 'Grain', min: 0.3, max: 3.0 },
   { key: 'grainSize', label: 'Grain Size', category: 'Grain', min: 1.0, max: 6.0 },
   { key: 'gridColumns', label: 'Grid Columns', category: 'Grid', min: 2.0, max: 50.0 },
   { key: 'gridCellAngleStep', label: 'Grid Cell Angle Step', category: 'Grid', min: 0.0, max: 90.0, gain: 20 },
