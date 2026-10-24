@@ -46,6 +46,13 @@ describe('what Shuffle learns', () => {
     expect(l.signals).toBe(1);
   });
 
+  it('counts a stronger vote for more', () => {
+    const a = new ShuffleLearning(memory()), b = new ShuffleLearning(memory());
+    for (const l of [a, b]) for (let i = 0; i < 6; i++) { l.begin(meta({ gradient: 'smoke' })); l.commit(); l.like(1); }
+    for (let i = 0; i < 2; i++) { a.begin(meta({ gradient: 'grid' })); a.commit(); a.vote('up'); b.begin(meta({ gradient: 'grid' })); b.commit(); b.vote('up', 2); }
+    expect(b.weight('gradient', 'grid')).toBeGreaterThan(a.weight('gradient', 'grid'));
+  });
+
   it('counts the dislike button at any time, once per look, and more than an undo', () => {
     vi.useFakeTimers();
     let t = 1_000_000;
@@ -95,6 +102,14 @@ describe('what Shuffle learns', () => {
     expect(b.weight('gradient', 'smoke')).toBeCloseTo(a.weight('gradient', 'smoke'));
     b.clear();
     expect(new ShuffleLearning(store).weight('gradient', 'smoke')).toBe(1);
+  });
+
+  it('drops what an older version stored, and learns again from scratch', () => {
+    const store = memory();
+    store.setItem('wavShuffleTaste', JSON.stringify({ v: 1, up: { 'gradient:radial-burst': 40 }, down: { 'gradient:grid': 40 }, total: 80 }));
+    const l = new ShuffleLearning(store);
+    expect(l.signals).toBe(0);
+    expect(l.weight('gradient', 'grid')).toBe(1);
   });
 
   it('survives corrupt stored data', () => {
