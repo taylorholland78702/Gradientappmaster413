@@ -75,10 +75,10 @@ const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTEN
 // streaks each column/row through a history of frames, and with only a
 // handful of small bright elements to smear (plus a second effect like Wave
 // stacked on top) a shuffle landed on Particles + Slit-Scan + Wave and came
-// out as one flat color. Unlike the distortion effects (fisheye/chromatic/
+// out as one flat color. Unlike the distortion effects (chromatic/
 // vhs), no slider value makes any of these six behave reasonably on sparse
 // content, so they're excluded outright rather than just count-limited.
-const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto', 'duotone', 'pixelate', 'slit-scan'];
+const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'impasto', 'duotone', 'pixelate', 'slit-scan'];
 // costOf/resolutionForEffectCost (effect compute-cost weighting and the
 // resolution-scaling curve derived from it) now live in
 // constants/effectCost.ts, shared with EffectsTab.tsx's manual Multi-FX
@@ -93,7 +93,7 @@ const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'brush-strokes', 'impasto', 
 // see moving.
 const LOW_VISIBILITY_MOD_KEYS = new Set([
   'angleCenterX', 'angleCenterY', 'angleStartOffset',
-  'blurMotionDirection', 'fadeDirection', 'fisheyeCenterX', 'fisheyeCenterY', 'noiseDirection',
+  'blurMotionDirection', 'fadeDirection', 'noiseDirection',
 ]);
 // Loosely typed on purpose: this hook wires together ~150 setters spanning
 // nearly every piece of app state (randomization touches everything by
@@ -123,7 +123,7 @@ export function useRandomization(params: RandomizationParams) {
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
-    setFisheyeCenterX, setFisheyeCenterY, setFisheyeStrength, setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
+    setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
     setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
@@ -133,7 +133,7 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
-    setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setBrushStrokesSize, setBrushStrokesLength, setWatercolorBleed, setWatercolorGrain,
+    setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
@@ -377,8 +377,6 @@ export function useRandomization(params: RandomizationParams) {
     setImpastoLightAngle(Math.floor(Math.random() * 360));               // 0–359
 
     // Brush Strokes
-    setBrushStrokesSize(Math.floor(Math.random() * 26) + 8);             // 8–33
-    setBrushStrokesLength(Math.random() * 3 + 1.2);                      // 1.2–4.2
 
     // Watercolor — style itself is left alone here (it's a curated preset,
     // not a continuous slider), just Bleed/Grain.
@@ -392,8 +390,6 @@ export function useRandomization(params: RandomizationParams) {
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).
     setChromaticAngle(Math.floor(Math.random() * 360));
-    setFisheyeCenterX(Math.floor(Math.random() * 101));                  // 0–100
-    setFisheyeCenterY(Math.floor(Math.random() * 101));                  // 0–100
     setKaleidoscopeRotateSpeed(Math.random() * 5);                       // 0–5
     setLiquidScale(Math.random() * 9.5 + 0.5);                           // 0.5–10
     setLiquidStrength(Math.floor(Math.random() * 101));                  // 0–100
@@ -747,7 +743,6 @@ export function useRandomization(params: RandomizationParams) {
       // Randomize remaining parameters normally
       setTriangleSize(Math.floor(Math.random() * 80) + 20);
       setChromaticOffset(Math.floor(Math.random() * 20) + 1);
-      setFisheyeStrength(Math.random());
 
       setGrainIntensity(Math.random() * 0.5);
       setGrainSize(Math.floor(Math.random() * 6) + 1);
@@ -799,7 +794,7 @@ export function useRandomization(params: RandomizationParams) {
 
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
       // Heavy shape-changers mask the gradient entirely; only allow them stacked with a light effect.
-      const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'fisheye', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
+      const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
       // When audio is active, prefer effects that visibly react to audio
       const LIGHT_FX: EffectType[] = (audioActive ? AUDIO_EFFECTS : ALL_EFFECTS)
         .filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
@@ -872,7 +867,6 @@ export function useRandomization(params: RandomizationParams) {
       setPixelSize(randIntInRange(RANGES.pixelSize));
       setTriangleSize(randIntInRange(RANGES.triangleSize));
       setChromaticOffset(randIntInRange(RANGES.chromaticOffset));
-      setFisheyeStrength(Math.random() * 0.7 + 0.1);                 // 0.1–0.8
       setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
       setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
       setGessoWhiteness(Math.random() * 0.3 + 0.55);                  // 0.55–0.85

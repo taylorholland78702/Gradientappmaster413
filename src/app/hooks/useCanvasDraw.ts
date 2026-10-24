@@ -28,7 +28,6 @@ import { detectWindmillGLSupport, getWindmillHelixGLStage } from './gradients/dr
 import { getPostGradientOverlayStage } from './gradients/glPostGradientOverlay';
 import { getToneStage, isNeutralGrade } from './gradients/glToneStage';
 import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
-import { detectFisheyeGLSupport, getFisheyeGLStage } from './effects/applyFisheyeGL';
 import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
 import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL';
 
@@ -63,7 +62,7 @@ function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>):
 
 // Phase-3 pilot: which effects (given their live params) can be pipelined
 // through glEffectPipeline.ts instead of each independently round-tripping
-// the main 2D canvas. Liquid, Fisheye, Wave, Mirror, and Blur's Zoom/Radial
+// the main 2D canvas. Liquid, Wave, Mirror, and Blur's Zoom/Radial
 // modes have a GL implementation today — same eligibility check each of
 // their standalone Auto wrappers (effectRegistry.ts) already uses, just
 // surfaced here so a *run* of them can be detected before any of them
@@ -71,9 +70,6 @@ function getGradientGLStage(gradientType: string, drawCtx: Record<string, any>):
 function getGLStageForEffect(effectType: string, effectCtx: Record<string, any>): GLEffectStage | null { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (effectType === 'liquid' && detectLiquidGLSupport()) {
     return getLiquidGLStage(effectCtx);
-  }
-  if (effectType === 'fisheye' && detectFisheyeGLSupport()) {
-    return getFisheyeGLStage(effectCtx);
   }
   if (effectType === 'wave' && detectWaveGLSupport()) {
     return getWaveGLStage(effectCtx);
@@ -218,7 +214,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
-    fisheyeCenterX, fisheyeCenterY, fisheyeStrength, flowBufferRef, flowParticleCount,
+    flowBufferRef, flowParticleCount,
     flowParticlesRef, flowScale, flowThickness, flowerCircles, flowerRotation,
     flowerScale, flowerSpread,
     gradientAngle, gradientAngleRef, gradientColors, gradientColorsRef,

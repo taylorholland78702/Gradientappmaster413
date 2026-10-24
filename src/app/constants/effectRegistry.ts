@@ -15,7 +15,6 @@ import { applyAuraGlow } from '../hooks/effects/applyAuraGlow';
 import { applyBloom } from '../hooks/effects/applyBloom';
 import { applyBlur } from '../hooks/effects/applyBlur';
 import { applyBlurZoomGL, applyBlurRadialGL, detectBlurGLSupport } from '../hooks/effects/applyBlurGL';
-import { applyBrushStrokesWorkerAuto } from '../hooks/effects/applyBrushStrokesWorkerAuto';
 import { applyChromatic } from '../hooks/effects/applyChromatic';
 import { applyChromaticTrailsWorkerAuto } from '../hooks/effects/applyChromaticTrailsWorkerAuto';
 import { applyCrt } from '../hooks/effects/applyCrt';
@@ -24,8 +23,6 @@ import { applyDitherWorkerAuto } from '../hooks/effects/applyDitherWorkerAuto';
 import { applyDuotone } from '../hooks/effects/applyDuotone';
 import { applyEmoji } from '../hooks/effects/applyEmoji';
 import { applyFeedback } from '../hooks/effects/applyFeedback';
-import { applyFisheye } from '../hooks/effects/applyFisheye';
-import { applyFisheyeGL, detectFisheyeGLSupport } from '../hooks/effects/applyFisheyeGL';
 import { applyGesso } from '../hooks/effects/applyGesso';
 import { applyGrain } from '../hooks/effects/applyGrain';
 import { applyGridEffectWorkerAuto } from '../hooks/effects/applyGridEffectWorkerAuto';
@@ -103,21 +100,7 @@ function applyLiquidAuto(P: any): void {
   applyLiquid(P);
 }
 
-// Same reasoning as applyLiquidAuto above — single-sample-per-pixel but
-// transcendental-heavy (atan2 + pow + cos/sin). See applyFisheyeGL.ts.
-function applyFisheyeAuto(P: any): void {
-  if (detectFisheyeGLSupport()) {
-    try {
-      applyFisheyeGL(P);
-      return;
-    } catch (err) {
-      console.error('WebGL Fisheye failed, falling back to CPU:', err);
-    }
-  }
-  applyFisheye(P);
-}
-
-// Same reasoning as applyLiquidAuto/applyFisheyeAuto above. See
+// Same reasoning as applyLiquidAuto above. See
 // applyWaveGL.ts.
 function applyWaveAuto(P: any): void {
   if (detectWaveGLSupport()) {
@@ -162,7 +145,6 @@ const EFFECT_REGISTRY = {
   // classic non-photorealistic-rendering trick — strokes read as painted
   // along the shape rather than a uniform hatch). Same per-cell-shape cost
   // tier as Grid, so Worker-backed like it.
-  'brush-strokes': { drawFn: applyBrushStrokesWorkerAuto, label: 'Brush Strokes', cost: 3, category: ['Brush Strokes'], audio: false },
   chromatic: { drawFn: applyChromatic, label: 'Chromatic', cost: 2, category: ['Chromatic'], audio: true },
   'chromatic-trails': { drawFn: applyChromaticTrailsWorkerAuto, label: 'Chroma Trails', cost: 3, category: ['Chroma Trails'], audio: false },
   // Full-resolution barrel-distortion remap plus a per-pixel subpixel mask —
@@ -175,7 +157,7 @@ const EFFECT_REGISTRY = {
   dada: { drawFn: applyDada, label: 'Dada', cost: 3, category: ['Dada'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
-  // Liquid/Fisheye.
+  // Liquid.
   dither: { drawFn: applyDitherWorkerAuto, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
   duotone: { drawFn: applyDuotone, label: 'Duotone', cost: 2, category: ['Duotone'], audio: true },
   emoji: { drawFn: applyEmoji, label: 'Emoji', cost: 2, category: ['Emoji'], audio: false },
@@ -185,7 +167,6 @@ const EFFECT_REGISTRY = {
   // the same class of work as Blur/Chromatic, which cost 2. Under-pricing
   // let Multi-FX/Remix stack it alongside genuinely cheap effects thinking
   // the combined cost was low when it wasn't.
-  fisheye: { drawFn: applyFisheyeAuto, label: 'Fisheye', cost: 2, category: ['Fisheye'], audio: true },
   // Robert Ryman: the ground itself as subject — desaturates and lifts
   // toward near-white, then a fine brushed-texture noise pass. Audio only
   // ever deepens texture, never reintroduces color.
@@ -206,7 +187,7 @@ const EFFECT_REGISTRY = {
   impasto: { drawFn: applyImpasto, label: 'Impasto', cost: 4, category: ['Impasto'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
-  // Same under-pricing issue as fisheye above — full-res per-pixel
+  // Same under-pricing issue as Liquid above — full-res per-pixel
   // coordinate-distortion math, priced like a cheap single-pass op.
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
@@ -232,7 +213,7 @@ const EFFECT_REGISTRY = {
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
   // Was priced at cost 2 (single-pass-per-pixel tier, alongside Liquid/
-  // Fisheye) but its per-pixel work is heavier than that tier assumes: a
+  // Liquid) but its per-pixel work is heavier than that tier assumes: a
   // 4-tap directional smear plus 3 valueNoise calls and a hash2 call per
   // pixel for the warp field, paper blotch, and fiber grain — comparable to
   // or more than Dada, already priced at cost 3.

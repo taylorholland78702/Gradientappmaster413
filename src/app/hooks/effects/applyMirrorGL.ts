@@ -1,5 +1,5 @@
 // WebGL2 renderer for Mirror — see the CPU version (applyMirror.ts) for the
-// reference implementation. Unlike Liquid/Fisheye/Wave, Mirror's CPU path
+// reference implementation. Unlike Liquid/Wave, Mirror's CPU path
 // isn't a per-pixel JS loop at all — it's a handful of native
 // ctx.drawImage calls (already browser/GPU-composited), so this isn't
 // closing a CPU bottleneck. It's ported anyway so Mirror can participate in

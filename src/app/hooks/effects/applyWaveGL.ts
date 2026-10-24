@@ -1,6 +1,6 @@
 // WebGL2 renderer for Wave (distortion) — see the CPU version (applyWave.ts)
-// for the reference implementation. Same class as Liquid/Fisheye
-// (applyLiquidGL.ts/applyFisheyeGL.ts): single-sample-per-pixel, so it
+// for the reference implementation. Same class as Liquid
+// (applyLiquidGL.ts): single-sample-per-pixel, so it
 // doesn't clear the "genuine multi-sample bottleneck" bar the original
 // GL-porting pass used, but its per-pixel remap (sin + wrapped-coordinate
 // arithmetic) is cheap on GPU and, more importantly, makes it chainable

@@ -56,10 +56,6 @@ export interface EffectsTabProps {
   // Chromatic
   chromaticOffset: number; setChromaticOffset: (v: number) => void;
   chromaticAngle: number; setChromaticAngle: (v: number) => void;
-  // Fisheye
-  fisheyeStrength: number; setFisheyeStrength: (v: number) => void;
-  fisheyeCenterX: number; setFisheyeCenterX: (v: number) => void;
-  fisheyeCenterY: number; setFisheyeCenterY: (v: number) => void;
   // Bloom
   bloomIntensity: number; setBloomIntensity: (v: number) => void;
   bloomRadius: number; setBloomRadius: (v: number) => void;
@@ -136,8 +132,6 @@ export interface EffectsTabProps {
   impastoStrength: number; setImpastoStrength: (v: number) => void;
   impastoLightAngle: number; setImpastoLightAngle: (v: number) => void;
   // Brush Strokes
-  brushStrokesSize: number; setBrushStrokesSize: (v: number) => void;
-  brushStrokesLength: number; setBrushStrokesLength: (v: number) => void;
   // Watercolor
   watercolorBleed: number; setWatercolorBleed: (v: number) => void;
   watercolorGrain: number; setWatercolorGrain: (v: number) => void;
@@ -166,7 +160,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset,
     pixelSize, setPixelSize, triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation,
     chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle,
-    fisheyeStrength, setFisheyeStrength, fisheyeCenterX, setFisheyeCenterX, fisheyeCenterY, setFisheyeCenterY,
     bloomIntensity, setBloomIntensity, bloomRadius, setBloomRadius,
     feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation,
     mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount,
@@ -190,7 +183,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
-    brushStrokesSize, setBrushStrokesSize, brushStrokesLength, setBrushStrokesLength,
     watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
@@ -399,12 +391,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   )}
                 </EffectSection>
               )}
-              {activeEffects.includes('brush-strokes') && (
-                <EffectSection id="brush-strokes" label="Brush Strokes" isMulti={isMulti} expanded={!collapsedEffects.has('brush-strokes')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Size:" value={brushStrokesSize} onChange={setBrushStrokesSize} min="8" max="33" step="1" />
-                  <SliderRow label="Length:" value={brushStrokesLength} onChange={setBrushStrokesLength} min="1.2" max="4.2" step="0.1" />
-                </EffectSection>
-              )}
               {activeEffects.includes('chromatic') && (
                 <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Offset:" value={chromaticOffset} onChange={setChromaticOffset} min="1" max="200" />
@@ -580,13 +566,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Decay:" value={feedbackDecay} onChange={setFeedbackDecay} min="0.5" max="0.97" step="0.01" />
                   <SliderRow label="Zoom:" value={feedbackZoom} onChange={setFeedbackZoom} min="0" max="5" step="0.1" />
                   <SliderRow label="Spin:" value={feedbackRotation} onChange={setFeedbackRotation} min="-10" max="10" step="0.5" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('fisheye') && (
-                <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={!collapsedEffects.has('fisheye')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Strength:" value={fisheyeStrength} onChange={setFisheyeStrength} min="0" max="10" step="0.1" />
-                  <SliderRow label="Center X:" value={fisheyeCenterX} onChange={setFisheyeCenterX} min="0" max="100" />
-                  <SliderRow label="Center Y:" value={fisheyeCenterY} onChange={setFisheyeCenterY} min="0" max="100" />
                 </EffectSection>
               )}
               {activeEffects.includes('gesso') && (

@@ -73,8 +73,7 @@ let inputTextureGL: WebGL2RenderingContext | null = null;
 // texture unit 0. LINEAR/CLAMP (WebGL2 supports LINEAR on NPOT textures,
 // unlike WebGL1) rather than NEAREST — a one-shot per-frame upload still
 // only needs one mip level, but bilinear sampling matters for any effect
-// doing continuous sub-pixel remapping (e.g. Fisheye's lens distortion,
-// applyFisheyeGL.ts) instead of landing exactly on a source texel. Liquid
+// doing continuous sub-pixel remapping (e.g. a lens distortion) instead of landing exactly on a source texel. Liquid
 // and Blur's existing NEAREST-era output looks the same or marginally
 // smoother under LINEAR — nothing in either relies on hard pixel edges.
 export function uploadCanvasTexture(gl: WebGL2RenderingContext, source: HTMLCanvasElement) {
