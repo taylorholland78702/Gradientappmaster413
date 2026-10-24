@@ -1222,7 +1222,7 @@ export function InteractiveGradient() {
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
-    audioBindings, gradientType,
+    audioBindings, gradientType, activeEffects,
     quickBindKeys: (() => {
       // Styled gradients register '<camelId>Scale' / '<camelId>Speed' in MODULATABLE_PARAMS.
       const id = gradientType.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
