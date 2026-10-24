@@ -38,7 +38,6 @@ import {
   migrateId, migrateIds,
   GRADIENT_DISPLAY_NAMES,
   STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
-import { totalCost, resolutionForEffectCost } from '../constants/effectCost';
 import { useAngleState } from '../hooks/state/useAngleState';
 import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
@@ -126,6 +125,7 @@ import { useGestureActions } from '../hooks/useGestureActions';
 import { useSharedPresetLink } from '../hooks/useSharedPresetLink';
 import { useDrawerTouchScroll } from '../hooks/useDrawerTouchScroll';
 import { useFullscreenSync } from '../hooks/useFullscreenSync';
+import { useResolutionBudget } from '../hooks/useResolutionBudget';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
@@ -341,27 +341,7 @@ export function InteractiveGradient() {
     return next;
   });
 
-  // MULTI_FX_COST_BUDGET (effectCost.ts) is set high enough that manually
-  // toggling effects in EffectsTab.tsx never grays a button out — stacking
-  // is an intentional choice there, unlike a random shuffle result, so it's
-  // not that budget's job to protect playback performance. But that also
-  // meant manually stacking several expensive effects got zero resolution
-  // relief: feelingLucky/randomizeEffects (useRandomization.ts) already
-  // call resolutionForEffectCost after picking a shuffled stack, but a
-  // manual EffectsTab toggle never did. Applying the same curve here,
-  // keyed only on activeEffects, covers both paths uniformly — redundant
-  // with (but harmless alongside) the explicit shuffle-path calls, since
-  // it converges on the identical value from the same inputs.
-  // Skipped in Display mode: resolutionMultiplier arrives there via the
-  // synced snapshot (useSnapshot.ts's applySnapshot) so it matches
-  // whatever the controller computed from ITS OWN devicePixelRatio —
-  // recomputing locally here would instead use the display window's own
-  // devicePixelRatio, which can genuinely differ (e.g. mirroring to an
-  // external projector) and silently diverge from the controller's choice.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
-    setResolutionMultiplier(resolutionForEffectCost(totalCost(activeEffects), isMobile));
-  }, [activeEffects, isMobile]);
+  useResolutionBudget({ activeEffects, isMobile, setResolutionMultiplier });
 
   // First-run hint explaining the tap/hold/double-tap gesture vocabulary —
   // tooltips (title attrs) never surface on touch devices, which is this
@@ -372,47 +352,6 @@ export function InteractiveGradient() {
       if (import.meta.env.DEV) console.warn('Failed to persist wavGestureGuideSeen:', err);
     }
   };
-  
-  // Effect parameters
-  // Dust-scratches was merged into film-grain — only its crackle-lines slider
-  // survives as an add-on (the noise portion was identical to grain's own).
-  // Tritone was merged into Duotone — this just adds a 3rd color stop.
-  
-  // New effect parameters
-  // Bloom
-  // Feedback / Trails
-  // audioReactiveColors is now in useAudioReactivity hook
-  
-  // New dither, slit-scan, and diffusion effect parameters
-  // Complexity and Scale were redundant — both just scale the same sine-wave
-  // frequency terms, so Complexity was removed and its value folded into Scale.
-  // Metaballs
-  // Truchet tiles
-  // Flow field
-  // Attractor — de Jong strange attractor, parameters slowly drift over
-  // time via attractorAnimTime for a living, evolving lace pattern.
-  // Reaction-Diffusion — Gray-Scott simulation on a fixed coarse grid
-  // (see reactionDiffusionGridRef), Feed/Kill control the pattern family
-  // (spots vs stripes vs coral), Speed controls sim steps per frame.
-  // Topographic — posterized noise field with dark contour lines at each band edge
-  // Julia Set — escape-time fractal on the complex plane, rendered at a
-  // fixed small internal resolution (see juliaCanvasRef) and upscaled, since
-  // per-pixel iteration at full canvas resolution would be far too slow.
-  // ASCII mosaic
-  // Emoji mosaic — ASCII's sibling, brightness maps to an emoji ramp instead of a character ramp
-  // Photo overlay — user-uploaded image blended over the gradient. The image
-  // itself lives in a ref (not React state, not saved in presets — a data
-  // URL big enough to be worth uploading would bloat every preset save), only
-  // blend mode + opacity are persisted so a reloaded preset at least restores
-  // the *look*, prompting the user to re-upload rather than silently losing it.
-  // Liquid displacement
-  // Chromatic trails
-
-  // Store base AI colors to keep them anchored
-  
-  // Preset management state is in usePresets hook (initialized below)
-  
-  // Rating system for Randomize
   
   // File input refs for uploads
   const handleAudioFileClick = useCallback(() => fileInputRef.current?.click(), []);
