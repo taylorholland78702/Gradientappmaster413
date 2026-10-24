@@ -29,6 +29,7 @@ import { useRandomization } from '../hooks/useRandomization';
 import type { PresetData } from '../hooks/usePresets';
 import { hslToRgb } from '../utils/color';
 import { useSnapshot } from '../hooks/useSnapshot';
+import type { Snapshot } from '../hooks/snapshotTypes';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
   type ColorRGB, type GradientType, type EffectType,
@@ -808,7 +809,15 @@ export function InteractiveGradient() {
   });
 
   // Full shuffles are checked for washed-out results and re-rolled (see useShuffleQualityGate).
-  const evolveWithFactor = useShuffleQualityGate({ evolve: evolveRaw, canvasRef, gradientTypeRef, targetColorsRef, undoStackRef, undoIndexRef, setUndoDepth });
+  // Putting back the best look a shuffle tried: the saved values, with the refs the draw loop reads set to match so
+  // nothing eases in from the look it just drew.
+  const applyShuffleCandidate = (snap: Snapshot) => {
+    applySnapshot(snap);
+    if (snap.gradientColors) gradientColorsRef.current = snap.gradientColors.map(c => ({ ...c }));
+    if (snap.gradientAngle !== undefined) gradientAngleRef.current = snap.gradientAngle;
+    if (snap.zoom !== undefined) zoomRef.current = snap.zoom;
+  };
+  const evolveWithFactor = useShuffleQualityGate({ evolve: evolveRaw, canvasRef, gradientTypeRef, targetColorsRef, getSnapshot: () => buildSnapshot(), applyCandidate: applyShuffleCandidate, undoStackRef, undoIndexRef, setUndoDepth });
 
   // Shuffle click handler — single click = full remix, shared by both the
   // collapsed-cluster button and the expanded panel's tab-row shuffle
