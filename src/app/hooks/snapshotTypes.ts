@@ -35,6 +35,7 @@ export interface SnapshotValues {
   juliaImaginary: number;
   juliaZoom: number;
   juliaIterations: number;
+  juliaSpeed: number;
   fieldContrast: number;
   paletteMode: "linear" | "banded" | "cyclic";
   colorBlend: "linear" | "srgb" | "oklab" | "oklch";
@@ -62,6 +63,7 @@ export interface SnapshotValues {
   stackWidth: number;
   stackLength: number;
   stackResponse: number;
+  stackSpeed: number;
   hatchLayers: number;
   hatchSpacing: number;
   hatchResponse: number;
@@ -107,6 +109,7 @@ export interface SnapshotValues {
   blurType: "radial" | "zoom" | "gaussian" | "motion";
   causticsBrightness: number;
   causticsScale: number;
+  causticsSpeed: number;
   chromaticAngle: number;
   chromaticOffset: number;
   chromaticTrailsDecay: number;
@@ -185,6 +188,7 @@ export interface SnapshotValues {
   flowerRotation: number;
   flowerSymmetry: number;
   flowerOpacity: number;
+  flowerSpeed: number;
   flowerScale: number;
   flowerSpread: number;
   gradientAngle: number;
@@ -226,6 +230,7 @@ export interface SnapshotValues {
   crtIntensity: number;
   crtScanlineSpacing: number;
   marbleOctaves: number;
+  marbleSpeed: number;
   marbleTurbulence: number;
   marbleVeinFreq: number;
   masterSensitivity: number;
@@ -260,6 +265,7 @@ export interface SnapshotValues {
   sepiaIntensity: number;
   shakeBeatEnabled: boolean;
   shapesCount: number;
+  shapesSpeed: number;
   shapesSides: number;
   shapesMode: "polygon" | "polar-grid";
   slitScanDirection: "radial" | "horizontal" | "vertical" | "circular";
@@ -288,6 +294,7 @@ export interface SnapshotValues {
   triangulateVariation: number;
   truchetSize: number;
   truchetThickness: number;
+  truchetSpeed: number;
   truchetVariation: number;
   twistAmount: number;
   vhsGlitchIntensity: number;

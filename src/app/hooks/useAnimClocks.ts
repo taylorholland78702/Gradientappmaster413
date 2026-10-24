@@ -37,6 +37,8 @@ export interface UseAnimClocksParams {
   metaballSpeed: number;
   noiseAnimTime: number;
   noiseSpeed: number;
+  causticsSpeed: number;
+  marbleSpeed: number;
   particlesMode: "drift" | "flow-field" | "marks";
   radialAnimTime: number;
   radialSpeed: number;
@@ -57,7 +59,7 @@ export interface UseAnimClocksParams {
 }
 
 export function useAnimClocks(p: UseAnimClocksParams) {
-  const { activeEffects, animValuesRef, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef } = p;
+  const { activeEffects, animValuesRef, causticsSpeed, marbleSpeed, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef } = p;
   // Each of these local clocks is skipped entirely in Display mode — that
   // tab's copies are pushed from the controller instead (see the animation
   // sync effect below), so the two windows stay frame-locked instead of
@@ -88,9 +90,9 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed * causticsSpeed), 16);
     return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, causticsSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
@@ -124,9 +126,9 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed * marbleSpeed), 16);
     return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
+  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, marbleSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;

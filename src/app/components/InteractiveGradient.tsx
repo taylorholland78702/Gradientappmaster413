@@ -175,7 +175,7 @@ export function InteractiveGradient() {
   const { blurMotionAmount, setBlurMotionAmount, blurMotionDirection, setBlurMotionDirection } = useBlurMotionState();
   const { blurRadialAmount, setBlurRadialAmount } = useBlurRadialState();
   const { canvasRef } = useCanvasState();
-  const { causticsAnimTime, setCausticsAnimTime, causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale } = useCausticsState();
+  const { causticsAnimTime, setCausticsAnimTime, causticsBrightness, setCausticsBrightness, causticsScale, causticsSpeed, setCausticsScale, setCausticsSpeed } = useCausticsState();
   const { chromaticOffset, setChromaticOffset, chromaticAngle, setChromaticAngle } = useChromaticState();
   const { chromaticTrailsDecay, setChromaticTrailsDecay, chromaticTrailsOffset, setChromaticTrailsOffset, chromaticTrailsBufferRef } = useChromaticTrailsState();
   const {
@@ -197,7 +197,7 @@ export function InteractiveGradient() {
   const { fadeDirection, setFadeDirection, fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow, turrellSmoothRef } = useFadeState();
   const { feedbackDecay, setFeedbackDecay, feedbackZoom, setFeedbackZoom, feedbackRotation, setFeedbackRotation, feedbackBufferRef } = useFeedbackState();
   const { fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands, colorBlend, fieldScale, fieldSpeed, fieldShapes, fieldExposure, fieldTone, fieldGrade, fieldSwirl, paletteStops, paletteBias, paletteSharp, setColorBlend, setFieldScale, setFieldSpeed, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp } = useFieldMappingState();
-  const { flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread, flowerRotation, setFlowerRotation, flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity, flowerAnimTime, setFlowerAnimTime, flowAnimTime, setFlowAnimTime, flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness } = useFlowState();
+  const { flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread, flowerRotation, setFlowerRotation, flowerSymmetry, setFlowerSymmetry, flowerOpacity, flowerSpeed, setFlowerOpacity, setFlowerSpeed, flowerAnimTime, setFlowerAnimTime, flowAnimTime, setFlowAnimTime, flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed, flowScale, setFlowScale, flowThickness, setFlowThickness } = useFlowState();
   const { flowBufferRef } = useFlowBufferState();
   const { flowParticlesRef } = useFlowParticlesState();
   const { auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity } = useAuraGlowState();
@@ -209,7 +209,7 @@ export function InteractiveGradient() {
   const { helixTurns, setHelixTurns, helixTightness, setHelixTightness } = useHelixState();
   const { hexGridSize, setHexGridSize } = useHexGridState();
   const { invertAmount, setInvertAmount } = useInvertState();
-  const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations, juliaCanvasRef } = useJuliaState();
+  const { juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, juliaSpeed, setJuliaIterations, setJuliaSpeed, juliaCanvasRef } = useJuliaState();
   const { kaleidoscopeSegments, setKaleidoscopeSegments, kaleidoscopeRotateSpeed, setKaleidoscopeRotateSpeed } = useKaleidoscopeState();
   const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
@@ -217,7 +217,7 @@ export function InteractiveGradient() {
   const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
   const { crtIntensity, setCrtIntensity, crtScanlineSpacing, setCrtScanlineSpacing } = useCrtState();
   const { liquifyStrength, setLiquifyStrength } = useLiquifyState();
-  const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
+  const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, marbleSpeed, setMarbleOctaves, setMarbleSpeed } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
   const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
@@ -286,8 +286,8 @@ export function InteractiveGradient() {
   const { reactionDiffusionGridRef } = useReactionDiffusionGridState();
   const { redoStackRef, redoDepth, setRedoDepth } = useRedoState();
   const { sepiaIntensity, setSepiaIntensity } = useSepiaState();
-  const { shapesSides, setShapesSides, shapesCount, setShapesCount, shapesMode, setShapesMode } = useShapesState();
-  const { stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse } = useStackState();
+  const { shapesSides, setShapesSides, shapesCount, shapesSpeed, setShapesCount, setShapesSpeed, shapesMode, setShapesMode } = useShapesState();
+  const { stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed } = useStackState();
   const { hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchAnimTime, setHatchAnimTime, hatchSpeed, setHatchSpeed } = useHatchState();
   const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanHistory, setSlitScanHistory, slitScanBufferRef } = useSlitScanState();
   const { solarizeThreshold, setSolarizeThreshold } = useSolarizeState();
@@ -296,7 +296,7 @@ export function InteractiveGradient() {
   const { waveInterferenceAnimTime, setWaveInterferenceAnimTime, waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed } = useWaveInterferenceState();
   const { meshWireframeAnimTime, setMeshWireframeAnimTime, meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth } = useMeshWireframeState();
   const { triangleSize, setTriangleSize, triangulateVariation, setTriangulateVariation } = useTriangleState();
-  const { truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, setTruchetThickness } = useTruchetState();
+  const { truchetSize, setTruchetSize, truchetVariation, setTruchetVariation, truchetThickness, truchetSpeed, setTruchetThickness, setTruchetSpeed } = useTruchetState();
   const { twistAmount, setTwistAmount } = useTwistState();
   const { undoStackRef, undoIndexRef, undoDepth, setUndoDepth } = useUndoState();
   const { vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount } = useVhsState();
@@ -574,9 +574,12 @@ export function InteractiveGradient() {
     }
   }, [activeEffects]);
 
-  const voronoiSpeedRef = useRef(voronoiSpeed);
-  useEffect(() => { voronoiSpeedRef.current = voronoiSpeed; }, [voronoiSpeed]);
-  useMasterClock({ activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn: () => isAutoShuffleOnRef.current, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, voronoiSpeedRef, windmillModeRef, zoomRef });
+  const gradientSpeedRef = useRef(1);
+  useEffect(() => {
+    const speeds: Partial<Record<GradientType, number>> = { voronoi: voronoiSpeed, flower: flowerSpeed, stack: stackSpeed, truchet: truchetSpeed, shapes: shapesSpeed, julia: juliaSpeed };
+    gradientSpeedRef.current = speeds[gradientType] ?? 1;
+  }, [gradientType, voronoiSpeed, flowerSpeed, stackSpeed, truchetSpeed, shapesSpeed, juliaSpeed]);
+  useMasterClock({ activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn: () => isAutoShuffleOnRef.current, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, gradientSpeedRef, windmillModeRef, zoomRef });
   const randomColor = useCallback((): ColorRGB => hslToRgb(
     Math.random() * 360,
     55 + Math.random() * 45,
@@ -603,7 +606,7 @@ export function InteractiveGradient() {
   }, []);
 
 
-  useAnimClocks({ activeEffects, animValuesRef, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef });
+  useAnimClocks({ causticsSpeed, marbleSpeed, activeEffects, animValuesRef, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef });
 
   // buildSnapshot/applySnapshot extracted to useSnapshot.ts (splitting-plan
   // step 3). The single source of truth for undo/redo AND presets, so it
@@ -616,12 +619,12 @@ export function InteractiveGradient() {
     asciiSize, auroraBandCount, auroraBandHeight, auroraWaveSpeed, autoGainEnabled, baseAIColors,
     depthLayerEnabled, depthLayerStrength, setDepthLayerEnabled, setDepthLayerStrength,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
-    juliaReal, juliaImaginary, juliaZoom, juliaIterations, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
+    juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaSpeed, setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations, setJuliaSpeed,
     fieldContrast, paletteMode, colorBlend, fieldScale, fieldSpeed, fieldShapes, fieldExposure, fieldTone, fieldGrade, fieldSwirl, paletteStops, paletteBias, paletteSharp, paletteBands, setFieldContrast, setPaletteMode, setColorBlend, setFieldScale, setFieldSpeed, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp, setPaletteBands,
     invertAmount, setInvertAmount,
     voronoiAnimTime, setVoronoiAnimTime, flowerAnimTime, setFlowerAnimTime, auroraAnimTime, setAuroraAnimTime,
     fadeMode, setFadeMode, turrellAnimTime, setTurrellAnimTime, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse,
+    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed,
     hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse,
     hatchAnimTime, setHatchAnimTime, hatchSpeed, setHatchSpeed,
     causticsAnimTime, setCausticsAnimTime, lavaAnimTime, setLavaAnimTime, marbleAnimTime, setMarbleAnimTime,
@@ -638,7 +641,7 @@ export function InteractiveGradient() {
     audioBindings, setAudioBindings,
     bassBeatSync, bassMax, bassMin, bassMultiplier, bassSmoothing, bassThreshold,
     bloomIntensity, bloomRadius, blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount,
-    blurType, causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
+    blurType, causticsBrightness, causticsScale, causticsSpeed, chromaticAngle, chromaticOffset,
     chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue, concentricRingCount, concentricRingWidth,
     paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation, paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
     helixTightness, helixTurns, contrastBeatEnabled, digitalNoiseIntensity, ditherLevels, ditherType, ditherScale,
@@ -661,7 +664,7 @@ export function InteractiveGradient() {
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     topographicScale, topographicBands, topographicLineWidth,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
-    flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity,
+    flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity, flowerSpeed,
     flowerScale, flowerSpread, gradientAngle, gradientColors, gradientType, grainIntensity, grainSize,
     gessoWhiteness, gessoTexture, gessoResponse,
     grainType, gridCellAngleStep, gridColumns, gridRotation, gridRows, gridShapeSize, gridSides,
@@ -669,7 +672,7 @@ export function InteractiveGradient() {
     hexGridSize, isAudioEnabled, isAudioReactive,
     kaleidoscopeRotateSpeed, kaleidoscopeSegments, lavaBlobCount, lavaBlobSize, lavaSpeed, lightLeakIntensity,
     linesAngle, linesCount, linesThickness, liquidScale, liquidStrength, liquifyStrength, crtIntensity, crtScanlineSpacing,
-    marbleOctaves, marbleTurbulence, marbleVeinFreq, masterSensitivity,
+    marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq, masterSensitivity,
     metaballCount, metaballSize, metaballSpeed, midsBeatSync, midsMax, midsMin,
     midsMultiplier, midsSmoothing, midsThreshold, mirrorMode, mirrorTileCount,
     noiseDirection, noiseOctaves, noiseScale, noiseType,
@@ -682,13 +685,13 @@ export function InteractiveGradient() {
     setAuroraBandHeight, setAuroraWaveSpeed, setAutoGainEnabled, setBaseAIColors, setBassBeatSync, setBassMax,
     setBassMin, setBassMultiplier, setBassSmoothing, setBassThreshold, setBloomIntensity, setBloomRadius,
     setBlurGaussianAmount, setBlurMotionAmount, setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness,
-    setCausticsScale, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
+    setCausticsScale, setCausticsSpeed, setChromaticAngle, setChromaticOffset, setChromaticTrailsDecay, setChromaticTrailsOffset,
     setColorShiftHue, setConcentricRingCount, setConcentricRingWidth, setHelixTightness, setHelixTurns,
     setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale, setDuotoneColor1, setDuotoneColor2,
     setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars, setEmojiOffsetX,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation,
     setFeedbackZoom, setFlowParticleCount, setFlowScale,
-    setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity,
+    setFlowSpeed, setFlowThickness, setFlowerCircles, setFlowerRotation, setFlowerScale, setFlowerSpread, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed,
     setGradientAngle, setGradientColors, setGradientType, setGrainIntensity, setGrainType, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
     setGridCellAngleStep, setGridColumns,
@@ -696,7 +699,7 @@ export function InteractiveGradient() {
     setHalftoneMove, setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsAudioEnabled, setIsAudioReactive, setKaleidoscopeRotateSpeed, setKaleidoscopeSegments,
     setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setLightLeakIntensity, setLinesAngle, setLinesCount,
-    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleTurbulence,
+    setLinesThickness, setLiquidScale, setLiquidStrength, setLiquifyStrength, setCrtIntensity, setCrtScanlineSpacing, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize,
     setMetaballSpeed, setMidsBeatSync, setMidsMax, setMidsMin, setMidsMultiplier, setMidsSmoothing,
     setMidsThreshold, setMirrorMode, setMirrorTileCount,
@@ -705,17 +708,17 @@ export function InteractiveGradient() {
     setPolygon2Sides, setPosterizeLevels, 
     setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setResolutionMultiplier,
     setSepiaIntensity,
-    setShakeBeatEnabled, setShapesCount, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold,
+    setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesSides, setSlitScanDirection, setSlitScanIntensity, setSlitScanHistory, setSolarizeThreshold,
     setWindmillRotations, setWindmillThickness, setWindmillTightness, setWindmillZoom, setWindmillZoomResponse, setWindmillMode, setShapesMode, setSubBassBeatSync, setSubBassMultiplier,
     setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTrebleBeatSync, setTrebleMax,
     setTrebleMin, setTrebleMultiplier, setTrebleSmoothing, setTrebleThreshold, setTriangleSize, setTriangulateVariation, setTruchetSize,
-    setTruchetThickness, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength,
+    setTruchetThickness, setTruchetSpeed, setTruchetVariation, setTwistAmount, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteSoftness, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionRotation, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, shakeBeatEnabled,
-    shapesCount, shapesSides, shapesMode, slitScanDirection, slitScanIntensity, slitScanHistory, solarizeThreshold, windmillRotations,
+    shapesCount, shapesSpeed, shapesSides, shapesMode, slitScanDirection, slitScanIntensity, slitScanHistory, solarizeThreshold, windmillRotations,
     windmillThickness, windmillTightness, windmillZoom, windmillZoomResponse, windmillMode, subBassBeatSync, subBassMultiplier, submittedAIPrompt,
     targetAngle, targetColors, targetZoom, trebleBeatSync, trebleMax, trebleMin,
-    trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness,
+    trebleMultiplier, trebleSmoothing, trebleThreshold, triangleSize, triangulateVariation, truchetSize, truchetThickness, truchetSpeed,
     truchetVariation, twistAmount, vhsGlitchIntensity, vhsJitterAmount, vignetteSoftness, vignetteStrength, voronoiCellCount,
     voronoiDistortion, voronoiSpeed, waveDistortionRotation, waveDistortionStrength,
     zoom, zoomBeatEnabled,
@@ -728,7 +731,7 @@ export function InteractiveGradient() {
   });
 
   // Randomize all colors
-  const { applyGradientLook, applyLookValues, applyPalette, colorFamilyRef, keepFamily, setKeepFamily, shuffleColors } = useLooks({ colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode });
+  const { applyGradientLook, applyLookValues, applyPalette, colorFamilyRef, keepFamily, setKeepFamily, shuffleColors } = useLooks({ colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode });
 
   // Gradient display names, and the full/feeling-lucky type lists, now live
   // in constants/gradientEffects.ts (GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES,
@@ -752,7 +755,7 @@ export function InteractiveGradient() {
     randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
-    setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset,
+    setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setChromaticAngle, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleColor, setDustCrackleIntensity, setDustCrackleLength, setEmojiChars,
@@ -760,7 +763,7 @@ export function InteractiveGradient() {
     setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength, setCrtIntensity, setCrtScanlineSpacing,
     setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
-    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
+    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations, setJuliaSpeed,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setParticlesCount, setParticlesSpeed, setParticlesSize, setParticlesTrail, setParticlesGravity, setParticlesSides,
@@ -782,21 +785,21 @@ export function InteractiveGradient() {
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
-    setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
+    setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
-    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesMode,
+    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
+    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setStackSpeed,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchSpeed,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
-    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
+    setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
@@ -804,7 +807,7 @@ export function InteractiveGradient() {
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
     setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, 
     setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
-    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
+    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed,
     setTriangulateVariation, setEmojiOffsetX,
   });
 
@@ -949,18 +952,18 @@ export function InteractiveGradient() {
     lightLeakIntensity, duotoneIntensity, duotoneColor1, duotoneColor2, duotoneColor3, duotoneThreeColor,
     digitalNoiseIntensity, gridRotation, gridRows, gridColumns, gridShapeSize, gridCellAngleStep,
     gridVariation, gridHardEdge, angleStartOffset, angleCenterX, angleCenterY, angleHardEdge, windmillTightness, windmillRotations,
-    windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesMode, concentricRingWidth, concentricRingCount,
+    windmillThickness, windmillZoom, windmillZoomResponse, windmillMode, shapesSides, shapesCount, shapesSpeed, shapesMode, concentricRingWidth, concentricRingCount,
     fadeMode, turrellAnimTime, turrellSpeed, turrellGlow,
-    stackCount, stackGap, stackWidth, stackLength, stackResponse, hatchLayers, hatchSpacing, hatchResponse, hatchAnimTime, hatchSpeed,
+    stackCount, stackGap, stackWidth, stackLength, stackResponse, stackSpeed, hatchLayers, hatchSpacing, hatchResponse, hatchAnimTime, hatchSpeed,
     radialSizeScale, radialHardEdge, radialAnimTime, radialSpeed, noiseScale, noiseOctaves, noiseWarp, noiseType, noiseAnimTime, noiseSpeed,
     radialBurstCount, radialBurstSpread, radialBurstSize, voronoiCellCount, voronoiDistortion,
     voronoiAnimTime, helixTurns, helixTightness,
     
-    flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, flowerAnimTime,
+    flowerCircles, flowerScale, flowerSpread, flowerRotation, flowerSymmetry, flowerOpacity, flowerSpeed, flowerAnimTime,
     auroraAnimTime, auroraBandCount, auroraWaveSpeed, auroraBandHeight,
-    causticsAnimTime, causticsBrightness, causticsScale,
+    causticsAnimTime, causticsBrightness, causticsScale, causticsSpeed,
     lavaAnimTime, lavaBlobCount, lavaBlobSize, lavaSpeed,
-    marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves,
+    marbleAnimTime, marbleVeinFreq, marbleTurbulence, marbleOctaves, marbleSpeed,
     noiseDirection,
     ditherType, ditherLevels, ditherScale, oilPaintRadius, oilPaintLevels, impastoStrength, impastoLightAngle, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, slitScanIntensity, slitScanDirection, slitScanHistory,
     auraGlowCount, auraGlowSpeed, auraGlowOpacity,
@@ -1019,7 +1022,7 @@ export function InteractiveGradient() {
     particlesBufferRef, particlesPointsRef, particlesCount, particlesSpeed, particlesSize, particlesTrail, particlesGravity, particlesSides, particlesMode,
     marksCount, marksSize, marksDecay, marksStateRef,
     fadeMode, turrellSpeed, turrellGlow, turrellSmoothRef,
-    stackCount, stackGap, stackWidth, stackLength, stackResponse, hatchLayers, hatchSpacing, hatchResponse, hatchSpeed,
+    stackCount, stackGap, stackWidth, stackLength, stackResponse, stackSpeed, hatchLayers, hatchSpacing, hatchResponse, hatchSpeed,
     tilingSize, tilingSymmetry, tilingComplexity, tilingRotation, tilingAnimTime, tilingRowOffset,
     waveInterferenceAnimTime, waveInterferenceSourceCount, waveInterferenceFrequency, waveInterferenceSpeed,
     meshWireframeAnimTime, meshWireframeGridSize, meshWireframeJitter, meshWireframeLineWidth,
@@ -1028,7 +1031,7 @@ export function InteractiveGradient() {
     attractorScale, attractorDotSize, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, audioEnergy, audioBindings, musicIntensityRef, masterSensitivity, animValuesRef,
     auroraBandCount, auroraBandHeight, auroraWaveSpeed, bassThreshold, bloomIntensity, bloomRadius,
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
-    causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
+    causticsBrightness, causticsScale, causticsSpeed, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue,
     paletteHue, paletteSaturation, paletteBrightness, paletteContrast, concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, ditherScale, oilPaintRadius, oilPaintLevels, impastoStrength, impastoLightAngle, watercolorBleed, watercolorGrain, watercolorStyle, dadaPanels, dadaChaos, drawParams,
@@ -1039,7 +1042,7 @@ export function InteractiveGradient() {
     duotoneThreeColor, dustCrackleColor, dustCrackleIntensity, dustCrackleLength, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
     flowBufferRef, flowParticleCount,
-    flowParticlesRef, flowScale, flowThickness, flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity,
+    flowParticlesRef, flowScale, flowThickness, flowerCircles, flowerRotation, flowerSymmetry, flowerOpacity, flowerSpeed,
     flowerScale, flowerSpread,
     gradientAngle, gradientAngleRef, gradientColors, gradientColorsRef,
     gradientType, grainIntensity, grainType, grainSize, gessoWhiteness, gessoTexture, gessoResponse, gridCellAngleStep, gridColumns, gridRotation, gridRows, gridHardEdge,
@@ -1048,7 +1051,7 @@ export function InteractiveGradient() {
     isAudioReactive, isAutoModeRef, isVCRPlayingRef, kaleidoAngleRef, kaleidoscopeRotateSpeed, kaleidoscopeSegments,
     lavaBlobCount, lavaBlobSize, lavaSpeed,
     liquidScale,
-    liquidStrength, crtIntensity, crtScanlineSpacing, marbleOctaves, marbleTurbulence, marbleVeinFreq,
+    liquidStrength, crtIntensity, crtScanlineSpacing, marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq,
     metaballCount, metaballSize, mirrorMode, mirrorTileCount,
     noiseDirection, noiseOctaves, noiseScale, noiseSpeed,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
@@ -1056,12 +1059,12 @@ export function InteractiveGradient() {
     radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, radialHardEdge, radialSpeed, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
     resolutionMultiplier,
-    shapesCount, shapesSides, shapesMode, slitScanBufferRef, slitScanDirection,
+    shapesCount, shapesSpeed, shapesSides, shapesMode, slitScanBufferRef, slitScanDirection,
     slitScanIntensity, slitScanHistory,
     windmillRotations, windmillThickness, windmillTightness, windmillZoom, windmillZoomResponse, windmillMode, triangleSize, triangulateVariation,
     topographicBands, topographicLineWidth, topographicScale,
-    juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaCanvasRef,
-    truchetSize, truchetThickness, truchetVariation, vhsGlitchIntensity, vhsJitterAmount, vignetteSoftness, vignetteStrength,
+    juliaReal, juliaImaginary, juliaZoom, juliaIterations, juliaSpeed, juliaCanvasRef,
+    truchetSize, truchetThickness, truchetSpeed, truchetVariation, vhsGlitchIntensity, vhsJitterAmount, vignetteSoftness, vignetteStrength,
     voronoiCellCount, voronoiDistortion, voronoiSpeed, waveDistortionRotation, waveDistortionStrength,
     zoom, zoomRef,
   });
@@ -1126,11 +1129,11 @@ export function InteractiveGradient() {
     gradientType, setGradientType, getGradientDisplayName, shuffleGradientType, gridRows, setGridRows, gridColumns, setGridColumns,
     gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge, polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
-    causticsBrightness, setCausticsBrightness, causticsScale, setCausticsScale, lavaBlobCount, setLavaBlobCount,
+    causticsBrightness, setCausticsBrightness, causticsScale, causticsSpeed, setCausticsScale, setCausticsSpeed, lavaBlobCount, setLavaBlobCount,
     lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed, rotationDirection, setRotationDirection, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence,
-    marbleOctaves, setMarbleOctaves, metaballCount, setMetaballCount, metaballSize, setMetaballSize,
+    marbleOctaves, marbleSpeed, setMarbleOctaves, setMarbleSpeed, metaballCount, setMetaballCount, metaballSize, setMetaballSize,
     metaballSpeed, setMetaballSpeed, truchetSize, setTruchetSize, truchetVariation, setTruchetVariation,
-    truchetThickness, setTruchetThickness,
+    truchetThickness, truchetSpeed, setTruchetThickness, setTruchetSpeed,
     flowParticleCount, setFlowParticleCount, flowSpeed, setFlowSpeed,
     flowScale, setFlowScale, flowThickness, setFlowThickness, attractorPointCount, setAttractorPointCount,
     attractorSpeed, setAttractorSpeed, attractorScale, setAttractorScale, attractorDotSize, setAttractorDotSize,
@@ -1147,12 +1150,12 @@ export function InteractiveGradient() {
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
-    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, setJuliaIterations,
+    juliaReal, setJuliaReal, juliaImaginary, setJuliaImaginary, juliaZoom, setJuliaZoom, juliaIterations, juliaSpeed, setJuliaIterations, setJuliaSpeed,
     angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge,
     radialSizeScale, setRadialSizeScale, radialHardEdge, setRadialHardEdge, radialSpeed, setRadialSpeed, concentricRingWidth, setConcentricRingWidth, shapesSides, setShapesSides,
-    shapesCount, setShapesCount, shapesMode, setShapesMode, windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations,
+    shapesCount, shapesSpeed, setShapesCount, setShapesSpeed, shapesMode, setShapesMode, windmillTightness, setWindmillTightness, windmillRotations, setWindmillRotations,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, setStackResponse,
+    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed,
     hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchSpeed, setHatchSpeed,
     windmillThickness, setWindmillThickness, windmillZoomResponse, windmillMode, setWindmillMode, setWindmillZoomResponse,
     drawParamsDirtyRef, noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection,
@@ -1161,7 +1164,7 @@ export function InteractiveGradient() {
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, voronoiSpeed, setVoronoiDistortion, setVoronoiSpeed,
     fadeDirection, setFadeDirection, 
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
-    flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity, helixTurns, setHelixTurns, helixTightness, setHelixTightness,
+    flowerSymmetry, setFlowerSymmetry, flowerOpacity, flowerSpeed, setFlowerOpacity, setFlowerSpeed, helixTurns, setHelixTurns, helixTightness, setHelixTightness,
     // Effects (isMobile, gridRows/gridColumns, crtIntensity/crtScanlineSpacing
     // etc. overlap with names above — same variables, harmless to repeat)
     activeEffects, setActiveEffects, isMultiFxMode, setIsMultiFxMode, collapsedEffects, toggleEffectCollapsed, randomizeEffects,

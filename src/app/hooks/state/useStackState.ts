@@ -10,6 +10,7 @@ export function useStackState() {
   const [stackWidth, setStackWidth] = useState(1);
   const [stackLength, setStackLength] = useState(1);
   const [stackResponse, setStackResponse] = useState(0.6);
+  const [stackSpeed, setStackSpeed] = useState(1);
 
   return {
     stackCount,
@@ -22,5 +23,7 @@ export function useStackState() {
     setStackLength,
     stackResponse,
     setStackResponse,
+    stackSpeed,
+    setStackSpeed,
   };
 }

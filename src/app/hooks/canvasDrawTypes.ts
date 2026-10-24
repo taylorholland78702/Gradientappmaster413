@@ -43,6 +43,7 @@ export interface CanvasDrawParams {
   stackWidth: number;
   stackLength: number;
   stackResponse: number;
+  stackSpeed: number;
   hatchLayers: number;
   hatchSpacing: number;
   hatchResponse: number;
@@ -95,6 +96,7 @@ export interface CanvasDrawParams {
   canvasRef: MutableRefObject<HTMLCanvasElement>;
   causticsBrightness: number;
   causticsScale: number;
+  causticsSpeed: number;
   chromaticAngle: number;
   chromaticOffset: number;
   chromaticTrailsBufferRef: MutableRefObject<HTMLCanvasElement>;
@@ -173,6 +175,7 @@ export interface CanvasDrawParams {
   flowerRotation: number;
   flowerSymmetry: number;
   flowerOpacity: number;
+  flowerSpeed: number;
   flowerScale: number;
   flowerSpread: number;
   gradientAngle: number;
@@ -214,6 +217,7 @@ export interface CanvasDrawParams {
   crtIntensity: number;
   crtScanlineSpacing: number;
   marbleOctaves: number;
+  marbleSpeed: number;
   marbleTurbulence: number;
   marbleVeinFreq: number;
   metaballCount: number;
@@ -244,6 +248,7 @@ export interface CanvasDrawParams {
   reactionDiffusionSpeed: number;
   resolutionMultiplier: number;
   shapesCount: number;
+  shapesSpeed: number;
   shapesSides: number;
   shapesMode: "polygon" | "polar-grid";
   slitScanBufferRef: MutableRefObject<ImageData[]>;
@@ -265,9 +270,11 @@ export interface CanvasDrawParams {
   juliaImaginary: number;
   juliaZoom: number;
   juliaIterations: number;
+  juliaSpeed: number;
   juliaCanvasRef: MutableRefObject<HTMLCanvasElement>;
   truchetSize: number;
   truchetThickness: number;
+  truchetSpeed: number;
   truchetVariation: number;
   vhsGlitchIntensity: number;
   vhsJitterAmount: number;

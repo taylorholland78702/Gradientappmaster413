@@ -5,6 +5,7 @@ export function useMarbleState() {
   const [marbleVeinFreq, setMarbleVeinFreq] = useState(2);
   const [marbleTurbulence, setMarbleTurbulence] = useState(1.5);
   const [marbleOctaves, setMarbleOctaves] = useState(5);
+  const [marbleSpeed, setMarbleSpeed] = useState(1);
 
   return {
     marbleAnimTime,
@@ -15,5 +16,7 @@ export function useMarbleState() {
     setMarbleTurbulence,
     marbleOctaves,
     setMarbleOctaves,
+    marbleSpeed,
+    setMarbleSpeed,
   };
 }

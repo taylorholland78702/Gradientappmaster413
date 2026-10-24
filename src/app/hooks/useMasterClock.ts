@@ -39,13 +39,16 @@ export interface UseMasterClockParams {
   targetColorsRef: MutableRefObject<ColorRGB[]>;
   targetZoomRef: MutableRefObject<number>;
   vcrPlaybackSpeedRef: MutableRefObject<number>;
-  voronoiSpeedRef: MutableRefObject<number>;
+  // The active gradient's own Speed slider (1 when it has none), kept current by InteractiveGradient.
+  gradientSpeedRef: MutableRefObject<number>;
   windmillModeRef: MutableRefObject<"blades" | "helix">;
   zoomRef: MutableRefObject<number>;
 }
 
+const ROTATION_SPEED_TYPES: GradientType[] = ['stack', 'truchet', 'shapes', 'julia'];
+
 export function useMasterClock(p: UseMasterClockParams) {
-  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, voronoiSpeedRef, windmillModeRef, zoomRef } = p;
+  const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setFlowerAnimTime, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, gradientSpeedRef, windmillModeRef, zoomRef } = p;
   useEffect(() => {
     let rafId: number;
     let lastFrameTime = performance.now();
@@ -196,7 +199,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * voronoiSpeedRef.current * dtScale;
+        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * gradientSpeedRef.current * dtScale;
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
@@ -225,13 +228,15 @@ export function useMasterClock(p: UseMasterClockParams) {
         const doubleSpeedTypes = ['angle', 'fade', 'radial-burst'];
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
-        targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * dtScale;
+        // Stack, Truchet, Shapes and Julia move only by this rotation, so their Speed slider scales it.
+        const rotateSpeed = ROTATION_SPEED_TYPES.includes(gradientTypeRef.current) ? gradientSpeedRef.current : 1;
+        targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * rotateSpeed * dtScale;
       }
 
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.flowerAnimTime += 0.5 * spd * dtScale;
+        animValuesRef.current.flowerAnimTime += 0.5 * spd * gradientSpeedRef.current * dtScale;
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or
