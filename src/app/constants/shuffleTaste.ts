@@ -35,7 +35,7 @@ export const EFFECT_AFFINITY: Record<GradientKind, Partial<Record<EffectType, nu
   },
   pattern: {
     halftone: 2, ascii: 2, grain: 1, vignette: 1, chromatic: 1, bloom: 1, shift: 1, crt: 1, liquid: 1,
-    mirror: -1, pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, vhs: -1,
+    pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, vhs: -1,
     'grid-effect': -2,
   },
   particles: {
@@ -76,17 +76,17 @@ export interface Mood {
 }
 
 export const MOODS: readonly Mood[] = [
-  { id: 'calm', speeds: [0.5, 1, 1, 2], strength: 0.3, shape: [0.8, 1.2], swirlChance: 0.15, maxEffects: 3, shapeChangerChance: 0.2,
+  { id: 'calm', speeds: [1, 2, 2, 3], strength: 0.3, shape: [0.8, 1.2], swirlChance: 0.15, maxEffects: 3, shapeChangerChance: 0.2,
     effectBias: { bloom: 1, grain: 1, vignette: 1, wave: 1, chromatic: -1, vhs: -1 } },
-  { id: 'soft', speeds: [0.5, 1, 1, 2], strength: 0.25, shape: [0.8, 1.1], swirlChance: 0.2, maxEffects: 3, shapeChangerChance: 0.1,
+  { id: 'soft', speeds: [1, 2, 2, 3], strength: 0.25, shape: [0.8, 1.1], swirlChance: 0.2, maxEffects: 3, shapeChangerChance: 0.1,
     effectBias: { bloom: 1, 'aura-glow': 1, blur: 1, watercolor: 1, posterize: -1, dither: -1, pixelate: -1 } },
-  { id: 'cinematic', speeds: [1, 1, 2], strength: 0.5, shape: [0.8, 1.3], swirlChance: 0.2, maxEffects: 4, shapeChangerChance: 0.15,
+  { id: 'cinematic', speeds: [1, 2, 2, 3], strength: 0.5, shape: [0.8, 1.3], swirlChance: 0.2, maxEffects: 4, shapeChangerChance: 0.15,
     effectBias: { vignette: 1, grain: 1, bloom: 1, chromatic: 1, crt: -1 } },
   { id: 'bold', speeds: [2, 3, 3, 4, 5], strength: 0.8, shape: [0.7, 1.6], swirlChance: 0.45, maxEffects: 5, shapeChangerChance: 0.5,
     effectBias: { kaleidoscope: 1, mirror: 1, chromatic: 1, shift: 1, liquid: 1, wave: 1 } },
-  { id: 'dense', speeds: [1, 2, 3], strength: 0.6, shape: [1.2, 1.9], swirlChance: 0.3, maxEffects: 4, shapeChangerChance: 0.45,
+  { id: 'dense', speeds: [2, 3, 3, 4], strength: 0.6, shape: [1.2, 1.9], swirlChance: 0.3, maxEffects: 4, shapeChangerChance: 0.45,
     effectBias: { grain: 1, halftone: 1, dither: 1, kaleidoscope: 1, mirror: 1, blur: -1 } },
-  { id: 'glitchy', speeds: [3, 4, 5, 6, 8, 10], strength: 1, shape: [0.7, 1.7], swirlChance: 0.5, maxEffects: 5, shapeChangerChance: 0.7,
+  { id: 'glitchy', speeds: [3, 4, 4, 5, 6, 8], strength: 1, shape: [0.7, 1.7], swirlChance: 0.5, maxEffects: 5, shapeChangerChance: 0.7,
     effectBias: { chromatic: 1, crt: 1, shift: 1, pixelate: 1, 'slit-scan': 1, 'chromatic-trails': 1, bloom: -1, watercolor: -1 } },
 ];
 

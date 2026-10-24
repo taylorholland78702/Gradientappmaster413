@@ -62,6 +62,11 @@ describe('shuffle taste table', () => {
       expect(EFFECT_AFFINITY[kind]['slit-scan'] ?? 0).toBeLessThan(0);
     }
   });
+  it('keeps most mood speeds in the medium range (2-4 was loved 42% of the time, slow 18%, fast 7%) and no longer reaches 10', () => {
+    const all = MOODS.flatMap(m => m.speeds);
+    expect(Math.max(...all)).toBeLessThanOrEqual(8);
+    expect(all.filter(v => v >= 2 && v <= 4).length / all.length).toBeGreaterThan(0.5);
+  });
   it('puts every gradient in a kind, and sorts the obvious ones', () => {
     for (const g of FEELING_LUCKY_GRADIENT_TYPES) expect(['dark-ground', 'smooth', 'pattern', 'particles']).toContain(gradientKind(g));
     expect(gradientKind('eclipse')).toBe('dark-ground');

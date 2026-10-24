@@ -112,3 +112,15 @@ vs 125, lit 0.66 vs 0.85), higher in contrast (sd 57 vs 41) and had more detail 
   `JSON.parse(localStorage.gradientRatings || '[]').length` in the console, and make sure the page was reloaded after that release.
 - **Bug: "Mark 15 more" did nothing**, because it restarted the session without starting the next shuffle or hiding the results,
   and would have counted from zero. It now extends the same session and shuffles the next look.
+
+## Sessions 9-10 (speed, palette, and variety confirmed)
+
+- **Variety is fixed.** Switching off the saved ratings from the old rating feature worked: in the session after it, the 30 looks covered
+  20 different gradients with no grid, radial-burst or shapes at all (the session before: those three were half of the looks). Loves
+  rose from about 6 of 30 to 8 of 30.
+- **Speed** (60 looks that recorded it): looks at medium speeds (2-4) were loved 10 of 24 times (42%), slow (1 or less) 4 of 22 (18%), fast (5+)
+  1 of 14 (7%), though fast ones were kept most often (71%): fine to look at, rarely a favourite. Mood speeds now sit mostly in 2-4
+  (calm, soft, cinematic from 0.5-2 to 1-3; dense 2-4; glitchy no longer reaches 10).
+- **Palette** (same 60): high-contrast palettes (lightest to darkest colour far apart) were loved 12 of 36 times (33%), low-contrast 3 of 24 (13%);
+  light palettes 1 of 10. The palette scorer already rewards a wide brightness range as its main term, so nothing changes there.
+- mirror was loved 10 of 38 times (26%, the second best after ascii and halftone) so it is no longer marked down on pattern gradients.
