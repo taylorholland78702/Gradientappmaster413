@@ -62,7 +62,7 @@ const RailSep: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
   <div className={isMobile ? 'w-px h-5 bg-white/50 mx-0.5 flex-shrink-0' : 'w-5 h-px bg-white/50 my-0.5 flex-shrink-0'} />
 );
 
-const railBtnBase = 'w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';
+const railBtnBase = 'wav-rail-btn w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';
 
 // Desktop rail is rendered at its normal (mobile-matching) size, then
 // visually scaled up 30% as a whole via CSS transform — a single knob
@@ -123,7 +123,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         isMobile
           // Docked flush to the bottom edge — square corners (it's the
           // screen edge, not a floating card).
-          ? 'flex-shrink-0 w-full pointer-events-auto bg-black'
+          ? 'wav-mobile flex-shrink-0 w-full pointer-events-auto bg-black'
           // Docked flush to the left edge — full height, scrolls
           // internally if content ever exceeds the viewport height rather
           // than overflowing off-screen with no way to reach it.

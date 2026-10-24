@@ -5,6 +5,7 @@ import { TOUCH_GESTURES, KEY_GESTURES } from '../constants/gestureGuide';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC } from '../constants/autoShuffle';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { motionSensorsSupported } from '../utils/motionPermission';
+import { choice } from './choice';
 
 export function AboutPanel({
   isMobile, railRect, dialogRef, onClose,
@@ -30,7 +31,7 @@ export function AboutPanel({
         aria-label="About wāv"
         className={
           isMobile
-            ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
+            ? 'wav-mobile absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
             : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
         }
         style={isMobile ? undefined : (railRect
@@ -142,7 +143,7 @@ export function AboutPanel({
                     <button
                       onClick={() => toggleMotion(m.kind)}
                       aria-pressed={m.on}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${m.on ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                      className={choice(m.on)}
                     >{m.on ? 'On' : 'Off'}</button>
                   </div>
                 ))}

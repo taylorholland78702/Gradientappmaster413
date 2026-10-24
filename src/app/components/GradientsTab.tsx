@@ -6,6 +6,7 @@ import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 import { SliderRow } from './SliderRow';
+import { choice } from './choice';
 
 // Gradients whose layout hashes structuralSeed (the styled field shaders plus the
 // older ones that read it), so a Seed control means something for them.
@@ -308,9 +309,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 key={mode}
                 onClick={() => setPaletteMode(mode)}
                 aria-pressed={paletteMode === mode}
-                className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${
-                  paletteMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                }`}
+                className={choice(paletteMode === mode, 'flex-1 capitalize')}
               >
                 {mode}
               </button>
@@ -335,9 +334,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
       <button
         onClick={() => setValue(!value)}
         aria-pressed={value}
-        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${
-          value ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
-        }`}
+        className={choice(value)}
       >
         {value ? 'On' : 'Off'}
       </button>
@@ -360,7 +357,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               shortcut), matching Effects' own Shuffle button. */}
           <button
             onClick={shuffleGradientType}
-            className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
+            className="wav-choice w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
             title="Shuffle Gradient Type"
             aria-label="Shuffle Gradient Type"
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
@@ -387,7 +384,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={entry.key}
                       onClick={() => setGradientType(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
                       aria-pressed={active}
-                      className={`px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
+                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
                         active
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-white/10'
@@ -416,9 +413,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 aria-pressed={rotationDirection === dir}
                 title={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
                 aria-label={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
-                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
-                  rotationDirection === dir ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'
-                }`}
+                className={choice(rotationDirection === dir, 'flex items-center justify-center')}
               >
                 {dir === 'clockwise' ? <ArrowClockwise weight="bold" className="w-3.5 h-3.5" /> : <ArrowCounterClockwise weight="bold" className="w-3.5 h-3.5" />}
               </button>
@@ -440,7 +435,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   key={m.type}
                   onClick={() => setGradientType(m.type)}
                   aria-pressed={gradientType === m.type}
-                  className={`flex-1 text-[10px] py-1 transition-all ${gradientType === m.type ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                  className={choice(gradientType === m.type, 'flex-1')}
                 >{m.label}</button>
               ))}
             </div>
@@ -487,7 +482,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   onClick={() => setFieldTone(t.id)}
                   aria-pressed={fieldTone === t.id}
                   title={t.hint}
-                  className={`flex-1 text-[10px] py-1 transition-all ${fieldTone === t.id ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                  className={choice(fieldTone === t.id, 'flex-1')}
                 >{t.label}</button>
               ))}
             </div>
@@ -535,18 +530,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setGridMode('classic')}
                   aria-pressed={gridMode === 'classic'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    gridMode === 'classic' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(gridMode === 'classic', 'flex-1')}
                 >
                   Classic
                 </button>
                 <button
                   onClick={() => setGridMode('martin')}
                   aria-pressed={gridMode === 'martin'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    gridMode === 'martin' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(gridMode === 'martin', 'flex-1')}
                 >
                   Martin
                 </button>
@@ -707,27 +698,21 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setParticlesMode('drift')}
                   aria-pressed={particlesMode === 'drift'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    particlesMode === 'drift' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(particlesMode === 'drift', 'flex-1')}
                 >
                   Drift
                 </button>
                 <button
                   onClick={() => setParticlesMode('flow-field')}
                   aria-pressed={particlesMode === 'flow-field'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    particlesMode === 'flow-field' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(particlesMode === 'flow-field', 'flex-1')}
                 >
                   Flow Field
                 </button>
                 <button
                   onClick={() => setParticlesMode('marks')}
                   aria-pressed={particlesMode === 'marks'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    particlesMode === 'marks' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(particlesMode === 'marks', 'flex-1')}
                 >
                   Marks
                 </button>
@@ -861,18 +846,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setShapesMode('polygon')}
                   aria-pressed={shapesMode === 'polygon'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    shapesMode === 'polygon' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(shapesMode === 'polygon', 'flex-1')}
                 >
                   Polygon
                 </button>
                 <button
                   onClick={() => setShapesMode('polar-grid')}
                   aria-pressed={shapesMode === 'polar-grid'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    shapesMode === 'polar-grid' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(shapesMode === 'polar-grid', 'flex-1')}
                 >
                   Polar Grid
                 </button>
@@ -904,18 +885,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setWindmillMode('blades')}
                   aria-pressed={windmillMode === 'blades'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    windmillMode === 'blades' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(windmillMode === 'blades', 'flex-1')}
                 >
                   Blades
                 </button>
                 <button
                   onClick={() => setWindmillMode('helix')}
                   aria-pressed={windmillMode === 'helix'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    windmillMode === 'helix' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(windmillMode === 'helix', 'flex-1')}
                 >
                   Helix
                 </button>
@@ -944,7 +921,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
               <div className="flex gap-1 flex-1">
                 {(['smooth', 'ridged'] as const).map(t => (
-                  <button key={t} onClick={() => setNoiseType(t)} aria-pressed={noiseType === t} className={`flex-1 px-1 py-0.5 rounded text-[10px] capitalize transition-all ${noiseType === t ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>{t}</button>
+                  <button key={t} onClick={() => setNoiseType(t)} aria-pressed={noiseType === t} className={choice(noiseType === t, 'flex-1 capitalize')}>{t}</button>
                 ))}
               </div>
             </div>
@@ -979,18 +956,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <button
                   onClick={() => setRadialBurstMode('burst')}
                   aria-pressed={radialBurstMode === 'burst'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    radialBurstMode === 'burst' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(radialBurstMode === 'burst', 'flex-1')}
                 >
                   Burst
                 </button>
                 <button
                   onClick={() => setRadialBurstMode('sweep')}
                   aria-pressed={radialBurstMode === 'sweep'}
-                  className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                    radialBurstMode === 'sweep' ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                  }`}
+                  className={choice(radialBurstMode === 'sweep', 'flex-1')}
                 >
                   Sweep
                 </button>

@@ -3,6 +3,7 @@ import { CaretDown, Plus, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, T
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { SliderRow } from './SliderRow';
+import { choice } from './choice';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
@@ -369,7 +370,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               Flattening to one level removes that discrepancy. */}
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
             title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
             aria-label={isMicActive ? 'Turn Mic Off' : 'Turn Mic On'}
           >
@@ -417,7 +418,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               separate "load a file instead" action. */}
           <button
             onClick={onAudioFileClick}
-            className="flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
+            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
             title="Load Audio File"
             aria-label="Load Audio File"
           >
@@ -435,7 +436,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
           <p className="text-[10px] text-red-300 leading-snug">{micError}</p>
           <button
             onClick={() => setMicError(null)}
-            className="text-red-300/70 hover:text-red-300 transition-colors flex-shrink-0"
+            className="relative wav-hit text-red-300/70 hover:text-red-300 transition-colors flex-shrink-0"
             title="Dismiss"
             aria-label="Dismiss"
           >
@@ -464,7 +465,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     onClick={() => handleStylePresetPick(preset.name)}
                     aria-pressed={selectedPresetName === preset.name}
                     title={preset.title}
-                    className={`px-2 py-1 text-[10px] border transition-all ${selectedPresetName === preset.name ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                    className={choice(selectedPresetName === preset.name)}
                   >{preset.name}</button>
                 ))}
               </div>
@@ -476,7 +477,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                       key={preset.name}
                       onClick={() => handleStylePresetPick(preset.name)}
                       aria-pressed={selectedPresetName === preset.name}
-                      className={`px-2 py-1 text-[10px] border transition-all ${selectedPresetName === preset.name ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                      className={choice(selectedPresetName === preset.name)}
                     >{preset.name}</button>
                   ))}
                 </div>
@@ -586,7 +587,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </div>
                 </div>
                 <input type="number" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
-                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} aria-pressed={subBassBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${subBassBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} aria-pressed={subBassBeatSync} className={choice(subBassBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Bass */}
@@ -600,7 +601,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </div>
                 </div>
                 <input type="number" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
-                <button onClick={() => setBassBeatSync(!bassBeatSync)} aria-pressed={bassBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${bassBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setBassBeatSync(!bassBeatSync)} aria-pressed={bassBeatSync} className={choice(bassBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Mids */}
@@ -614,7 +615,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </div>
                 </div>
                 <input type="number" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
-                <button onClick={() => setMidsBeatSync(!midsBeatSync)} aria-pressed={midsBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${midsBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setMidsBeatSync(!midsBeatSync)} aria-pressed={midsBeatSync} className={choice(midsBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Treble */}
@@ -628,7 +629,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </div>
                 </div>
                 <input type="number" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
-                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} aria-pressed={trebleBeatSync} className={`w-full py-0.5 rounded text-[10px] font-semibold transition-all ${trebleBeatSync ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>BEAT</button>
+                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} aria-pressed={trebleBeatSync} className={choice(trebleBeatSync, 'w-full')}>BEAT</button>
               </div>
             </div>
 
@@ -641,10 +642,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <div className="flex flex-col gap-2">
               <label className="text-[10px] text-white/80 font-medium">FX on Beat</label>
               <div className="flex gap-1.5">
-                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={`flex-1 py-1 rounded text-[10px] font-semibold transition-all ${zoomBeatEnabled ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>Zoom</button>
-                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={`flex-1 py-1 rounded text-[10px] font-semibold transition-all ${shakeBeatEnabled ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>Shake</button>
-                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={`flex-1 py-1 rounded text-[10px] font-semibold transition-all ${contrastBeatEnabled ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>Contrast</button>
-                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" aria-pressed={paletteBeatEnabled} className={`flex-1 py-1 rounded text-[10px] font-semibold transition-all ${paletteBeatEnabled ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>Palette</button>
+                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={choice(zoomBeatEnabled, 'flex-1')}>Zoom</button>
+                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={choice(shakeBeatEnabled, 'flex-1')}>Shake</button>
+                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={choice(contrastBeatEnabled, 'flex-1')}>Contrast</button>
+                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" aria-pressed={paletteBeatEnabled} className={choice(paletteBeatEnabled, 'flex-1')}>Palette</button>
               </div>
             </div>
 
@@ -680,7 +681,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                               : [...prev, { id: `${Date.now()}-${Math.random()}`, param, band: q.band, amount: q.amount }])}
                             aria-pressed={!!existing}
                             title={`${existing ? 'Remove' : 'Add'} a binding: ${q.label}`}
-                            className={`px-2 py-1 text-[10px] border transition-all ${existing ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`}
+                            className={choice(!!existing)}
                           >
                             {q.label}
                           </button>
@@ -715,7 +716,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                           />
                           <button
                             onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
-                            className="text-white/50 hover:text-white transition-all"
+                            className="relative wav-hit text-white/50 hover:text-white transition-all"
                             title="Remove binding"
                             aria-label="Remove binding"
                           >

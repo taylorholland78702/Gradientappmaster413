@@ -4,6 +4,7 @@ import {
   type ColorBlend, DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
 } from '../utils/color';
 import { SliderRow } from './SliderRow';
+import { choice } from './choice';
 
 // How close two neighboring stops may get — stops must stay in order (the
 // shader and CPU lookups walk them left to right), and a sliver of space keeps
@@ -98,8 +99,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   const matchesEase = (f: (t: number) => number) =>
     n >= 2 && current.every((v, i) => Math.abs(v - f(i / (n - 1))) < 0.005);
 
-  const chip = (active: boolean) =>
-    `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`;
+  const chip = (active: boolean) => choice(active);
 
   const sliderRow = (label: string, value: number, set: (v: number) => void, hint: string) => (
     <SliderRow

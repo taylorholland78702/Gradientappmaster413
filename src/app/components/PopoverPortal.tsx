@@ -19,7 +19,7 @@ export function PopoverPortal({ anchor, popoverRef, isMobile, children }: {
       // Fixed flush to the rail now (like the drawer) instead of
       // floating free — square on the edge touching the rail, rounded
       // on the edge facing the canvas.
-      className="fixed z-50 shadow-sm bg-black/75 rounded-none"
+      className={`fixed z-50 shadow-sm bg-black/75 rounded-none ${isMobile ? 'wav-mobile' : ''}`}
       style={{
         top: anchor.top,
         bottom: anchor.bottom,

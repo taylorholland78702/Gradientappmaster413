@@ -406,7 +406,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
         <div className="flex items-stretch border-b border-white/50">
           <button
             onClick={() => setIsAddingPreset(true)}
-            className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"
+            className="wav-choice flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"
           >
             <Plus weight="regular" className="w-3.5 h-3.5" />
             Preset
@@ -414,7 +414,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
           <div className="w-px bg-white/50" />
           <button
             onClick={() => setIsAddingFolder(true)}
-            className="flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"
+            className="wav-choice flex items-center justify-center gap-1 flex-1 px-3 py-1.5 text-[10px] text-white hover:bg-white/15 transition-colors font-semibold"
           >
             <FolderPlus weight="regular" className="w-3.5 h-3.5" />
             Folder

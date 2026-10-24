@@ -1,5 +1,6 @@
 import { Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC, AUTO_SHUFFLE_SCOPES, type AutoShuffleScope } from '../constants/autoShuffle';
+import { ChoiceChips } from './choice';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
 
 // The Auto Shuffle popout: on/off, interval slider, what to change, and quick interval presets.
@@ -48,33 +49,18 @@ export function AutoShufflePopout({
           aria-label="Auto Shuffle interval in seconds"
         />
       </div>
-      <div className="flex gap-1" role="group" aria-label="What Auto Shuffle changes">
-        {AUTO_SHUFFLE_SCOPES.map(o => (
-          <button
-            key={o.id}
-            onClick={() => setAutoShuffleScope(o.id)}
-            aria-pressed={autoShuffleScope === o.id}
-            title={o.hint}
-            className="flex-1 py-1 text-[10px] transition-all"
-            style={autoShuffleScope === o.id
-              ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-              : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-          >{o.label}</button>
-        ))}
-      </div>
-      <div className="flex gap-1" role="group" aria-label="Auto Shuffle interval presets">
-        {[5, 15, 60, 300].map(sec => (
-          <button
-            key={sec}
-            onClick={() => setAutoShuffleIntervalSec(sec)}
-            aria-pressed={autoShuffleIntervalSec === sec}
-            className="flex-1 py-1 text-[10px] transition-all"
-            style={autoShuffleIntervalSec === sec
-              ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-              : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-          >{formatAutoShuffleInterval(sec)}</button>
-        ))}
-      </div>
+      <ChoiceChips
+        ariaLabel="What Auto Shuffle changes"
+        options={AUTO_SHUFFLE_SCOPES.map(o => ({ id: o.id, label: o.label, title: o.hint }))}
+        value={autoShuffleScope}
+        onChange={setAutoShuffleScope}
+      />
+      <ChoiceChips
+        ariaLabel="Auto Shuffle interval presets"
+        options={[5, 15, 60, 300].map(sec => ({ id: sec, label: formatAutoShuffleInterval(sec) }))}
+        value={autoShuffleIntervalSec}
+        onChange={setAutoShuffleIntervalSec}
+      />
       <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
   </>);
 }

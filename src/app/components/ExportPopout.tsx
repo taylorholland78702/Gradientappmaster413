@@ -4,6 +4,7 @@ import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
   type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
 } from '../constants/exportOptions';
+import { ChoiceChips, choice } from './choice';
 import { formatPalette, embedSnippet, type PaletteFormat, type EmbedKind } from '../utils/shareExport';
 
 // The "Save & share" popout: PNG size/aspect, video take, embed snippet and palette copy.
@@ -30,24 +31,12 @@ export function ExportPopout({
       ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void; hint: string }[]).map(g => (
         <div key={g.label} className="flex flex-col gap-1" title={g.hint}>
           <span className="text-[10px] text-white/60">{g.label}</span>
-          <div className="flex flex-wrap gap-1" role="group" aria-label={`Export ${g.label.toLowerCase()}`}>
-            {g.options.map(o => (
-              <button
-                key={o.id}
-                onClick={() => g.set(o.id as never)}
-                aria-pressed={g.value === o.id}
-                className="px-2 py-1 text-[10px] transition-all"
-                style={g.value === o.id
-                  ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                  : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{o.label}</button>
-            ))}
-          </div>
+          <ChoiceChips ariaLabel={`Export ${g.label.toLowerCase()}`} options={g.options} value={g.value} onChange={g.set as (id: string) => void} />
         </div>
       ))}
       <button
         onClick={() => { exportAsPNG(); closePopover(); }}
-        className="py-1.5 text-[11px] font-semibold transition-all"
+        className="wav-choice text-[11px] font-semibold transition-all"
         style={{ backgroundColor: '#ffffff', color: '#000000' }}
       >Save PNG</button>
       {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
@@ -57,24 +46,11 @@ export function ExportPopout({
           { label: 'Size', options: VIDEO_SIZES, value: videoSize, set: setVideoSize },
           { label: 'Length', options: VIDEO_LENGTHS, value: videoLength, set: setVideoLength },
         ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void }[]).map(g => (
-          <div key={g.label} className="flex flex-wrap gap-1" role="group" aria-label={`Video ${g.label.toLowerCase()}`}>
-            {g.options.map(o => (
-              <button
-                key={o.id}
-                onClick={() => g.set(o.id as never)}
-                aria-pressed={g.value === o.id}
-                disabled={isRecording}
-                className="flex-1 px-1 py-1 text-[10px] transition-all disabled:opacity-50"
-                style={g.value === o.id
-                  ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 }
-                  : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
-              >{o.label}</button>
-            ))}
-          </div>
+          <ChoiceChips key={g.label} ariaLabel={`Video ${g.label.toLowerCase()}`} options={g.options} value={g.value} onChange={g.set as (id: string) => void} disabled={isRecording} />
         ))}
         <button
           onClick={startVideoTake}
-          className="py-1.5 text-[11px] font-semibold transition-all"
+          className="wav-choice text-[11px] font-semibold transition-all"
           style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
         >{isRecording ? 'Stop recording' : 'Start recording'}</button>
         {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
@@ -87,8 +63,7 @@ export function ExportPopout({
               key={kind}
               onClick={() => copyText(`embed-${kind}`, embedSnippet(currentPlayerUrl(), kind))}
               title={kind === 'box' ? 'A responsive 16:9 frame' : 'Pinned behind the whole page'}
-              className="flex-1 px-2 py-1 text-[10px] transition-all"
-              style={copiedKey === `embed-${kind}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+              className={choice(copiedKey === `embed-${kind}`, 'flex-1')}
             >{copiedKey === `embed-${kind}` ? 'Copied' : label}</button>
           ))}
         </div>
@@ -98,8 +73,7 @@ export function ExportPopout({
             <button
               key={fmt}
               onClick={() => copyText(`palette-${fmt}`, formatPalette(gradientColors, paletteStops, fmt))}
-              className="flex-1 px-1 py-1 text-[10px] transition-all"
-              style={copiedKey === `palette-${fmt}` ? { backgroundColor: '#ffffff', color: '#000000', fontWeight: 700 } : { backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#ffffff' }}
+              className={choice(copiedKey === `palette-${fmt}`, 'flex-1')}
             >{copiedKey === `palette-${fmt}` ? 'Copied' : label}</button>
           ))}
         </div>

@@ -1741,8 +1741,8 @@ export function InteractiveGradient() {
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
       // The export popout is tall and its button sits near the bottom of the rail, so
       // it grows upward from the button's bottom edge instead of downward off-screen.
-      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 200 });
-      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 200 });
+      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
+      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 240 });
     }
   };
   const openExportPopover = (triggerEl?: HTMLElement | null) => {
@@ -3513,7 +3513,7 @@ export function InteractiveGradient() {
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
       {showWavHint && !activeTab && railRect && (
         <div
-          className="fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px]"
+          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
           style={isMobile
             ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
             : { left: railRect.right + 12, top: railRect.top }}
@@ -3523,7 +3523,7 @@ export function InteractiveGradient() {
           </span>
           <button
             onClick={dismissWavHint}
-            className="text-white/50 hover:text-white transition-all flex-shrink-0"
+            className="relative wav-hit text-white/50 hover:text-white transition-all flex-shrink-0"
             title="Dismiss"
             aria-label="Dismiss hint"
           >

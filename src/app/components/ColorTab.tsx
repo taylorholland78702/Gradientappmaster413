@@ -7,6 +7,7 @@ import { WAV_MOODS } from '../constants/gradientEffects';
 import { extractPalette } from '../utils/extractPalette';
 import { PaletteStopsEditor } from './PaletteStopsEditor';
 import { SliderRow } from './SliderRow';
+import { choice } from './choice';
 
 // Keeps the palette a valid gradient (at least 2 stops) and keeps the
 // swatch row from growing unboundedly if someone just holds down +.
@@ -176,7 +177,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           section below it). */}
       <button
         onClick={() => { if (keepFamily) { shuffleColors(); return; } saveCurrentState(); setTargetColors(gradientColors.map(() => randomColor())); }}
-        className="w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
+        className="wav-choice w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
         title="Shuffle Colors"
         aria-label="Shuffle Colors"
       ><Shuffle weight="regular" className="w-4 h-4" /></button>
@@ -190,7 +191,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               onClick={() => setKeepFamily(val)}
               aria-pressed={keepFamily === val}
               title={hint}
-              className={`px-2 h-8 lg:h-5 text-[10px] transition-all ${keepFamily === val ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+              className={choice(keepFamily === val)}
             >{label}</button>
           ))}
         </div>
@@ -201,14 +202,14 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
       <section className="w-full px-1.5 flex flex-col gap-2" aria-label="Palette">
         <div className="flex items-center justify-between">
           <h3 className="text-[10px] text-white/80 font-medium">Palette</h3>
-          <div className="flex gap-0.5" role="group" aria-label="Number of palette colors">
+          <div className="flex gap-1" role="group" aria-label="Number of palette colors">
             {COUNT_CHOICES.map(n => (
               <button
                 key={n}
                 onClick={() => resampleTo(n)}
                 aria-pressed={gradientColors.length === n}
                 title={`Re-cut the palette to ${n} colors`}
-                className={`w-8 h-8 lg:w-5 lg:h-5 text-[10px] transition-all ${gradientColors.length === n ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+                className={choice(gradientColors.length === n, 'wav-choice-sq')}
               >{n}</button>
             ))}
           </div>
@@ -223,14 +224,14 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                 onChange={(e) => setSwatch(i, e.target.value)}
                 title={`Color ${i + 1}`}
                 aria-label={`Palette color ${i + 1}`}
-                className="w-8 h-8 lg:w-6 lg:h-6 rounded-none cursor-pointer border border-white/20 bg-transparent p-0"
+                className="w-11 h-11 lg:w-6 lg:h-6 rounded-none cursor-pointer border border-white/20 bg-transparent p-0"
               />
               {gradientColors.length > MIN_PALETTE_COLORS && (
                 <button
                   onClick={() => removeSwatch(i)}
                   title={`Remove color ${i + 1}`}
                   aria-label={`Remove color ${i + 1}`}
-                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-white/30 text-white flex items-center justify-center hover:bg-red-500/70 transition-colors"
+                  className="wav-hit absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-white/30 text-white flex items-center justify-center hover:bg-red-500/70 transition-colors"
                 ><X weight="bold" className="w-2 h-2" /></button>
               )}
             </div>
@@ -240,7 +241,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               onClick={addSwatch}
               title="Add color"
               aria-label="Add color"
-              className="w-8 h-8 lg:w-6 lg:h-6 flex items-center justify-center border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white/50 transition-colors"
+              className="wav-choice wav-choice-sq w-11 h-11 lg:w-6 lg:h-6 flex items-center justify-center border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white/50 transition-colors"
             ><Plus weight="bold" className="w-3 h-3" /></button>
           )}
         </div>
@@ -257,7 +258,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                 key={id}
                 onClick={() => setStartFrom(id)}
                 aria-pressed={startFrom === id}
-                className={`px-2 h-8 lg:px-1.5 lg:h-5 text-[10px] transition-all ${startFrom === id ? 'bg-white text-black font-bold' : 'bg-black/25 text-white/80 hover:bg-white/15'}`}
+                className={choice(startFrom === id)}
               >{label}</button>
             ))}
           </div>
@@ -345,7 +346,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
               onClick={() => setColorBlend(value)}
               aria-pressed={colorBlend === value}
               title={hint}
-              className={`flex-1 text-[10px] py-1 transition-all ${colorBlend === value ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+              className={choice(colorBlend === value, 'flex-1')}
             >{label}</button>
           ))}
         </div>

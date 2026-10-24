@@ -6,6 +6,7 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
+import { choice } from './choice';
 
 export interface EffectsTabProps {
   isMobile: boolean;
@@ -232,19 +233,19 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 }
               }}
               aria-pressed={isMultiFxMode}
-              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
               onClick={randomizeEffects}
-              className="flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
+              className="wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
               title="Shuffle Effects (Shift+F)"
               aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
-              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
             >RESET</button>
           </div>
           {(() => {
@@ -294,7 +295,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-white/50 ${isLeftColumn ? 'border-r border-white/50' : ''} ${
+                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-white/50 ${isLeftColumn ? 'border-r border-white/50' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
@@ -334,9 +335,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <button
                       onClick={() => setAsciiColor(!asciiColor)}
                       aria-pressed={asciiColor}
-                      className={`shrink-0 px-2 py-0.5 text-[10px] rounded transition-all ${
-                        asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                      }`}
+                      className={choice(asciiColor, 'shrink-0')}
                     >
                       {asciiColor ? 'ON' : 'OFF'}
                     </button>
@@ -360,48 +359,32 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={!collapsedEffects.has('blur')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
                         aria-pressed={blurType === 'gaussian'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'gaussian'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'gaussian', 'flex-1')}
                       >
                         Gaussian
                       </button>
                       <button
                         onClick={() => setBlurType('motion')}
                         aria-pressed={blurType === 'motion'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'motion'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'motion', 'flex-1')}
                       >
                         Motion
                       </button>
                       <button
                         onClick={() => setBlurType('radial')}
                         aria-pressed={blurType === 'radial'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'radial'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'radial', 'flex-1')}
                       >
                         Radial
                       </button>
                       <button
                         onClick={() => setBlurType('zoom')}
                         aria-pressed={blurType === 'zoom'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'zoom'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'zoom', 'flex-1')}
                       >
                         Zoom
                       </button>
@@ -460,22 +443,14 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setDitherType('bayer')}
                         aria-pressed={ditherType === 'bayer'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          ditherType === 'bayer'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(ditherType === 'bayer', 'flex-1')}
                       >
                         Bayer
                       </button>
                       <button
                         onClick={() => setDitherType('floyd-steinberg')}
                         aria-pressed={ditherType === 'floyd-steinberg'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          ditherType === 'floyd-steinberg'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(ditherType === 'floyd-steinberg', 'flex-1')}
                       >
                         Floyd-Steinberg
                       </button>
@@ -532,9 +507,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     <button
                       onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
                       aria-pressed={duotoneThreeColor}
-                      className={`px-2 py-0.5 rounded text-[10px] transition-all ${
-                        duotoneThreeColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                      }`}
+                      className={choice(duotoneThreeColor)}
                     >
                       {duotoneThreeColor ? 'ON' : 'OFF'}
                     </button>
@@ -638,48 +611,32 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={!collapsedEffects.has('grain')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setGrainType('fine')}
                         aria-pressed={grainType === 'fine'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'fine'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'fine', 'flex-1')}
                       >
                         Fine
                       </button>
                       <button
                         onClick={() => setGrainType('medium')}
                         aria-pressed={grainType === 'medium'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'medium'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'medium', 'flex-1')}
                       >
                         Med
                       </button>
                       <button
                         onClick={() => setGrainType('coarse')}
                         aria-pressed={grainType === 'coarse'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'coarse'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'coarse', 'flex-1')}
                       >
                         Coarse
                       </button>
                       <button
                         onClick={() => setGrainType('film')}
                         aria-pressed={grainType === 'film'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'film'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'film', 'flex-1')}
                       >
                         Film
                       </button>
@@ -708,15 +665,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={!collapsedEffects.has('grid-effect')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setGridRotationDirection('none')}
                         aria-pressed={gridRotationDirection === 'none'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'none'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'none', 'flex-1')}
                       >
                         OFF
                       </button>
@@ -725,11 +678,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         aria-pressed={gridRotationDirection === 'clockwise'}
                         aria-label="Clockwise"
                         title="Clockwise"
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'clockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'clockwise', 'flex-1')}
                       >
                         ⟳
                       </button>
@@ -738,11 +687,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         aria-pressed={gridRotationDirection === 'counterclockwise'}
                         aria-label="Counterclockwise"
                         title="Counterclockwise"
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'counterclockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'counterclockwise', 'flex-1')}
                       >
                         ⟲
                       </button>
@@ -771,11 +716,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setHalftoneMove(!halftoneMove)}
                         aria-pressed={halftoneMove}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          halftoneMove
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(halftoneMove)}
                       >
                         {halftoneMove ? 'ON' : 'OFF'}
                       </button>
@@ -785,11 +726,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setHalftoneCMYK(!halftoneCMYK)}
                         aria-pressed={halftoneCMYK}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          halftoneCMYK
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(halftoneCMYK)}
                       >
                         {halftoneCMYK ? 'ON' : 'OFF'}
                       </button>
@@ -828,7 +765,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
                         <button key={mode} onClick={() => setMirrorMode(mode)}
                           aria-pressed={mirrorMode === mode}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>
+                          className={choice(mirrorMode === mode, 'flex-1')}>
                           {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
                         </button>
                       ))}
@@ -862,7 +799,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           key={mode}
                           onClick={() => setPhotoBlendMode(mode)}
                           aria-pressed={photoBlendMode === mode}
-                          className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                          className={choice(photoBlendMode === mode, 'flex-1')}
                         >{mode === 'source-over' ? 'Normal' : mode[0].toUpperCase() + mode.slice(1)}</button>
                       ))}
                     </div>
@@ -892,44 +829,28 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
                         aria-pressed={slitScanDirection === 'horizontal'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'horizontal'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Horz
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('vertical')}
                         aria-pressed={slitScanDirection === 'vertical'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'vertical'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Vert
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('radial')}
                         aria-pressed={slitScanDirection === 'radial'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'radial'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'radial', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Radial
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('circular')}
                         aria-pressed={slitScanDirection === 'circular'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'circular'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'circular', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Circle
                       </button>
@@ -971,11 +892,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           key={s.id}
                           onClick={() => { setWatercolorStyle(s.id); setWatercolorBleed(s.bleed); setWatercolorGrain(s.grain); }}
                           aria-pressed={watercolorStyle === s.id}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                            watercolorStyle === s.id
-                              ? 'bg-white text-black font-bold'
-                              : 'bg-black/25 text-white hover:bg-white/15'
-                          }`}
+                          className={choice(watercolorStyle === s.id, 'flex-1')}
                         >
                           {s.label}
                         </button>
