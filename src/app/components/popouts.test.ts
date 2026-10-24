@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ExportPopout } from './ExportPopout';
+import { RecordPopout } from './RecordPopout';
 import { AutoShufflePopout } from './AutoShufflePopout';
 
 const noop = () => {};
@@ -11,11 +12,14 @@ const exportProps = (over: Partial<Parameters<typeof ExportPopout>[0]> = {}) => 
   exportSize: 'screen' as const, setExportSize: noop,
   exportAspect: 'screen' as const, setExportAspect: noop,
   exportAsPNG: noop, closePopover: noop,
+  copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
+  ...over,
+});
+
+const recordProps = (over: Partial<Parameters<typeof RecordPopout>[0]> = {}) => ({
   videoSize: 'screen' as const, setVideoSize: noop,
   videoLength: 'manual' as const, setVideoLength: noop,
   isRecording: false, startVideoTake: noop,
-  copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
-  gradientColors: [{ r: 255, g: 0, b: 0 }, { r: 0, g: 0, b: 255 }], paletteStops: null,
   ...over,
 });
 
@@ -30,43 +34,66 @@ const groupLabels = (html: string, label: string) => {
 describe('ExportPopout', () => {
   const html = renderToStaticMarkup(createElement(ExportPopout, exportProps()));
 
-  it('shows 4K in the PNG size row as well as the video size row', () => {
+  it('shows 4K in the PNG size row', () => {
     expect(groupLabels(html, 'Export size')).toEqual(['Screen', '1080p', '4K', '8K']);
-    expect(groupLabels(html, 'Video size')).toEqual(['Screen', '720p', '1080p', '4K']);
   });
 
-  it('shows the PNG aspect and video length rows', () => {
+  it('shows the PNG aspect row', () => {
     expect(groupLabels(html, 'Export aspect')).toEqual(['Screen', '1:1', '4:5', '16:9', '9:16']);
-    expect(groupLabels(html, 'Video length')).toEqual(['Until I stop', '5s', '10s', '30s']);
   });
 
-  it('has Save PNG, the recording button, embed and palette copy buttons, and no loop export', () => {
+  it('has Save PNG and the embed buttons, and nothing about recording, palettes or loops', () => {
     expect(html).toContain('Save PNG');
-    expect(html).toContain('Start recording');
     expect(html).toContain('Box 16:9');
-    for (const f of ['Hex', 'CSS', 'Tailwind', 'JSON']) expect(html).toContain(`>${f}<`);
+    expect(html).toContain('Background');
+    expect(html).not.toContain('recording');
+    expect(html).not.toContain('Video');
+    expect(html).not.toContain('Copy palette');
     expect(html.toLowerCase()).not.toContain('seamless loop');
   });
 
-  it('marks the selected sizes pressed', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ exportSize: '4k', videoSize: '4k' })));
-    expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(2);
-    expect(h).toContain('4K is heavy');
+  it('marks the selected size pressed', () => {
+    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ exportSize: '4k' })));
+    expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(1);
   });
 
-  it('shows the key hint only on desktop, and disables the video choices while recording', () => {
+  it('shows the key hint only on desktop', () => {
     expect(html).toContain('The S key saves');
     const mobile = renderToStaticMarkup(createElement(ExportPopout, exportProps({ isMobile: true })));
     expect(mobile).not.toContain('The S key saves');
-    const rec = renderToStaticMarkup(createElement(ExportPopout, exportProps({ isRecording: true })));
-    expect(rec).toContain('Stop recording');
-    expect(groupLabels(rec, 'Video size').length).toBe(4);
-    expect(rec).toMatch(/disabled=""[^>]*>720p/);
   });
 
-  it('shows Copied on the palette format that was just copied', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ copiedKey: 'palette-css' })));
+  it('shows Copied on the embed button that was just copied', () => {
+    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ copiedKey: 'embed-box' })));
     expect(h).toContain('>Copied<');
+  });
+});
+
+describe('RecordPopout', () => {
+  const html = renderToStaticMarkup(createElement(RecordPopout, recordProps()));
+
+  it('offers the video sizes, with 4K, and the take lengths', () => {
+    expect(groupLabels(html, 'Video size')).toEqual(['Screen', '720p', '1080p', '4K']);
+    expect(groupLabels(html, 'Video length')).toEqual(['Until I stop', '5s', '10s', '30s']);
+  });
+
+  it('has a Start recording button', () => {
+    expect(html).toContain('Start recording');
+    expect(html).not.toContain('4K is heavy');
+  });
+
+  it('warns that 4K is heavy and marks it pressed', () => {
+    const h = renderToStaticMarkup(createElement(RecordPopout, recordProps({ videoSize: '4k' })));
+    expect(h).toContain('4K is heavy');
+    expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(1);
+  });
+
+  it('turns into Stop recording and locks the choices while a take is running', () => {
+    const rec = renderToStaticMarkup(createElement(RecordPopout, recordProps({ isRecording: true })));
+    expect(rec).toContain('Stop recording');
+    expect(rec).not.toContain('Start recording');
+    expect(rec).toMatch(/disabled=""[^>]*>720p/);
+    expect(rec).toMatch(/disabled=""[^>]*>10s/);
   });
 });
 

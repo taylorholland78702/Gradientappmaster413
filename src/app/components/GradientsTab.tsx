@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, Shuffle } from '@phosphor-icons/react';
-import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, GRADIENT_DESCRIPTIONS, familyOf } from '../constants/gradientEffects';
+import { type ColorRGB, type GradientType, FULL_GRADIENT_TYPES, STYLE_FIELD_GRADIENT_TYPES, GRADIENT_FAMILIES, familyOf } from '../constants/gradientEffects';
 import { GRADIENT_LOOKS, type GradientLook } from '../constants/gradientLooks';
 import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
@@ -418,9 +418,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
 
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
-        {GRADIENT_DESCRIPTIONS[gradientType] && (
-          <p className="w-full px-1.5 pt-1.5 text-[10px] leading-snug text-wav-text-2">{GRADIENT_DESCRIPTIONS[gradientType]}</p>
-        )}
         {currentFamily && (
           <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
             <label className="text-[10px] text-white">Mode:</label>

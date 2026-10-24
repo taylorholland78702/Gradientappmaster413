@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Shuffle, X, Camera, Infinity as InfinityIcon } from '@phosphor-icons/react';
+import { Shuffle, X, Camera, Circle, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useTouchGestures } from '../hooks/useTouchGestures';
@@ -143,6 +143,7 @@ import { useWindmillState } from '../hooks/state/useWindmillState';
 import { AboutPanel } from './AboutPanel';
 import { PopoverPortal } from './PopoverPortal';
 import { ExportPopout } from './ExportPopout';
+import { RecordPopout } from './RecordPopout';
 import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
@@ -1704,7 +1705,7 @@ export function InteractiveGradient() {
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   // Which popout the shared anchor below is showing.
-  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
+  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export' | 'record'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -1716,7 +1717,7 @@ export function InteractiveGradient() {
   // mobile opens it flush above the (bottom-docked) panel at full width
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
-  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' = 'autoShuffle') => {
+  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' | 'record' = 'autoShuffle') => {
     // Pressing the button of the popout that's already open closes it (the other
     // button's popout swaps in instead of just closing).
     if (autoShufflePopoverAnchor && popoverMode === mode) { setAutoShufflePopoverAnchor(null); return; }
@@ -1741,12 +1742,15 @@ export function InteractiveGradient() {
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
       // The export popout is tall and its button sits near the bottom of the rail, so
       // it grows upward from the button's bottom edge instead of downward off-screen.
-      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
+      if (mode === 'export' || mode === 'record') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
       else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 240 });
     }
   };
   const openExportPopover = (triggerEl?: HTMLElement | null) => {
     openAutoShufflePopover(triggerEl, 'export');
+  };
+  const openRecordPopover = (triggerEl?: HTMLElement | null) => {
+    openAutoShufflePopover(triggerEl, 'record');
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
   // closes whatever tab drawer/Auto Shuffle popover happened to be open
@@ -1787,31 +1791,51 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    return (
-      <PopoverPortal
-        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
-        title={popoverMode === 'export' ? 'Save & share' : 'Auto Shuffle'}
-        icon={popoverMode === 'export' ? <Camera weight="regular" className="w-4 h-4 shrink-0" /> : <InfinityIcon weight="regular" className="w-4 h-4 shrink-0" />}
-      >
-        {popoverMode === 'export' ? (
+    const closePopover = () => setAutoShufflePopoverAnchor(null);
+    const iconCls = 'w-4 h-4 shrink-0';
+    const popout = {
+      export: {
+        title: 'Save & share',
+        icon: <Camera weight="regular" className={iconCls} />,
+        body: (
           <ExportPopout
             isMobile={isMobile}
             exportSize={exportSize} setExportSize={setExportSize}
             exportAspect={exportAspect} setExportAspect={setExportAspect}
-            exportAsPNG={exportAsPNG} closePopover={() => setAutoShufflePopoverAnchor(null)}
+            exportAsPNG={exportAsPNG} closePopover={closePopover}
+            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
+          />
+        ),
+      },
+      record: {
+        title: 'Record video',
+        icon: <Circle weight="regular" className={iconCls} />,
+        body: (
+          <RecordPopout
             videoSize={videoSize} setVideoSize={setVideoSize}
             videoLength={videoLength} setVideoLength={setVideoLength}
-            isRecording={isRecording} startVideoTake={startVideoTake}
-            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
-            gradientColors={gradientColors} paletteStops={paletteStops}
+            isRecording={isRecording} startVideoTake={() => { startVideoTake(); closePopover(); }}
           />
-        ) : (
+        ),
+      },
+      autoShuffle: {
+        title: 'Auto Shuffle',
+        icon: <InfinityIcon weight="regular" className={iconCls} />,
+        body: (
           <AutoShufflePopout
             isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
             autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
             autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
           />
-        )}
+        ),
+      },
+    }[popoverMode];
+    return (
+      <PopoverPortal
+        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
+        title={popout.title} icon={popout.icon}
+      >
+        {popout.body}
       </PopoverPortal>
     );
   };
@@ -3235,7 +3259,6 @@ export function InteractiveGradient() {
     startMicVisualization, stopMicVisualization,
     onAudioFileClick: handleAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
-    onShuffleAudio: shuffleAudiovisuals,
   };
 
   // The rail (+ its drawer, when a tab is open) is a real docked sidebar
@@ -3263,6 +3286,7 @@ export function InteractiveGradient() {
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
           openExportPopover={openExportPopover}
+          openRecordPopover={openRecordPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}
@@ -3311,6 +3335,7 @@ export function InteractiveGradient() {
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
           openExportPopover={openExportPopover}
+          openRecordPopover={openRecordPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { CaretDown, Plus, Shuffle, Microphone, MicrophoneSlash, X, FloppyDisk, Trash, Check } from '@phosphor-icons/react';
+import React, { useState } from 'react';
+import { CaretDown, Plus, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
 import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { SliderRow } from './SliderRow';
@@ -9,32 +9,6 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
 };
 
-// One-click starting points for common audio/music styles — set the base
-// response shape (sensitivity, per-band multipliers, beat-sync, FX on
-// beat). Modulation bindings are optional: the built-ins leave them
-// untouched (bindings are keyed to a specific gradient's sliders, so a
-// shipped set would do nothing on most gradients), while presets the user
-// saves capture their bindings and put them back when applied.
-interface AudioStylePreset {
-  name: string;
-  bindings?: Omit<AudioBinding, 'id'>[];
-  title: string;
-  masterSensitivity: number;
-  autoGainEnabled: boolean;
-  subBassMultiplier: number;
-  bassMultiplier: number;
-  midsMultiplier: number;
-  trebleMultiplier: number;
-  subBassBeatSync: boolean;
-  bassBeatSync: boolean;
-  midsBeatSync: boolean;
-  trebleBeatSync: boolean;
-  zoomBeatEnabled: boolean;
-  shakeBeatEnabled: boolean;
-  contrastBeatEnabled: boolean;
-  paletteBeatEnabled: boolean;
-}
-
 // One-tap bindings for the active gradient's shared Scale / Speed.
 const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBinding['band']; amount: number }[] = [
   { label: 'Scale ← Bass', target: 'scale', band: 'sub', amount: 0.6 },
@@ -42,130 +16,6 @@ const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBindin
   { label: 'Speed ← Mids', target: 'speed', band: 'mids', amount: 1 },
   { label: 'Speed ← Treble', target: 'speed', band: 'treble', amount: 1.2 },
 ];
-
-const AUDIO_STYLE_PRESETS: AudioStylePreset[] = [
-  {
-    name: 'Bass/EDM', title: 'Bass-Heavy / EDM / Trap — punchy sub and bass, beat-synced zoom and shake',
-    masterSensitivity: 1.8, autoGainEnabled: false,
-    subBassMultiplier: 4, bassMultiplier: 3.5, midsMultiplier: 1, trebleMultiplier: 0.8,
-    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Vocal', title: 'Vocal / Acoustic — mids-forward, gentle sensitivity, no beat-sync so it doesn’t jitter on transients',
-    masterSensitivity: 0.8, autoGainEnabled: true,
-    subBassMultiplier: 0.5, bassMultiplier: 1, midsMultiplier: 2.5, trebleMultiplier: 1.2,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Ambient', title: 'Ambient / Long-form — low sensitivity across all bands, slow palette cycling',
-    masterSensitivity: 0.5, autoGainEnabled: true,
-    subBassMultiplier: 0.8, bassMultiplier: 0.8, midsMultiplier: 0.8, trebleMultiplier: 0.8,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
-  },
-  {
-    name: 'Podcast', title: 'Podcast / Speech — mids-only reactivity, everything else damped so plosives don’t spike the visuals',
-    masterSensitivity: 0.6, autoGainEnabled: true,
-    subBassMultiplier: 0.1, bassMultiplier: 0.2, midsMultiplier: 2, trebleMultiplier: 0.5,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Rock', title: 'High-Energy / Rock — broad-band sensitivity, punchy bass and treble',
-    masterSensitivity: 2, autoGainEnabled: false,
-    subBassMultiplier: 2, bassMultiplier: 3, midsMultiplier: 2, trebleMultiplier: 3,
-    subBassBeatSync: false, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: true,
-    zoomBeatEnabled: false, shakeBeatEnabled: true, contrastBeatEnabled: true, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Hip-Hop', title: 'Hip-Hop / Trap — heavy sub/bass with sharp beat-synced hits on the low end',
-    masterSensitivity: 1.6, autoGainEnabled: false,
-    subBassMultiplier: 3.5, bassMultiplier: 3, midsMultiplier: 1.5, trebleMultiplier: 1,
-    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: true, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Techno', title: 'Techno / House — steady four-on-the-floor kick sync, mid sensitivity, cycling palette',
-    masterSensitivity: 1.4, autoGainEnabled: false,
-    subBassMultiplier: 3, bassMultiplier: 2.5, midsMultiplier: 1.5, trebleMultiplier: 1.5,
-    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: true, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
-  },
-  {
-    name: 'Dubstep', title: 'Dubstep / DnB — massive bass drops, aggressive beat-synced zoom and shake',
-    masterSensitivity: 2.2, autoGainEnabled: false,
-    subBassMultiplier: 5, bassMultiplier: 4, midsMultiplier: 1.5, trebleMultiplier: 2,
-    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: false, trebleBeatSync: true,
-    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Metal', title: 'Metal — extreme energy across every band, aggressive beat-sync everywhere',
-    masterSensitivity: 2.5, autoGainEnabled: false,
-    subBassMultiplier: 3, bassMultiplier: 4, midsMultiplier: 3, trebleMultiplier: 4,
-    subBassBeatSync: true, bassBeatSync: true, midsBeatSync: true, trebleBeatSync: true,
-    zoomBeatEnabled: true, shakeBeatEnabled: true, contrastBeatEnabled: true, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Jazz', title: 'Jazz — mids/treble emphasis for horns and cymbals, moderate sensitivity, no harsh beat-sync',
-    masterSensitivity: 1, autoGainEnabled: true,
-    subBassMultiplier: 0.6, bassMultiplier: 1.2, midsMultiplier: 2, trebleMultiplier: 1.8,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Classical', title: 'Classical / Orchestral — wide dynamic range, low sensitivity, gentle response, no beat-sync so legato passages stay smooth',
-    masterSensitivity: 0.6, autoGainEnabled: true,
-    subBassMultiplier: 0.4, bassMultiplier: 0.8, midsMultiplier: 1.5, trebleMultiplier: 1.3,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: false,
-  },
-  {
-    name: 'Lo-fi', title: 'Lo-fi / Chillhop — soft, low sensitivity, gentle bass, slow palette cycling',
-    masterSensitivity: 0.7, autoGainEnabled: true,
-    subBassMultiplier: 1.2, bassMultiplier: 1, midsMultiplier: 0.9, trebleMultiplier: 0.6,
-    subBassBeatSync: false, bassBeatSync: false, midsBeatSync: false, trebleBeatSync: false,
-    zoomBeatEnabled: false, shakeBeatEnabled: false, contrastBeatEnabled: false, paletteBeatEnabled: true,
-  },
-];
-
-// User-saved presets, capturing whatever the panel's current live settings
-// are at save time — stored locally rather than through the app's
-// Firestore-backed preset system (usePresets.ts), since these are tied to
-// the user's own mic/speaker setup rather than a "look" worth syncing
-// across devices. `custom: true` distinguishes them from the curated
-// built-ins above so the dropdown can group them and only offer
-// update/delete on the ones the user actually owns.
-type CustomAudioStylePreset = AudioStylePreset & { custom: true };
-const CUSTOM_PRESETS_KEY = 'wav-custom-audio-style-presets';
-
-function loadCustomPresets(): CustomAudioStylePreset[] {
-  try {
-    const raw = localStorage.getItem(CUSTOM_PRESETS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCustomPresets(presets: CustomAudioStylePreset[]) {
-  try {
-    localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(presets));
-  } catch (err) {
-    // Was dev-only console.warn — unlike usePresets.ts's safeSetLocalStorage,
-    // a user hitting a full localStorage quota here got no indication their
-    // custom audio preset silently failed to save and would vanish on
-    // reload. Same alert() pattern as that sibling save path.
-    console.error('Failed to persist custom audio style presets:', err);
-    alert(
-      "Couldn't save — your browser's local storage is full. " +
-      'Try deleting a few old presets and saving again.'
-    );
-  }
-}
 
 export interface AudioPanelState {
   isMicActive: boolean;
@@ -226,7 +76,6 @@ export interface AudioPanelActions {
   setShakeBeatEnabled: (v: boolean) => void;
   setContrastBeatEnabled: (v: boolean) => void;
   setPaletteBeatEnabled: (v: boolean) => void;
-  onShuffleAudio: () => void;
   setAudioBindings: (updater: AudioBinding[] | ((prev: AudioBinding[]) => AudioBinding[])) => void;
 }
 
@@ -254,48 +103,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   // the toggle itself stays, just for collapsing it back once open.
   const [showAdvanced, setShowAdvanced] = useState(true);
 
-  // Custom Style Presets — user-saved snapshots of the current live
-  // settings, persisted locally (see saveCustomPresets above).
-  const [customPresets, setCustomPresets] = useState<CustomAudioStylePreset[]>(() => loadCustomPresets());
-  // Which preset chip is lit. Empty until one is picked (or Shuffle Audio lands on one):
-  // nothing is applied on load, so no chip should claim to be.
-  const [selectedPresetName, setSelectedPresetName] = useState('');
-  const [isNamingPreset, setIsNamingPreset] = useState(false);
-  const [presetNameDraft, setPresetNameDraft] = useState('');
-
-  useEffect(() => { saveCustomPresets(customPresets); }, [customPresets]);
-
-  const selectedCustomPreset = customPresets.find(p => p.name === selectedPresetName) ?? null;
-
-  const currentSettingsAsPreset = (name: string): CustomAudioStylePreset => ({
-    name, title: name, custom: true,
-    masterSensitivity, autoGainEnabled,
-    subBassMultiplier, bassMultiplier, midsMultiplier, trebleMultiplier,
-    subBassBeatSync, bassBeatSync, midsBeatSync, trebleBeatSync,
-    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
-    bindings: audioBindings.map(({ param, band, amount }) => ({ param, band, amount })),
-  });
-
-  const confirmSaveNewPreset = () => {
-    const name = presetNameDraft.trim();
-    if (!name) return;
-    setCustomPresets(prev => [...prev.filter(p => p.name !== name), currentSettingsAsPreset(name)]);
-    setSelectedPresetName(name);
-    setIsNamingPreset(false);
-    setPresetNameDraft('');
-  };
-
-  const updateSelectedCustomPreset = () => {
-    if (!selectedCustomPreset) return;
-    setCustomPresets(prev => prev.map(p => p.name === selectedCustomPreset.name ? currentSettingsAsPreset(p.name) : p));
-  };
-
-  const deleteSelectedCustomPreset = () => {
-    if (!selectedCustomPreset) return;
-    setCustomPresets(prev => prev.filter(p => p.name !== selectedCustomPreset.name));
-    setSelectedPresetName('');
-  };
-
   const {
     setSelectedAudioDeviceId, setMicError,
     setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
@@ -303,56 +110,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
-    onShuffleAudio,
   } = actions;
-
-  const applyStylePreset = (preset: AudioStylePreset) => {
-    setMasterSensitivity(preset.masterSensitivity);
-    // Auto Gain is always on (no UI toggle) — presets no longer touch it.
-    setSubBassMultiplier(preset.subBassMultiplier);
-    setBassMultiplier(preset.bassMultiplier);
-    setMidsMultiplier(preset.midsMultiplier);
-    setTrebleMultiplier(preset.trebleMultiplier);
-    setSubBassBeatSync(preset.subBassBeatSync);
-    setBassBeatSync(preset.bassBeatSync);
-    setMidsBeatSync(preset.midsBeatSync);
-    setTrebleBeatSync(preset.trebleBeatSync);
-    setZoomBeatEnabled(preset.zoomBeatEnabled);
-    setShakeBeatEnabled(preset.shakeBeatEnabled);
-    setContrastBeatEnabled(preset.contrastBeatEnabled);
-    setPaletteBeatEnabled(preset.paletteBeatEnabled);
-    // Presets saved before bindings were captured have none stored, and keep
-    // whatever is bound now; an explicit (even empty) list replaces it.
-    if (preset.bindings) {
-      setAudioBindings(preset.bindings.map(b => ({ ...b, id: `${Date.now()}-${Math.random()}` })));
-    }
-  };
-
-  const handleStylePresetPick = (name: string) => {
-    setSelectedPresetName(name);
-    const preset = AUDIO_STYLE_PRESETS.find(p => p.name === name) ?? customPresets.find(p => p.name === name);
-    if (preset) applyStylePreset(preset);
-  };
-
-  // Shuffle Audio Controls previously only randomized each slider/toggle
-  // independently (via onShuffleAudio below), never touching the Style
-  // Preset dropdown at all — so it never actually landed on one of the
-  // curated combos (Bass/EDM, Vocal, Techno, etc.), just noise. Now it
-  // runs the existing shuffle first (which also randomizes Modulation
-  // bindings — the one piece a style preset doesn't cover), then picks a
-  // random preset (built-in + any saved custom ones) and applies it
-  // second, so the preset's curated sensitivity/multiplier/beat-sync
-  // combo wins over onShuffleAudio's own ad-hoc random values for those
-  // same fields instead of being clobbered by them.
-  const handleShuffleAudio = () => {
-    onShuffleAudio();
-    const presetPool: AudioStylePreset[] = [...AUDIO_STYLE_PRESETS, ...customPresets];
-    if (presetPool.length > 0) {
-      const preset = presetPool[Math.floor(Math.random() * presetPool.length)];
-      setSelectedPresetName(preset.name);
-      applyStylePreset(preset);
-    }
-  };
 
   return (
     <>
@@ -451,114 +209,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       <div className="w-full px-1.5 py-2 border-t border-wav-line-strong">
           <div className="flex flex-col gap-2">
 
-            {/* Style presets — one-click starting points for common audio/
-                music styles; sets sensitivity/band multipliers/beat-sync/FX
-                on beat, leaves Modulation bindings alone. Built-ins are
-                curated and read-only; anything the user saves shows up
-                under Custom, with Update/Delete once selected. Shuffle
-                sits inline as an icon-only button, top-right. */}
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-wrap gap-1" role="group" aria-label="Built-in style presets">
-                {[...AUDIO_STYLE_PRESETS].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => handleStylePresetPick(preset.name)}
-                    aria-pressed={selectedPresetName === preset.name}
-                    title={preset.title}
-                    className={choice(selectedPresetName === preset.name)}
-                  >{preset.name}</button>
-                ))}
-              </div>
-              {customPresets.length > 0 && (
-                <div className="flex flex-wrap gap-1 items-center" role="group" aria-label="Your saved style presets">
-                  <span className="text-[10px] text-wav-text-3">Yours</span>
-                  {[...customPresets].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() => handleStylePresetPick(preset.name)}
-                      aria-pressed={selectedPresetName === preset.name}
-                      className={choice(selectedPresetName === preset.name)}
-                    >{preset.name}</button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="flex-1 text-[10px] text-wav-text-2">Style</span>
-              {selectedCustomPreset ? (
-                <>
-                  <button
-                    onClick={updateSelectedCustomPreset}
-                    title={`Overwrite "${selectedCustomPreset.name}" with the current settings`}
-                    aria-label={`Overwrite "${selectedCustomPreset.name}" with the current settings`}
-                    className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
-                  >
-                    <FloppyDisk weight="regular" className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={deleteSelectedCustomPreset}
-                    title={`Delete "${selectedCustomPreset.name}"`}
-                    aria-label={`Delete "${selectedCustomPreset.name}"`}
-                    className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
-                  >
-                    <Trash weight="regular" className="w-3.5 h-3.5" />
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => { setIsNamingPreset(true); setPresetNameDraft(''); }}
-                  title="Save current settings as a new Style Preset"
-                  aria-label="Save current settings as a new Style Preset"
-                  className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
-                >
-                  <Plus weight="bold" className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <button
-                onClick={handleShuffleAudio}
-                title="Shuffle Audio Controls — picks a random Style Preset and reshuffles Modulation bindings (scoped to the active gradient/effects)"
-                aria-label="Shuffle Audio Controls"
-                className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
-              >
-                <Shuffle weight="regular" className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {isNamingPreset && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  autoFocus
-                  value={presetNameDraft}
-                  onChange={(e) => setPresetNameDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') confirmSaveNewPreset();
-                    if (e.key === 'Escape') setIsNamingPreset(false);
-                  }}
-                  placeholder="Preset name..."
-                  className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1.5 py-1"
-                />
-                <button
-                  onClick={confirmSaveNewPreset}
-                  disabled={!presetNameDraft.trim()}
-                  title="Save"
-                  aria-label="Save"
-                  className="p-1 bg-wav-field text-white hover:bg-wav-hover disabled:opacity-40 transition-all flex-shrink-0"
-                >
-                  <Check weight="bold" className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setIsNamingPreset(false)}
-                  title="Cancel"
-                  aria-label="Cancel"
-                  className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
-                >
-                  <X weight="bold" className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
-            {/* Auto Gain and Depth Layer have no UI controls — always on
+                        {/* Auto Gain and Depth Layer have no UI controls — always on
                 (see useAudioReactivity.ts's defaults and useSnapshot.ts,
                 which now force both true regardless of what a saved
                 snapshot/preset says). */}

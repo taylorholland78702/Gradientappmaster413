@@ -25,6 +25,7 @@ export interface ControlRailProps {
   setAutoShufflePopoverAnchor: (v: null) => void;
   openAutoShufflePopover: (triggerEl?: HTMLElement | null) => void;
   openExportPopover: (triggerEl?: HTMLElement | null) => void;
+  openRecordPopover: (triggerEl?: HTMLElement | null) => void;
 
   // Export
   exportAsPNG: () => void;
@@ -93,7 +94,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const {
     isMobile, onWordmarkClick,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
-    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover,
+    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover, openRecordPopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
     isRecording, isEncoding, encodingProgress, toggleVCRRecording,
@@ -255,10 +256,10 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           Play/Stop and Playback Speed buttons; with just this one button
           left there, it's simpler inlined here directly). */}
       <button
-        onClick={toggleVCRRecording}
+        onClick={(e) => (isRecording ? toggleVCRRecording() : openRecordPopover(e.currentTarget))}
         disabled={isEncoding}
         className={`${railBtnBase} text-white hover:bg-wav-hover relative`}
-        title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video (V)'}
+        title={isEncoding ? `Encoding… ${encodingProgress}%` : isRecording ? 'Stop recording (V)' : 'Record video — size and length (V starts right away)'}
         aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
       >
         {isEncoding ? (
