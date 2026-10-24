@@ -150,9 +150,8 @@ export class ShuffleMarks {
   // The results as text to paste back: the session's summary and every mark, with the frame measurements.
   export(): string {
     const marks = this.sessionMarks.length ? this.sessionMarks : this.marks;
-    const since = this.sessionMarks.length ? this.state.sessionStart : 0;
-    const dislikes = this.dislikes.filter(d => d.at >= since);
-    return JSON.stringify({ app: 'wav-shuffle-marks', version: 1, summary: summarize(marks), marks, dislikes }, null, 1);
+    // Every stored dislike, not just this session's: most are pressed while shuffling around, outside a session.
+    return JSON.stringify({ app: 'wav-shuffle-marks', version: 1, summary: summarize(marks), marks, dislikes: this.dislikes }, null, 1);
   }
 }
 
