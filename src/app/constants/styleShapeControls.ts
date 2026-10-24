@@ -20,7 +20,6 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   mercury: [{ label: 'Relief', hint: 'How steep the liquid surface is' }, { label: 'Shine', hint: 'Strength of the specular glint' }],
   contour: [{ label: 'Levels', hint: 'Number of contour lines' }, { label: 'Line', hint: 'Thickness of the lines' }],
   tunnel: [{ label: 'Twist', hint: 'How much the tunnel corkscrews' }, { label: 'Depth', hint: 'Ring spacing — more rings, deeper tunnel' }],
-  nebula: [{ label: 'Cloud', hint: 'How much of the frame the gas fills' }, { label: 'Stars', hint: 'Star density' }],
   prism: [{ label: 'Facets', hint: 'Number of crystal facets' }, { label: 'Dispersion', hint: 'How far the colors split at the edges' }],
   raindrops: [{ label: 'Rate', hint: 'How fast new drops land' }, { label: 'Density', hint: 'How many drops at once' }],
   holographic: [{ label: 'Film', hint: 'How many times the foil cycles through the palette' }, { label: 'Sparkle', hint: 'Strength of the glitter' }],
@@ -36,9 +35,7 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   drape: [{ label: 'Depth', hint: 'How deep the folds are' }, { label: 'Sheen', hint: 'Strength of the satin highlight' }],
   'flow-mesh': [{ label: 'Flow', hint: 'How strongly the flow bends the colors' }, { label: 'Silk', hint: 'Strength of the satin folds' }],
   ribbon: [{ label: 'Width', hint: 'Width of the ribbon' }, { label: 'Twist', hint: 'How much the color twists along it' }],
-  strands: [{ label: 'Spacing', hint: 'Gap between strands' }, { label: 'Thickness', hint: 'Thickness of each strand' }],
   iridescent: [{ label: 'Swirl size', hint: 'Scale of the oil-slick swirls' }, { label: 'Film', hint: 'How many color cycles the film runs through' }],
   embers: [{ label: 'Ember size', hint: 'Size of the glowing sparks' }, { label: 'Density', hint: 'How many sparks' }],
   bands: [{ label: 'Waviness', hint: 'How much the bands undulate' }, { label: 'Softness', hint: 'How soft the edges between bands are' }],
-  sheen: [{ label: 'Streak', hint: 'How long and brushed the streaks are' }, { label: 'Gloss', hint: 'Strength of the highlight bands' }],
 };

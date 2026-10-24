@@ -115,10 +115,10 @@ describe('handlers', () => {
     const realFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL) => { expect(String(input)).toBe('https://x.test/index.html'); return new Response(page, { status: 200 }); }) as typeof fetch;
     try {
-      const link = `https://x.test/?display=1&preset=${enc({ gradientType: 'nebula', activeEffects: ['vignette'], gradientColors: [{ r: 1, g: 2, b: 3 }, { r: 4, g: 5, b: 6 }] })}`;
+      const link = `https://x.test/?display=1&preset=${enc({ gradientType: 'smoke', activeEffects: ['vignette'], gradientColors: [{ r: 1, g: 2, b: 3 }, { r: 4, g: 5, b: 6 }] })}`;
       const res = await handlerShare(new Request(link));
       const html = await res.text();
-      expect(html).toContain('<title>Nebula + Vignette · WĀV</title>');
+      expect(html).toContain('<title>Smoke + Vignette · WĀV</title>');
       expect(html).toContain('content="https://x.test/api/og?c=010203-040506"');
       expect(html).toContain('<div id="root">');
       expect(res.headers.get('cross-origin-embedder-policy')).toBe('require-corp');

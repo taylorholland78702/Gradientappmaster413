@@ -31,10 +31,10 @@ type Family = 'glow' | 'bands' | 'field';
 const FAMILY: Record<StyleFieldId, Family> = {
   'light-beam': 'glow', 'edge-glow': 'glow', curtains: 'glow', eclipse: 'glow', rays: 'glow',
   bokeh: 'glow', vortex: 'glow', spectral: 'glow', embers: 'glow',
-  waves: 'bands', ribbon: 'bands', strands: 'bands', bands: 'bands',
+  waves: 'bands', ribbon: 'bands', bands: 'bands',
   smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field',
-  nebula: 'field', prism: 'field', raindrops: 'field', holographic: 'field',
-  drape: 'field', 'flow-mesh': 'field', iridescent: 'field', sheen: 'field',
+  prism: 'field', raindrops: 'field', holographic: 'field',
+  drape: 'field', 'flow-mesh': 'field', iridescent: 'field',
 };
 
 // Light intensity (0..~1.2) for the dark-ground looks, at plane position (x, y),
@@ -109,11 +109,6 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
       const w = y * 1.1 + 0.3 * Math.sin(x * 1.0 + t * 0.26) + 0.09 * Math.sin(x * 2.4 - t * 0.33);
       return 0.5 + 0.5 * Math.sin(w * (id === 'ribbon' ? 2.2 : 4.2));
     }
-    case 'strands': {
-      let s = 0;
-      for (let i = 0; i < 6; i++) s += Math.exp(-Math.pow((y * 1.3 + (i - 2.5) * 0.4 + 0.35 * Math.sin(x * (0.7 + i * 0.1) + t * 0.2 + i)) / 0.07, 2)) * (i / 6 + 0.2);
-      return clamp01(s);
-    }
     case 'bands': {
       const w = y * 0.8 + 0.25 * Math.sin(x * 0.9 + t * 0.2) + 0.12 * Math.sin(x * 2.1 - t * 0.27 + y);
       const s = (0.5 + 0.5 * Math.sin(w * 1.4)) * 6;
@@ -140,7 +135,7 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
     case 'holographic': case 'iridescent':
       return (fbm(x * 0.6 + t * 0.03, y * 0.6 - t * 0.02) * 2.2 + (x * 0.2 + y * 0.35) + t * 0.04) % 1;
     default: {
-      // smoke, nebula, raindrops, halftone-screen: warped fbm
+      // smoke, raindrops, halftone-screen: warped fbm
       const qx = fbm(x + t * 0.08, y), qy = fbm(x + 5.2, y + 1.3 - t * 0.06);
       return clamp01(fbm(x + 3.2 * qx, y + 3.2 * qy) * 1.2);
     }

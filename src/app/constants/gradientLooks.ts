@@ -96,11 +96,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Warp', colors: ['#1a0200', '#a1220b', '#ff7a1a', '#fff3c4'], speed: 1.8 },
     { name: 'Emerald Bore', colors: ['#001a12', '#0b6b4a', '#38d996', '#eafff5'], scale: 0.9 },
   ],
-  nebula: [
-    { name: 'Deep Space', colors: ['#02020a', '#2a1363', '#9b4dff', '#ff7ad9'] },
-    { name: 'Orion', colors: ['#030a14', '#0b3b6b', '#2fa3ff', '#ffd27a'], scale: 1.3 },
-    { name: 'Crimson Cloud', colors: ['#0a0206', '#5a0f2a', '#e0386a', '#ffc2a1'], speed: 0.7 },
-  ],
   prism: [
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },
@@ -178,11 +173,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Gold Leaf', colors: ['#2a1a06', '#9a6a12', '#f1c24a', '#fff2c4'], speed: 0.8 },
     { name: 'Glacier', colors: ['#dff3ff', '#8fd0ff', '#4a8be0', '#1a2f6a'] },
   ],
-  strands: [
-    { name: 'Silk Threads', colors: ['#080612', '#7a5af0', '#ff8ad8', '#ffe8f4'] },
-    { name: 'Copper Wire', colors: ['#0c0603', '#8a3a12', '#e8913a', '#ffe0b0'], speed: 0.8 },
-    { name: 'Neon Rain', colors: ['#02030c', '#00e5ff', '#7a5cff', '#ff4fd8'], speed: 1.2 },
-  ],
   iridescent: [
     { name: 'Oil Slick', colors: ['#10102a', '#2a7a8a', '#b04ad0', '#e8c84a'] },
     { name: 'Soap Film', colors: ['#e8f0ff', '#ffd6f0', '#c9ffe8', '#d6d6ff'], scale: 0.8 },
@@ -197,11 +187,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Sunset Stripes', colors: ['#2b1055', '#c33764', '#ff7b54', '#ffd479'] },
     { name: 'Retro', colors: ['#ff6b6b', '#ffd166', '#06d6a0', '#118ab2'], scale: 1.2 },
     { name: 'Dusk', colors: ['#0f0c29', '#302b63', '#6a5acd', '#c8b6ff'], speed: 0.7 },
-  ],
-  sheen: [
-    { name: 'Satin', colors: ['#2a1b3d', '#6b4a9f', '#c9a8ff', '#fff2ff'] },
-    { name: 'Champagne', colors: ['#3a2a18', '#a8864a', '#e8d29a', '#fff8e6'] },
-    { name: 'Steel', colors: ['#10161c', '#3a4a5a', '#8fa3b5', '#e8f0f7'], speed: 0.8 },
   ],
   // ---- Older gradients ----
   angle: [
