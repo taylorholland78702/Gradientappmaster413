@@ -358,29 +358,6 @@ export function InteractiveGradient() {
   const handlePhotoFileClick = useCallback(() => photoInputRef.current?.click(), []);
   const { handlePhotoFileChange } = usePhotoUpload({ photoFileName, setPhotoFileName, setPhotoVersion, photoImageRef, setActiveEffects, isMultiFxMode });
 
-  // Fullscreen state
-
-  // Undo state - store previous settings for one-level undo
-  // Redo state - captures the state undo/redo moves away from, so it can be restored
-
-  // Track manual zoom interaction
-  
-  // Halftone animation time tracker
-
-  // Diffusion simulation buffers (for reaction-diffusion)
-  
-  // Slit-scan temporal buffer
-  // Flow field's persistent trail canvas + particle positions
-  // Attractor's persistent trail canvas + walker positions (same pattern as flow field)
-  // Reaction-Diffusion's persistent simulation grid (fixed coarse resolution,
-  // independent of canvas size — see RD_W/RD_H in useCanvasDraw). Double-buffered
-  // (u/v + u2/v2) to avoid allocating new Float32Arrays every simulation step.
-  // Julia Set's small fixed-resolution offscreen canvas (see comment above the state)
-  // Chromatic Trails' own trail buffer (separate from Feedback's)
-
-  // Audio reactivity state is in useAudioReactivity hook (initialized below)
-
-
   // Memoized helper for generating random hex colors
   const randomHexColor = useCallback(() => {
     const r = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
@@ -574,10 +551,6 @@ export function InteractiveGradient() {
 
   useSliderFill();
 
-  // Beat sync effects are now in useAudioReactivity hook via callbacks
-
-  // Audio reactivity and mic functions are now in useAudioReactivity hook
-
   useRefMirrors({ animValuesRef, flowerAnimTime, gradientColorsRef, gradientType, gridRotation, isAudioActiveRef, isAudioEnabled, isAudioReactive, isAutoColor, isAutoColorRef, isAutoMode, isAutoModeRef, isMicActive, isVCRPlaying, isVCRPlayingRef, radarSweepAngle, rotationDirection, rotationDirectionRef, setTargetColors, targetAngle, targetAngleRef, targetColors, targetColorsRef, targetZoom, targetZoomRef, tilingAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, voronoiAnimTime });
 
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
@@ -590,8 +563,6 @@ export function InteractiveGradient() {
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
   const { mobilePanelMaxHeight } = useMobilePanelHeight({ isMobile });
-
-  // Refs for contrast/saturation pulse and canvas shake
 
   // Refs so the consolidated master RAF loop can read latest gating state without restarting
   activeEffectsRef.current = activeEffects;
@@ -899,12 +870,6 @@ export function InteractiveGradient() {
 
   const { gestureActionsRef, goBack, goForward, motionDenied, resetToDefaults, shakeEnabled, tiltEnabled, toggleMotion } = useGestureActions({ applySnapshot, evolveWithFactor, isControlsVisible, redoLastChange, redoStackRef, setAIPrompt, setActiveTab, setIsAutoColor, setIsControlsVisible, setIsMultiFxMode, setTargetAngle, targetAngleRef, toggleVCRPlayback, undoIndexRef, undoLastChange });
 
-  // ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS now live in
-  // constants/gradientEffects.ts.
-
-
-  // ─── Unified evolve: factor 0 = subtle nudge, 1 = full random ───────────────
-
   // Capture current state for rating. Rides on buildSnapshot (the same
   // comprehensive, actively-maintained source of truth used by undo/redo)
   // rather than a hand-picked field list, which used to drift out of sync
@@ -925,10 +890,6 @@ export function InteractiveGradient() {
     }
   }, [showRatingUI, pendingRatingState, captureCurrentStateForRating]);
 
-
-  // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
-  // BEAT/FX-on-Beat toggles), matching each control's actual slider range.
-  // Leaves Auto Gain untouched — it's a mode switch, not a randomizable range.
 
   // Helper function to add color stops to gradient with optional hue shift
   const addGradientStops = useCallback((gradient: CanvasGradient, colors: ColorRGB[], hardEdge?: boolean) => {
@@ -964,8 +925,6 @@ export function InteractiveGradient() {
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
   }, [isAutoMode]);
-
-  // VCR recording/playback effects are now in useVCRPlayback hook
 
   // Collapse all drawing-relevant state into one memoized object so the drawing
   // useEffect only does a single reference comparison per render instead of 150+.
@@ -1155,8 +1114,7 @@ export function InteractiveGradient() {
   // this — every key here is a local variable/function from this
   // component's own scope, so two tabs referencing the same name (e.g.
   // gridRows, used by both Gradients and Effects) are always the same
-  // value, never a collision. Same loosely-typed blob convention
-  // useSnapshot.ts/useRandomization.ts already use for this exact problem.
+  // value, never a collision.
   const controlDrawerTabProps = {
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, keepFamily, setKeepFamily, structuralSeed, setStructuralSeed,
