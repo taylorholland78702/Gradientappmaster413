@@ -42,3 +42,13 @@ describe('isDullPalette', () => {
     expect(isDullPalette([c(0), c(1)], 'particles')).toBe(false);
   });
 });
+
+describe('isDullPalette: pale palettes', () => {
+  const rgb = (r: number, g: number, b: number) => ({ r, g, b });
+  it('flags pastel palettes with almost no light-to-dark range', () => {
+    expect(isDullPalette([rgb(250, 215, 235), rgb(240, 225, 250), rgb(245, 220, 225)], 'mesh')).toBe(true);
+  });
+  it('keeps pale palettes that still have contrast', () => {
+    expect(isDullPalette([rgb(250, 235, 240), rgb(150, 110, 130)], 'mesh')).toBe(false);
+  });
+});

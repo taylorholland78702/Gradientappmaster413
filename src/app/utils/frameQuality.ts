@@ -1,5 +1,6 @@
 import type { ColorRGB, GradientType } from '../constants/gradientEffects';
 import { frameFeatures, type FrameFeatures } from './frameScore';
+import { paletteStats } from './paletteStats';
 
 // Judges whether a shuffled look is worth showing. Shuffle rolls a gradient, a palette and a stack of effects at
 // random; some combinations wash out to a flat field (trails or blur smearing everything together), or land on
@@ -36,7 +37,10 @@ export function isDullPalette(colors: ColorRGB[], gradientType: GradientType | s
   const spread = Math.max(...lum) - Math.min(...lum);
   if (spread < 0.04) return true;                       // every color nearly the same brightness: no gradient to see
   if (!DARK_GROUND.has(gradientType) && mean < 0.05) return true;
-  return mean > 0.95;
+  if (mean > 0.95) return true;
+  // Pastel and candy palettes, pale with almost no light-to-dark range, were skipped in every marking batch (7 of 7).
+  const stats = paletteStats(colors);
+  return stats !== null && stats.lightness > 0.8 && stats.contrast < 0.1;
 }
 
 let scratch: HTMLCanvasElement | null = null;
