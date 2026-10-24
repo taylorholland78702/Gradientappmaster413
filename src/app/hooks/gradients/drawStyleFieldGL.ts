@@ -4,8 +4,7 @@
 // Bokeh), plus Vortex, Spectral, Drape and Flow Mesh.
 // Each is a pure function of (position, time) rendered in one fragment pass
 // and colored through the shared palette machinery in glShared.ts
-// (getMappedColor: Contrast, Palette Mode/Bands, and the OKLab
-// Blend all apply), so a new look inherits every existing color control
+// (getMappedColor: Contrast and Palette Mode/Bands apply), so a new look inherits every existing color control
 // instead of reinventing them.
 //
 // They share one pair of controls (fieldScale, fieldSpeed) rather than each
@@ -190,9 +189,7 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 }`;
 
 // Apple-style mesh gradient: one soft color blob per palette color, drifting
-// on slow Lissajous paths, blended by inverse-distance weighting. Blending is
-// done in OKLab when the Blend setting asks for it so the soft overlaps stay
-// clean instead of going muddy.
+// on slow Lissajous paths, blended by inverse-distance weighting.
 const MESH = `
 vec3 shade(vec2 p, vec2 uv, float t) {
   float asp = uSize.x / uSize.y;
