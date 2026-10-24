@@ -46,6 +46,7 @@ export interface RandomizationParams {
   setBlurType: (value: SetStateAction<"radial" | "zoom" | "gaussian" | "motion">) => void;
   setCausticsBrightness: (value: SetStateAction<number>) => void;
   setCausticsScale: (value: SetStateAction<number>) => void;
+  setCausticsSpeed: (value: SetStateAction<number>) => void;
   setChromaticAngle: (value: SetStateAction<number>) => void;
   setChromaticOffset: (value: SetStateAction<number>) => void;
   setChromaticTrailsDecay: (value: SetStateAction<number>) => void;
@@ -100,6 +101,7 @@ export interface RandomizationParams {
   setJuliaImaginary: (value: SetStateAction<number>) => void;
   setJuliaZoom: (value: SetStateAction<number>) => void;
   setJuliaIterations: (value: SetStateAction<number>) => void;
+  setJuliaSpeed: (value: SetStateAction<number>) => void;
   setReactionDiffusionFeed: (value: SetStateAction<number>) => void;
   setReactionDiffusionKill: (value: SetStateAction<number>) => void;
   setReactionDiffusionSpeed: (value: SetStateAction<number>) => void;
@@ -197,6 +199,7 @@ export interface RandomizationParams {
   setLinesThickness: (value: SetStateAction<number>) => void;
   setLiquifyStrength: (value: SetStateAction<number>) => void;
   setMarbleOctaves: (value: SetStateAction<number>) => void;
+  setMarbleSpeed: (value: SetStateAction<number>) => void;
   setMarbleTurbulence: (value: SetStateAction<number>) => void;
   setMarbleVeinFreq: (value: SetStateAction<number>) => void;
   setMasterSensitivity: (value: SetStateAction<number>) => void;
@@ -220,6 +223,7 @@ export interface RandomizationParams {
   setSepiaIntensity: (value: SetStateAction<number>) => void;
   setShakeBeatEnabled: (value: SetStateAction<boolean>) => void;
   setShapesCount: (value: SetStateAction<number>) => void;
+  setShapesSpeed: (value: SetStateAction<number>) => void;
   setShapesMode: (value: SetStateAction<"polygon" | "polar-grid">) => void;
   setTurrellSpeed: (value: SetStateAction<number>) => void;
   setTurrellGlow: (value: SetStateAction<number>) => void;
@@ -228,6 +232,7 @@ export interface RandomizationParams {
   setStackWidth: (value: SetStateAction<number>) => void;
   setStackLength: (value: SetStateAction<number>) => void;
   setStackResponse: (value: SetStateAction<number>) => void;
+  setStackSpeed: (value: SetStateAction<number>) => void;
   setHatchLayers: (value: SetStateAction<number>) => void;
   setHatchSpacing: (value: SetStateAction<number>) => void;
   setHatchResponse: (value: SetStateAction<number>) => void;
@@ -251,6 +256,7 @@ export interface RandomizationParams {
   setTrebleMultiplier: (value: SetStateAction<number>) => void;
   setTruchetSize: (value: SetStateAction<number>) => void;
   setTruchetThickness: (value: SetStateAction<number>) => void;
+  setTruchetSpeed: (value: SetStateAction<number>) => void;
   setTruchetVariation: (value: SetStateAction<number>) => void;
   setTwistAmount: (value: SetStateAction<number>) => void;
   setVcrPlaybackSpeed: (value: SetStateAction<number>) => void;
@@ -286,6 +292,7 @@ export interface RandomizationParams {
   setFlowerRotation: (value: SetStateAction<number>) => void;
   setFlowerSymmetry: (value: SetStateAction<number>) => void;
   setFlowerOpacity: (value: SetStateAction<number>) => void;
+  setFlowerSpeed: (value: SetStateAction<number>) => void;
   setTriangulateVariation: (value: SetStateAction<number>) => void;
   setEmojiOffsetX: (value: SetStateAction<number>) => void;
 }

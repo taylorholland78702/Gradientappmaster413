@@ -4,6 +4,7 @@ export function useTruchetState() {
   const [truchetSize, setTruchetSize] = useState(40);
   const [truchetVariation, setTruchetVariation] = useState(0.5);
   const [truchetThickness, setTruchetThickness] = useState(4);
+  const [truchetSpeed, setTruchetSpeed] = useState(1);
 
   return {
     truchetSize,
@@ -12,5 +13,7 @@ export function useTruchetState() {
     setTruchetVariation,
     truchetThickness,
     setTruchetThickness,
+    truchetSpeed,
+    setTruchetSpeed,
   };
 }

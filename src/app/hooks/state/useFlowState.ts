@@ -11,6 +11,7 @@ export function useFlowState() {
   // Multiplies all three alpha stops (fill center/edge, outline) — was no
   // control at all, always the same fixed opacity.
   const [flowerOpacity, setFlowerOpacity] = useState(1);
+  const [flowerSpeed, setFlowerSpeed] = useState(1);
   const [flowerAnimTime, setFlowerAnimTime] = useState(0);
   const [flowAnimTime, setFlowAnimTime] = useState(0);
   const [flowParticleCount, setFlowParticleCount] = useState(250);
@@ -31,6 +32,8 @@ export function useFlowState() {
     setFlowerSymmetry,
     flowerOpacity,
     setFlowerOpacity,
+    flowerSpeed,
+    setFlowerSpeed,
     flowerAnimTime,
     setFlowerAnimTime,
     flowAnimTime,

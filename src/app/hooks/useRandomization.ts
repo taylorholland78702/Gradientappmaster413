@@ -112,7 +112,7 @@ export function useRandomization(params: RandomizationParams) {
     randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
     setAuroraWaveSpeed, setBaseAIColors, setBassBeatSync, setBassMultiplier, setBloomIntensity, setBloomRadius, setBlurGaussianAmount, setBlurMotionAmount,
-    setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setChromaticAngle, setChromaticOffset,
+    setBlurMotionDirection, setBlurRadialAmount, setBlurType, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setChromaticAngle, setChromaticOffset,
     setChromaticTrailsDecay, setChromaticTrailsOffset, setColorShiftHue, setConcentricRingCount, setConcentricRingWidth,
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
@@ -120,7 +120,7 @@ export function useRandomization(params: RandomizationParams) {
     setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
     setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
-    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations,
+    setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations, setJuliaSpeed,
     setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed,
     setAttractorPointCount, setAttractorScale, setAttractorSpeed, setAttractorDotSize, setAttractorTrailFade,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
@@ -136,21 +136,21 @@ export function useRandomization(params: RandomizationParams) {
     setHalftoneMoveSpeed, setHalftoneSize, setHalftoneVariation, setHexGridSize,
     setIsMultiFxMode, setKaleidoscopeSegments, setLavaBlobCount, setLavaBlobSize, setLightLeakIntensity,
     setMidsBeatSync, setMidsMultiplier,
-    setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleTurbulence,
+    setLinesAngle, setLinesCount, setLinesThickness, setLiquifyStrength, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence,
     setMarbleVeinFreq, setMasterSensitivity, setMetaballCount, setMetaballSize, setMetaballSpeed, setMirrorMode,
     setMirrorTileCount, setNoiseDirection, setNoiseOctaves,
     setNoiseScale, setPaletteBeatEnabled, setPinchStrength, setPixelSize,
     setPolygon2Sides, setPosterizeLevels, setRadialBurstCount,
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
-    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesMode,
+    setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse,
+    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setStackSpeed,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchSpeed,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
     setAudioBindings,
     setTrebleBeatSync, setTrebleMultiplier,
-    setTruchetSize, setTruchetThickness, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
+    setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setTwistAmount, setVcrPlaybackSpeed, setVhsGlitchIntensity, setVhsJitterAmount, setVignetteStrength,
     setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWaveDistortionStrength,
     setZoom, setZoomBeatEnabled, windmillTightness, twistAmount, vignetteStrength,
     zoom,
@@ -167,7 +167,7 @@ export function useRandomization(params: RandomizationParams) {
     // all or (structuralSeed) only ever got rerolled by a big audio hit.
     setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, 
     setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
-    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
+    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed,
     setTriangulateVariation, setEmojiOffsetX,
   } = params;
 
@@ -222,6 +222,7 @@ export function useRandomization(params: RandomizationParams) {
     // Caustics
     setCausticsBrightness(Math.random() * 4.5 + 0.5);                  // 0.5–5
     setCausticsScale(Math.random() * 11 + 1);                          // 1–12
+    setCausticsSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Lava Lamp
     setLavaBlobCount(Math.floor(Math.random() * 10) + 2);              // 2–11
@@ -232,6 +233,7 @@ export function useRandomization(params: RandomizationParams) {
     setMarbleVeinFreq(Math.random() * 9.5 + 0.5);                      // 0.5–10
     setMarbleTurbulence(Math.random() * 5);                            // 0–5
     setMarbleOctaves(Math.floor(Math.random() * 8) + 1);               // 1–8
+    setMarbleSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Metaballs
     setMetaballCount(Math.floor(Math.random() * 12) + 2);              // 2–13
@@ -242,6 +244,7 @@ export function useRandomization(params: RandomizationParams) {
     setTruchetSize(Math.floor(Math.random() * 85) + 15);               // 15–99
     setTruchetVariation(Math.random());                                 // 0–1
     setTruchetThickness(Math.floor(Math.random() * 14) + 1);           // 1–14
+    setTruchetSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Flow Field
     setFlowParticleCount(Math.floor(Math.random() * 780) + 20);        // 20–799
@@ -256,6 +259,7 @@ export function useRandomization(params: RandomizationParams) {
     setFlowerRotation(Math.floor(Math.random() * 360));                // 0–359
     setFlowerSymmetry(Math.floor(Math.random() * 10) + 3);             // 3–12
     setFlowerOpacity(Math.random() * 1.3 + 0.2);                       // 0.2–1.5
+    setFlowerSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
 
     // Light (Fade's slow-crossfade mode) — kept in its own slow, calm
@@ -269,6 +273,7 @@ export function useRandomization(params: RandomizationParams) {
     setStackWidth(Math.random() * 1.3 + 0.4);                          // 0.4–1.7
     setStackLength(Math.random() * 1.3 + 0.4);                         // 0.4–1.7
     setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
+    setStackSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Hatch
     setHatchLayers(Math.floor(Math.random() * 4) + 1);                  // 1–4
@@ -322,6 +327,7 @@ export function useRandomization(params: RandomizationParams) {
     setJuliaImaginary(Math.random() * 2 - 1);                           // -1–1
     setJuliaZoom(Math.random() * 2.7 + 0.3);                            // 0.3–3
     setJuliaIterations(Math.floor(Math.random() * 100) + 20);          // 20–119
+    setJuliaSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Reaction-Diffusion
     setReactionDiffusionFeed(Math.random() * 0.06 + 0.02);              // 0.02–0.08
@@ -445,6 +451,7 @@ export function useRandomization(params: RandomizationParams) {
     setShapesMode(Math.random() < 0.5 ? 'polygon' : 'polar-grid');
     setShapesSides(Math.floor(Math.random() * 10) + 3);               // 3–12
     setShapesCount(Math.floor(Math.random() * 30) + 3);               // 3–32
+    setShapesSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
     setConcentricRingWidth(Math.floor(Math.random() * 150) + 30);     // 30–179
     setConcentricRingCount(Math.floor(Math.random() * 18) + 3);       // 3–20
     setNoiseScale(Math.floor(Math.random() * 60) + 10);               // 10–69
