@@ -320,7 +320,7 @@ export function getSharedFieldGL(width: number, height: number): { gl: WebGL2Ren
 // upscaled by the final drawImage.
 export const FIELD_PIXEL_BUDGET = 4_200_000;
 export const HEAVY_FIELD_PIXEL_BUDGET = 2_600_000;
-const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp', 'embers', 'bokeh', 'strands', 'waves', 'spectral', 'nebula', 'prism']);
+const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp', 'embers', 'bokeh', 'waves', 'spectral', 'prism']);
 // The slowest gradients overall (ranked in the performance audit). They may also drop below the display's native size
 // when frames are still slow after every normal step (see EMERGENCY_FLOORS in adaptiveQuality.ts).
 const SLOW_GRADIENTS = new Set([...HEAVY_GRADIENTS, 'raindrops', 'iridescent', 'glass', 'contour', 'ring']);

@@ -41,6 +41,12 @@ describe('migrateIds (effect-only migrations)', () => {
     expect(EFFECT_DRAW_FNS).toHaveProperty('grid-effect');
   });
 
+  it('sends removed Nebula, Strands and Sheen to their closest remaining looks', () => {
+    expect(migrateId('nebula')).toBe('smoke');
+    expect(migrateId('strands')).toBe('ribbon');
+    expect(migrateId('sheen')).toBe('drape');
+  });
+
   it('rewrites zoom-blur to blur', () => {
     expect(migrateIds(['zoom-blur'])).toEqual(['blur']);
   });

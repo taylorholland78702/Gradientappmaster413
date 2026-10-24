@@ -1,5 +1,5 @@
 // A family of WebGL2 "styled field" gradients — Smoke, Glass, Mesh, Mercury,
-// Contour, Tunnel, Nebula, Prism, Raindrops, Holographic, Waves, Halftone, and
+// Contour, Tunnel, Prism, Raindrops, Holographic, Waves, Halftone, and
 // the dark single-light looks (Light Beam, Edge Glow, Curtains, Eclipse, Rays,
 // Bokeh), plus Vortex, Spectral, Drape and Flow Mesh.
 // Each is a pure function of (position, time) rendered in one fragment pass
@@ -22,11 +22,10 @@ import type { DrawCtx } from '../canvasDrawTypes';
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
-  | 'nebula' | 'prism' | 'raindrops' | 'holographic' | 'waves'
+  | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'ribbon' | 'strands' | 'iridescent' | 'embers' | 'bands'
-  | 'sheen';
+  | 'ribbon' | 'iridescent' | 'embers' | 'bands';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -295,26 +294,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   col *= 0.65 + 0.5 * (1.0 - rings) * (1.0 - spokes * 0.6);
   col *= smoothstep(0.0, 0.22, r) * (1.0 + uBass * 0.25);
   return col;
-}`;
-
-// Deep-space cloud: layered warped noise with dark voids, hot cores and a
-// scatter of twinkling stars.
-const NEBULA = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  float n1 = fbm(p * 0.8 + t * 0.02);
-  vec2 w = vec2(fbm(p + 3.0 + t * 0.04), fbm(p - 4.0 - t * 0.03));
-  float n2 = fbm(p * 1.25 + w * 1.7);
-  float cloud = smoothstep(0.45, 1.05, n2 * 1.2 + n1 * 0.30 + (uA - 1.0) * 0.25 + uBass * 0.08);
-  float core = pow(cloud, 3.0);
-  vec3 void_ = getMappedColor(0.0) * 0.18;
-  vec3 col = mix(void_, getMappedColor(clamp(cloud * 0.7 + 0.05, 0.0, 1.0)), smoothstep(0.0, 0.7, cloud));
-  col *= 0.18 + 0.62 * cloud;
-  col += core * 0.14;
-  vec2 g = floor(p * 16.0);
-  float h = hash21(g);
-  vec2 f = fract(p * 16.0) - 0.5 - (hash22(g) - 0.5) * 0.6;
-  float star = smoothstep(0.085, 0.0, length(f)) * step(1.0 - 0.065 * uB, h) * (0.55 + 0.45 * sin(t * 2.0 + h * 40.0));
-  return col + star * (1.0 - 0.6 * cloud);
 }`;
 
 // Light split by a faceted crystal: diagonal facets, each carrying its own
@@ -648,23 +627,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return mix(bg, col, body);
 }`;
 
-// A bundle of thin flowing lines, each its own palette color, added together
-// over a dark ground so crossings glow.
-const STRANDS = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  vec3 col = getMappedColor(0.0) * 0.20;
-  for (int i = 0; i < 14; i++) {
-    float fi = float(i);
-    float y = p.y * 1.3 + (fi - 6.5) * 0.18 * uA
-      + 0.35 * sin(p.x * (0.7 + fi * 0.05) + t * (0.2 + fi * 0.02) + fi)
-      + 0.10 * sin(p.x * 2.3 - t * 0.3 + fi * 1.7)
-      + uBass * 0.04 * sin(fi + t);
-    float line = smoothstep(0.034 * uB, 0.0, abs(y));
-    col += getMappedColor(fract(fi / 14.0 + 0.03 * t)) * line * 0.85;
-  }
-  return col;
-}`;
-
 // Oil on water: a slowly shifting film whose color comes from the palette
 // sampled at a different phase for each of R, G and B, triangle-folded so there
 // is no seam where the palette wraps.
@@ -734,20 +696,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 }`;
 
 
-// Brushed satin: streaky stretched noise with broad highlight bands sweeping
-// across it.
-const SHEEN = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  float h = fbm3(vec2(p.x * 0.30 / uA, p.y * 0.55) + t * 0.015);
-  float band = dot(p, vec2(0.94, 0.34)) * 0.5 + h * 1.5 + t * 0.05;
-  float sheenL = pow(0.5 + 0.5 * sin(band * 2.2), 3.0);
-  vec3 base = getMappedColor(clamp(0.18 + 0.55 * h, 0.0, 1.0));
-  vec3 hi = getMappedColor(0.95);
-  vec3 col = mix(base, hi, sheenL * 0.55 * uB);
-  col += sheenL * sheenL * 0.10 * uB * (1.0 + uTreble * 0.5);
-  return col * (0.82 + 0.28 * h);
-}`;
-
 const STYLE_BODIES: Record<StyleFieldId, string> = {
   smoke: SMOKE,
   glass: GLASS,
@@ -755,7 +703,6 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   mercury: MERCURY,
   contour: CONTOUR,
   tunnel: TUNNEL,
-  nebula: NEBULA,
   prism: PRISM,
   raindrops: RAINDROPS,
   holographic: HOLOGRAPHIC,
@@ -771,11 +718,9 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   drape: DRAPE,
   'flow-mesh': FLOW_MESH,
   ribbon: RIBBON,
-  strands: STRANDS,
   iridescent: IRIDESCENT,
   embers: EMBERS,
   bands: BANDS,
-  sheen: SHEEN,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];

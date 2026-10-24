@@ -38,11 +38,11 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   // entries in MODULATABLE_PARAMS under its display name ('Halftone (Gradient)'
   // is disambiguated from the Halftone effect's category).
   contour: ['Contour'], glass: ['Glass'], holographic: ['Holographic'],
-  mercury: ['Mercury'], mesh: ['Mesh'], nebula: ['Nebula'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
+  mercury: ['Mercury'], mesh: ['Mesh'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
   tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
   eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
-  'flow-mesh': ['Flow Mesh'], ribbon: ['Ribbon'], strands: ['Strands'], iridescent: ['Iridescent'],
-  embers: ['Embers'], bands: ['Bands'], sheen: ['Sheen'],
+  'flow-mesh': ['Flow Mesh'], ribbon: ['Ribbon'], iridescent: ['Iridescent'],
+  embers: ['Embers'], bands: ['Bands'],
 };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
