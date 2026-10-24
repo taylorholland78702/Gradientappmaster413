@@ -96,6 +96,35 @@ describe('a marking session', () => {
   });
 });
 
+describe('speed and palette on marks', () => {
+  const vivid = { lightness: 0.5, saturation: 0.9, contrast: 0.6 };
+  const dark = { lightness: 0.2, saturation: 0.2, contrast: 0.1 };
+  it('are stored on the mark, and the summary rates looks by speed and palette', () => {
+    const m = new ShuffleMarks(memory());
+    m.start();
+    for (const [v, speed, palette] of [['keep', 1, dark], ['keep', 0.5, dark], ['keep', 1, dark], ['skip', 8, vivid], ['skip', 6, vivid], ['keep', 5, vivid]] as const) {
+      m.setCurrent({ ...look(0.5), speed, palette }); m.mark(v);
+    }
+    const s = summarize(m.sessionMarks);
+    expect(s.speeds.find(r => r.id === 'slow (1 or less)')).toMatchObject({ kept: 3, total: 3 });
+    expect(s.speeds.find(r => r.id === 'fast (5+)')).toMatchObject({ kept: 1, total: 3 });
+    expect(s.palettes.find(r => r.id === 'dark palette')).toMatchObject({ kept: 3, total: 3 });
+    expect(s.palettes.find(r => r.id === 'vivid palette')).toMatchObject({ kept: 1, total: 3 });
+    expect(JSON.parse(m.export()).marks[0]).toMatchObject({ speed: 1, palette: dark });
+  });
+  it('leave older marks (no speed or palette) out of those rows instead of breaking', () => {
+    const s = summarize([mark('keep', 0.5), mark('skip', 0.4), mark('keep', 0.6)]);
+    expect(s.speeds).toEqual([]);
+    expect(s.palettes).toEqual([]);
+  });
+  it('are kept on dislikes too', () => {
+    const m = new ShuffleMarks(memory(), () => 5);
+    const l = { ...look(0.4), speed: 3, palette: vivid };
+    m.setLatest(l); m.recordDislike(l.meta);
+    expect(m.allDislikes[0]).toMatchObject({ speed: 3, palette: vivid });
+  });
+});
+
 describe('loved looks', () => {
   const other = (over = {}) => look(0.5, { meta: { gradient: 'grid', effects: ['halftone'], mood: 'bold' }, ...over });
   it('count as keeps everywhere, are counted on their own, and are stored', () => {
