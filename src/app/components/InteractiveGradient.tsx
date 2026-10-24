@@ -3471,6 +3471,7 @@ export function InteractiveGradient() {
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
       {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
         <div
+          role="status"
           className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 bg-wav-field border border-wav-line text-wav-text-2 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
           style={isMobile
             ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }

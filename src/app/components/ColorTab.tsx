@@ -231,8 +231,8 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
                   onClick={() => removeSwatch(i)}
                   title={`Remove color ${i + 1}`}
                   aria-label={`Remove color ${i + 1}`}
-                  className="wav-hit absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-black border border-wav-line text-white flex items-center justify-center hover:bg-wav-recording transition-colors"
-                ><X weight="bold" className="w-2 h-2" /></button>
+                  className="wav-hit absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black border border-wav-line text-white flex items-center justify-center hover:bg-wav-recording transition-colors"
+                ><X weight="bold" className="w-3 h-3" /></button>
               )}
             </div>
           ))}
