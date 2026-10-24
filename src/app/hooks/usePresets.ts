@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { shuffleLearning } from '../utils/shuffleLearning';
 import { getFirebase } from '../../firebase';
 import { notify } from '../utils/notify';
 import type { Snapshot } from './snapshotTypes';
@@ -233,6 +234,8 @@ export function usePresets(params: UsePresetsParams) {
 
   const savePresetWithName = async (name: string) => {
     if (!name.trim()) return;
+    // Saving a look is the strongest sign it was wanted.
+    shuffleLearning.like(1);
     const preset: SavedPreset = {
       id: genId(),
       name: name.trim(),

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import type { useRedoState } from './state/useRedoState';
 import type { useUndoState } from './state/useUndoState';
 import type { Snapshot } from './snapshotTypes';
+import { shuffleLearning } from '../utils/shuffleLearning';
 
 // Undo / redo history: a 10-deep stack of snapshots with saveCurrentState pushing a new entry.
 export function useUndoRedo({
@@ -30,6 +31,8 @@ export function useUndoRedo({
 
   const undoLastChange = useCallback(() => {
     if (undoIndexRef.current < 0) return;
+    // Undoing a shuffle soon after it is a vote against what it was made of.
+    shuffleLearning.reject();
     const snapshot = undoStackRef.current[undoIndexRef.current];
     undoIndexRef.current -= 1;
     setUndoDepth(undoIndexRef.current);
