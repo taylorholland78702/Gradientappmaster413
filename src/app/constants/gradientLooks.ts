@@ -25,7 +25,7 @@ export const LOOK_PARAM_KEYS = [
   'juliaReal', 'juliaImaginary', 'juliaZoom', 'juliaIterations',
   'tilingSize', 'tilingSymmetry', 'tilingComplexity', 'tilingRotation',
   'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
-  'voronoiCellCount', 'voronoiDistortion',
+  'voronoiCellCount', 'voronoiDistortion', 'voronoiSpeed',
   'radialSizeScale', 'radialSpeed',
   'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
   'windmillMode', 'helixTurns', 'helixTightness',

@@ -259,6 +259,7 @@ export interface RandomizationParams {
   setVignetteStrength: (value: SetStateAction<number>) => void;
   setVoronoiCellCount: (value: SetStateAction<number>) => void;
   setVoronoiDistortion: (value: SetStateAction<number>) => void;
+  setVoronoiSpeed: (value: SetStateAction<number>) => void;
   setWaveDistortionStrength: (value: SetStateAction<number>) => void;
   setZoom: (value: SetStateAction<number>) => void;
   setZoomBeatEnabled: (value: SetStateAction<boolean>) => void;

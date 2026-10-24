@@ -219,6 +219,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'vignetteStrength', label: 'Vignette Strength', category: 'Vignette', min: 0.0, max: 1.0 },
   { key: 'voronoiCellCount', label: 'Voronoi Cell Count', category: 'Voronoi', min: 3.0, max: 30.0 },
   { key: 'voronoiDistortion', label: 'Voronoi Distortion', category: 'Voronoi', min: 0.0, max: 100.0 },
+  { key: 'voronoiSpeed', label: 'Voronoi Speed', category: 'Voronoi', min: 0.1, max: 3.0 },
   { key: 'vortexScale', label: 'Vortex Scale', category: 'Vortex', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'vortexSpeed', label: 'Vortex Speed', category: 'Vortex', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'watercolorBleed', label: 'Watercolor Bleed', category: 'Watercolor', min: 0.0, max: 10.0 },
