@@ -1,3 +1,4 @@
+import { liveSpeed } from '../constants/liveSpeeds';
 import { useEffect, type MutableRefObject, type SetStateAction } from 'react';
 import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY } from '../constants/displayMode';
 import type { ColorRGB, GradientType, EffectType } from '../constants/gradientEffects';
@@ -6,7 +7,7 @@ import type { ColorRGB, GradientType, EffectType } from '../constants/gradientEf
 export interface UseMasterClockParams {
   activeEffectsRef: MutableRefObject<EffectType[]>;
   analyzeAudioRef: MutableRefObject<() => void>;
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; liveSpeeds: Record<string, number>; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   audioMidsLevelRef: MutableRefObject<number>;
   audioSubBassLevelRef: MutableRefObject<number>;
   drawParamsDirtyRef: MutableRefObject<boolean>;
@@ -77,6 +78,8 @@ export function useMasterClock(p: UseMasterClockParams) {
       analyzeAudioRef.current?.();
 
       const spd = vcrPlaybackSpeedRef.current;
+      // The active gradient's Speed as last drawn (slider plus any audio binding), else the saved slider.
+      const activeGradientSpeed = () => liveSpeed(animValuesRef.current.liveSpeeds, `${gradientTypeRef.current}Speed`, gradientSpeedRef.current);
 
       // Lerp colors directly in ref, track max channel diff for convergence check.
       // Skipped in Display mode — that ref is instead written directly from the
@@ -199,7 +202,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * gradientSpeedRef.current * dtScale;
+        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * activeGradientSpeed() * dtScale;
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
@@ -229,14 +232,14 @@ export function useMasterClock(p: UseMasterClockParams) {
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
         // Stack, Truchet, Shapes and Julia move only by this rotation, so their Speed slider scales it.
-        const rotateSpeed = ROTATION_SPEED_TYPES.includes(gradientTypeRef.current) ? gradientSpeedRef.current : 1;
+        const rotateSpeed = ROTATION_SPEED_TYPES.includes(gradientTypeRef.current) ? activeGradientSpeed() : 1;
         targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * rotateSpeed * dtScale;
       }
 
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.flowerAnimTime += 0.5 * spd * gradientSpeedRef.current * dtScale;
+        animValuesRef.current.flowerAnimTime += 0.5 * spd * activeGradientSpeed() * dtScale;
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or

@@ -4,6 +4,7 @@ import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreb
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame, setGLExportMode } from './gradients/glShared';
 import { resolveModulationKey } from '../constants/modulatableParams';
+import { publishLiveSpeeds } from '../constants/liveSpeeds';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -107,7 +108,7 @@ function getScratchOffscreen(key: string, width: number, height: number): Offscr
 // without wiring a bind-icon onto each individual slider row — the context
 // already holds every slider value under that same key via the `...params`
 // spread the caller built it with.
-function applyAudioBindings(targetObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
+export function applyAudioBindings(targetObj: object, bindings: { param: string; band: string; amount: number }[], levels: { sub: number; mids: number; treble: number; energy: number }) {
   const target = targetObj as Record<string, unknown>;
   for (const binding of bindings) {
     const key = resolveModulationKey(binding.param);
@@ -559,6 +560,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // The styled-field clock (advanced in InteractiveGradient.tsx) scales its rate by
     // the Speed this frame actually drew with, so an audio binding on Speed steers it.
     if (typeof drawCtx.fieldSpeed === 'number') av.fieldSpeedLive = Math.max(0, drawCtx.fieldSpeed);
+    publishLiveSpeeds(av.liveSpeeds, drawCtx);
 
     // Computed once per frame, not once per active effect — every binding
     // always reads off the same unmodified `params`, so re-deriving this

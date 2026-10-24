@@ -18,7 +18,7 @@ export function useMiscState() {
     // Shared clock for the styled-field gradients (drawStyleFieldGL.ts) — gated and
     // speed-scaled like every other gradient's, not free-running. fieldSpeedLive is the
     // modulated Speed useCanvasDraw last drew with, so audio-bound Speed still steers it.
-    fieldAnimTime: 0, fieldSpeedLive: 1,
+    fieldAnimTime: 0, fieldSpeedLive: 1, liveSpeeds: {},
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
     // gridRotation: same ref-primary treatment as the anim
     // times above — the main loop writes these directly every frame now

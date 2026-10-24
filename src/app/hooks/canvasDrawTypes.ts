@@ -81,7 +81,7 @@ export interface CanvasDrawParams {
   audioBindings: AudioBinding[];
   musicIntensityRef: MutableRefObject<number>;
   masterSensitivity: number;
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; liveSpeeds: Record<string, number>; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   auroraBandCount: number;
   auroraBandHeight: number;
   auroraWaveSpeed: number;
@@ -228,6 +228,10 @@ export interface CanvasDrawParams {
   noiseOctaves: number;
   noiseScale: number;
   noiseSpeed: number;
+  attractorSpeed: number;
+  emojiRotateSpeed: number;
+  flowSpeed: number;
+  metaballSpeed: number;
   noiseType: "smooth" | "ridged" | "turbulence";
   noiseWarp: number;
   photoBlendMode: "source-over" | "multiply" | "screen" | "overlay";

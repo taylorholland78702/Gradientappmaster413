@@ -1,3 +1,4 @@
+import { liveSpeed } from '../constants/liveSpeeds';
 import { useEffect, type MutableRefObject, type SetStateAction } from 'react';
 import { IS_DISPLAY_MODE } from '../constants/displayMode';
 import { IS_STANDALONE_DISPLAY } from '../constants/displayMode';
@@ -7,7 +8,7 @@ import type { EffectType, GradientType } from '../constants/gradientEffects';
 // The per-gradient animation clocks (one interval each) and the mirror that copies their values into animValuesRef for the render loop. Moved out of InteractiveGradient unchanged.
 export interface UseAnimClocksParams {
   activeEffects: EffectType[];
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; liveSpeeds: Record<string, number>; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   attractorAnimTime: number;
   attractorSpeed: number;
   audioEnergy: number;
@@ -69,28 +70,28 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'hatch' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setHatchAnimTime(t => t + 0.05 * vcrPlaybackSpeed * hatchSpeed), 16);
+    const id = setInterval(() => setHatchAnimTime(t => t + 0.05 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'hatchSpeed', hatchSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, hatchSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'noise' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setNoiseAnimTime(t => t + 0.01 * vcrPlaybackSpeed * noiseSpeed), 16);
+    const id = setInterval(() => setNoiseAnimTime(t => t + 0.01 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'noiseSpeed', noiseSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, noiseSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'radial' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setRadialAnimTime(t => t + 0.006 * vcrPlaybackSpeed * radialSpeed), 16);
+    const id = setInterval(() => setRadialAnimTime(t => t + 0.006 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'radialSpeed', radialSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, radialSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed * causticsSpeed), 16);
+    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'causticsSpeed', causticsSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, causticsSpeed]);
 
@@ -126,28 +127,28 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed * marbleSpeed), 16);
+    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'marbleSpeed', marbleSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, marbleSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'metaballs' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * metaballSpeed), 16);
+    const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'metaballSpeed', metaballSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, metaballSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'particles' || particlesMode !== 'flow-field' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * flowSpeed), 16);
+    const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'flowSpeed', flowSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, particlesMode, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, flowSpeed]);
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'attractor' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setAttractorAnimTime(t => t + 0.01 * vcrPlaybackSpeed * attractorSpeed), 16);
+    const id = setInterval(() => setAttractorAnimTime(t => t + 0.01 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'attractorSpeed', attractorSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, attractorSpeed]);
 
@@ -162,7 +163,7 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setEmojiAnimTime(t => t + (emojiRotateSpeed / 60) * vcrPlaybackSpeed), 16);
+    const id = setInterval(() => setEmojiAnimTime(t => t + (liveSpeed(animValuesRef.current.liveSpeeds, 'emojiRotateSpeed', emojiRotateSpeed) / 60) * vcrPlaybackSpeed), 16);
     return () => clearInterval(id);
   }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, emojiRotateSpeed]);
 
