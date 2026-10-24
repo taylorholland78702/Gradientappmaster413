@@ -76,7 +76,7 @@ export function ShuffleMarkBar({ onShuffle }: { onShuffle: () => void }) {
         {s.features.length > 0 && <div><span className="text-wav-text-2">Biggest difference: </span>{s.features[0].name} ({s.features[0].keptMean} kept, {s.features[0].skippedMean} skipped)</div>}
         <div className="flex flex-wrap gap-1">
           <button onClick={copy} className={choice(copied, 'flex-auto')}>{copied ? 'Copied' : 'Copy results'}</button>
-          <button onClick={() => { shuffleMarks.start(shuffleMarks.target + 15); }} className={choice(false, 'flex-auto')}>Mark 15 more</button>
+          <button onClick={() => { setSummaryOpen(false); setCopied(false); shuffleMarks.extend(15); onShuffle(); }} className={choice(false, 'flex-auto')}>Mark 15 more</button>
           <button onClick={() => shuffleMarks.stop()} className={choice(false, 'flex-auto')}>Close</button>
         </div>
         <button onClick={() => { shuffleMarks.clear(); shuffleMarks.stop(); }} className="self-start text-wav-text-3 hover:text-white transition-all">Delete all marks</button>

@@ -136,6 +136,8 @@ export class ShuffleMarks {
   get allDislikes() { return this.dislikes; }
 
   start(target = DEFAULT_TARGET) { this.pending = null; this.state = { ...this.state, active: true, target, sessionStart: this.now() }; this.emit(); }
+  // Carry on past the target: more marks in the same session, so the summary still counts the earlier ones.
+  extend(by = 15) { this.pending = null; this.state = { ...this.state, active: true, target: this.state.target + by }; this.emit(); }
   stop() { this.pending = null; this.state = { ...this.state, active: false }; this.emit(); }
 
   // The look now on screen has been judged by the quality gate and is ready to be marked.

@@ -95,3 +95,20 @@ vs 125, lit 0.66 vs 0.85), higher in contrast (sd 57 vs 41) and had more detail 
   60% of shuffles toward the gradients, effects and palettes of those old ratings, with fast random speeds and sometimes no
   effects. It is switched off. Check with `JSON.parse(localStorage.gradientRatings || '[]').length` in the console.
 - **Palettes and speed** have no data yet: the session was marked before the speed and palette fields were live.
+
+## Session 9 (first with speed and palette)
+
+30 looks, 20 kept, 7 loved; the score ranked keeps above skips 71% (it is only used as a floor now).
+
+- **Speed and palette** (30 looks only, so weak): looks at medium speeds (2-4) were loved 4 of 10 times against 1 of 12 at fast speeds
+  (5+), though fast ones were kept more often (75% vs 60%). High-contrast palettes were loved 4 of 11 times (36%) against low-contrast 3 of 19
+  (16%). Nothing here is enough to change speeds or palettes yet; another 60 or so looks would be.
+- **vhs and slit-scan** were the weak effects again (vhs kept 1 of 6 this session, 15 of 32 overall; slit-scan 7 of 14), so they are
+  marked down on every kind of gradient.
+- **Variety.** Grid, radial-burst and shapes were still half of this session. In a fresh profile, 45 real shuffles through the app
+  (quality gate included) gave 31 different gradients with the top three at 18% of looks, so neither the taste table nor the quality
+  gate is the cause. It has to be something in your browser: saved ratings from the old rating feature (switched off in the previous
+  release), or what Shuffle has learned from your votes. Check the saved ratings with
+  `JSON.parse(localStorage.gradientRatings || '[]').length` in the console, and make sure the page was reloaded after that release.
+- **Bug: "Mark 15 more" did nothing**, because it restarted the session without starting the next shuffle or hiding the results,
+  and would have counted from zero. It now extends the same session and shuffles the next look.
