@@ -25,8 +25,6 @@ import { useExportControls } from '../hooks/useExportControls';
 import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
-import { ControlRail } from './ControlRail';
-import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
 import type { PresetData } from '../hooks/usePresets';
 import { hslToRgb } from '../utils/color';
@@ -126,6 +124,7 @@ import { useSharedPresetLink } from '../hooks/useSharedPresetLink';
 import { useDrawerTouchScroll } from '../hooks/useDrawerTouchScroll';
 import { useFullscreenSync } from '../hooks/useFullscreenSync';
 import { useResolutionBudget } from '../hooks/useResolutionBudget';
+import { GradientAppView } from './GradientAppView';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
@@ -134,9 +133,6 @@ import { usePhotoUpload } from '../hooks/usePhotoUpload';
 import { generateAIColors as generateAIColorsFor } from '../utils/aiColors';
 import { addGradientStops as addGradientStopsTo } from '../utils/gradientStops';
 import { adjustColorArrayLength } from '../utils/color';
-import { NoticeToast } from './NoticeToast';
-import { WavHint } from './WavHint';
-import { RailPopouts } from './RailPopouts';
 import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
 import { useStructuralSeedState } from '../hooks/state/useStructuralSeedState';
 import { useTopographicState } from '../hooks/state/useTopographicState';
@@ -152,7 +148,6 @@ import { useVoronoiState } from '../hooks/state/useVoronoiState';
 import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
 
-import { AboutPanel } from './AboutPanel';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
@@ -161,6 +156,9 @@ import { IS_DISPLAY_MODE } from '../constants/displayMode';
 // Re-exported so existing importers keep working.
 export { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes, EffectSection };
 
+// The app's root. It owns the state (one small hook per gradient/effect, below), wires it into the feature
+// hooks (snapshots, presets, randomization, audio, the draw loop, gestures, popouts, looks, clocks) and hands
+// the result to <GradientAppView>, which holds the markup. Logic lives in hooks/, not here.
 export function InteractiveGradient() {
   const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge } = useAngleState();
   const { asciiSize, setAsciiSize, asciiColor, setAsciiColor, asciiChars, setAsciiChars } = useAsciiState();
@@ -1279,188 +1277,25 @@ export function InteractiveGradient() {
     toggleVCRRecording,
   };
 
-  const dock = (
-    <div
-      data-role="dock"
-      className={isMobile ? 'flex-shrink-0 w-full flex flex-col' : 'flex-shrink-0 h-full flex flex-row'}
-    >
-      {!isMobile && (
-        <ControlRail ref={panelRef} {...controlRailProps} />
-      )}
-
-      <ControlDrawer
-        ref={drawerRef}
-        activeTab={activeTab}
-        isMobile={isMobile}
-        mobileMaxHeight={mobilePanelMaxHeight}
-        tabProps={controlDrawerTabProps}
-        audioState={audioPanelState}
-        audioActions={audioPanelActions}
-      />
-
-      {isMobile && (
-        <ControlRail ref={panelRef} {...controlRailProps} />
-      )}
-    </div>
-  );
-
   return (
-    <div
-      className="fixed inset-0 overflow-hidden bg-black flex"
-      style={{ flexDirection: isMobile ? 'column' : 'row' }}
-      ref={containerRef}
-    >
-      {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
-          so the dock's translucent background genuinely shows the gradient
-          through it, instead of just the root's opaque black. */}
-      <main ref={shakeWrapperRef} className="fixed inset-0 z-0" aria-label="Gradient canvas">
-        <canvas
-          ref={canvasRef}
-          role="img"
-          aria-label="Animated gradient artwork"
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-          onTouchMove={handleTouchMove}
-          onWheel={handleWheel}
-          className="w-full h-full"
-          style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
-        />
-      </main>
-      {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
-      {/* Pure flex spacer — no content, so it must not intercept pointer
-          events. Without pointer-events-none, this (relative, DOM-order
-          after the canvas's fixed z-0 wrapper) painted above the canvas
-          across the entire non-dock area and silently swallowed every
-          click/drag meant for it in desktop layout. */}
-      <div className="relative flex-1 min-w-0 min-h-0 pointer-events-none" />
-      {isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
-
-      {/* Upper Right Controls */}
-      <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="audio/*"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-        <input
-          ref={photoInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoFileChange}
-          className="hidden"
-        />
-      </div>
-
-      
-      {/* First-run hint — floats near wherever the rail currently is
-          (railRect), same content/dismiss logic as before, just
-          repositioned now that it can't sit inline under the wordmark
-          inside a card anymore (the rail is a slim strip with no room for
-          it). Hidden while a drawer is open so it can't overlap one. */}
-      {savePreview && (
-        <div
-          role="dialog"
-          aria-label="Save image"
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 p-4"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.86)' }}
-          onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
-        >
-          <img
-            src={savePreview.url}
-            alt="Your artwork. Press and hold to save it to Photos."
-            className="max-w-full object-contain shadow-2xl"
-            style={{ maxHeight: 'calc(100% - 120px)' }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <p className="text-[13px] text-white text-center">Press and hold the image, then tap <span className="font-semibold">Add to Photos</span></p>
-          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
-              <button
-                className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
-                onClick={async () => {
-                  const file = new File([savePreview.blob], savePreview.name, { type: 'image/png' });
-                  try { if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }); } catch { /* closed or unsupported */ }
-                }}
-              >Share…</button>
-            )}
-            <button
-              className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = savePreview.url;
-                link.download = savePreview.name;
-                link.click();
-              }}
-            >Download</button>
-            <button
-              className="px-4 py-2 text-[13px] font-semibold bg-white text-black"
-              onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
-            >Done</button>
-          </div>
-        </div>
-      )}
-
-      {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
-      {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
-        <WavHint isMobile={isMobile} railRect={railRect} onDismiss={dismissWavHint} />
-      )}
-
-
-      {audioFile && (
-        <audio
-          ref={audioRef}
-          src={audioFile}
-          loop
-        />
-      )}
-
-      {/* Auto Shuffle interval popover — single render call site so opening
-          it from either trigger (collapsed cluster or expanded top row,
-          only one of which is ever mounted+clickable at a time) never
-          produces two portaled copies. */}
-      <RailPopouts
-        mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
-        setAnchor={setAutoShufflePopoverAnchor}
-        exportProps={{ exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, copiedKey, copyText, currentPlayerUrl }}
-        recordProps={{ videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake }}
-        autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
-      />
-
-      <NoticeToast />
-
-      {/* Display-link-copied toast — brief confirmation for Shift+P */}
-      {isDisplayLinkCopied && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-wav-surface backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
-          Display link copied — open it in a new tab/window for live output
-        </div>
-      )}
-
-      {/* About panel. Mobile: a centered floating card, same as any other
-          modal — the rail there is a bottom bar, not a side column, so
-          there's no "attached to the panel" edge to dock against. Desktop:
-          fastened flush against the rail's right edge (no gap), square
-          corners (a docked extension of the rail rather than a floating
-          card), and stretches from the rail's own top down to the bottom
-          of the viewport — same footprint the canvas itself has. The
-          click-catcher behind it stays unblurred so the gradient result
-          underneath isn't blurred out; only the card itself keeps its own
-          surface. */}
-      {isAboutOpen && (
-        <AboutPanel
-          isMobile={isMobile} railRect={railRect} dialogRef={aboutDialogRef} onClose={() => setIsAboutOpen(false)}
-          isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
-          autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
-          shakeEnabled={shakeEnabled} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} motionDenied={motionDenied}
-        />
-      )}
-
-    </div>
+    <GradientAppView
+    aboutDialogRef={aboutDialogRef} activeTab={activeTab} audioFile={audioFile} audioPanelActions={audioPanelActions}
+    audioPanelState={audioPanelState} audioRef={audioRef} autoShuffleIntervalSec={autoShuffleIntervalSec} autoShufflePopoverAnchor={autoShufflePopoverAnchor}
+    autoShufflePopoverRef={autoShufflePopoverRef} autoShuffleScope={autoShuffleScope} canvasRef={canvasRef} containerRef={containerRef}
+    controlDrawerTabProps={controlDrawerTabProps} controlRailProps={controlRailProps} copiedKey={copiedKey} copyText={copyText}
+    currentPlayerUrl={currentPlayerUrl} dismissWavHint={dismissWavHint} drawerRef={drawerRef} exportAsPNG={exportAsPNG}
+    exportAspect={exportAspect} exportSize={exportSize} fileInputRef={fileInputRef} handleFileUpload={handleFileUpload}
+    handleMouseDown={handleMouseDown} handleMouseMove={handleMouseMove} handleMouseUp={handleMouseUp} handlePhotoFileChange={handlePhotoFileChange}
+    handleTouchCancel={handleTouchCancel} handleTouchEnd={handleTouchEnd} handleTouchMove={handleTouchMove} handleTouchStart={handleTouchStart}
+    handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
+    isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
+    mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
+    setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview} setVideoLength={setVideoLength}
+    setVideoSize={setVideoSize} shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
+    startVideoTake={startVideoTake} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} videoLength={videoLength}
+    videoSize={videoSize}
+    />
   );
 }
