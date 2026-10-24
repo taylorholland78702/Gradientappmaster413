@@ -70,9 +70,6 @@ export function applyLiquid(P: any): void {
     feedbackDecay,
     feedbackRotation,
     feedbackZoom,
-    fisheyeCenterX,
-    fisheyeCenterY,
-    fisheyeStrength,
     flowAnimTime,
     flowBufferRef,
     flowParticleCount,
@@ -216,7 +213,7 @@ export function applyLiquid(P: any): void {
     audioModulation,
     imageData
   } = P;
-            // Turbulent noise-driven refraction — sits between Fisheye (radial
+            // Turbulent noise-driven refraction — sits between the radial effects (radial
             // warp) and Wave-Distortion (directional wave), but organic/swirly
             // like real liquid refraction instead of a single wave direction.
             if (canvas.width === 0 || canvas.height === 0) return;

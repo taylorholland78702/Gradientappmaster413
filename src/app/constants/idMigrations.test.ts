@@ -51,6 +51,7 @@ describe('migrateIds (effect-only migrations)', () => {
   });
 
   it('leaves already-current effect ids unchanged', () => {
-    expect(migrateIds(['liquid', 'fisheye'])).toEqual(['liquid', 'fisheye']);
+    expect(migrateIds(['liquid', 'blur'])).toEqual(['liquid', 'blur']);
+    expect(migrateIds(['liquid', 'fisheye', 'brush-strokes'])).toEqual(['liquid']);
   });
 });

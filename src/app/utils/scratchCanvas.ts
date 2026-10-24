@@ -26,7 +26,7 @@ export function getScratchCanvas(key: string, width: number, height: number): HT
 
 // Same idea as getScratchCanvas above, but for the output ImageData buffer
 // itself — several full-resolution per-pixel effects (Chromatic, Liquid,
-// Fisheye, Blur's zoom/radial modes, Slit-Scan, Wave) called
+// Blur's zoom/radial modes, Slit-Scan, Wave) called
 // `ctx.createImageData(displayWidth, displayHeight)` fresh every single
 // frame just to build their output, a full-canvas RGBA allocation (~8MB at
 // 1080p) 60x/sec. One cache per call site, resized (i.e. reallocated) only

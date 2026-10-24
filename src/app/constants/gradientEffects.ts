@@ -100,8 +100,10 @@ const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
   // Blur in whatever mode was last selected rather than specifically Zoom.
   'zoom-blur': 'blur',
 };
+// Effects that were deleted outright; presets that still list them just lose them.
+const REMOVED_EFFECTS = new Set(['fisheye', 'brush-strokes']);
 export const migrateIds = (ids: string[] | undefined | null): string[] =>
-  (ids || []).map(id => EFFECT_ONLY_MIGRATIONS[id] || migrateId(id));
+  (ids || []).filter(id => !REMOVED_EFFECTS.has(id)).map(id => EFFECT_ONLY_MIGRATIONS[id] || migrateId(id));
 
 // speed/sensitivity added for Mood Presets (Presets tab "Moods" strip) —
 // vcrPlaybackSpeed and masterSensitivity multipliers tuned to each mood's
