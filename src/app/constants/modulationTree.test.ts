@@ -110,7 +110,7 @@ describe('every bindable setting reaches the draw', () => {
   });
 
   it('scales wide-range settings so one Amount feels alike across them', () => {
-    expect(MODULATION_GAIN.paletteHue).toBeGreaterThan(1);
+    expect(MODULATION_GAIN.paletteBands).toBeGreaterThan(1);
     expect(MODULATION_GAIN.noiseScale).toBeUndefined();
   });
 
@@ -121,7 +121,7 @@ describe('every bindable setting reaches the draw', () => {
   });
 
   it('offers the palette, palette and palette mapping settings under Global', () => {
-    expect(sourcesOf('global').map(s => s.label).sort()).toEqual(['Palette', 'Palette Mapping']);
-    expect(bindingLabel('paletteHue')).toBe('Palette · Hue');
+    expect(sourcesOf('global').map(s => s.label).sort()).toEqual(['Palette Mapping']);
+    expect(bindingLabel('fieldContrast')).toBe('Palette Mapping · Contrast');
   });
 });
