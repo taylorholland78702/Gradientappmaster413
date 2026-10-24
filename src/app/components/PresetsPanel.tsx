@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { FloppyDisk, PencilSimple, Minus, FolderSimple, FolderPlus, CaretDown, Plus, LinkSimple, Check, SignOut, MonitorPlay } from '@phosphor-icons/react';
-import { encodePresetData } from '../utils/presetShare';
+import { shareParam } from '../utils/shareLink';
 
 interface Preset {
   id: string;
@@ -122,7 +122,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   // assumed safe/readable by other users). Whoever opens the link gets the
   // exact same look via the ?preset= param handled in InteractiveGradient.
   const handleCopyLink = (preset: Preset) => {
-    const encoded = encodePresetData(preset.data);
+    const encoded = shareParam(preset.data as Record<string, unknown>);
     const url = `${window.location.origin}${window.location.pathname}?preset=${encoded}`;
     navigator.clipboard?.writeText(url).catch(() => {});
     setCopiedLinkId(preset.id);
@@ -138,7 +138,7 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
   // (see toggleDisplayWindow's comment in InteractiveGradient for why the
   // existing Display Link button avoids window.open entirely).
   const handleOpenStandalone = (preset: Preset) => {
-    const encoded = encodePresetData(preset.data);
+    const encoded = shareParam(preset.data as Record<string, unknown>);
     const url = `${window.location.origin}${window.location.pathname}?display=1&preset=${encoded}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };

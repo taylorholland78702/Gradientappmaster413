@@ -5,7 +5,7 @@ import {
   EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
-import { encodePresetData } from '../utils/presetShare';
+import { shareParam } from '../utils/shareLink';
 import type { useCanvasState } from './state/useCanvasState';
 import type { useMiscState } from './state/useMiscState';
 
@@ -65,12 +65,9 @@ export function useExportControls({
     window.setTimeout(() => setCopiedKey(k => (k === key ? null : k)), 1500);
   };
   // The player link for what is on screen right now (?display=1&preset=…: the look with no controls).
-  // Numbers are rounded to 3 decimals first: the snapshot carries floats like 240.40263068951,
-  // which roughly doubled the link for no visible difference.
-  const currentPlayerUrl = () => {
-    const compact = JSON.parse(JSON.stringify(buildSnapshot(), (_k, v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v)));
-    return `${window.location.origin}${window.location.pathname}?display=1&preset=${encodePresetData(compact)}`;
-  };
+  // shareParam keeps only what the look needs, compressed (utils/shareLink.ts).
+  const currentPlayerUrl = () =>
+    `${window.location.origin}${window.location.pathname}?display=1&preset=${shareParam(buildSnapshot() as Record<string, unknown>)}`;
 
   // Export gradient as PNG. With a size picked, the artwork is re-rendered at that
   // size (full-resolution gradients, no pixel budget) for a few frames, the
