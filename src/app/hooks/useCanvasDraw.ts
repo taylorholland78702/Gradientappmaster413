@@ -27,7 +27,6 @@ import { detectTopographicGLSupport, getTopographicGLStage } from './gradients/d
 import { detectVoronoiGLSupport, getVoronoiGLStage } from './gradients/drawVoronoiGL';
 import { detectWindmillGLSupport, getWindmillHelixGLStage } from './gradients/drawWindmillGL';
 import { getPostGradientOverlayStage } from './gradients/glPostGradientOverlay';
-import { getToneStage, isNeutralGrade } from './gradients/glToneStage';
 import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { detectWaveGLSupport, getWaveGLStage } from './effects/applyWaveGL';
 import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL';
@@ -658,12 +657,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // per-effect path unchanged if ineligible or if the pipeline throws.
     let effectStartIndex = 0;
     let gradientHandledByPipeline = false;
-    // Exposure / tone for the gradients that don't finish themselves; the styled
-    // field gradients do it in their shaders. Done in the pipeline when the gradient
-    // runs there, otherwise as its own pass right after the gradient is drawn.
-    const needsToneStage = !!gradientType && !STYLE_FIELD_GRADIENT_TYPES.includes(gradientType)
-      && ((drawCtx.fieldExposure ?? 0) !== 0 || (drawCtx.fieldTone ?? 'off') !== 'off' || !isNeutralGrade(drawCtx.fieldGrade));
-    let toneApplied = false;
     const gradientStage = gradientType ? getGradientGLStage(gradientType, drawCtx) : null;
     if (gradientStage) {
       const shimmerActive = isAudioEnabled && isAudioReactive && audioTrebleLevel > 12;
@@ -690,7 +683,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       });
 
       const runStages: GLEffectStage[] = [gradientStage, overlayStage];
-      if (needsToneStage) { runStages.push(getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off', drawCtx.fieldGrade)); toneApplied = true; }
       let lookahead = 0;
       while (lookahead < activeEffects.length) {
         const nextType = activeEffects[lookahead];
@@ -702,7 +694,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         lookahead++;
       }
       gradientHandledByPipeline = runGLEffectChain(runStages, canvas, ctx, displayWidth, displayHeight);
-      if (gradientHandledByPipeline) effectStartIndex = lookahead; else toneApplied = false;
+      if (gradientHandledByPipeline) effectStartIndex = lookahead;
       // The lookahead loop above called buildEffectCtx on every peeked
       // effect (including the one that broke the loop, e.g. a needsImageData
       // effect like Halftone) to check GL eligibility — before this GL
@@ -797,10 +789,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         ctx.fillRect(0, 0, displayWidth, displayHeight);
         ctx.restore();
       }
-    }
-
-    if (needsToneStage && !toneApplied) {
-      runGLEffectChain([getToneStage(drawCtx.fieldExposure ?? 0, drawCtx.fieldTone ?? 'off', drawCtx.fieldGrade)], canvas, ctx, displayWidth, displayHeight, 1);
     }
 
     // Apply visual effects after gradient is rendered

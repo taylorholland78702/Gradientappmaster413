@@ -30,13 +30,10 @@ export interface UseLooksParams {
   setColorsInstant: (colors: ColorRGB[]) => void;
   setFadeDirection: (value: SetStateAction<number>) => void;
   setFieldContrast: (value: SetStateAction<number>) => void;
-  setFieldExposure: (value: SetStateAction<number>) => void;
-  setFieldGrade: (value: SetStateAction<{ brightness: number; contrast: number; saturation: number; }>) => void;
   setFieldScale: (value: SetStateAction<number>) => void;
   setFieldShapes: (value: SetStateAction<Record<string, [number, number]>>) => void;
   setFieldSpeed: (value: SetStateAction<number>) => void;
   setFieldSwirl: (value: SetStateAction<number>) => void;
-  setFieldTone: (value: SetStateAction<"off" | "aces" | "soft">) => void;
   setFlowerCircles: (value: SetStateAction<number>) => void;
   setFlowerScale: (value: SetStateAction<number>) => void;
   setFlowerSpread: (value: SetStateAction<number>) => void;
@@ -112,7 +109,7 @@ export interface UseLooksParams {
 }
 
 export function useLooks(p: UseLooksParams) {
-  const { colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
+  const { colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
   // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
   // doesn't to their defaults so a look always lands the same way. A palette the
@@ -170,11 +167,8 @@ export function useLooks(p: UseLooksParams) {
     applyLookValues(look);
     // A Look lands the same way every time, so the gradient's shape sliders go back to 1 too.
     setFieldShapes(prev => ({ ...prev, [gradientTypeRef.current]: [1, 1] }));
-    setFieldExposure(0);
-    setFieldTone('off');
-    setFieldGrade({ brightness: 1, contrast: 1, saturation: 1 });
     setFieldSwirl(0);
-  }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, gradientTypeRef]);
+  }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldSwirl, gradientTypeRef]);
 
   // "Same family": Shuffle keeps to the color family the palette was in when this was switched on (or
   // when you last picked a palette yourself), so a run of shuffles reads as one mood.

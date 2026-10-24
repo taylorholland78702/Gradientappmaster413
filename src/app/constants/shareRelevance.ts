@@ -24,7 +24,7 @@ export const isClock = (key: string) => key.endsWith('AnimTime');
 
 // Settings every look needs (they have no default worth leaving out).
 export const SHARE_ALWAYS: ReadonlySet<string> = new Set([
-  'activeEffects', 'baseAIColors', 'depthLayerEnabled', 'fieldShapes', 'fieldGrade', 'paletteStops', 'gradientAngle',
+  'activeEffects', 'baseAIColors', 'depthLayerEnabled', 'fieldShapes', 'paletteStops', 'gradientAngle',
   'gradientColors', 'gradientType', 'resolutionMultiplier', 'submittedAIPrompt', 'targetAngle', 'targetColors', 'targetZoom', 'zoom',
 ]);
 
