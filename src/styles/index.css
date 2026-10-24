@@ -506,32 +506,32 @@ input[type="range"]::-moz-range-thumb:hover {
     0 0 0 3px rgba(255,255,255,0.5);
 }
 
-/* ── Touch targets on coarse-pointer (touch) devices ──
-   Slider thumbs (9px) and the grid/effects buttons (text-[10px] py-0.5,
-   under 20px tall) are sized for a mouse cursor, well under the ~44px
-   minimum recommended tap target — fine with a mouse's pixel-precise
-   pointer, genuinely hard to hit with a finger. Scoped to `pointer: coarse`
-   (touchscreens) rather than `isMobile`/viewport width, since a touch
-   laptop or a narrow desktop window shouldn't get the enlarged mouse
-   targets swapped for finger-sized ones or vice versa purely based on
-   screen size. */
-@media (pointer: coarse) {
-  .control-panel input[type="range"] {
-    height: 28px;
-  }
-  .control-panel input[type="range"]::-webkit-slider-thumb {
-    width: 20px;
-    height: 20px;
-    margin-top: -8.5px;
-  }
-  .control-panel input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-  }
-  .control-panel button {
-    min-height: 28px;
-  }
+/* ── Control sizing (one height for every chip, grid cell and field) ──
+   --ctl-h is the minimum height of a single-choice button. Desktop panels are drawn at 1.3x, so
+   24px reads as about 31px. Phones get 44px, the usual minimum touch target. Panels set
+   .wav-mobile themselves (see ControlDrawer and PopoverPortal); the old .control-panel rules above
+   are never applied to anything, so this layer is what actually sizes touch targets. */
+:root { --ctl-h: 24px; }
+.wav-mobile { --ctl-h: 44px; }
+.wav-choice-sq { min-width: var(--ctl-h); }
+.wav-choice {
+  min-height: var(--ctl-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
+/* Phones: panels carry .wav-mobile (see ControlDrawer, PopoverPortal, AboutPanel, ControlRail).
+   Text goes from 10px to 12px, sliders get a 24px thumb, fields and rail buttons grow, and
+   .wav-hit adds an invisible 10px halo around tiny icon buttons. */
+.wav-mobile .text-\[10px\] { font-size: 12px; }
+.wav-mobile .text-\[9px\] { font-size: 11px; }
+.wav-mobile input[type="range"] { height: 32px; }
+.wav-mobile input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10.5px; }
+.wav-mobile input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; }
+.wav-mobile input[type="number"] { min-height: 36px; }
+.wav-mobile .wav-rail-btn { height: 44px; }
+.wav-mobile .wav-hit::after { content: ''; position: absolute; inset: -10px; }
 
 /* ── Hide number input spinners ── */
 input[type="number"]::-webkit-inner-spin-button,

@@ -3,6 +3,7 @@ import { type ColorRGB } from '../constants/gradientEffects';
 import {
   type ColorBlend, DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
 } from '../utils/color';
+import { SliderRow } from './SliderRow';
 
 // How close two neighboring stops may get — stops must stay in order (the
 // shader and CPU lookups walk them left to right), and a sliver of space keeps
@@ -21,20 +22,6 @@ export interface PaletteStopsEditorProps {
   blend: ColorBlend;
   onBeforeChange?: () => void;
 }
-
-// One-tap shapes for where the stops sit and how hard the blends are. Easing
-// curves bunch the colors toward one end; the blend chips set Sharpness.
-const STOP_EASES: { label: string; hint: string; f: (t: number) => number }[] = [
-  { label: 'Even', hint: 'Evenly spaced', f: t => t },
-  { label: 'In', hint: 'Ease in — colors bunch toward the start', f: t => t * t },
-  { label: 'Out', hint: 'Ease out — colors bunch toward the end', f: t => 1 - (1 - t) * (1 - t) },
-  { label: 'In-out', hint: 'Ease in-out — colors bunch toward both ends', f: t => t * t * (3 - 2 * t) },
-];
-const BLEND_SHAPES: { label: string; hint: string; sharp: number }[] = [
-  { label: 'Soft', hint: 'Smooth blends (Sharpness 0)', sharp: 0 },
-  { label: 'Crisp', hint: 'Tighter transitions (Sharpness 0.6)', sharp: 0.6 },
-  { label: 'Banded', hint: 'Hard bands (Sharpness 1)', sharp: 1 },
-];
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -90,39 +77,27 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
     setSharp(DEFAULT_PALETTE_SHARP);
   };
 
-  const easeStops = (f: (t: number) => number) => {
-    onBeforeChange?.();
-    setStops(n < 2 ? null : Array.from({ length: n }, (_, i) => f(i / (n - 1))));
-  };
-  const matchesEase = (f: (t: number) => number) =>
-    n >= 2 && current.every((v, i) => Math.abs(v - f(i / (n - 1))) < 0.005);
-
-  const chip = (active: boolean) =>
-    `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-black/25 hover:bg-white/15 border-white/15'}`;
-
   const sliderRow = (label: string, value: number, set: (v: number) => void, hint: string) => (
-    <div className="flex items-center justify-between" title={hint}>
-      <label className="text-[10px] text-white w-20 shrink-0">{label}:</label>
-      <div className="flex items-center gap-1 flex-1 ml-2">
-        <input type="range" min="0" max="1" step="0.01" value={value} onChange={(e) => set(Number(e.target.value))} className="flex-1" />
-        <input type="number" min="0" max="1" step="0.01" value={value} onChange={(e) => set(clamp(Number(e.target.value) || 0, 0, 1))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-      </div>
-    </div>
+    <SliderRow
+      label={`${label}:`} title={hint} value={value} onChange={set}
+      onNumberChange={(v) => set(clamp(v || 0, 0, 1))}
+      min="0" max="1" step="0.01"
+    />
   );
 
   return (
-    <section className="w-full px-1.5 pt-2.5 border-t border-white/15" aria-label="Ramp">
+    <section className="w-full px-1.5 pt-2.5 border-t border-wav-line" aria-label="Ramp">
       <div className="flex items-center justify-between mb-1.5">
-        <h3 className="text-[10px] text-white/80 font-medium">Ramp</h3>
+        <h3 className="text-[10px] text-wav-text-2 font-medium">Ramp</h3>
         {!isDefault && (
-          <button onClick={reset} className="text-[10px] text-white/50 hover:text-white transition-all">Reset</button>
+          <button onClick={reset} className="text-[10px] text-wav-text-3 hover:text-white transition-all">Reset</button>
         )}
       </div>
 
       {/* Live preview of the exact ramp (Blend, Bias and Sharpness included),
           with one draggable handle per palette color underneath. */}
       <div className="px-[7px]">
-        <div className="h-4 w-full border border-white/20" style={{ background }} aria-hidden="true" />
+        <div className="h-4 w-full border border-wav-line" style={{ background }} aria-hidden="true" />
         <div ref={trackRef} className="relative h-5 w-full touch-none select-none">
           {current.map((pos, i) => (
             <div
@@ -136,29 +111,12 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
               onPointerDown={onPointerDown(i)}
               onPointerMove={onPointerMove(i)}
               onKeyDown={onKeyDown(i)}
-              className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-white/70 shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-wav-line-strong shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               style={{ left: `${pos * 100}%`, background: rgbToHex(colors[i]) }}
               title={`Color ${i + 1} — drag to reposition (arrow keys nudge)`}
             />
           ))}
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-1 mt-1.5" role="group" aria-label="Stop spacing">
-        {STOP_EASES.map(e => (
-          <button key={e.label} onClick={() => easeStops(e.f)} aria-pressed={matchesEase(e.f)} title={e.hint} className={chip(matchesEase(e.f))}>{e.label}</button>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-1 mt-1" role="group" aria-label="Blend hardness">
-        {BLEND_SHAPES.map(b => (
-          <button
-            key={b.label}
-            onClick={() => { onBeforeChange?.(); setSharp(b.sharp); }}
-            aria-pressed={Math.abs(sharp - b.sharp) < 0.02}
-            title={b.hint}
-            className={chip(Math.abs(sharp - b.sharp) < 0.02)}
-          >{b.label}</button>
-        ))}
       </div>
 
       <div className="flex flex-col gap-2 mt-1">

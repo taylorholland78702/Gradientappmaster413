@@ -1,6 +1,7 @@
 import { Fragment, type RefObject } from 'react';
 import { Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, ArrowsClockwise, Shuffle, Gradient, MagicWand, SpeakerHigh, Palette, Camera, Gif, FloppyDisk, Circle, Play, Stop, Rewind, FastForward, ArrowClockwise, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { Kbd } from './Kbd';
+import { Switch, SwitchTrack } from './Switch';
 import { TOUCH_GESTURES, KEY_GESTURES } from '../constants/gestureGuide';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC } from '../constants/autoShuffle';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
@@ -30,21 +31,29 @@ export function AboutPanel({
         aria-label="About wāv"
         className={
           isMobile
-            ? 'absolute bg-black/75 rounded-none p-8 max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
-            : 'absolute bg-black/75 rounded-none p-8 max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
+            ? 'wav-mobile absolute bg-wav-surface rounded-none max-w-sm max-h-[80vh] overflow-y-auto text-white shadow-2xl w-[calc(100%-3rem)] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 outline-none'
+            : 'absolute bg-wav-surface rounded-none max-w-sm overflow-y-auto text-white shadow-2xl outline-none'
         }
         style={isMobile ? undefined : (railRect
           ? { left: railRect.right, top: railRect.top, height: window.innerHeight - railRect.top }
           : { top: 16, left: 16 })}
       >
-        <div className="flex flex-col gap-4 text-sm text-white/80 leading-relaxed mt-6">
+        {/* Same title bar as the drawers and popouts. */}
+        <div
+          className="sticky top-0 z-10 flex items-center justify-center bg-wav-surface border-b border-wav-line-strong"
+          style={isMobile ? { padding: '6px 12px' } : { padding: '7.8px 15.6px' }}
+        >
+          <span className="text-white font-semibold" style={{ fontSize: isMobile ? 15 : 19.5 }}>About</span>
+        </div>
+        <div className="p-8 pt-6">
+        <div className="flex flex-col gap-4 text-sm text-wav-text-2 leading-relaxed">
           <p><strong>wāv</strong> is a gradient-based, user-friendly art creation environment with audio visualization capabilities.</p>
           <p><strong>wāv</strong> artwork can dynamically react, creating a mesmerizing display of colors, patterns, and shapes that synchronize with the music.</p>
           <p><strong>wāv</strong> uses advanced algorithms to analyze the audio signal and generate visuals that respond to the beat, rhythm, and character of the music.</p>
           <p>Whether performing live music or theater, planning an art installation, or simply enjoying your favorite tunes at home, <strong>wāv</strong> can transform your audio experience into a spectacle.</p>
         </div>
 
-        <div className="flex flex-col gap-8 text-sm text-white/80 leading-relaxed mt-8">
+        <div className="flex flex-col gap-8 text-sm text-wav-text-2 leading-relaxed mt-8">
           <div className="flex flex-col gap-3">
             <p className="font-semibold text-white">Rail</p>
             <p>Click the <strong>wāv</strong> mark at the top of the rail for this About screen.</p>
@@ -63,13 +72,7 @@ export function AboutPanel({
               <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
               <span className="flex items-center gap-2">
                 <Kbd label="⌥⇧W" />
-                <span
-                  className={`relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0 ${isAutoShuffleOn ? 'bg-white' : 'bg-white/15'}`}
-                >
-                  <span
-                    className={`absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform ${isAutoShuffleOn ? 'bg-black translate-x-[18px]' : 'bg-white translate-x-[2px]'}`}
-                  />
-                </span>
+                <SwitchTrack on={isAutoShuffleOn} />
               </span>
             </button>
             {/* Auto Shuffle interval — log-scale slider (see
@@ -93,10 +96,10 @@ export function AboutPanel({
                 max={AUTO_SHUFFLE_MAX_SEC}
                 value={autoShuffleIntervalSec}
                 onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-                className="text-[10px] text-white w-12 text-right bg-white/10 border border-white/20 rounded px-1"
+                className="text-[10px] text-white w-12 text-right bg-wav-hover border border-wav-line rounded px-1"
                 aria-label="Auto Shuffle interval in seconds"
               />
-              <span className="text-[10px] text-white/50 shrink-0">sec</span>
+              <span className="text-[10px] text-wav-text-3 shrink-0">sec</span>
             </div>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Camera — save the current frame as a PNG</span><Kbd label="S" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
@@ -129,7 +132,7 @@ export function AboutPanel({
                 </Fragment>
               ))}
             </div>
-            <p className="text-xs text-white/50">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
+            <p className="text-xs text-wav-text-3">Flicks are quick, mostly horizontal swipes; slower sideways drags do nothing.</p>
             {motionSensorsSupported() && (
               <div className="flex flex-col gap-2 pt-1">
                 <p className="text-white font-medium">Motion</p>
@@ -139,15 +142,11 @@ export function AboutPanel({
                 ]).map(m => (
                   <div key={m.kind} className="flex items-center justify-between gap-2">
                     <span>{m.label}</span>
-                    <button
-                      onClick={() => toggleMotion(m.kind)}
-                      aria-pressed={m.on}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${m.on ? 'bg-white text-black' : 'bg-black/25 text-white hover:bg-white/15'}`}
-                    >{m.on ? 'On' : 'Off'}</button>
+                    <Switch on={m.on} onChange={() => toggleMotion(m.kind)} label={m.label} />
                   </div>
                 ))}
-                {motionDenied && <p className="text-xs text-red-300">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
-                <p className="text-xs text-white/50">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
+                {motionDenied && <p className="text-xs text-wav-error">Motion access was blocked. Allow it in your browser settings, then try again.</p>}
+                <p className="text-xs text-wav-text-3">Phones only. iPhones ask permission the first time. Tilt measures from how you hold the phone when you turn it on.</p>
               </div>
             )}
           </div>
@@ -183,8 +182,9 @@ export function AboutPanel({
             <p className="flex items-center justify-between gap-2"><span>Next / previous Look for the current gradient</span><Kbd label="L" /></p>
             <p className="flex items-center justify-between gap-2"><span>Close the active tab / this panel</span><Kbd label="Esc" /></p>
             <p className="flex items-center justify-between gap-2"><span>Toggle this cheat sheet</span><Kbd label="?" /></p>
-            <p className="text-xs text-white/50">Shortcuts are disabled while a text field is focused.</p>
+            <p className="text-xs text-wav-text-3">Shortcuts are disabled while a text field is focused.</p>
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -5,6 +5,9 @@ import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
+import { SliderRow } from './SliderRow';
+import { Switch } from './Switch';
+import { choice } from './choice';
 
 export interface EffectsTabProps {
   isMobile: boolean;
@@ -211,7 +214,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             card-in-a-card when the drawer wrapped this component. */}
         <div className="w-full">
           {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
-          <div className="w-full flex gap-0 border-b border-white/50">
+          <div className="w-full flex gap-0 border-b border-wav-line-strong">
             <button
               onClick={() => {
                 const next = !isMultiFxMode;
@@ -231,20 +234,20 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 }
               }}
               aria-pressed={isMultiFxMode}
-              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-wav-line-strong ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
               title="Toggle Multi-FX (M)"
-            >MULTI</button>
+            >Multi</button>
             <button
               onClick={randomizeEffects}
-              className="flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
+              className="wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center border-r border-wav-line-strong"
               title="Shuffle Effects (Shift+F)"
               aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
-              className={`flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
-            >RESET</button>
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
+            >Reset</button>
           </div>
           {(() => {
             // Derived from the single per-effect registry (constants/effectRegistry.ts)
@@ -293,12 +296,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-white/50 ${isLeftColumn ? 'border-r border-white/50' : ''} ${
+                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-wav-line-strong ${isLeftColumn ? 'border-r border-wav-line-strong' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
-                            ? 'text-white/30 wav-disabled-text cursor-not-allowed'
-                            : 'text-white hover:bg-white/10'
+                            ? 'text-wav-text-3 wav-disabled-text cursor-not-allowed'
+                            : 'text-white hover:bg-wav-hover'
                       }`}
                     >
                       {effect.label}
@@ -318,11 +321,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-2'}`}>
               {activeEffects.includes('ascii') && (
                 <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={!collapsedEffects.has('ascii')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
-                    <input type="range" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="6" max="40" value={asciiSize} onChange={(e) => setAsciiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Cell Size:" value={asciiSize} onChange={setAsciiSize} min="6" max="40" />
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Chars:</label>
                     <input
@@ -331,267 +330,103 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       onChange={(e) => setAsciiChars(e.target.value)}
                       placeholder=" .:-=+*x#%@"
                       title="Darkest to brightest, left to right"
-                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1"
                     />
                     <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
-                    <button
-                      onClick={() => setAsciiColor(!asciiColor)}
-                      aria-pressed={asciiColor}
-                      className={`shrink-0 px-2 py-0.5 text-[10px] rounded transition-all ${
-                        asciiColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                      }`}
-                    >
-                      {asciiColor ? 'ON' : 'OFF'}
-                    </button>
+                    <Switch on={asciiColor} onChange={setAsciiColor} label="ASCII color" />
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('aura-glow') && (
                 <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={!collapsedEffects.has('aura-glow')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Lights:</label>
-                    <input type="range" min="1" max="6" step="1" value={auraGlowCount} onChange={(e) => setAuraGlowCount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="1" max="6" step="1" value={auraGlowCount} onChange={(e) => setAuraGlowCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="3" step="0.1" value={auraGlowSpeed} onChange={(e) => setAuraGlowSpeed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="3" step="0.1" value={auraGlowSpeed} onChange={(e) => setAuraGlowSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.1" max="1" step="0.05" value={auraGlowOpacity} onChange={(e) => setAuraGlowOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Lights:" value={auraGlowCount} onChange={setAuraGlowCount} min="1" max="6" step="1" />
+                  <SliderRow label="Speed:" value={auraGlowSpeed} onChange={setAuraGlowSpeed} min="0.1" max="3" step="0.1" />
+                  <SliderRow label="Intensity:" value={auraGlowOpacity} onChange={setAuraGlowOpacity} min="0.1" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('bloom') && (
                 <EffectSection id="bloom" label="Bloom" isMulti={isMulti} expanded={!collapsedEffects.has('bloom')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="2" step="0.05" value={bloomIntensity} onChange={(e) => setBloomIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Radius:</label>
-                    <input type="range" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="2" max="40" step="1" value={bloomRadius} onChange={(e) => setBloomRadius(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Intensity:" value={bloomIntensity} onChange={setBloomIntensity} min="0" max="2" step="0.05" />
+                  <SliderRow label="Radius:" value={bloomRadius} onChange={setBloomRadius} min="2" max="40" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('blur') && (
                 <EffectSection id="blur" label="Blur" isMulti={isMulti} expanded={!collapsedEffects.has('blur')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setBlurType('gaussian')}
                         aria-pressed={blurType === 'gaussian'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'gaussian'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'gaussian', 'flex-1')}
                       >
                         Gaussian
                       </button>
                       <button
                         onClick={() => setBlurType('motion')}
                         aria-pressed={blurType === 'motion'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'motion'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'motion', 'flex-1')}
                       >
                         Motion
                       </button>
                       <button
                         onClick={() => setBlurType('radial')}
                         aria-pressed={blurType === 'radial'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'radial'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'radial', 'flex-1')}
                       >
                         Radial
                       </button>
                       <button
                         onClick={() => setBlurType('zoom')}
                         aria-pressed={blurType === 'zoom'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          blurType === 'zoom'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(blurType === 'zoom', 'flex-1')}
                       >
                         Zoom
                       </button>
                     </div>
                   </div>
                   {blurType === 'gaussian' && (
-                    <div className="flex items-center justify-between gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                      <div className="flex items-center gap-1 flex-1">
-                        <input
-                          type="range"
-                          min="1"
-                          max="50"
-                          value={blurGaussianAmount}
-                          onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
-                          className="flex-1"
-                        />
-                      <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={blurGaussianAmount}
-                        onChange={(e) => setBlurGaussianAmount(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                      </div>
-                    </div>
+                    <SliderRow label="Strength:" value={blurGaussianAmount} onChange={setBlurGaussianAmount} min="1" max="50" />
                   )}
                   {blurType === 'motion' && (
                     <>
-                      <div className="flex items-center justify-between gap-1">
-                        <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                        <div className="flex items-center gap-1 flex-1">
-                          <input
-                            type="range"
-                            min="1"
-                            max="50"
-                            value={blurMotionAmount}
-                            onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
-                            className="flex-1"
-                          />
-                      <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={blurMotionAmount}
-                        onChange={(e) => setBlurMotionAmount(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-1">
-                        <label className="text-[10px] text-white whitespace-nowrap">Direction:</label>
-                        <div className="flex items-center gap-1 flex-1">
-                          <input
-                            type="range"
-                            min="0"
-                            max="360"
-                            value={blurMotionDirection}
-                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
-                            className="flex-1"
-                          />
-                          <input
-                            type="number"
-                            min="0"
-                            max="360"
-                            value={Math.round(blurMotionDirection)}
-                            onChange={(e) => setBlurMotionDirection(Number(e.target.value))}
-                            className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                          />
-                        </div>
-                      </div>
+                      <SliderRow label="Strength:" value={blurMotionAmount} onChange={setBlurMotionAmount} min="1" max="50" />
+                      <SliderRow label="Direction:" value={blurMotionDirection} onChange={setBlurMotionDirection} min="0" max="360" />
                     </>
                   )}
                   {(blurType === 'radial' || blurType === 'zoom') && (
-                    <div className="flex items-center justify-between gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                      <div className="flex items-center gap-1 flex-1">
-                        <input type="range" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="flex-1" />
-                        <input type="number" min="1" max="50" step="1" value={blurRadialAmount} onChange={(e) => setBlurRadialAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                      </div>
-                    </div>
+                    <SliderRow label="Strength:" value={blurRadialAmount} onChange={setBlurRadialAmount} min="1" max="50" step="1" />
                   )}
                 </EffectSection>
               )}
               {activeEffects.includes('brush-strokes') && (
                 <EffectSection id="brush-strokes" label="Brush Strokes" isMulti={isMulti} expanded={!collapsedEffects.has('brush-strokes')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="8" max="33" step="1" value={brushStrokesSize} onChange={(e) => setBrushStrokesSize(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="8" max="33" step="1" value={brushStrokesSize} onChange={(e) => setBrushStrokesSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Length:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="1.2" max="4.2" step="0.1" value={brushStrokesLength} onChange={(e) => setBrushStrokesLength(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="1.2" max="4.2" step="0.1" value={brushStrokesLength} onChange={(e) => setBrushStrokesLength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Size:" value={brushStrokesSize} onChange={setBrushStrokesSize} min="8" max="33" step="1" />
+                  <SliderRow label="Length:" value={brushStrokesLength} onChange={setBrushStrokesLength} min="1.2" max="4.2" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic') && (
                 <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
-                  <input type="range" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="1" max="200" value={chromaticOffset} onChange={(e) => setChromaticOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Angle:</label>
-                    <input type="range" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="360" value={chromaticAngle} onChange={(e) => setChromaticAngle(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Offset:" value={chromaticOffset} onChange={setChromaticOffset} min="1" max="200" />
+                  <SliderRow label="Angle:" value={chromaticAngle} onChange={setChromaticAngle} min="0" max="360" />
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic-trails') && (
                 <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
-                    <input type="range" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.5" max="0.99" step="0.01" value={chromaticTrailsDecay} onChange={(e) => setChromaticTrailsDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Offset:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="1" max="30" step="1" value={chromaticTrailsOffset} onChange={(e) => setChromaticTrailsOffset(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Decay:" value={chromaticTrailsDecay} onChange={setChromaticTrailsDecay} min="0.5" max="0.99" step="0.01" />
+                  <SliderRow label="Offset:" value={chromaticTrailsOffset} onChange={setChromaticTrailsOffset} min="1" max="30" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('crt') && (
                 <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={crtIntensity} onChange={(e) => setCrtIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Scanlines:</label>
-                    <input type="range" min="1" max="6" step="1" value={crtScanlineSpacing} onChange={(e) => setCrtScanlineSpacing(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="1" max="6" step="1" value={crtScanlineSpacing} onChange={(e) => setCrtScanlineSpacing(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Intensity:" value={crtIntensity} onChange={setCrtIntensity} min="0" max="1" step="0.05" />
+                  <SliderRow label="Scanlines:" value={crtScanlineSpacing} onChange={setCrtScanlineSpacing} min="1" max="6" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('dada') && (
                 <EffectSection id="dada" label="Dada" isMulti={isMulti} expanded={!collapsedEffects.has('dada')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Panels:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="2" max="8" step="1" value={dadaPanels} onChange={(e) => setDadaPanels(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="2" max="8" step="1" value={dadaPanels} onChange={(e) => setDadaPanels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Chaos:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="1" step="0.05" value={dadaChaos} onChange={(e) => setDadaChaos(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Panels:" value={dadaPanels} onChange={setDadaPanels} min="2" max="8" step="1" />
+                  <SliderRow label="Chaos:" value={dadaChaos} onChange={setDadaChaos} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('dither') && (
@@ -603,67 +438,28 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setDitherType('bayer')}
                         aria-pressed={ditherType === 'bayer'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          ditherType === 'bayer'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(ditherType === 'bayer', 'flex-1')}
                       >
                         Bayer
                       </button>
                       <button
                         onClick={() => setDitherType('floyd-steinberg')}
                         aria-pressed={ditherType === 'floyd-steinberg'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          ditherType === 'floyd-steinberg'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(ditherType === 'floyd-steinberg', 'flex-1')}
                       >
                         Floyd-Steinberg
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="16"
-                        step="1"
-                        value={ditherLevels}
-                        onChange={(e) => setDitherLevels(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="16"
-                        step="1"
-                        value={ditherLevels}
-                        onChange={(e) => setDitherLevels(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
+                  <SliderRow label="Levels:" value={ditherLevels} onChange={setDitherLevels} min="2" max="16" step="1" />
                   {ditherType === 'bayer' && (
-                    <div className="flex items-center justify-between gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
-                      <div className="flex items-center gap-1 flex-1">
-                        <input type="range" min="1" max="8" step="1" value={ditherScale} onChange={(e) => setDitherScale(Number(e.target.value))} className="flex-1" />
-                        <input type="number" min="1" max="8" step="1" value={ditherScale} onChange={(e) => setDitherScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                      </div>
-                    </div>
+                    <SliderRow label="Scale:" value={ditherScale} onChange={setDitherScale} min="1" max="8" step="1" />
                   )}
                 </EffectSection>
               )}
               {activeEffects.includes('duotone') && (
                 <EffectSection id="duotone" label="Duotone" isMulti={isMulti} expanded={!collapsedEffects.has('duotone')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={duotoneIntensity} onChange={(e) => setDuotoneIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
+                  <SliderRow label="Intensity:" value={duotoneIntensity} onChange={setDuotoneIntensity} min="0" max="1" step="0.05">
                     <button
                       onClick={() => {
                         const randomHex = () => {
@@ -678,11 +474,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       }}
                       title="Shuffle Colors"
                       aria-label="Shuffle Colors"
-                      className="shrink-0 p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all"
+                      className="shrink-0 p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all"
                     >
                       <Shuffle weight="regular" className="w-3 h-3" />
                     </button>
-                  </div>
+                  </SliderRow>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Color 1:</label>
                     <input
@@ -703,15 +499,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Tritone:</label>
-                    <button
-                      onClick={() => setDuotoneThreeColor(!duotoneThreeColor)}
-                      aria-pressed={duotoneThreeColor}
-                      className={`px-2 py-0.5 rounded text-[10px] transition-all ${
-                        duotoneThreeColor ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'
-                      }`}
-                    >
-                      {duotoneThreeColor ? 'ON' : 'OFF'}
-                    </button>
+                    <Switch on={duotoneThreeColor} onChange={setDuotoneThreeColor} label="Tritone" />
                   </div>
                   {duotoneThreeColor && (
                     <div className="flex items-center justify-between gap-1">
@@ -728,26 +516,10 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('emoji') && (
                 <EffectSection id="emoji" label="Emoji" isMulti={isMulti} expanded={!collapsedEffects.has('emoji')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Cell Size:</label>
-                    <input type="range" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="10" max="60" value={emojiSize} onChange={(e) => setEmojiSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
-                    <input type="range" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="180" value={emojiRotateSpeed} onChange={(e) => setEmojiRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Size Var:</label>
-                    <input type="range" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={emojiSizeVariation} onChange={(e) => setEmojiSizeVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap" title="Shifts every other row horizontally, like a brick or polka-dot pattern">Row Offset:</label>
-                    <input type="range" min={-emojiSize} max={emojiSize} value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="flex-1" />
-                    <input type="number" value={emojiOffsetX} onChange={(e) => setEmojiOffsetX(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Cell Size:" value={emojiSize} onChange={setEmojiSize} min="10" max="60" />
+                  <SliderRow label="Rotate:" value={emojiRotateSpeed} onChange={setEmojiRotateSpeed} min="0" max="180" />
+                  <SliderRow label="Size Var:" value={emojiSizeVariation} onChange={setEmojiSizeVariation} min="0" max="100" />
+                  <SliderRow label="Row Offset:" title="Shifts every other row horizontally, like a brick or polka-dot pattern" value={emojiOffsetX} onChange={setEmojiOffsetX} min={-emojiSize} max={emojiSize} />
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
                     <input
@@ -757,39 +529,39 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       onFocus={() => setIsEmojiPickerOpen(true)}
                       placeholder="😴🙂😃🤩🔥"
                       title="Darkest to brightest, left to right — click to pick from the emoji picker"
-                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1"
                     />
                     {isEmojiPickerOpen && (
                       <button
                         onClick={() => setIsEmojiPickerOpen(false)}
-                        className="shrink-0 text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-1"
+                        className="shrink-0 text-[10px] text-white bg-wav-hover hover:bg-wav-active px-1.5 py-1"
                       >Done</button>
                     )}
                   </div>
                   {isEmojiPickerOpen && (
-                    <div className="mt-1 border border-white/20 rounded bg-black/40">
+                    <div className="mt-1 border border-wav-line bg-wav-field">
                       <input
                         type="text"
                         value={emojiPickerSearch}
                         onChange={(e) => setEmojiPickerSearch(e.target.value)}
                         placeholder="Search emoji…"
-                        className="w-full text-[10px] text-white bg-black/25 border-b border-white/20 px-1.5 py-1 outline-none"
+                        className="w-full text-[10px] text-white bg-wav-field border-b border-wav-line px-1.5 py-1 outline-none"
                       />
                       <div className="max-h-40 overflow-y-auto px-1 py-1">
                         {(() => {
                           const categories = emojiPickerCategories;
                           if (categories.length === 0) {
-                            return <div className="text-[10px] text-white/40 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
+                            return <div className="text-[10px] text-wav-text-3 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
                           }
                           return categories.map((cat) => (
                             <div key={cat.label} className="mb-1">
-                              <div className="text-[9px] text-white/50 mb-0.5">{cat.label}</div>
+                              <div className="text-[9px] text-wav-text-3 mb-0.5">{cat.label}</div>
                               <div className="flex flex-wrap gap-0.5">
                                 {cat.emojis.map((em, i) => (
                                   <button
                                     key={`${cat.label}-${i}`}
                                     onClick={() => setEmojiChars(prev => prev + em.char)}
-                                    className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-white/15 transition-all"
+                                    className="w-7 h-7 flex items-center justify-center text-lg hover:bg-wav-hover transition-all"
                                     title={em.name}
                                     aria-label={em.name}
                                   >{em.char}</button>
@@ -805,134 +577,66 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('feedback') && (
                 <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={!collapsedEffects.has('feedback')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Decay:</label>
-                    <input type="range" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0.5" max="0.97" step="0.01" value={feedbackDecay} onChange={(e) => setFeedbackDecay(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Zoom:</label>
-                    <input type="range" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="5" step="0.1" value={feedbackZoom} onChange={(e) => setFeedbackZoom(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Spin:</label>
-                    <input type="range" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="-10" max="10" step="0.5" value={feedbackRotation} onChange={(e) => setFeedbackRotation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Decay:" value={feedbackDecay} onChange={setFeedbackDecay} min="0.5" max="0.97" step="0.01" />
+                  <SliderRow label="Zoom:" value={feedbackZoom} onChange={setFeedbackZoom} min="0" max="5" step="0.1" />
+                  <SliderRow label="Spin:" value={feedbackRotation} onChange={setFeedbackRotation} min="-10" max="10" step="0.5" />
                 </EffectSection>
               )}
               {activeEffects.includes('fisheye') && (
                 <EffectSection id="fisheye" label="Fisheye" isMulti={isMulti} expanded={!collapsedEffects.has('fisheye')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                  <input type="range" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="10" step="0.1" value={fisheyeStrength} onChange={(e) => setFisheyeStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Center X:</label>
-                    <input type="range" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={fisheyeCenterX} onChange={(e) => setFisheyeCenterX(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Center Y:</label>
-                    <input type="range" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={fisheyeCenterY} onChange={(e) => setFisheyeCenterY(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Strength:" value={fisheyeStrength} onChange={setFisheyeStrength} min="0" max="10" step="0.1" />
+                  <SliderRow label="Center X:" value={fisheyeCenterX} onChange={setFisheyeCenterX} min="0" max="100" />
+                  <SliderRow label="Center Y:" value={fisheyeCenterY} onChange={setFisheyeCenterY} min="0" max="100" />
                 </EffectSection>
               )}
               {activeEffects.includes('gesso') && (
                 <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Whiteness:</label>
-                    <input type="range" min="0" max="0.94" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="0.94" step="0.01" value={gessoWhiteness} onChange={(e) => setGessoWhiteness(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Texture:</label>
-                    <input type="range" min="0" max="1" step="0.01" value={gessoTexture} onChange={(e) => setGessoTexture(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={gessoTexture} onChange={(e) => setGessoTexture(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Response:</label>
-                    <input type="range" min="0" max="1" step="0.01" value={gessoResponse} onChange={(e) => setGessoResponse(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={gessoResponse} onChange={(e) => setGessoResponse(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Whiteness:" value={gessoWhiteness} onChange={setGessoWhiteness} min="0" max="0.94" step="0.01" />
+                  <SliderRow label="Texture:" value={gessoTexture} onChange={setGessoTexture} min="0" max="1" step="0.01" />
+                  <SliderRow label="Response:" value={gessoResponse} onChange={setGessoResponse} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
                 <EffectSection id="grain" label="Grain" isMulti={isMulti} expanded={!collapsedEffects.has('grain')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Type:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setGrainType('fine')}
                         aria-pressed={grainType === 'fine'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'fine'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'fine', 'flex-1')}
                       >
                         Fine
                       </button>
                       <button
                         onClick={() => setGrainType('medium')}
                         aria-pressed={grainType === 'medium'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'medium'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'medium', 'flex-1')}
                       >
                         Med
                       </button>
                       <button
                         onClick={() => setGrainType('coarse')}
                         aria-pressed={grainType === 'coarse'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'coarse'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'coarse', 'flex-1')}
                       >
                         Coarse
                       </button>
                       <button
                         onClick={() => setGrainType('film')}
                         aria-pressed={grainType === 'film'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          grainType === 'film'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(grainType === 'film', 'flex-1')}
                       >
                         Film
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <input type="range" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.01" value={grainIntensity} onChange={(e) => setGrainIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
-                    <input type="range" min="1" max="6" step="1" value={grainSize} onChange={(e) => setGrainSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="1" max="6" step="1" value={grainSize} onChange={(e) => setGrainSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Crackle:</label>
-                    <input type="range" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="1" step="0.05" value={dustCrackleIntensity} onChange={(e) => setDustCrackleIntensity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Intensity:" value={grainIntensity} onChange={setGrainIntensity} min="0" max="1" step="0.01" />
+                  <SliderRow label="Size:" value={grainSize} onChange={setGrainSize} min="1" max="6" step="1" />
+                  <SliderRow label="Crackle:" value={dustCrackleIntensity} onChange={setDustCrackleIntensity} min="0" max="1" step="0.05" />
                   {dustCrackleIntensity > 0 && (
                     <>
-                      <div className="flex items-center gap-1">
-                        <label className="text-[10px] text-white whitespace-nowrap">Crack Length:</label>
-                        <input type="range" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="flex-1" />
-                        <input type="number" min="0.3" max="3" step="0.1" value={dustCrackleLength} onChange={(e) => setDustCrackleLength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                      </div>
+                      <SliderRow label="Crack Length:" value={dustCrackleLength} onChange={setDustCrackleLength} min="0.3" max="3" step="0.1" />
                       <div className="flex items-center justify-between gap-1">
                         <label className="text-[10px] text-white whitespace-nowrap">Crack Color:</label>
                         <input
@@ -950,15 +654,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="grid-effect" label="Grid" isMulti={isMulti} expanded={!collapsedEffects.has('grid-effect')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap">Rotate:</label>
-                    <div className="flex gap-0.5 flex-1">
+                    <div className="flex gap-1 flex-1">
                       <button
                         onClick={() => setGridRotationDirection('none')}
                         aria-pressed={gridRotationDirection === 'none'}
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'none'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'none', 'flex-1')}
                       >
                         OFF
                       </button>
@@ -967,11 +667,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         aria-pressed={gridRotationDirection === 'clockwise'}
                         aria-label="Clockwise"
                         title="Clockwise"
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'clockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'clockwise', 'flex-1')}
                       >
                         ⟳
                       </button>
@@ -980,125 +676,18 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                         aria-pressed={gridRotationDirection === 'counterclockwise'}
                         aria-label="Counterclockwise"
                         title="Counterclockwise"
-                        className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                          gridRotationDirection === 'counterclockwise'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(gridRotationDirection === 'counterclockwise', 'flex-1')}
                       >
                         ⟲
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Sides:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={gridSides}
-                        onChange={(e) => setGridSides(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={gridSides}
-                        onChange={(e) => setGridSides(Number(e.target.value))}
-                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Rows:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="50"
-                        value={gridRows}
-                        onChange={(e) => setGridRows(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="50"
-                        value={gridRows}
-                        onChange={(e) => setGridRows(Number(e.target.value))}
-                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Columns:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="50"
-                        value={gridColumns}
-                        onChange={(e) => setGridColumns(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="50"
-                        value={gridColumns}
-                        onChange={(e) => setGridColumns(Number(e.target.value))}
-                        className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
+                  <SliderRow label="Sides:" value={gridSides} onChange={setGridSides} min="1" max="10" />
+                  <SliderRow label="Rows:" value={gridRows} onChange={setGridRows} min="2" max="50" />
+                  <SliderRow label="Columns:" value={gridColumns} onChange={setGridColumns} min="2" max="50" />
                   {/* Grid Effect Shape Size Control */}
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white/80 whitespace-nowrap">Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min={1}
-                        max={100}
-                        step={1}
-                        value={gridShapeSize}
-                        onChange={(e) => setGridShapeSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min={1}
-                        max={100}
-                        value={gridShapeSize}
-                        onChange={(e) => setGridShapeSize(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={gridVariation}
-                        onChange={(e) => setGridVariation(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={gridVariation}
-                        onChange={(e) => setGridVariation(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
+                  <SliderRow label="Size:" value={gridShapeSize} onChange={setGridShapeSize} min={1} max={100} step={1} />
+                  <SliderRow label="Variation:" value={gridVariation} onChange={setGridVariation} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
 
@@ -1108,137 +697,41 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               
               {activeEffects.includes('halftone') && (
                 <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={!collapsedEffects.has('halftone')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Dot Size:</label>
-                    <input type="range" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="2" max="200" value={halftoneSize} onChange={(e) => setHalftoneSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Variation:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={halftoneVariation}
-                        onChange={(e) => setHalftoneVariation(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={halftoneVariation}
-                        onChange={(e) => setHalftoneVariation(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
+                  <SliderRow label="Dot Size:" value={halftoneSize} onChange={setHalftoneSize} min="2" max="200" />
+                  <SliderRow label="Variation:" value={halftoneVariation} onChange={setHalftoneVariation} min="0" max="1" step="0.01" />
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
-                      <button
-                        onClick={() => setHalftoneMove(!halftoneMove)}
-                        aria-pressed={halftoneMove}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          halftoneMove
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        {halftoneMove ? 'ON' : 'OFF'}
-                      </button>
+                      <Switch on={halftoneMove} onChange={setHalftoneMove} label="Halftone move" />
                     </div>
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">CMYK:</label>
-                      <button
-                        onClick={() => setHalftoneCMYK(!halftoneCMYK)}
-                        aria-pressed={halftoneCMYK}
-                        className={`px-2 py-0.5 text-[10px] rounded transition-all ${
-                          halftoneCMYK
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
-                      >
-                        {halftoneCMYK ? 'ON' : 'OFF'}
-                      </button>
+                      <Switch on={halftoneCMYK} onChange={setHalftoneCMYK} label="Halftone CMYK" />
                     </div>
                   </div>
                 </EffectSection>
               )}
               {activeEffects.includes('impasto') && (
                 <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="1" max="7" step="0.1" value={impastoStrength} onChange={(e) => setImpastoStrength(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="1" max="7" step="0.1" value={impastoStrength} onChange={(e) => setImpastoStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Light Angle:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="359" step="1" value={impastoLightAngle} onChange={(e) => setImpastoLightAngle(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="359" step="1" value={impastoLightAngle} onChange={(e) => setImpastoLightAngle(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Strength:" value={impastoStrength} onChange={setImpastoStrength} min="1" max="7" step="0.1" />
+                  <SliderRow label="Light Angle:" value={impastoLightAngle} onChange={setImpastoLightAngle} min="0" max="359" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('invert') && (
                 <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={!collapsedEffects.has('invert')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Amount:</label>
-                  <input type="range" min="0" max="1" step="0.05" value={invertAmount} onChange={(e) => setInvertAmount(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={invertAmount} onChange={(e) => setInvertAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Amount:" value={invertAmount} onChange={setInvertAmount} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleido" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Segments:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="50"
-                        value={kaleidoscopeSegments}
-                        onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="2"
-                        max="50"
-                        value={kaleidoscopeSegments}
-                        onChange={(e) => setKaleidoscopeSegments(Number(e.target.value))}
-                        className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Speed:</label>
-                    <input type="range" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="5" step="0.05" value={kaleidoscopeRotateSpeed} onChange={(e) => setKaleidoscopeRotateSpeed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Segments:" value={kaleidoscopeSegments} onChange={setKaleidoscopeSegments} min="2" max="50" />
+                  <SliderRow label="Speed:" value={kaleidoscopeRotateSpeed} onChange={setKaleidoscopeRotateSpeed} min="0" max="5" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('liquid') && (
                 <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={!collapsedEffects.has('liquid')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                    <input type="range" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={liquidStrength} onChange={(e) => setLiquidStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Scale:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0.5" max="10" step="0.5" value={liquidScale} onChange={(e) => setLiquidScale(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Strength:" value={liquidStrength} onChange={setLiquidStrength} min="0" max="100" />
+                  <SliderRow label="Scale:" value={liquidScale} onChange={setLiquidScale} min="0.5" max="10" step="0.5" />
                 </EffectSection>
               )}
               {activeEffects.includes('mirror') && (
@@ -1249,37 +742,21 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       {(['horizontal', 'vertical', 'grid'] as const).map(mode => (
                         <button key={mode} onClick={() => setMirrorMode(mode)}
                           aria-pressed={mirrorMode === mode}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${mirrorMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}>
+                          className={choice(mirrorMode === mode, 'flex-1')}>
                           {mode === 'horizontal' ? 'H' : mode === 'vertical' ? 'V' : 'Grid'}
                         </button>
                       ))}
                     </div>
                   </div>
                   {mirrorMode === 'grid' && (
-                    <div className="flex items-center gap-1">
-                      <label className="text-[10px] text-white whitespace-nowrap">Tiles:</label>
-                      <input type="range" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="2" max="16" step="1" value={mirrorTileCount} onChange={(e) => setMirrorTileCount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
+                    <SliderRow label="Tiles:" value={mirrorTileCount} onChange={setMirrorTileCount} min="2" max="16" step="1" />
                   )}
                 </EffectSection>
               )}
               {activeEffects.includes('oil-paint') && (
                 <EffectSection id="oil-paint" label="Oil Paint" isMulti={isMulti} expanded={!collapsedEffects.has('oil-paint')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Brush Size:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="1" max="6" step="1" value={oilPaintRadius} onChange={(e) => setOilPaintRadius(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="1" max="6" step="1" value={oilPaintRadius} onChange={(e) => setOilPaintRadius(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Detail:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="8" max="40" step="1" value={oilPaintLevels} onChange={(e) => setOilPaintLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Brush Size:" value={oilPaintRadius} onChange={setOilPaintRadius} min="1" max="6" step="1" />
+                  <SliderRow label="Detail:" value={oilPaintLevels} onChange={setOilPaintLevels} min="8" max="40" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('photo') && (
@@ -1287,7 +764,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handlePhotoFileClick}
-                      className="flex-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/15 text-white hover:bg-white/25 transition-all truncate"
+                      className="flex-1 px-2 py-1 text-[10px] font-semibold bg-wav-hover text-white hover:bg-wav-active transition-all truncate"
                       title={photoFileName || 'Upload a photo'}
                     >{photoFileName ? `📷 ${photoFileName}` : 'Upload Photo…'}</button>
                   </div>
@@ -1299,43 +776,27 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           key={mode}
                           onClick={() => setPhotoBlendMode(mode)}
                           aria-pressed={photoBlendMode === mode}
-                          className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${photoBlendMode === mode ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`}
+                          className={choice(photoBlendMode === mode, 'flex-1')}
                         >{mode === 'source-over' ? 'Normal' : mode[0].toUpperCase() + mode.slice(1)}</button>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Opacity:</label>
-                    <input type="range" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={photoOpacity} onChange={(e) => setPhotoOpacity(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Opacity:" value={photoOpacity} onChange={setPhotoOpacity} min="0" max="100" />
                 </EffectSection>
               )}
               {activeEffects.includes('pixelate') && (
                 <EffectSection id="pixelate" label="Pixelate" isMulti={isMulti} expanded={!collapsedEffects.has('pixelate')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
-                  <input type="range" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="5" max="200" value={pixelSize} onChange={(e) => setPixelSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Size:" value={pixelSize} onChange={setPixelSize} min="5" max="200" />
                 </EffectSection>
               )}
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Levels:</label>
-                  <input type="range" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="2" max="16" value={posterizeLevels} onChange={(e) => setPosterizeLevels(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
+                  <SliderRow label="Levels:" value={posterizeLevels} onChange={setPosterizeLevels} min="2" max="16" />
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (
                 <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={!collapsedEffects.has('shift')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Hue:</label>
-                  <input type="range" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="255" value={colorShiftHue} onChange={(e) => setColorShiftHue(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
+                  <SliderRow label="Hue:" value={colorShiftHue} onChange={setColorShiftHue} min="0" max="255" />
                 </EffectSection>
               )}
               {activeEffects.includes('slit-scan') && (
@@ -1345,139 +806,53 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <button
                         onClick={() => setSlitScanDirection('horizontal')}
                         aria-pressed={slitScanDirection === 'horizontal'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'horizontal'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Horz
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('vertical')}
                         aria-pressed={slitScanDirection === 'vertical'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'vertical'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Vert
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('radial')}
                         aria-pressed={slitScanDirection === 'radial'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'radial'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'radial', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Radial
                       </button>
                       <button
                         onClick={() => setSlitScanDirection('circular')}
                         aria-pressed={slitScanDirection === 'circular'}
-                        className={`flex-1 min-w-0 px-1 py-0.5 rounded text-[10px] transition-all whitespace-nowrap ${
-                          slitScanDirection === 'circular'
-                            ? 'bg-white text-black font-bold'
-                            : 'bg-black/25 text-white hover:bg-white/15'
-                        }`}
+                        className={choice(slitScanDirection === 'circular', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
                         Circle
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={slitScanIntensity}
-                        onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={slitScanIntensity}
-                        onChange={(e) => setSlitScanIntensity(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">History:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="12" max="120" step="1" value={slitScanHistory} onChange={(e) => setSlitScanHistory(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="12" max="120" step="1" value={slitScanHistory} onChange={(e) => setSlitScanHistory(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Strength:" value={slitScanIntensity} onChange={setSlitScanIntensity} min="0.1" max="10" step="0.1" />
+                  <SliderRow label="History:" value={slitScanHistory} onChange={setSlitScanHistory} min="12" max="120" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
                 <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={!collapsedEffects.has('triangulate')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Size:</label>
-                  <input type="range" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="10" max="200" value={triangleSize} onChange={(e) => setTriangleSize(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap" title="Fraction of cells that flip to the other diagonal split, for an irregular woven look instead of a uniform pattern">Variation:</label>
-                  <input type="range" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={triangulateVariation} onChange={(e) => setTriangulateVariation(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
+                  <SliderRow label="Size:" value={triangleSize} onChange={setTriangleSize} min="10" max="200" />
+                <SliderRow label="Variation:" title="Fraction of cells that flip to the other diagonal split, for an irregular woven look instead of a uniform pattern" value={triangulateVariation} onChange={setTriangulateVariation} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('vhs') && (
                 <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={!collapsedEffects.has('vhs')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={vhsGlitchIntensity}
-                        onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={vhsGlitchIntensity}
-                        onChange={(e) => setVhsGlitchIntensity(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Jitter:</label>
-                    <input type="range" min="50" max="400" step="10" value={vhsJitterAmount} onChange={(e) => setVhsJitterAmount(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="50" max="400" step="10" value={vhsJitterAmount} onChange={(e) => setVhsJitterAmount(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Intensity:" value={vhsGlitchIntensity} onChange={setVhsGlitchIntensity} min="0" max="1" step="0.05" />
+                  <SliderRow label="Jitter:" value={vhsJitterAmount} onChange={setVhsJitterAmount} min="50" max="400" step="10" />
                 </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={!collapsedEffects.has('vignette')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                  <label className="text-[10px] text-white whitespace-nowrap">Intensity:</label>
-                  <input type="range" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="flex-1" />
-                  <input type="number" min="0" max="1" step="0.05" value={vignetteStrength} onChange={(e) => setVignetteStrength(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                </div>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Softness:</label>
-                    <input type="range" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="0" max="100" value={vignetteSoftness} onChange={(e) => setVignetteSoftness(Number(e.target.value))} className="text-[10px] text-white w-10 text-right bg-black/25 border border-white/20 rounded px-1" />
-                  </div>
+                  <SliderRow label="Intensity:" value={vignetteStrength} onChange={setVignetteStrength} min="0" max="1" step="0.05" />
+                  <SliderRow label="Softness:" value={vignetteSoftness} onChange={setVignetteSoftness} min="0" max="100" />
                 </EffectSection>
               )}
               {activeEffects.includes('watercolor') && (
@@ -1494,61 +869,21 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           key={s.id}
                           onClick={() => { setWatercolorStyle(s.id); setWatercolorBleed(s.bleed); setWatercolorGrain(s.grain); }}
                           aria-pressed={watercolorStyle === s.id}
-                          className={`flex-1 px-1 py-0.5 rounded text-[10px] transition-all ${
-                            watercolorStyle === s.id
-                              ? 'bg-white text-black font-bold'
-                              : 'bg-black/25 text-white hover:bg-white/15'
-                          }`}
+                          className={choice(watercolorStyle === s.id, 'flex-1')}
                         >
                           {s.label}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Bleed:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="10" step="0.5" value={watercolorBleed} onChange={(e) => setWatercolorBleed(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="10" step="0.5" value={watercolorBleed} onChange={(e) => setWatercolorBleed(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Grain:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input type="range" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min="0" max="1" step="0.05" value={watercolorGrain} onChange={(e) => setWatercolorGrain(Number(e.target.value))} className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1" />
-                    </div>
-                  </div>
+                  <SliderRow label="Bleed:" value={watercolorBleed} onChange={setWatercolorBleed} min="0" max="10" step="0.5" />
+                  <SliderRow label="Grain:" value={watercolorGrain} onChange={setWatercolorGrain} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (
                 <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={!collapsedEffects.has('wave')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Strength:</label>
-                    <input type="range" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="flex-1" />
-                    <input type="number" min="5" max="100" value={waveDistortionStrength} onChange={(e) => setWaveDistortionStrength(Number(e.target.value))} className="text-[10px] text-white w-8 text-right bg-transparent border border-white/20 rounded px-1" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Rotation:</label>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="range"
-                        min="0"
-                        max="360"
-                        value={waveDistortionRotation}
-                        onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="360"
-                        value={waveDistortionRotation}
-                        onChange={(e) => setWaveDistortionRotation(Number(e.target.value))}
-                        className="text-[10px] text-white w-12 text-right bg-black/25 border border-white/20 rounded px-1"
-                      />
-                    </div>
-                  </div>
+                  <SliderRow label="Strength:" value={waveDistortionStrength} onChange={setWaveDistortionStrength} min="5" max="100" />
+                  <SliderRow label="Rotation:" value={waveDistortionRotation} onChange={setWaveDistortionRotation} min="0" max="360" />
                 </EffectSection>
               )}
             </div>

@@ -57,7 +57,7 @@ const LooksMenuInner: React.FC<LooksMenuProps> = ({ gradientName, looks, gradien
   }, [looks, gradientColors]);
 
   const rowClass = (isActive: boolean) =>
-    `w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-left transition-all ${isActive ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/15'}`;
+    `w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-left transition-all ${isActive ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`;
 
   return (
     <div ref={rootRef} className="relative w-full">
@@ -66,18 +66,18 @@ const LooksMenuInner: React.FC<LooksMenuProps> = ({ gradientName, looks, gradien
         aria-haspopup="listbox"
         aria-expanded={open}
         title="Pick a Look or a color palette"
-        className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+        className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-white bg-wav-field hover:bg-wav-hover border border-wav-line transition-all"
       >
-        <span aria-hidden="true" className="block w-8 h-3 border border-white/20 shrink-0" style={{ background: swatch((active?.colors ?? gradientColors.map(c => `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`))) }} />
+        <span aria-hidden="true" className="block w-8 h-3 border border-wav-line shrink-0" style={{ background: swatch((active?.colors ?? gradientColors.map(c => `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`))) }} />
         <span className="flex-1 text-left truncate">{active ? active.name : 'Custom colors'}</span>
         <CaretDown weight="regular" className={`w-3 h-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div role="listbox" aria-label="Looks and palettes" className="absolute left-0 right-0 top-full mt-0.5 z-30 max-h-60 overflow-y-auto border border-white/20 shadow-lg"
+        <div role="listbox" aria-label="Looks and palettes" className="absolute left-0 right-0 top-full mt-0.5 z-30 max-h-60 overflow-y-auto border border-wav-line shadow-lg"
           style={{ backgroundColor: '#0b0b10' }}>
           {looks.length > 0 && (
             <div>
-              <div className="px-2 pt-1.5 pb-1 text-[9px] uppercase tracking-wide text-white/50 sticky top-0" style={{ backgroundColor: '#0b0b10' }}>{gradientName} Looks</div>
+              <div className="px-2 pt-1.5 pb-1 text-[9px] uppercase tracking-wide text-wav-text-3 sticky top-0" style={{ backgroundColor: '#0b0b10' }}>{gradientName} Looks</div>
               {looks.map(look => (
                 <button
                   key={look.name}
@@ -87,7 +87,7 @@ const LooksMenuInner: React.FC<LooksMenuProps> = ({ gradientName, looks, gradien
                   title={`Apply the ${look.name} look — sets the palette and its settings`}
                   className={rowClass(active?.name === look.name)}
                 >
-                  <span aria-hidden="true" className="block w-8 h-3 border border-white/20 shrink-0" style={{ background: swatch(look.colors) }} />
+                  <span aria-hidden="true" className="block w-8 h-3 border border-wav-line shrink-0" style={{ background: swatch(look.colors) }} />
                   {look.name}
                 </button>
               ))}
@@ -95,7 +95,7 @@ const LooksMenuInner: React.FC<LooksMenuProps> = ({ gradientName, looks, gradien
           )}
           {PALETTE_GROUPS.map(g => (
             <div key={g.group}>
-              <div className="px-2 pt-1.5 pb-1 text-[9px] uppercase tracking-wide text-white/50 sticky top-0" style={{ backgroundColor: '#0b0b10' }}>{g.group}</div>
+              <div className="px-2 pt-1.5 pb-1 text-[9px] uppercase tracking-wide text-wav-text-3 sticky top-0" style={{ backgroundColor: '#0b0b10' }}>{g.group}</div>
               {g.palettes.map(p => (
                 <button
                   key={p.name}
@@ -105,7 +105,7 @@ const LooksMenuInner: React.FC<LooksMenuProps> = ({ gradientName, looks, gradien
                   title={`Use the ${p.name} palette (colors only)`}
                   className={rowClass(active?.name === p.name)}
                 >
-                  <span aria-hidden="true" className="block w-8 h-3 border border-white/20 shrink-0" style={{ background: swatch(p.colors) }} />
+                  <span aria-hidden="true" className="block w-8 h-3 border border-wav-line shrink-0" style={{ background: swatch(p.colors) }} />
                   {p.name}
                 </button>
               ))}

@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Shuffle, X } from '@phosphor-icons/react';
+import { Shuffle, X, Camera, Circle, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useTouchGestures } from '../hooks/useTouchGestures';
@@ -143,6 +143,7 @@ import { useWindmillState } from '../hooks/state/useWindmillState';
 import { AboutPanel } from './AboutPanel';
 import { PopoverPortal } from './PopoverPortal';
 import { ExportPopout } from './ExportPopout';
+import { RecordPopout } from './RecordPopout';
 import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
@@ -215,7 +216,7 @@ export function InteractiveGradient() {
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, setMarbleOctaves } = useMarbleState();
   const { metaballAnimTime, setMetaballAnimTime, metaballCount, setMetaballCount, metaballSize, setMetaballSize, metaballSpeed, setMetaballSpeed } = useMetaballState();
   const { mirrorMode, setMirrorMode, mirrorTileCount, setMirrorTileCount } = useMirrorState();
-  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, setRatedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
+  const { lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, animValuesRef, isDragging, setIsDragging, lastChangeTime, previousPosition, gradientType, setGradientType, resolutionMultiplier, setResolutionMultiplier, zoomBeatEnabled, setZoomBeatEnabled, shakeBeatEnabled, setShakeBeatEnabled, contrastBeatEnabled, setContrastBeatEnabled, paletteBeatEnabled, setPaletteBeatEnabled, isRecording, setIsRecording, isAutoMode, setIsAutoMode, isAutoColor, setIsAutoColor, gradientColors, setGradientColors, targetColors, setTargetColors, gradientAngle, setGradientAngle, targetAngle, setTargetAngle, zoom, setZoom, targetZoom, setTargetZoom, gradientColorsRef, gradientAngleRef, zoomRef, targetColorsRef, targetAngleRef, targetZoomRef, vcrPlaybackSpeedRef, isAutoModeRef, rotationDirectionRef, isVCRPlayingRef, isAudioActiveRef, drawParamsDirtyRef, lerpSyncFrameRef, isControlsVisible, setIsControlsVisible, isAboutOpen, setIsAboutOpen, isDisplayLinkCopied, setIsDisplayLinkCopied, rotationDirection, setRotationDirection, isMultiFxMode, setIsMultiFxMode, collapsedEffects, setCollapsedEffects, aiPrompt, setAIPrompt, submittedAIPrompt, setSubmittedAIPrompt, containerRef, activeEffects, setActiveEffects, showWavHint, setShowWavHint, activeTab, setActiveTab, setIsAIColorPickerOpen, isKeywordHelpOpen, setIsKeywordHelpOpen, concentricRingWidth, setConcentricRingWidth, concentricRingCount, setConcentricRingCount, isEmojiPickerOpen, setIsEmojiPickerOpen, baseAIColors, setBaseAIColors, showRatingUI, setShowRatingUI, ratedResults, pendingRatingState, setPendingRatingState, fileInputRef, setIsFullscreen, lastManualZoomTime, kaleidoAngleRef, isAutoColorRef, contrastPulseRef, saturationPulseRef, shakeRef, shakeWrapperRef, activeEffectsRef, gradientTypeRef } = useMiscState();
   // The current gradient's two shape sliders, read out of the per-gradient map.
   const fieldShapeA = fieldShapes[gradientType]?.[0] ?? 1;
   const fieldShapeB = fieldShapes[gradientType]?.[1] ?? 1;
@@ -1704,7 +1705,7 @@ export function InteractiveGradient() {
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   // Which popout the shared anchor below is showing.
-  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
+  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export' | 'record'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -1716,7 +1717,7 @@ export function InteractiveGradient() {
   // mobile opens it flush above the (bottom-docked) panel at full width
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
-  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' = 'autoShuffle') => {
+  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' | 'record' = 'autoShuffle') => {
     // Pressing the button of the popout that's already open closes it (the other
     // button's popout swaps in instead of just closing).
     if (autoShufflePopoverAnchor && popoverMode === mode) { setAutoShufflePopoverAnchor(null); return; }
@@ -1741,12 +1742,15 @@ export function InteractiveGradient() {
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
       // The export popout is tall and its button sits near the bottom of the rail, so
       // it grows upward from the button's bottom edge instead of downward off-screen.
-      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 200 });
-      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 200 });
+      if (mode === 'export' || mode === 'record') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
+      else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 240 });
     }
   };
   const openExportPopover = (triggerEl?: HTMLElement | null) => {
     openAutoShufflePopover(triggerEl, 'export');
+  };
+  const openRecordPopover = (triggerEl?: HTMLElement | null) => {
+    openAutoShufflePopover(triggerEl, 'record');
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
   // closes whatever tab drawer/Auto Shuffle popover happened to be open
@@ -1787,27 +1791,51 @@ export function InteractiveGradient() {
   }, [autoShufflePopoverAnchor]);
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
-    return (
-      <PopoverPortal anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}>
-        {popoverMode === 'export' ? (
+    const closePopover = () => setAutoShufflePopoverAnchor(null);
+    const iconCls = 'w-4 h-4 shrink-0';
+    const popout = {
+      export: {
+        title: 'Save & share',
+        icon: <Camera weight="regular" className={iconCls} />,
+        body: (
           <ExportPopout
             isMobile={isMobile}
             exportSize={exportSize} setExportSize={setExportSize}
             exportAspect={exportAspect} setExportAspect={setExportAspect}
-            exportAsPNG={exportAsPNG} closePopover={() => setAutoShufflePopoverAnchor(null)}
+            exportAsPNG={exportAsPNG} closePopover={closePopover}
+            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
+          />
+        ),
+      },
+      record: {
+        title: 'Record video',
+        icon: <Circle weight="regular" className={iconCls} />,
+        body: (
+          <RecordPopout
             videoSize={videoSize} setVideoSize={setVideoSize}
             videoLength={videoLength} setVideoLength={setVideoLength}
-            isRecording={isRecording} startVideoTake={startVideoTake}
-            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
-            gradientColors={gradientColors} paletteStops={paletteStops}
+            isRecording={isRecording} startVideoTake={() => { startVideoTake(); closePopover(); }}
           />
-        ) : (
+        ),
+      },
+      autoShuffle: {
+        title: 'Auto Shuffle',
+        icon: <InfinityIcon weight="regular" className={iconCls} />,
+        body: (
           <AutoShufflePopout
             isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
             autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
             autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
           />
-        )}
+        ),
+      },
+    }[popoverMode];
+    return (
+      <PopoverPortal
+        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
+        title={popout.title} icon={popout.icon}
+      >
+        {popout.body}
       </PopoverPortal>
     );
   };
@@ -1918,31 +1946,7 @@ export function InteractiveGradient() {
     });
   }, [buildSnapshot, isAudioEnabled, isAudioReactive]);
   
-  // Submit rating for current result
-  const submitRating = useCallback((rating: number) => {
-    if (pendingRatingState) {
-      const newRatedResult = { rating, data: pendingRatingState };
-      const updatedRatings = [...ratedResults, newRatedResult];
-      setRatedResults(updatedRatings);
-      // Never let a full localStorage quota (shared with presets) throw
-      // uncaught here — this ran as a side effect of rating, not something
-      // the user consciously "saved", so it should degrade quietly rather
-      // than surface an alert.
-      try {
-        localStorage.setItem('gradientRatings', JSON.stringify(updatedRatings));
-      } catch (err) {
-        console.error('Failed to persist gradientRatings to localStorage:', err);
-      }
-    }
-    setShowRatingUI(false);
-    setPendingRatingState(null);
-  }, [pendingRatingState, ratedResults]);
   
-  // Skip rating
-  const skipRating = useCallback(() => {
-    setShowRatingUI(false);
-    setPendingRatingState(null);
-  }, []);
   
   // Capture state when rating UI is shown (fallback if not already captured)
   useEffect(() => {
@@ -1951,12 +1955,6 @@ export function InteractiveGradient() {
     }
   }, [showRatingUI, pendingRatingState, captureCurrentStateForRating]);
 
-  // Save to presets from rating UI
-  const saveRatingAsPreset = useCallback(() => {
-    submitRating(10);
-    setActiveTab('presets');
-    setIsPresetsDropdownOpen(true);
-  }, [submitRating, setIsPresetsDropdownOpen]);
 
   // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
   // BEAT/FX-on-Beat toggles), matching each control's actual slider range.
@@ -3261,7 +3259,6 @@ export function InteractiveGradient() {
     startMicVisualization, stopMicVisualization,
     onAudioFileClick: handleAudioFileClick,
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
-    onShuffleAudio: shuffleAudiovisuals,
   };
 
   // The rail (+ its drawer, when a tab is open) is a real docked sidebar
@@ -3289,6 +3286,7 @@ export function InteractiveGradient() {
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
           openExportPopover={openExportPopover}
+          openRecordPopover={openRecordPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}
@@ -3337,6 +3335,7 @@ export function InteractiveGradient() {
           setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
           openAutoShufflePopover={openAutoShufflePopover}
           openExportPopover={openExportPopover}
+          openRecordPopover={openRecordPopover}
           exportAsPNG={exportAsPNG}
           toggleGifRecording={toggleGifRecording}
           isFinalizingGif={isFinalizingGif}
@@ -3415,53 +3414,6 @@ export function InteractiveGradient() {
       </div>
 
       
-      {/* Rating UI overlay — temporarily hidden */}
-      {false && showRatingUI && (
-        <div
-          className="absolute pointer-events-auto z-[9999]"
-          style={{ left: 231, top: 16 }}
-        >
-          <div
-            className="flex flex-col items-center gap-3 px-5 py-4 rounded-2xl shadow-sm"
-            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
-              {isAudioEnabled && isAudioReactive && <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-semibold">🎤 Audio</span>}
-            </div>
-            <div className="flex gap-2">
-              {[['👎', 2, 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.4)'], ['😐', 6, 'rgba(234,179,8,0.2)', 'rgba(234,179,8,0.4)'], ['👍', 8, 'rgba(34,197,94,0.2)', 'rgba(34,197,94,0.4)'], ['🔥', 10, 'rgba(168,85,247,0.2)', 'rgba(168,85,247,0.4)']].map(([emoji, rating, bg, border]) => (
-                <button
-                  key={String(rating)}
-                  onClick={() => submitRating(Number(rating))}
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
-                  style={{ background: String(bg), border: `1px solid ${String(border)}` }}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2 w-full">
-              <button
-                onClick={saveRatingAsPreset}
-                className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(to right, #9333ea, #ec4899, #facc15)' }}
-              >
-                ❤️ Save to Presets
-              </button>
-              <button
-                onClick={skipRating}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white/50 hover:text-white/80 transition-all"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
-              >
-                Skip
-              </button>
-            </div>
-            <span className="text-white/30 text-[10px]">{ratedResults.length} rated</span>
-          </div>
-        </div>
-      )}
-
       {/* First-run hint — floats near wherever the rail currently is
           (railRect), same content/dismiss logic as before, just
           repositioned now that it can't sit inline under the wordmark
@@ -3486,7 +3438,7 @@ export function InteractiveGradient() {
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
               <button
-                className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+                className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
                 onClick={async () => {
                   const file = new File([savePreview.blob], savePreview.name, { type: 'image/png' });
                   try { if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }); } catch { /* closed or unsupported */ }
@@ -3494,7 +3446,7 @@ export function InteractiveGradient() {
               >Share…</button>
             )}
             <button
-              className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+              className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
               onClick={() => {
                 const link = document.createElement('a');
                 link.href = savePreview.url;
@@ -3511,9 +3463,9 @@ export function InteractiveGradient() {
       )}
 
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
-      {showWavHint && !activeTab && railRect && (
+      {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
         <div
-          className="fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px]"
+          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 bg-wav-field border border-wav-line text-wav-text-2 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
           style={isMobile
             ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
             : { left: railRect.right + 12, top: railRect.top }}
@@ -3523,7 +3475,7 @@ export function InteractiveGradient() {
           </span>
           <button
             onClick={dismissWavHint}
-            className="text-white/50 hover:text-white transition-all flex-shrink-0"
+            className="relative wav-hit text-wav-text-3 hover:text-white transition-all flex-shrink-0"
             title="Dismiss"
             aria-label="Dismiss hint"
           >
@@ -3549,7 +3501,7 @@ export function InteractiveGradient() {
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-black/70 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-wav-surface backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
           Display link copied — open it in a new tab/window for live output
         </div>
       )}
