@@ -26,6 +26,16 @@ export interface UseBeatEffectsParams {
   setStructuralSeed: (value: SetStateAction<number>) => void;
 }
 
+// How far to scale the shaken wrapper so the canvas still covers its own area: a nudge of `dx`,`dy` px would otherwise
+// leave a strip of background along one edge. Scaling about the wrapper's centre grows each canvas edge by
+// (scale - 1) times its distance from that centre, so the scale follows the shake and there is no pop when it ends.
+export function shakeCoverScale(dx: number, dy: number, canvas: HTMLElement | null, wrapper: HTMLElement): number {
+  const w = wrapper.getBoundingClientRect(), c = (canvas ?? wrapper).getBoundingClientRect();
+  const cx = w.left + w.width / 2, cy = w.top + w.height / 2;
+  const halfX = Math.max(1, Math.min(cx - c.left, c.right - cx)), halfY = Math.max(1, Math.min(cy - c.top, c.bottom - cy));
+  return 1 + Math.max(Math.abs(dx) / halfX, Math.abs(dy) / halfY);
+}
+
 export function useBeatEffects(p: UseBeatEffectsParams) {
   const { isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed } = p;
   // Contrast + saturation pulse — bass hits spike both, decay via RAF
@@ -66,7 +76,8 @@ export function useBeatEffects(p: UseBeatEffectsParams) {
         wrapper.style.transform = '';
         return;
       }
-      wrapper.style.transform = `translate(${shakeRef.current.x.toFixed(1)}px, ${shakeRef.current.y.toFixed(1)}px)`;
+      const { x, y } = shakeRef.current;
+      wrapper.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${shakeCoverScale(x, y, canvasRef.current, wrapper).toFixed(4)})`;
       rafId = requestAnimationFrame(animate);
     };
     rafId = requestAnimationFrame(animate);

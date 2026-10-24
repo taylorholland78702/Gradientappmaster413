@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '../testUtils/renderHook';
-import { useBeatEffects, type UseBeatEffectsParams } from './useBeatEffects';
+import { useBeatEffects, shakeCoverScale, type UseBeatEffectsParams } from './useBeatEffects';
 import type { ColorRGB } from '../constants/gradientEffects';
 
 const colors: ColorRGB[] = [{ r: 1, g: 2, b: 3 }, { r: 4, g: 5, b: 6 }, { r: 7, g: 8, b: 9 }];
@@ -83,8 +83,20 @@ describe('useBeatEffects', () => {
     const h = renderHook(useBeatEffects, p);
     vi.advanceTimersByTime(20);
     expect(wrapper.style.transform).toContain('translate(');
+    expect(wrapper.style.transform).toContain('scale(');
     vi.advanceTimersByTime(2000);
     expect(wrapper.style.transform).toBe('');
     h.unmount(); vi.unstubAllGlobals();
+  });
+});
+
+describe('shake cover scale', () => {
+  const box = (l: number, t: number, r: number, b: number) => ({ getBoundingClientRect: () => ({ left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }) }) as unknown as HTMLElement;
+  it('grows enough that the canvas keeps covering its area, and is 1 at rest', () => {
+    const wrapper = box(0, 0, 1000, 800), canvas = box(100, 0, 1000, 800);
+    expect(shakeCoverScale(0, 0, canvas, wrapper)).toBe(1);
+    // canvas edges sit 400px (left: 500-100) and 500px from the centre: a 6px nudge needs 6/400
+    expect(shakeCoverScale(6, 0, canvas, wrapper)).toBeCloseTo(1 + 6 / 400, 5);
+    expect(shakeCoverScale(0, -4, canvas, wrapper)).toBeCloseTo(1 + 4 / 400, 5);
   });
 });
