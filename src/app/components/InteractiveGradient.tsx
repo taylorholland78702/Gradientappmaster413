@@ -114,6 +114,7 @@ import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
 import { useShuffleQualityGate } from '../hooks/useShuffleQualityGate';
 import { shuffleLearning } from '../utils/shuffleLearning';
+import { ShuffleMarkBar } from './ShuffleMarkBar';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
 import { useSliderFill } from '../hooks/useSliderFill';
@@ -1288,6 +1289,8 @@ export function InteractiveGradient() {
   };
 
   return (
+    <>
+    <ShuffleMarkBar onShuffle={() => evolveWithFactor(1)} />
     <GradientAppView
     aboutDialogRef={aboutDialogRef} activeTab={activeTab} audioFile={audioFile} audioPanelActions={audioPanelActions}
     audioPanelState={audioPanelState} audioRef={audioRef} autoShuffleIntervalSec={autoShuffleIntervalSec} autoShufflePopoverAnchor={autoShufflePopoverAnchor}
@@ -1307,5 +1310,6 @@ export function InteractiveGradient() {
     startVideoTake={startVideoTake} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} videoLength={videoLength}
     videoSize={videoSize}
     />
+    </>
   );
 }

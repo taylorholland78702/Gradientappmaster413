@@ -78,6 +78,17 @@ export class ShuffleLearning {
   // Forget the rolls so far (the gate asks for a clean start).
   reset() { this.attempts = []; }
 
+  // The look that stayed on screen after the last shuffle, once it has been committed.
+  get currentMeta(): ShuffleMeta | null { return this.current?.meta ?? null; }
+
+  // An explicit vote (the marking tool): counts however long ago the shuffle was, and replaces a weaker earlier signal.
+  vote(direction: 'up' | 'down') {
+    const c = this.current;
+    if (!c) return;
+    c.judged = true; this.clearTimer();
+    this.note(direction, c.meta);
+  }
+
   // You undid it. Counts only soon after the shuffle.
   reject() {
     const c = this.current;

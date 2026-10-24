@@ -1,5 +1,5 @@
 import type { EffectType, GradientType } from '../constants/gradientEffects';
-import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, moodById, type Mood, type MoodId } from '../constants/shuffleTaste';
+import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, type Mood } from '../constants/shuffleTaste';
 import { ShuffleHistory, pickWeighted } from './shuffleHistory';
 
 // Rolling and judging a shuffled look before it is drawn. Shuffle rolls several candidate looks (a gradient and an
@@ -74,10 +74,8 @@ export function chooseLook(opts: RollOptions, mood: Mood, history: ShuffleHistor
   return pickWeighted(candidates, c => Math.exp(c.score / temperature), rng);
 }
 
-// A mood for this shuffle: the one you chose, or else one that steers away from the one just used (and toward the
-// ones you tend to keep).
-export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, forced?: MoodId | 'any', learnedMood?: (id: string) => number): Mood {
-  if (forced && forced !== 'any') return moodById(forced);
+// A mood for this shuffle, steering away from the one just used (and toward the ones you tend to keep).
+export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, learnedMood?: (id: string) => number): Mood {
   return pickWeighted(MOODS, m => history.weight('mood', m.id) * (learnedMood?.(m.id) ?? 1), rng);
 }
 
