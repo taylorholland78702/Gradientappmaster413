@@ -677,6 +677,11 @@ export function useRandomization(params: RandomizationParams) {
           keptEffects.push(randomEffect);
         }
       }
+      // A look with no effects at all was skipped every time it came up (10 of 10 marked), so always add some.
+      while (keptEffects.length < 2) {
+        const e = additionalEffectsPool[Math.floor(Math.random() * additionalEffectsPool.length)];
+        if (!keptEffects.includes(e)) keptEffects.push(e);
+      }
       setActiveEffects(keptEffects);
       finalEffects = keptEffects;
       shuffleHistory.record('effect', keptEffects);

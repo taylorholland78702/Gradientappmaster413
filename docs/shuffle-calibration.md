@@ -1,0 +1,29 @@
+# Shuffle calibration from marked looks
+
+Two marking sessions of 30 looks each (60 in all; 28 kept, 32 skipped).
+
+## What the marks showed
+
+- The old frame score ranked keeps above skips 35% and 39% of the time (50% is chance): mildly backwards.
+- Looks with no effects at all: kept 1 of 16. Looks with effects: kept 27 of 44. The full-random path always adds at least
+  2 effects, so the empty ones most likely came from the rated-results blend path, which could end with none; it now tops up
+  to 2.
+- Kept looks had more detail (0.053-0.083 vs 0.032-0.040), a little more brightness spread, and clearly less colourfulness
+  (0.70-0.90 vs 1.05-1.21). The old score capped colourfulness at 0.55, so it rewarded saturation, and it also rewarded a fully
+  lit frame (kept looks were slightly less lit).
+- Seen so far: grid kept 1 of 12; windmill 2 of 6 and radial 3 of 10 (mostly effect-less ones); grain kept 10 of 11. Effects like
+  shift, bloom, vignette, mirror are kept about 60-75%. Moods are too mixed to read yet. These are not yet in the taste table:
+  the learner already adjusts the odds per browser from the same marks.
+
+## The new score
+
+`scoreFrame` is now 0.25 contrast + 0.25 detail (falling off above 0.2, which reads as noise) + 0.1 brightness richness +
+0.4 colour, where colour is best at a touch (0.15) and falls to 0 at 1.8, and counts only for frames with some brightness spread.
+Dark-ground gradients mix in a lit-share term at 15%.
+
+Fitted on session 1 and tested on session 2 the weights ranked keeps above skips 69-71%; fitted the other way round, 74%. On all
+60 looks: 70% (73% and 71% per session). The first attempt, fitted on session 1 only, scored 68% there but only 54% on session 2,
+which is why the weights were refit on both. Expect somewhat less on new looks; mark another batch to check.
+
+`GOOD_ENOUGH` moved from 0.62 to 0.5 because the scale shifted: about half of the marked looks score below it, so a poor roll is
+retried and a decent one is accepted straight away.
