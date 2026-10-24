@@ -320,7 +320,10 @@ export function getSharedFieldGL(width: number, height: number): { gl: WebGL2Ren
 // upscaled by the final drawImage.
 export const FIELD_PIXEL_BUDGET = 4_200_000;
 export const HEAVY_FIELD_PIXEL_BUDGET = 2_600_000;
-const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp']);
+const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp', 'embers', 'bokeh', 'strands', 'waves', 'spectral', 'nebula', 'prism']);
+// The slowest gradients overall (ranked in the performance audit). They may also drop below the display's native size
+// when frames are still slow after every normal step (see EMERGENCY_FLOORS in adaptiveQuality.ts).
+const SLOW_GRADIENTS = new Set([...HEAVY_GRADIENTS, 'raindrops', 'iridescent', 'glass', 'contour', 'ring']);
 
 // The render-target size for a frame: the main canvas's backing size, scaled
 // down uniformly if it exceeds `budget` pixels, but never below the display
@@ -371,7 +374,7 @@ export function beginGLFrame(args: {
   }
   let quality = frameQualityByGradient.get(key);
   if (!quality) {
-    quality = createQualityController();
+    quality = createQualityController({ emergency: SLOW_GRADIENTS.has(key) });
     frameQualityByGradient.set(key, quality);
   }
   const scale = glExportMode ? 1 : quality.update(lastFrameT ? now - lastFrameT : 0);
@@ -381,7 +384,8 @@ export function beginGLFrame(args: {
   const full = fieldRenderDims(canvasWidth, canvasHeight, displayWidth, displayHeight, budget);
   // Scale the full target down, but never below the display's CSS-pixel size
   // (or the canvas itself when that is smaller) -- the floor is the old behavior.
-  const minW = Math.min(displayWidth, full.w), minH = Math.min(displayHeight, full.h);
+  const floor = glExportMode ? 1 : quality.floor;
+  const minW = Math.round(Math.min(displayWidth, full.w) * floor), minH = Math.round(Math.min(displayHeight, full.h) * floor);
   const w = Math.max(minW, Math.round(full.w * scale));
   const h = Math.max(minH, Math.round(full.h * scale));
   frameScaleX = displayWidth > 0 ? w / displayWidth : 1;

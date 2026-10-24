@@ -18,38 +18,53 @@ export function oilPaintPixels(data: Uint8ClampedArray, displayWidth: number, di
   // painted output never leaks into a neighboring pixel's neighborhood scan.
   const src = new Uint8ClampedArray(data);
 
+  // Each source pixel's intensity bucket never changes, so work it out once.
+  const bucketOf = new Uint8Array(w * h);
+  for (let i = 0, p = 0; i < bucketOf.length; i++, p += 4) {
+    let bucket = Math.floor(((src[p] + src[p + 1] + src[p + 2]) / 3 / 256) * lv);
+    if (bucket >= lv) bucket = lv - 1;
+    bucketOf[i] = bucket;
+  }
+
   const intensityCount = new Int32Array(lv);
   const sumR = new Int32Array(lv);
   const sumG = new Int32Array(lv);
   const sumB = new Int32Array(lv);
 
+  // Adds (sign 1) or removes (sign -1) one column of the window: the pixels at column cx for rows y-r+oy..y+r+oy,
+  // edges clamped exactly as the full scan clamps them.
+  const column = (cx: number, y: number, sign: 1 | -1) => {
+    cx = cx < 0 ? 0 : cx >= w ? w - 1 : cx;
+    for (let ny = y - r + oy; ny <= y + r + oy; ny++) {
+      const cy = ny < 0 ? 0 : ny >= h ? h - 1 : ny;
+      const pi = cy * w + cx;
+      const si = pi * 4;
+      const b = bucketOf[pi];
+      intensityCount[b] += sign;
+      sumR[b] += sign * src[si];
+      sumG[b] += sign * src[si + 1];
+      sumB[b] += sign * src[si + 2];
+    }
+  };
+
+  // Slide the window along each row: moving one pixel right drops its leftmost column and adds a new rightmost one,
+  // so the cost per pixel is O(radius) instead of O(radius^2). The counts are identical to rescanning the window.
   for (let y = 0; y < h; y++) {
+    intensityCount.fill(0);
+    sumR.fill(0);
+    sumG.fill(0);
+    sumB.fill(0);
+    for (let nx = -r + ox; nx <= r + ox; nx++) column(nx, y, 1);
+
     for (let x = 0; x < w; x++) {
-      intensityCount.fill(0);
-      sumR.fill(0);
-      sumG.fill(0);
-      sumB.fill(0);
-
-      for (let ny = y - r + oy; ny <= y + r + oy; ny++) {
-        const cy = ny < 0 ? 0 : ny >= h ? h - 1 : ny;
-        for (let nx = x - r + ox; nx <= x + r + ox; nx++) {
-          const cx = nx < 0 ? 0 : nx >= w ? w - 1 : nx;
-          const si = (cy * w + cx) * 4;
-          const rr = src[si], gg = src[si + 1], bb = src[si + 2];
-          let bucket = Math.floor(((rr + gg + bb) / 3 / 256) * lv);
-          if (bucket >= lv) bucket = lv - 1;
-          intensityCount[bucket]++;
-          sumR[bucket] += rr;
-          sumG[bucket] += gg;
-          sumB[bucket] += bb;
-        }
+      if (x > 0) {
+        column(x - 1 - r + ox, y, -1);
+        column(x + r + ox, y, 1);
       }
-
       let maxBucket = 0, maxCount = 0;
       for (let b = 0; b < lv; b++) {
         if (intensityCount[b] > maxCount) { maxCount = intensityCount[b]; maxBucket = b; }
       }
-
       const di = (y * w + x) * 4;
       data[di] = sumR[maxBucket] / maxCount;
       data[di + 1] = sumG[maxBucket] / maxCount;

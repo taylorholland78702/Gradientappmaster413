@@ -15,6 +15,11 @@
 // is the floor the caller clamps to display size anyway.
 export const QUALITY_STEPS = [1, 0.85, 0.72, 0.61, 0.52] as const;
 
+// Extra steps for the costliest gradients, used only when the frame is still slow at the last step above. Unlike
+// QUALITY_STEPS these are fractions of the display's own CSS-pixel size (the usual floor), so the picture is rendered
+// below native size and stretched. Meant as an emergency brake on weak GPUs: it steps back up as soon as frames recover.
+export const EMERGENCY_FLOORS = [0.75, 0.6] as const;
+
 // Frame intervals (ms). Above SLOW the frame missed ~45fps; below FAST there is
 // comfortable headroom at 60fps. The gap between them is the dead band that
 // stops it flapping on every frame.
@@ -31,6 +36,8 @@ export interface QualityController {
   // Feed the time (ms) since the previous frame; returns the scale for this one.
   update(frameMs: number): number;
   readonly scale: number;
+  // Fraction of the display's CSS-pixel size to allow as the minimum render size: 1 except in emergency steps.
+  readonly floor: number;
   reset(): void;
 }
 
@@ -38,7 +45,10 @@ export interface QualityController {
 // genuinely too expensive, so the wait before trying it again doubles.
 const FLAP_WINDOW_FRAMES = 600;
 
-export function createQualityController(): QualityController {
+export function createQualityController(options: { emergency?: boolean } = {}): QualityController {
+  const lastStep = QUALITY_STEPS.length - 1 + (options.emergency ? EMERGENCY_FLOORS.length : 0);
+  const scaleAt = (i: number) => QUALITY_STEPS[Math.min(i, QUALITY_STEPS.length - 1)];
+  const floorAt = (i: number) => (i < QUALITY_STEPS.length ? 1 : EMERGENCY_FLOORS[i - QUALITY_STEPS.length]);
   let step = 0;
   let ema = 16.7;
   let cooldown = 0;
@@ -54,7 +64,7 @@ export function createQualityController(): QualityController {
       }
       if (cooldown > 0) {
         cooldown--;
-      } else if (ema > SLOW_MS && step < QUALITY_STEPS.length - 1) {
+      } else if (ema > SLOW_MS && step < lastStep) {
         if (lastChange === 'up' && framesSinceChange < FLAP_WINDOW_FRAMES) {
           upDelay = Math.min(upDelay * 2, MAX_UP_DELAY_FRAMES);
         }
@@ -68,9 +78,10 @@ export function createQualityController(): QualityController {
         lastChange = 'up';
         framesSinceChange = 0;
       }
-      return QUALITY_STEPS[step];
+      return scaleAt(step);
     },
-    get scale() { return QUALITY_STEPS[step]; },
+    get scale() { return scaleAt(step); },
+    get floor() { return floorAt(step); },
     reset() {
       step = 0; ema = 16.7; cooldown = 0; upDelay = BASE_UP_DELAY_FRAMES;
       lastChange = null; framesSinceChange = 0;
