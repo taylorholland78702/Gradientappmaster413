@@ -103,7 +103,7 @@ describe('per-gradient looks', () => {
   });
 
   it('mode switches only use values the mode accepts', () => {
-    const allowed: Record<string, string[]> = { noiseType: ['smooth', 'ridged'], windmillMode: ['blades', 'helix'], radialBurstMode: ['burst', 'sweep'] };
+    const allowed: Record<string, string[]> = { noiseType: ['smooth', 'ridged'], windmillMode: ['blades', 'helix'] };
     for (const [id, looks] of Object.entries(GRADIENT_LOOKS)) {
       for (const l of looks ?? []) {
         for (const [key, value] of Object.entries(l.params ?? {})) {

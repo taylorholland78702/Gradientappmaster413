@@ -208,7 +208,6 @@ export interface GradientsTabProps {
   radialBurstCount: number; setRadialBurstCount: (v: number) => void;
   radialBurstSpread: number; setRadialBurstSpread: (v: number) => void;
   radialBurstSize: number; setRadialBurstSize: (v: number) => void;
-  radialBurstMode: 'burst' | 'sweep'; setRadialBurstMode: (v: 'burst' | 'sweep') => void;
 
   // Voronoi
   voronoiCellCount: number; setVoronoiCellCount: (v: number) => void;
@@ -218,8 +217,6 @@ export interface GradientsTabProps {
   fadeDirection: number; setFadeDirection: (v: number) => void;
 
   // Radar
-  radarFadeLength: number; setRadarFadeLength: (v: number) => void;
-  radarBeamWidth: number; setRadarBeamWidth: (v: number) => void;
 
   // Flower
   flowerCircles: number; setFlowerCircles: (v: number) => void;
@@ -271,10 +268,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     drawParamsDirtyRef,
     noiseScale, setNoiseScale, noiseOctaves, setNoiseOctaves, noiseDirection, setNoiseDirection, noiseWarp, setNoiseWarp, noiseType, setNoiseType, noiseSpeed, setNoiseSpeed,
     radialBurstCount, setRadialBurstCount, radialBurstSpread, setRadialBurstSpread, radialBurstSize, setRadialBurstSize,
-    radialBurstMode, setRadialBurstMode,
+    
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, setVoronoiDistortion,
     fadeDirection, setFadeDirection,
-    radarFadeLength, setRadarFadeLength, radarBeamWidth, setRadarBeamWidth,
+    
     flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
     flowerSymmetry, setFlowerSymmetry, flowerOpacity, setFlowerOpacity,
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
@@ -863,45 +860,15 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Radial Burst Controls — 'sweep' mode folds in the former
-            standalone Radar gradient (rotating scan line) as an alternate
-            mode, same precedent as Zoom Blur merging into Blur. */}
+        {/* Radial Burst Controls */}
         {gradientType === 'radial-burst' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Mode:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <button
-                  onClick={() => setRadialBurstMode('burst')}
-                  aria-pressed={radialBurstMode === 'burst'}
-                  className={choice(radialBurstMode === 'burst', 'flex-1')}
-                >
-                  Burst
-                </button>
-                <button
-                  onClick={() => setRadialBurstMode('sweep')}
-                  aria-pressed={radialBurstMode === 'sweep'}
-                  className={choice(radialBurstMode === 'sweep', 'flex-1')}
-                >
-                  Sweep
-                </button>
-              </div>
-            </div>
-            {radialBurstMode === 'burst' ? (
-              <>
-                <SliderRow label="Burst Count:" value={radialBurstCount} onChange={setRadialBurstCount} min="3" max="16" />
-                <SliderRow label="Spread:" value={radialBurstSpread} onChange={setRadialBurstSpread} min="10" max="100" />
-                <SliderRow label="Size:" value={radialBurstSize} onChange={setRadialBurstSize} min="10" max="200" />
-              </>
-            ) : (
-              <>
-                <SliderRow label="Fade Length:" value={radarFadeLength} onChange={setRadarFadeLength} min="10" max="180" />
-                <SliderRow label="Beam Width:" value={radarBeamWidth} onChange={setRadarBeamWidth} min="1" max="90" />
-              </>
-            )}
+            <SliderRow label="Burst Count:" value={radialBurstCount} onChange={setRadialBurstCount} min="3" max="16" />
+            <SliderRow label="Spread:" value={radialBurstSpread} onChange={setRadialBurstSpread} min="10" max="100" />
+            <SliderRow label="Size:" value={radialBurstSize} onChange={setRadialBurstSize} min="10" max="200" />
           </div>
         )}
-        
+
         {/* Voronoi Controls */}
         {gradientType === 'voronoi' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">

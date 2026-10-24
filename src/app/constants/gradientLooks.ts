@@ -27,7 +27,7 @@ export const LOOK_PARAM_KEYS = [
   'reactionDiffusionFeed', 'reactionDiffusionKill', 'reactionDiffusionSpeed',
   'voronoiCellCount', 'voronoiDistortion',
   'radialSizeScale', 'radialSpeed',
-  'radialBurstMode', 'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
+  'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
   'windmillMode', 'helixTurns', 'helixTightness',
   'fadeDirection', 'angleStartOffset',
   'flowerCircles', 'flowerScale', 'flowerSpread',
@@ -265,9 +265,9 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Calm Spiral', colors: ['#e6f0ff', '#9bb8e8', '#5b7fc0', '#223a6a'], params: { windmillMode: 'helix', helixTurns: 4, helixTightness: 0.4 } },
   ],
   'radial-burst': [
-    { name: 'Starburst', colors: ['#fff1b8', '#ffb347', '#ff5e62', '#6a1b9a'], params: { radialBurstMode: 'burst', radialBurstCount: 10 } },
-    { name: 'Radar', colors: ['#00130a', '#0b6b2a', '#38d96e', '#eaffef'], params: { radialBurstMode: 'sweep' } },
-    { name: 'Neon Pinwheel', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { radialBurstMode: 'burst', radialBurstCount: 12, radialBurstSpread: 60 } },
+    { name: 'Starburst', colors: ['#fff1b8', '#ffb347', '#ff5e62', '#6a1b9a'], params: { radialBurstCount: 10 } },
+    { name: 'Neon Pinwheel', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { radialBurstCount: 12, radialBurstSpread: 60 } },
+    { name: 'Ember Bloom', colors: ['#12040a', '#7a1f3d', '#e8643c', '#ffd9a0'], params: { radialBurstCount: 7, radialBurstSize: 120, radialBurstSpread: 45 } },
   ],
   'reaction-diffusion': [
     { name: 'Coral', colors: ['#05121c', '#0b5a6b', '#ff7a6a', '#fff1e0'], params: { reactionDiffusionFeed: 0.055, reactionDiffusionKill: 0.062 } },

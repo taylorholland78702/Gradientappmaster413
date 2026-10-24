@@ -21,7 +21,6 @@ import { detectMarbleGLSupport, getMarbleGLStage } from './gradients/drawMarbleG
 import { detectLavaLampGLSupport, getLavaLampGLStage } from './gradients/drawLavaLampGL';
 import { detectJuliaGLSupport, getJuliaGLStage } from './gradients/drawJuliaGL';
 import { detectMetaballsGLSupport, getMetaballsGLStage } from './gradients/drawMetaballsGL';
-import { detectRadialBurstGLSupport, getRadialBurstSweepGLStage } from './gradients/drawRadialBurstGL';
 import { detectTilingGLSupport, getTilingGLStage } from './gradients/drawTilingGL';
 import { detectTopographicGLSupport, getTopographicGLStage } from './gradients/drawTopographicGL';
 import { detectVoronoiGLSupport, getVoronoiGLStage } from './gradients/drawVoronoiGL';
@@ -35,7 +34,7 @@ import { detectMirrorGLSupport, getMirrorGLStage } from './effects/applyMirrorGL
 // Phase-3 pilot: which gradients (given their live params) can lead a
 // GL-pipeline run. The field-shader gradients that share glShared.ts's
 // infra — Radial Burst and Windmill are mode-gated
-// (only their 'sweep'/'helix' submodes have a GL renderer at all; their
+// (only their 'helix' submode has a GL renderer at all; their
 // default modes already draw via native canvas ops and aren't part of
 // this). Mirrors each gradient's own Auto-wrapper eligibility check in
 // gradients/_registry.ts.
@@ -52,7 +51,6 @@ function getGradientGLStage(gradientType: string, drawCtx: DrawCtx): GLEffectSta
     case 'lava-lamp': return detectLavaLampGLSupport() ? getLavaLampGLStage(drawCtx) : null;
     case 'julia': return detectJuliaGLSupport() ? getJuliaGLStage(drawCtx) : null;
     case 'metaballs': return detectMetaballsGLSupport() ? getMetaballsGLStage(drawCtx) : null;
-    case 'radial-burst': return drawCtx.radialBurstMode === 'sweep' && detectRadialBurstGLSupport() ? getRadialBurstSweepGLStage(drawCtx) : null;
     case 'tiling': return detectTilingGLSupport() ? getTilingGLStage(drawCtx) : null;
     case 'topographic': return detectTopographicGLSupport() ? getTopographicGLStage(drawCtx) : null;
     case 'voronoi': return detectVoronoiGLSupport() ? getVoronoiGLStage(drawCtx) : null;
@@ -224,7 +222,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     noiseDirection, noiseOctaves, noiseScale,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     polygon2Sides, posterizeLevels,
-    radarBeamWidth, radarFadeLength, radarSweepAngle, radialBurstCount, radialBurstSize, radialBurstSpread,
+    radialBurstCount, radialBurstSize, radialBurstSpread,
     radialSizeScale, reactionDiffusionFeed, reactionDiffusionGridRef, reactionDiffusionKill, reactionDiffusionSpeed,
     resolutionMultiplier,
     shapesCount, shapesSides, slitScanBufferRef, slitScanDirection,
@@ -306,12 +304,11 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // tilingAnimTime was already in animValuesRef's shape but never actually
     // read through it here — still fell back to the params-destructured
     // (state-derived) value above, i.e. never got the redraw/re-render win
-    // the other 12 anim-time clocks did. gridRotation/radarSweepAngle are
+    // the other 12 anim-time clocks did. gridRotation is
     // the same class of value (a live per-frame accumulator, not a static
     // slider) but previously had no ref path at all.
     const tilingAnimTime = av.tilingAnimTime;
     const gridRotation = av.gridRotation;
-    const radarSweepAngle = av.radarSweepAngle;
     // Same ref-read treatment as the anim-time clocks above — these come
     // from the audio-analysis loop at ~60fps and used to be destructured
     // straight from `params`, which forced this whole closure to be torn
