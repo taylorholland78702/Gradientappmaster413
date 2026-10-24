@@ -103,6 +103,14 @@ describe('rolling a look', () => {
     }
   });
 
+  it('with a floor of 3 gives non-sparse gradients at least 3 effects and keeps sparse ones to 2', () => {
+    const rng = seeded(11);
+    for (let i = 0; i < 300; i++) {
+      const c = rollCandidate({ ...options(40), minEffects: 3 }, moodById(MOODS[i % MOODS.length].id), new ShuffleHistory(), rng);
+      expect(c.effects.length).toBeGreaterThanOrEqual(SPARSE.includes(c.gradient) ? 2 : 3);
+      expect(c.effects.length).toBeLessThanOrEqual(SPARSE.includes(c.gradient) ? 2 : 5);
+    }
+  });
   it('scores a matched look above a clashing one', () => {
     const h = new ShuffleHistory();
     const calm = moodById('cinematic');

@@ -27,3 +27,14 @@ which is why the weights were refit on both. Expect somewhat less on new looks; 
 
 `GOOD_ENOUGH` moved from 0.62 to 0.5 because the scale shifted: about half of the marked looks score below it, so a poor roll is
 retried and a decent one is accepted straight away.
+
+## Third session (held out)
+
+A third session of 30 (19 kept) was marked while the page was still running the old score (its recorded scores are on the old scale,
+and its AUC was 40%), which made it an untouched test of the new one: **the new score ranks it 72%** (70-73% on the first two).
+Across all 90 looks it ranks 72%. Detail is the single best feature (77% on this session, 69% over all 90); colourfulness
+is the best inverted (low colour preferred).
+
+Number of effects and how often the look was kept (90 looks): 0 effects 2 of 21, 1 effect 4 of 15, 2 effects 21 of 31,
+3 effects 14 of 15, 4-5 effects 6 of 8. So the floor is now 3 effects (2 on gradients that take at most 2; the rated-results blend
+tops up to the same).

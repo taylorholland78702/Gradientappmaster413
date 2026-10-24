@@ -54,11 +54,13 @@ export function rollCandidate(opts: RollOptions, mood: Mood, history: ShuffleHis
   const light = opts.lightEffects.filter(fx => !excluded.includes(fx) && !stack.includes(fx));
   // Fill by weighted draws without replacement, within the cost budget and the cap.
   const remaining = [...light];
-  const target = Math.max(opts.minEffects, Math.min(cap, 2 + Math.floor(rng() * (cap - 1))));
+  // The floor never exceeds the cap, so a gradient limited to two effects still gets a valid stack.
+  const floor = Math.min(opts.minEffects, cap);
+  const target = Math.max(floor, Math.min(cap, 2 + Math.floor(rng() * (cap - 1))));
   while (stack.length < target && remaining.length) {
     const fx = pickWeighted(remaining, weightOf, rng);
     remaining.splice(remaining.indexOf(fx), 1);
-    if (stack.length >= opts.minEffects && spent + opts.costOf(fx) > opts.costBudget) continue;
+    if (stack.length >= floor && spent + opts.costOf(fx) > opts.costBudget) continue;
     take(fx);
   }
   return { gradient, effects: stack, spentCost: spent };

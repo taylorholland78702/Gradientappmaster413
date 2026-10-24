@@ -45,7 +45,7 @@ describe('frame score', () => {
     expect(scoreFrame({ ...f, colourfulness: 0.7 }, 'smoke')).toBeGreaterThan(scoreFrame({ ...f, colourfulness: 1.6 }, 'smoke'));
   });
   it('puts GOOD_ENOUGH where about half of the marked looks (kept and skipped) fall below it, so a poor roll gets retried', () => {
-    const all = [...SESSION_1, ...SESSION_2].map(([g, sd, colourfulness, detail, entropy, lit, mean]) => scoreFrame({ mean, sd, colourfulness, detail, entropy, lit }, g));
+    const all = [...SESSION_1, ...SESSION_2, ...SESSION_3].map(([g, sd, colourfulness, detail, entropy, lit, mean]) => scoreFrame({ mean, sd, colourfulness, detail, entropy, lit }, g));
     const below = all.filter(v => v < GOOD_ENOUGH).length / all.length;
     expect(below).toBeGreaterThan(0.3);
     expect(below).toBeLessThan(0.7);
@@ -73,7 +73,7 @@ describe('choosing the look to keep', () => {
   });
 });
 
-// 60 looks marked Keep or Skip in the marking tool (two sessions of 30): [gradient, sd, colourfulness, detail, entropy, lit,
+// 90 looks marked Keep or Skip in the marking tool (three sessions of 30): [gradient, sd, colourfulness, detail, entropy, lit,
 // mean, kept]. The score is fitted to these, so this guards against it drifting back to ranking them near or below chance.
 type Marked = [string, number, number, number, number, number, number, boolean];
 const SESSION_1: Marked[] = [
@@ -141,6 +141,40 @@ const SESSION_2: Marked[] = [
   ['radial', 39.42, 1.8926, 0.01683, 0.4044, 1, 205.3, false],
 ];
 
+// Marked before the score was refit, so it was never fitted to: a held-out check (the new score ranks it 72%).
+const SESSION_3: Marked[] = [
+  ['grid', 31.57, 1.2274, 0.03884, 0.6227, 1, 139.5, false],
+  ['radial-burst', 35.24, 0.4881, 0.01505, 0.781, 0.9559, 85.8, false],
+  ['radial-burst', 54.62, 0.8121, 0.18344, 0.8353, 0.6711, 65.4, true],
+  ['radial', 9.976, 0.5147, 0.006975, 0.417, 1, 207.8, false],
+  ['bands', 26.75, 0, 0.02388, 0.584, 1, 213.4, true],
+  ['grid', 33.01, 1.1238, 0.05093, 0.6374, 1, 156.8, true],
+  ['shapes', 29.33, 1.5083, 0.01769, 0.5996, 1, 126.1, false],
+  ['radial-burst', 44.43, 0.8638, 0.02038, 0.8488, 0.8949, 98.5, false],
+  ['mercury', 57.08, 0.8608, 0.11015, 0.9028, 0.9992, 145.3, true],
+  ['grid', 18.85, 1.2275, 0.06067, 0.5722, 1, 129.7, true],
+  ['waves', 39.33, 0.3786, 0.03112, 0.4005, 0.5902, 46.7, false],
+  ['vortex', 34.41, 0.2759, 0.02926, 0.226, 0.0773, 13.5, true],
+  ['flow-mesh', 29.49, 0.7586, 0.02717, 0.7239, 1, 157.6, true],
+  ['radial', 21.54, 0.9149, 0.006198, 0.4768, 1, 141.1, false],
+  ['eclipse', 41.55, 0.7845, 0.0716, 0.7485, 0.6246, 48.7, true],
+  ['rays', 44.7, 0.8237, 0.10611, 0.8573, 0.9922, 103.0, true],
+  ['grid', 23.88, 1.4627, 0.05894, 0.5758, 1, 130.4, true],
+  ['grid', 29.08, 0.9794, 0.02526, 0.6477, 1, 144.5, false],
+  ['radial-burst', 47.24, 0.6537, 0.01351, 0.4684, 0.9953, 198.4, true],
+  ['spectral', 29.14, 0.419, 0.01118, 0.6003, 1, 195.9, true],
+  ['radial', 10.69, 0.4454, 0.006587, 0.3708, 1, 147.1, false],
+  ['radial', 8.535, 0.5996, 0.0021, 0.1992, 1, 153.1, false],
+  ['bands', 21.78, 0.0028, 0.09557, 0.5402, 1, 227.0, true],
+  ['glass', 9.276, 0.5936, 0.03175, 0.3404, 1, 222.3, true],
+  ['spectral', 23.83, 0.844, 0.008024, 0.5339, 1, 77.2, true],
+  ['shapes', 20.96, 0.6341, 0.02815, 0.5899, 1, 145.6, true],
+  ['noise', 45.67, 1.1971, 0.18164, 0.7056, 1, 120.7, true],
+  ['embers', 30.43, 0.3585, 0.08637, 0.5908, 0.4633, 37.7, true],
+  ['windmill', 46.13, 0.7298, 0.10062, 0.78, 1, 183.7, false],
+  ['bands', 39.36, 0.5251, 0.01938, 0.7679, 1, 150.4, true],
+];
+
 const agreement = (marked: Marked[]) => {
   const scored = marked.map(([g, sd, colourfulness, detail, entropy, lit, mean, kept]) => ({ kept, s: scoreFrame({ mean, sd, colourfulness, detail, entropy, lit }, g) }));
   const keeps = scored.filter(x => x.kept), skips = scored.filter(x => !x.kept);
@@ -153,6 +187,7 @@ describe('agreement with marked looks', () => {
   it('ranks kept looks above skipped ones clearly better than chance, in each session and overall', () => {
     expect(agreement(SESSION_1)).toBeGreaterThan(0.62);
     expect(agreement(SESSION_2)).toBeGreaterThan(0.62);
-    expect(agreement([...SESSION_1, ...SESSION_2])).toBeGreaterThan(0.65);
+    expect(agreement(SESSION_3)).toBeGreaterThan(0.62);
+    expect(agreement([...SESSION_1, ...SESSION_2, ...SESSION_3])).toBeGreaterThan(0.65);
   });
 });
