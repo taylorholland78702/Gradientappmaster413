@@ -28,7 +28,6 @@ import { useAuth } from '../hooks/useAuth';
 import { ControlRail } from './ControlRail';
 import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
-import { decodePresetData } from '../utils/presetShare';
 import type { PresetData } from '../hooks/usePresets';
 import { hslToRgb } from '../utils/color';
 import { useSnapshot } from '../hooks/useSnapshot';
@@ -124,6 +123,7 @@ import { useRefMirrors } from '../hooks/useRefMirrors';
 import { useMobilePanelHeight } from '../hooks/useMobilePanelHeight';
 import { useLooks } from '../hooks/useLooks';
 import { useGestureActions } from '../hooks/useGestureActions';
+import { useSharedPresetLink } from '../hooks/useSharedPresetLink';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
@@ -609,46 +609,7 @@ export function InteractiveGradient() {
     uid: authState.uid,
   });
 
-  // Load a shared preset from ?preset=<encoded> if present (see
-  // PresetsPanel's "Copy shareable link" button, and its "Open Standalone
-  // Player" button which adds &display=1 to the same link). The full
-  // snapshot is embedded directly in the URL rather than looked up from
-  // Firestore — this app doesn't control its own Firestore security rules
-  // from the client, so a new public collection can't be assumed readable
-  // by other users. Runs once on mount; strips the param afterward so a
-  // reload doesn't keep re-applying it (and so undo/redo/edits aren't
-  // fighting a giant URL sitting in the address bar). Used to bail out
-  // entirely in Display mode — now it's exactly how standalone playback
-  // gets its frozen state, so it only skips when there's no preset to load.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('preset');
-    if (!encoded) return;
-    try {
-      const data = sanitizeSnapshot(decodePresetData(encoded) as PresetData);
-      applySnapshot({
-        ...data,
-        gradientType: data.gradientType ? migrateId(data.gradientType) as GradientType : 'angle',
-        activeEffects: migrateIds(data.activeEffects) as EffectType[],
-      });
-      // Same instant-snap as applyPresetData above — see that comment.
-      const restoredColors = data.gradientColors || DEFAULT_COLORS;
-      gradientColorsRef.current = restoredColors.map((c: ColorRGB) => ({ ...c }));
-      gradientAngleRef.current = data.gradientAngle ?? 45;
-      zoomRef.current = data.zoom ?? 1;
-      // Standalone playback has no controller to press Play — Auto Mode
-      // is what drives every self-animating gradient's clock (see the
-      // IS_STANDALONE_DISPLAY checks throughout the draw loop and the
-      // per-gradient anim-time effects below), so turn it on here instead.
-      if (IS_DISPLAY_MODE) setIsAutoMode(true);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to load shared preset from URL:', err);
-    }
-    params.delete('preset');
-    const newSearch = params.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useSharedPresetLink({ getApplySnapshot: () => applySnapshot, gradientAngleRef, gradientColorsRef, setIsAutoMode, zoomRef });
 
   const {
     savedPresets,
