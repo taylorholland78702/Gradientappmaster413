@@ -7,7 +7,7 @@ const raw = import.meta.glob(['./**/*.ts', './**/*.tsx', '!./**/*.test.ts', '!./
 
 const ALLOWED: Record<string, number> = {
   // Look setters take a number or a string depending on the key; the map is indexed by LookParamKey.
-  './components/InteractiveGradient.tsx': 1,
+  './hooks/useLooks.ts': 1,
 };
 
 const ANY = /(?::\s*any\b|=>\s*any\b|\bas any\b|<any>|\bany\[\])/g;

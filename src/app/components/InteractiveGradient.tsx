@@ -16,10 +16,8 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Camera, Circle, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
-import { useTouchGestures } from '../hooks/useTouchGestures';
 import { useDisplaySync } from '../hooks/useDisplaySync';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useAutoShuffle } from '../hooks/useAutoShuffle';
@@ -27,18 +25,9 @@ import { useExportControls } from '../hooks/useExportControls';
 import { useGifExport } from '../hooks/useGifExport';
 import { usePresets } from '../hooks/usePresets';
 import { useAuth } from '../hooks/useAuth';
-import { ControlRail } from './ControlRail';
-import { ControlDrawer } from './ControlDrawer';
 import { useRandomization } from '../hooks/useRandomization';
-import { decodePresetData } from '../utils/presetShare';
 import type { PresetData } from '../hooks/usePresets';
-import { hslToRgb, hexToRgb, shiftHueByTreble, getActivePaletteMap, samplePalette } from '../utils/color';
-import { haptic } from '../utils/haptics';
-import { paletteFamily, inFamily, generateFamilyPalette, type Family } from '../utils/colorFamily';
-import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
-import { useMotionGestures } from '../hooks/useMotionGestures';
-import { requestMotionPermission } from '../utils/motionPermission';
-import { LOOK_DEFAULTS, type GradientLook, type LookParamKey } from '../constants/gradientLooks';
+import { hslToRgb } from '../utils/color';
 import { useSnapshot } from '../hooks/useSnapshot';
 import { useCanvasDraw } from '../hooks/useCanvasDraw';
 import {
@@ -46,9 +35,7 @@ import {
   DEFAULT_COLORS,
   migrateId, migrateIds,
   GRADIENT_DISPLAY_NAMES,
-  NO_DRAG_TYPES, STYLE_FIELD_GRADIENT_TYPES,
-} from '../constants/gradientEffects';
-import { totalCost, resolutionForEffectCost } from '../constants/effectCost';
+  STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { useAngleState } from '../hooks/state/useAngleState';
 import { useAsciiState } from '../hooks/state/useAsciiState';
 import { useAttractorState } from '../hooks/state/useAttractorState';
@@ -126,14 +113,26 @@ import { useHatchState } from '../hooks/state/useHatchState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
+import { useCanvasPointer } from '../hooks/useCanvasPointer';
+import { useSliderFill } from '../hooks/useSliderFill';
+import { useAnimClocks } from '../hooks/useAnimClocks';
+import { useRefMirrors } from '../hooks/useRefMirrors';
+import { useMobilePanelHeight } from '../hooks/useMobilePanelHeight';
+import { useLooks } from '../hooks/useLooks';
+import { useGestureActions } from '../hooks/useGestureActions';
+import { useSharedPresetLink } from '../hooks/useSharedPresetLink';
+import { useDrawerTouchScroll } from '../hooks/useDrawerTouchScroll';
+import { useFullscreenSync } from '../hooks/useFullscreenSync';
+import { useResolutionBudget } from '../hooks/useResolutionBudget';
+import { GradientAppView } from './GradientAppView';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
 import { useBeatEffects } from '../hooks/useBeatEffects';
 import { usePhotoUpload } from '../hooks/usePhotoUpload';
 import { generateAIColors as generateAIColorsFor } from '../utils/aiColors';
-import { NoticeToast } from './NoticeToast';
-import { WavHint } from './WavHint';
+import { addGradientStops as addGradientStopsTo } from '../utils/gradientStops';
+import { adjustColorArrayLength } from '../utils/color';
 import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
 import { useStructuralSeedState } from '../hooks/state/useStructuralSeedState';
 import { useTopographicState } from '../hooks/state/useTopographicState';
@@ -149,19 +148,17 @@ import { useVoronoiState } from '../hooks/state/useVoronoiState';
 import { useWaveState } from '../hooks/state/useWaveState';
 import { useWindmillState } from '../hooks/state/useWindmillState';
 
-import { AboutPanel } from './AboutPanel';
-import { PopoverPortal } from './PopoverPortal';
-import { ExportPopout } from './ExportPopout';
-import { RecordPopout } from './RecordPopout';
-import { AutoShufflePopout } from './AutoShufflePopout';
 import { formatAutoShuffleInterval } from '../utils/autoShuffle';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes } from '../constants/emojiPicker';
-import { IS_DISPLAY_MODE, IS_STANDALONE_DISPLAY } from '../constants/displayMode';
+import { IS_DISPLAY_MODE } from '../constants/displayMode';
 
 // Re-exported so existing importers keep working.
 export { EMOJI_PICKER_CATEGORIES, pickRandomEmojiSet, splitGraphemes, EffectSection };
 
+// The app's root. It owns the state (one small hook per gradient/effect, below), wires it into the feature
+// hooks (snapshots, presets, randomization, audio, the draw loop, gestures, popouts, looks, clocks) and hands
+// the result to <GradientAppView>, which holds the markup. Logic lives in hooks/, not here.
 export function InteractiveGradient() {
   const { angleStartOffset, setAngleStartOffset, angleCenterX, setAngleCenterX, angleCenterY, setAngleCenterY, angleHardEdge, setAngleHardEdge } = useAngleState();
   const { asciiSize, setAsciiSize, asciiColor, setAsciiColor, asciiChars, setAsciiChars } = useAsciiState();
@@ -342,27 +339,7 @@ export function InteractiveGradient() {
     return next;
   });
 
-  // MULTI_FX_COST_BUDGET (effectCost.ts) is set high enough that manually
-  // toggling effects in EffectsTab.tsx never grays a button out — stacking
-  // is an intentional choice there, unlike a random shuffle result, so it's
-  // not that budget's job to protect playback performance. But that also
-  // meant manually stacking several expensive effects got zero resolution
-  // relief: feelingLucky/randomizeEffects (useRandomization.ts) already
-  // call resolutionForEffectCost after picking a shuffled stack, but a
-  // manual EffectsTab toggle never did. Applying the same curve here,
-  // keyed only on activeEffects, covers both paths uniformly — redundant
-  // with (but harmless alongside) the explicit shuffle-path calls, since
-  // it converges on the identical value from the same inputs.
-  // Skipped in Display mode: resolutionMultiplier arrives there via the
-  // synced snapshot (useSnapshot.ts's applySnapshot) so it matches
-  // whatever the controller computed from ITS OWN devicePixelRatio —
-  // recomputing locally here would instead use the display window's own
-  // devicePixelRatio, which can genuinely differ (e.g. mirroring to an
-  // external projector) and silently diverge from the controller's choice.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE) return;
-    setResolutionMultiplier(resolutionForEffectCost(totalCost(activeEffects), isMobile));
-  }, [activeEffects, isMobile]);
+  useResolutionBudget({ activeEffects, isMobile, setResolutionMultiplier });
 
   // First-run hint explaining the tap/hold/double-tap gesture vocabulary —
   // tooltips (title attrs) never surface on touch devices, which is this
@@ -374,76 +351,10 @@ export function InteractiveGradient() {
     }
   };
   
-  // Effect parameters
-  // Dust-scratches was merged into film-grain — only its crackle-lines slider
-  // survives as an add-on (the noise portion was identical to grain's own).
-  // Tritone was merged into Duotone — this just adds a 3rd color stop.
-  
-  // New effect parameters
-  // Bloom
-  // Feedback / Trails
-  // audioReactiveColors is now in useAudioReactivity hook
-  
-  // New dither, slit-scan, and diffusion effect parameters
-  // Complexity and Scale were redundant — both just scale the same sine-wave
-  // frequency terms, so Complexity was removed and its value folded into Scale.
-  // Metaballs
-  // Truchet tiles
-  // Flow field
-  // Attractor — de Jong strange attractor, parameters slowly drift over
-  // time via attractorAnimTime for a living, evolving lace pattern.
-  // Reaction-Diffusion — Gray-Scott simulation on a fixed coarse grid
-  // (see reactionDiffusionGridRef), Feed/Kill control the pattern family
-  // (spots vs stripes vs coral), Speed controls sim steps per frame.
-  // Topographic — posterized noise field with dark contour lines at each band edge
-  // Julia Set — escape-time fractal on the complex plane, rendered at a
-  // fixed small internal resolution (see juliaCanvasRef) and upscaled, since
-  // per-pixel iteration at full canvas resolution would be far too slow.
-  // ASCII mosaic
-  // Emoji mosaic — ASCII's sibling, brightness maps to an emoji ramp instead of a character ramp
-  // Photo overlay — user-uploaded image blended over the gradient. The image
-  // itself lives in a ref (not React state, not saved in presets — a data
-  // URL big enough to be worth uploading would bloat every preset save), only
-  // blend mode + opacity are persisted so a reloaded preset at least restores
-  // the *look*, prompting the user to re-upload rather than silently losing it.
-  // Liquid displacement
-  // Chromatic trails
-
-  // Store base AI colors to keep them anchored
-  
-  // Preset management state is in usePresets hook (initialized below)
-  
-  // Rating system for Randomize
-  
   // File input refs for uploads
   const handleAudioFileClick = useCallback(() => fileInputRef.current?.click(), []);
   const handlePhotoFileClick = useCallback(() => photoInputRef.current?.click(), []);
   const { handlePhotoFileChange } = usePhotoUpload({ photoFileName, setPhotoFileName, setPhotoVersion, photoImageRef, setActiveEffects, isMultiFxMode });
-
-  // Fullscreen state
-
-  // Undo state - store previous settings for one-level undo
-  // Redo state - captures the state undo/redo moves away from, so it can be restored
-
-  // Track manual zoom interaction
-  
-  // Halftone animation time tracker
-
-  // Diffusion simulation buffers (for reaction-diffusion)
-  
-  // Slit-scan temporal buffer
-  // Flow field's persistent trail canvas + particle positions
-  // Attractor's persistent trail canvas + walker positions (same pattern as flow field)
-  // Reaction-Diffusion's persistent simulation grid (fixed coarse resolution,
-  // independent of canvas size — see RD_W/RD_H in useCanvasDraw). Double-buffered
-  // (u/v + u2/v2) to avoid allocating new Float32Arrays every simulation step.
-  // Julia Set's small fixed-resolution offscreen canvas (see comment above the state)
-  // Chromatic Trails' own trail buffer (separate from Feedback's)
-
-  // Audio reactivity state is in useAudioReactivity hook (initialized below)
-
-  // Minimum time between color changes (in milliseconds)
-  const CHANGE_INTERVAL = 300;
 
   // Memoized helper for generating random hex colors
   const randomHexColor = useCallback(() => {
@@ -614,46 +525,7 @@ export function InteractiveGradient() {
     uid: authState.uid,
   });
 
-  // Load a shared preset from ?preset=<encoded> if present (see
-  // PresetsPanel's "Copy shareable link" button, and its "Open Standalone
-  // Player" button which adds &display=1 to the same link). The full
-  // snapshot is embedded directly in the URL rather than looked up from
-  // Firestore — this app doesn't control its own Firestore security rules
-  // from the client, so a new public collection can't be assumed readable
-  // by other users. Runs once on mount; strips the param afterward so a
-  // reload doesn't keep re-applying it (and so undo/redo/edits aren't
-  // fighting a giant URL sitting in the address bar). Used to bail out
-  // entirely in Display mode — now it's exactly how standalone playback
-  // gets its frozen state, so it only skips when there's no preset to load.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('preset');
-    if (!encoded) return;
-    try {
-      const data = sanitizeSnapshot(decodePresetData(encoded) as PresetData);
-      applySnapshot({
-        ...data,
-        gradientType: data.gradientType ? migrateId(data.gradientType) as GradientType : 'angle',
-        activeEffects: migrateIds(data.activeEffects) as EffectType[],
-      });
-      // Same instant-snap as applyPresetData above — see that comment.
-      const restoredColors = data.gradientColors || DEFAULT_COLORS;
-      gradientColorsRef.current = restoredColors.map((c: ColorRGB) => ({ ...c }));
-      gradientAngleRef.current = data.gradientAngle ?? 45;
-      zoomRef.current = data.zoom ?? 1;
-      // Standalone playback has no controller to press Play — Auto Mode
-      // is what drives every self-animating gradient's clock (see the
-      // IS_STANDALONE_DISPLAY checks throughout the draw loop and the
-      // per-gradient anim-time effects below), so turn it on here instead.
-      if (IS_DISPLAY_MODE) setIsAutoMode(true);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Failed to load shared preset from URL:', err);
-    }
-    params.delete('preset');
-    const newSearch = params.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useSharedPresetLink({ getApplySnapshot: () => applySnapshot, gradientAngleRef, gradientColorsRef, setIsAutoMode, zoomRef });
 
   const {
     savedPresets,
@@ -675,81 +547,9 @@ export function InteractiveGradient() {
 
   // ─── End Custom Hooks ────────────────────────────────────────────────────────
 
-  // Sync --slider-pct CSS var so the purple-pink fill tracks the thumb position
-  useEffect(() => {
-    const update = (el: HTMLInputElement) => {
-      const min = Number(el.min) || 0;
-      const max = Number(el.max) || 100;
-      const pct = ((Number(el.value) - min) / (max - min)) * 100;
-      el.style.setProperty('--slider-pct', `${Math.max(0, Math.min(100, pct))}%`);
-    };
-    const initAll = () =>
-      document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(update);
+  useSliderFill();
 
-    // Update on every input event (range drag or keyboard on range)
-    const onInput = (e: Event) => { if ((e.target as HTMLElement).matches('input[type="range"]')) update(e.target as HTMLInputElement); };
-    document.addEventListener('input', onInput);
-
-    // New sliders appearing (conditional renders / dropdowns opening) are
-    // already covered by the deps-less effect below, which re-syncs every
-    // range input after every render — no need for a separate
-    // document-wide MutationObserver duplicating that on top of it (that
-    // used to fire a full-document querySelectorAll on any DOM mutation
-    // anywhere in the app, not just slider-related ones).
-    initAll();
-    return () => {
-      document.removeEventListener('input', onInput);
-    };
-  }, []);
-
-  // Re-sync all range fills after every render (catches number-input keyboard changes
-  // that update React state → re-render the range value but fire no DOM input event)
-  useEffect(() => {
-    document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(el => {
-      const min = Number(el.min) || 0;
-      const max = Number(el.max) || 100;
-      const pct = ((Number(el.value) - min) / (max - min)) * 100;
-      el.style.setProperty('--slider-pct', `${Math.max(0, Math.min(100, pct))}%`);
-    });
-  });
-
-  // Beat sync effects are now in useAudioReactivity hook via callbacks
-
-  // Audio reactivity and mic functions are now in useAudioReactivity hook
-
-  // Keep target/mode refs in sync with state so the master RAF loop can read them without restarts.
-  useEffect(() => { targetColorsRef.current = targetColors; }, [targetColors]);
-  useEffect(() => { targetAngleRef.current = targetAngle; }, [targetAngle]);
-  useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
-  // gridRotation/radarSweepAngle/voronoiAnimTime/flowerAnimTime/tilingAnimTime:
-  // same pattern as targetAngleRef above — the main loop now writes these
-  // directly into animValuesRef every frame instead of calling setState (see
-  // the loop below), so state only changes from EXTERNAL setters (shuffle
-  // randomization, snapshot/undo restore) or the loop's own periodic
-  // ref→state sync (every 15 frames, for UI/snapshot freshness). Either way
-  // this effect only fires a few times a second, not 60x/sec, and syncing
-  // the ref back to a value it may already hold (when triggered by the
-  // loop's own periodic sync) is a harmless no-op, not a feedback loop.
-  useEffect(() => { animValuesRef.current.gridRotation = gridRotation; }, [gridRotation]);
-  useEffect(() => { animValuesRef.current.radarSweepAngle = radarSweepAngle; }, [radarSweepAngle]);
-  useEffect(() => { animValuesRef.current.voronoiAnimTime = voronoiAnimTime; }, [voronoiAnimTime]);
-  useEffect(() => { animValuesRef.current.flowerAnimTime = flowerAnimTime; }, [flowerAnimTime]);
-  useEffect(() => { animValuesRef.current.tilingAnimTime = tilingAnimTime; }, [tilingAnimTime]);
-  useEffect(() => { vcrPlaybackSpeedRef.current = vcrPlaybackSpeed; }, [vcrPlaybackSpeed]);
-  useEffect(() => { isAutoModeRef.current = isAutoMode; }, [isAutoMode]);
-  useEffect(() => { rotationDirectionRef.current = rotationDirection; }, [rotationDirection]);
-  useEffect(() => { isAutoColorRef.current = isAutoColor; }, [isAutoColor]);
-  useEffect(() => { isVCRPlayingRef.current = isVCRPlaying; }, [isVCRPlaying]);
-
-  useEffect(() => { isAudioActiveRef.current = isAudioEnabled && isAudioReactive; }, [isAudioEnabled, isAudioReactive]);
-
-
-  // When mic activates on spiral (Windmill), freeze target colors so the lerp loop doesn't drift colors
-  useEffect(() => {
-    if (isMicActive && gradientType === 'windmill') {
-      setTargetColors([...gradientColorsRef.current]);
-    }
-  }, [isMicActive, gradientType]);
+  useRefMirrors({ animValuesRef, flowerAnimTime, gradientColorsRef, gradientType, gridRotation, isAudioActiveRef, isAudioEnabled, isAudioReactive, isAutoColor, isAutoColorRef, isAutoMode, isAutoModeRef, isMicActive, isVCRPlaying, isVCRPlayingRef, radarSweepAngle, rotationDirection, rotationDirectionRef, setTargetColors, targetAngle, targetAngleRef, targetColors, targetColorsRef, targetZoom, targetZoomRef, tilingAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, voronoiAnimTime });
 
   // Master animation RAF — lerps animated refs and calls drawRef imperatively.
   // Zero React state changes per frame; state syncs at ~20fps for undo/VCR.
@@ -760,47 +560,7 @@ export function InteractiveGradient() {
   const audioMidsLevelRef = useRef(audioMidsLevel);
   audioMidsLevelRef.current = audioMidsLevel;
   const lastReseedTimeRef = useRef(0);
-  // Real bug found via the (now-removed) debug overlay: the mobile panel's height
-  // cap used CSS `70dvh`, but this app never triggers a native document
-  // scroll (everything scrolls inside this one fixed internal panel), which
-  // is normally what prompts Safari to recalculate dvh as its toolbar
-  // shows/hides. With no such scroll ever happening, the toolbar can stay
-  // expanded while dvh remains sized for the toolbar-collapsed state — so
-  // the panel's own content genuinely fit within its own (too-generous)
-  // height cap (scrollHeight === clientHeight, confirmed via the debug
-  // overlay), while visually extending past the actually-visible screen.
-  // There was nothing to scroll; the cap itself was just wrong.
-  // window.visualViewport.height doesn't have this staleness problem — it
-  // updates live as the toolbar shows/hides regardless of page scrolling —
-  // so it drives the cap instead of the dvh unit.
-  const [visualViewportHeight, setVisualViewportHeight] = useState(() =>
-    typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800
-  );
-  useEffect(() => {
-    if (!isMobile || typeof window === 'undefined' || !window.visualViewport) return;
-    const vv = window.visualViewport;
-    const onResize = () => {
-      setVisualViewportHeight(vv.height);
-    };
-    vv.addEventListener('resize', onResize);
-    vv.addEventListener('scroll', onResize);
-    onResize();
-    return () => {
-      vv.removeEventListener('resize', onResize);
-      vv.removeEventListener('scroll', onResize);
-    };
-  }, [isMobile]);
-  // The mobile drawer isn't scaled (unlike its desktop counterpart's
-  // scale-[1.15]), so this targets the visible height directly with no
-  // divisor. Dropped from 0.7 to 0.55 of visible height for a much bigger
-  // safety margin — on-device testing kept showing content visually
-  // crowding the bottom edge even when scrollHeight didn't (yet) exceed
-  // clientHeight, so this trades some drawer size for headroom rather than
-  // continuing to chase the exact pixel-perfect budget on a device this
-  // can't directly inspect.
-  const mobilePanelMaxHeight = Math.floor(visualViewportHeight * 0.55);
-
-  // Refs for contrast/saturation pulse and canvas shake
+  const { mobilePanelMaxHeight } = useMobilePanelHeight({ isMobile });
 
   // Refs so the consolidated master RAF loop can read latest gating state without restarting
   activeEffectsRef.current = activeEffects;
@@ -844,145 +604,7 @@ export function InteractiveGradient() {
   }, []);
 
 
-  // Each of these local clocks is skipped entirely in Display mode — that
-  // tab's copies are pushed from the controller instead (see the animation
-  // sync effect below), so the two windows stay frame-locked instead of
-  // drifting apart.
-
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'hatch' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setHatchAnimTime(t => t + 0.05 * vcrPlaybackSpeed * hatchSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, hatchSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'noise' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setNoiseAnimTime(t => t + 0.01 * vcrPlaybackSpeed * noiseSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, noiseSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'radial' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setRadialAnimTime(t => t + 0.006 * vcrPlaybackSpeed * radialSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, radialSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'caustics' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setCausticsAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'lava-lamp' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setLavaAnimTime(t => t + 0.008 * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  // Shared clock for the styled-field gradients (drawStyleFieldGL.ts). Gated exactly
-  // like the older gradients' clocks above — it only advances while auto mode, VCR
-  // playback or the mic is on, so pausing freezes these too (and editing a slider
-  // while paused no longer makes the pattern jump) — and scaled by the playback speed
-  // and the Speed the last frame drew with. Lives in the anim-values ref rather than
-  // state, like gridRotation: advancing it must not re-render the panel tree 60x/sec.
-  // Real elapsed time (not a fixed per-tick step) so a throttled timer can't slow it.
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    let last = performance.now();
-    const id = setInterval(() => {
-      const now = performance.now();
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      if (!STYLE_FIELD_GRADIENT_TYPES.includes(gradientTypeRef.current as GradientType)) return;
-      if (!isAutoModeRef.current && !isVCRPlayingRef.current && !isMicActiveRef.current) return;
-      const av = animValuesRef.current;
-      av.fieldAnimTime += dt * vcrPlaybackSpeedRef.current * av.fieldSpeedLive;
-    }, 16);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'marble' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMarbleAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'metaballs' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setMetaballAnimTime(t => t + 0.02 * vcrPlaybackSpeed * metaballSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, metaballSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'particles' || particlesMode !== 'flow-field' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setFlowAnimTime(t => t + 0.02 * vcrPlaybackSpeed * flowSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, particlesMode, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, flowSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'attractor' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setAttractorAnimTime(t => t + 0.01 * vcrPlaybackSpeed * attractorSpeed), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, attractorSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
-
-  // Emoji cells only spin while Play is active — frozen in place otherwise
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (!activeEffects.includes('emoji') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setEmojiAnimTime(t => t + (emojiRotateSpeed / 60) * vcrPlaybackSpeed), 16);
-    return () => clearInterval(id);
-  }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, emojiRotateSpeed]);
-
-  // Keep a ref mirror of the anim-time fields so the rAF broadcast loop
-  // below can read fresh values every frame without itself needing to be
-  // torn down and recreated on every tick (which a dependency array would
-  // force, since these change ~60x/sec while playing).
-  //
-  // voronoiAnimTime/flowerAnimTime/tilingAnimTime are intentionally NOT
-  // included here anymore — the main loop now writes those directly into
-  // animValuesRef every frame (see the loop below), so mirroring them from
-  // state here as well would race with that direct write and periodically
-  // stomp the fresh ref value with a stale state-derived one. The other
-  // clocks below still only exist as state (each driven by its own
-  // setInterval elsewhere), so they still need this mirror to reach
-  // animValuesRef at all.
-  useEffect(() => {
-    const av = animValuesRef.current;
-    av.auroraAnimTime = auroraAnimTime;
-    av.turrellAnimTime = turrellAnimTime;
-    av.causticsAnimTime = causticsAnimTime;
-    av.lavaAnimTime = lavaAnimTime;
-    av.marbleAnimTime = marbleAnimTime;
-    av.metaballAnimTime = metaballAnimTime;
-    av.flowAnimTime = flowAnimTime;
-    av.liquidAnimTime = liquidAnimTime;
-    av.emojiAnimTime = emojiAnimTime;
-    av.attractorAnimTime = attractorAnimTime;
-    av.hatchAnimTime = hatchAnimTime;
-    av.noiseAnimTime = noiseAnimTime;
-    av.radialAnimTime = radialAnimTime;
-    av.audioSubBassLevel = audioSubBassLevel;
-    av.audioMidsLevel = audioMidsLevel;
-    av.audioTrebleLevel = audioTrebleLevel;
-    av.audioEnergy = audioEnergy;
-  }, [auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime, flowAnimTime, liquidAnimTime, emojiAnimTime, attractorAnimTime, hatchAnimTime, noiseAnimTime, radialAnimTime, audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy]);
+  useAnimClocks({ activeEffects, animValuesRef, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef });
 
   // buildSnapshot/applySnapshot extracted to useSnapshot.ts (splitting-plan
   // step 3). The single source of truth for undo/redo AND presets, so it
@@ -1107,118 +729,7 @@ export function InteractiveGradient() {
   });
 
   // Randomize all colors
-  // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
-  // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
-  // doesn't to their defaults so a look always lands the same way. A palette the
-  // same length as the current one eases in; a different length snaps (see
-  // setColorsInstant for why a length change can't ease) — Shuffle sidesteps that
-  // by passing `colorsOverride`, the look's palette resampled to the current
-  // length. No undo snapshot here: callers that want one take it themselves
-  // (the chips below; Shuffle already does).
-  const applyLookValues = useCallback((look: GradientLook, colorsOverride?: ColorRGB[]) => {
-    const colors = colorsOverride ?? look.colors.map(hexToRgb);
-    if (colors.length === gradientColorsRef.current.length) setTargetColors(colors);
-    else setColorsInstant(colors);
-    setFieldScale(look.scale ?? LOOK_DEFAULTS.scale);
-    setFieldSpeed(look.speed ?? LOOK_DEFAULTS.speed);
-    setPaletteBias(look.bias ?? LOOK_DEFAULTS.bias);
-    setPaletteSharp(look.sharp ?? LOOK_DEFAULTS.sharp);
-    setFieldContrast(look.contrast ?? LOOK_DEFAULTS.contrast);
-    setPaletteStops(null);
-    if (look.blend) setColorBlend(look.blend);
-    // The gradient's own sliders/modes. Only what the look lists is touched.
-    if (look.params) {
-      const setters: Record<LookParamKey, (v: any) => void> = { // eslint-disable-line @typescript-eslint/no-explicit-any
-        causticsBrightness: setCausticsBrightness, causticsScale: setCausticsScale,
-        lavaBlobCount: setLavaBlobCount, lavaBlobSize: setLavaBlobSize, lavaSpeed: setLavaSpeed,
-        marbleVeinFreq: setMarbleVeinFreq, marbleTurbulence: setMarbleTurbulence, marbleOctaves: setMarbleOctaves,
-        metaballCount: setMetaballCount, metaballSize: setMetaballSize, metaballSpeed: setMetaballSpeed,
-        noiseScale: setNoiseScale, noiseOctaves: setNoiseOctaves, noiseWarp: setNoiseWarp, noiseSpeed: setNoiseSpeed, noiseType: setNoiseType,
-        topographicScale: setTopographicScale, topographicBands: setTopographicBands, topographicLineWidth: setTopographicLineWidth,
-        juliaReal: setJuliaReal, juliaImaginary: setJuliaImaginary, juliaZoom: setJuliaZoom, juliaIterations: setJuliaIterations,
-        tilingSize: setTilingSize, tilingSymmetry: setTilingSymmetry, tilingComplexity: setTilingComplexity, tilingRotation: setTilingRotation,
-        reactionDiffusionFeed: setReactionDiffusionFeed, reactionDiffusionKill: setReactionDiffusionKill, reactionDiffusionSpeed: setReactionDiffusionSpeed,
-        voronoiCellCount: setVoronoiCellCount, voronoiDistortion: setVoronoiDistortion,
-        radialSizeScale: setRadialSizeScale, radialSpeed: setRadialSpeed,
-        radialBurstMode: setRadialBurstMode, radialBurstCount: setRadialBurstCount, radialBurstSize: setRadialBurstSize, radialBurstSpread: setRadialBurstSpread,
-        windmillMode: setWindmillMode, helixTurns: setHelixTurns, helixTightness: setHelixTightness,
-        fadeDirection: setFadeDirection, angleStartOffset: setAngleStartOffset,
-        flowerCircles: setFlowerCircles, flowerScale: setFlowerScale, flowerSpread: setFlowerSpread,
-        gridRows: setGridRows, gridColumns: setGridColumns, shapesCount: setShapesCount, shapesSides: setShapesSides,
-        stackCount: setStackCount, stackGap: setStackGap, stackWidth: setStackWidth, stackLength: setStackLength, stackResponse: setStackResponse,
-        hatchLayers: setHatchLayers, hatchSpacing: setHatchSpacing, hatchResponse: setHatchResponse, hatchSpeed: setHatchSpeed,
-        truchetSize: setTruchetSize, truchetVariation: setTruchetVariation, truchetThickness: setTruchetThickness,
-        particlesCount: setParticlesCount, particlesSize: setParticlesSize, particlesSpeed: setParticlesSpeed, particlesTrail: setParticlesTrail, particlesGravity: setParticlesGravity,
-        attractorPointCount: setAttractorPointCount, attractorSpeed: setAttractorSpeed, attractorScale: setAttractorScale,
-      };
-      for (const [key, value] of Object.entries(look.params) as [LookParamKey, number | string][]) {
-        setters[key](value);
-      }
-    }
-  }, [setColorsInstant]);
-
-  // What a Look chip does: the same, but undoable.
-  const applyGradientLook = useCallback((look: GradientLook) => {
-    colorFamilyRef.current.anchor = null;
-    saveCurrentState();
-    applyLookValues(look);
-    // A Look lands the same way every time, so the gradient's shape sliders go back to 1 too.
-    setFieldShapes(prev => ({ ...prev, [gradientTypeRef.current]: [1, 1] }));
-    setFieldExposure(0);
-    setFieldTone('off');
-    setFieldGrade({ brightness: 1, contrast: 1, saturation: 1 });
-    setFieldSwirl(0);
-  }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldExposure, setFieldTone, setFieldGrade, setFieldSwirl, gradientTypeRef]);
-
-  // "Same family": Shuffle keeps to the color family the palette was in when this was switched on (or
-  // when you last picked a palette yourself), so a run of shuffles reads as one mood.
-  const [keepFamily, setKeepFamilyState] = useState(() => { try { return localStorage.getItem('wavKeepFamily') === '1'; } catch { return false; } });
-  const colorFamilyRef = useRef<{ enabled: boolean; anchor: Family | null }>({ enabled: keepFamily, anchor: null });
-  colorFamilyRef.current.enabled = keepFamily;
-  if (keepFamily && !colorFamilyRef.current.anchor && gradientColorsRef.current.length) colorFamilyRef.current.anchor = paletteFamily(gradientColorsRef.current);
-  const setKeepFamily = (v: boolean) => {
-    colorFamilyRef.current.anchor = v ? paletteFamily(gradientColorsRef.current) : null;
-    setKeepFamilyState(v);
-    try { localStorage.setItem('wavKeepFamily', v ? '1' : '0'); } catch { /* not persisted */ }
-  };
-
-  // A colors-only palette from the library: eases in when it has as many colors as now, else
-  // is re-cut to the current count (same rule as the Color tab's Start from > Palettes).
-  const applyPalette = useCallback((palette: { colors: string[] }, opts?: { fromShuffle?: boolean }) => {
-    if (!opts?.fromShuffle) colorFamilyRef.current.anchor = null; // your own pick re-anchors the family
-    saveCurrentState();
-    const colors = palette.colors.map(hexToRgb);
-    const n = gradientColorsRef.current.length;
-    if (colors.length === n) setTargetColors(colors);
-    else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
-    setPaletteStops(null);
-  }, [saveCurrentState, setTargetColors, setColorsInstant, colorBlend, setPaletteStops]);
-
-  // The shuffle button beside the Looks & palettes menu: a random palette from the library
-  // (one that starts dark when the gradient needs a dark backdrop), never the one already showing.
-  const lastShuffledPaletteRef = useRef<string | null>(null);
-  const shuffleColors = useCallback(() => {
-    const dark = DARK_GROUND_GRADIENTS.includes(gradientTypeRef.current);
-    const fam = colorFamilyRef.current;
-    const anchor = fam.enabled ? (fam.anchor ?? (fam.anchor = paletteFamily(gradientColorsRef.current))) : null;
-    const n = gradientColorsRef.current.length;
-    let pool = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS);
-    if (anchor) pool = pool.filter(p => inFamily(p.colors.map(hexToRgb), anchor));
-    const live = gradientColorsRef.current;
-    const liveKey = live.map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|');
-    // Also never the one picked last time: the live colors are still easing toward it for a second or two.
-    const choices = pool.filter(p => p.name !== lastShuffledPaletteRef.current && p.colors.map(hexToRgb).map(c => `${Math.round(c.r / 8)},${Math.round(c.g / 8)},${Math.round(c.b / 8)}`).join('|') !== liveKey);
-    if (anchor && (choices.length < 2 || Math.random() < 0.35)) {
-      // Too few library palettes in this family (or just for variety): make one.
-      saveCurrentState();
-      setTargetColors(generateFamilyPalette(anchor, n, dark));
-      setPaletteStops(null);
-      lastShuffledPaletteRef.current = null;
-      return;
-    }
-    const pick = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length ? choices.length : pool.length))];
-    if (pick) { lastShuffledPaletteRef.current = pick.name; applyPalette(pick, { fromShuffle: true }); }
-  }, [applyPalette, saveCurrentState, setTargetColors, setPaletteStops]);
+  const { applyGradientLook, applyLookValues, applyPalette, colorFamilyRef, keepFamily, setKeepFamily, shuffleColors } = useLooks({ colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldExposure, setFieldGrade, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFieldTone, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstMode, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setWindmillMode });
 
   // Gradient display names, and the full/feeling-lucky type lists, now live
   // in constants/gradientEffects.ts (GRADIENT_DISPLAY_NAMES, FULL_GRADIENT_TYPES,
@@ -1228,49 +739,6 @@ export function InteractiveGradient() {
     return GRADIENT_DISPLAY_NAMES[type] ?? type;
   }, []);
 
-  // Helper function to adjust color array to target length — hoisted above
-  // useRandomization() since feelingLucky's preference-blend branch calls it
-  // directly (it must exist in the params object passed to that hook, and
-  // that call happens at render time, before a definition further down the
-  // component body would be initialized).
-  const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
-    if (colors.length === targetLength) {
-      return colors;
-    }
-
-    if (colors.length > targetLength) {
-      // If we have more colors than needed, evenly sample them
-      const step = colors.length / targetLength;
-      return Array.from({ length: targetLength }, (_, i) => {
-        const index = Math.floor(i * step);
-        return colors[index];
-      });
-    }
-
-    // If we need more colors, interpolate between existing ones
-    const result: ColorRGB[] = [];
-    const step = (colors.length - 1) / (targetLength - 1);
-
-    for (let i = 0; i < targetLength; i++) {
-      const position = i * step;
-      const index = Math.floor(position);
-      const fraction = position - index;
-
-      if (index >= colors.length - 1) {
-        result.push(colors[colors.length - 1]);
-      } else {
-        const color1 = colors[index];
-        const color2 = colors[index + 1];
-        result.push({
-          r: Math.round(color1.r + (color2.r - color1.r) * fraction),
-          g: Math.round(color1.g + (color2.g - color1.g) * fraction),
-          b: Math.round(color1.b + (color2.b - color1.b) * fraction),
-        });
-      }
-    }
-
-    return result;
-  }, []);
 
   // WAV button / Shuffle randomization — extracted to useRandomization.ts
   // (splitting-plan step 2). Wires ~150 setters spanning nearly every
@@ -1390,56 +858,6 @@ export function InteractiveGradient() {
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
   const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openRecordPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
-  const renderAutoShufflePopover = () => {
-    if (!autoShufflePopoverAnchor) return null;
-    const closePopover = () => setAutoShufflePopoverAnchor(null);
-    const iconCls = 'w-4 h-4 shrink-0';
-    const popout = {
-      export: {
-        title: 'Save & share',
-        icon: <Camera weight="regular" className={iconCls} />,
-        body: (
-          <ExportPopout
-            isMobile={isMobile}
-            exportSize={exportSize} setExportSize={setExportSize}
-            exportAspect={exportAspect} setExportAspect={setExportAspect}
-            exportAsPNG={exportAsPNG} closePopover={closePopover}
-            copiedKey={copiedKey} copyText={copyText} currentPlayerUrl={currentPlayerUrl}
-          />
-        ),
-      },
-      record: {
-        title: 'Record video',
-        icon: <Circle weight="regular" className={iconCls} />,
-        body: (
-          <RecordPopout
-            videoSize={videoSize} setVideoSize={setVideoSize}
-            videoLength={videoLength} setVideoLength={setVideoLength}
-            isRecording={isRecording} startVideoTake={() => { startVideoTake(); closePopover(); }}
-          />
-        ),
-      },
-      autoShuffle: {
-        title: 'Auto Shuffle',
-        icon: <InfinityIcon weight="regular" className={iconCls} />,
-        body: (
-          <AutoShufflePopout
-            isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
-            autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
-            autoShuffleScope={autoShuffleScope} setAutoShuffleScope={setAutoShuffleScope}
-          />
-        ),
-      },
-    }[popoverMode];
-    return (
-      <PopoverPortal
-        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
-        title={popout.title} icon={popout.icon}
-      >
-        {popout.body}
-      </PopoverPortal>
-    );
-  };
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
@@ -1448,93 +866,7 @@ export function InteractiveGradient() {
     lastBroadcastSnapshotRef, syncChannelRef, animSyncChannelRef, setIsDisplayLinkCopied,
   });
 
-  // ---- Gesture feedback and the shared actions behind swipes, arrow keys and taps ----------
-  // ---- Shared actions behind swipes, arrow keys and taps (each gives a haptic tap, no on-screen message) ----
-  const isControlsVisibleRef = useRef(true);
-  isControlsVisibleRef.current = isControlsVisible;
-
-  // Back is Undo. Forward is Redo when there is something to redo, otherwise a new
-  // Shuffle — so after stepping back, forward walks you back up before it rolls anything new.
-  const goBack = useCallback(() => {
-    if (undoIndexRef.current < 0) {
-      haptic('warn');
-      return;
-    }
-    undoLastChange();
-    haptic('tick');
-  }, [undoLastChange]);
-
-  const goForward = useCallback(() => {
-    if (redoStackRef.current.length > 0) {
-      redoLastChange();
-      haptic('tick');
-      return;
-    }
-    evolveWithFactor(1);
-    haptic('success');
-  }, [evolveWithFactor, redoLastChange]);
-
-  const togglePause = useCallback(() => {
-    toggleVCRPlayback();
-    haptic('tick');
-  }, [toggleVCRPlayback]);
-
-  const toggleControls = useCallback(() => {
-    if (IS_DISPLAY_MODE) return;
-    const wasVisible = isControlsVisibleRef.current;
-    setIsControlsVisible(!wasVisible);
-    haptic('success');
-  }, []);
-
-  const gestureActionsRef = useRef({ goBack, goForward, togglePause, toggleControls });
-  gestureActionsRef.current = { goBack, goForward, togglePause, toggleControls };
-
-  // Motion gestures (phone only): shake to Shuffle, tilt to rotate. Off until switched on in the
-  // About panel, because iOS asks permission and only from a tap; the choice is remembered.
-  const readFlag = (key: string) => { try { return localStorage.getItem(key) === '1'; } catch { return false; } };
-  const [shakeEnabled, setShakeEnabledState] = useState(() => readFlag('wavShake'));
-  const [tiltEnabled, setTiltEnabledState] = useState(() => readFlag('wavTilt'));
-  const [motionDenied, setMotionDenied] = useState(false);
-  const toggleMotion = async (kind: 'shake' | 'tilt') => {
-    const current = kind === 'shake' ? shakeEnabled : tiltEnabled;
-    const next = !current;
-    if (next) {
-      const ok = await requestMotionPermission();
-      if (!ok) { setMotionDenied(true); return; }
-      setMotionDenied(false);
-    }
-    (kind === 'shake' ? setShakeEnabledState : setTiltEnabledState)(next);
-    try { localStorage.setItem(kind === 'shake' ? 'wavShake' : 'wavTilt', next ? '1' : '0'); } catch { /* not persisted */ }
-    if (next) haptic('tick');
-  };
-  // Tilt turns the phone's left-right lean into the gradient angle, measured from wherever
-  // the phone was held when tilt came on (or when it was last re-centered).
-  const tiltBaseRef = useRef<{ gamma: number; angle: number } | null>(null);
-  useEffect(() => { if (!tiltEnabled) tiltBaseRef.current = null; }, [tiltEnabled]);
-  useMotionGestures({
-    shake: shakeEnabled,
-    tilt: tiltEnabled,
-    onShake: () => { evolveWithFactor(1); haptic('success'); },
-    onTilt: (gamma) => {
-      if (!tiltBaseRef.current) tiltBaseRef.current = { gamma, angle: targetAngleRef.current };
-      setTargetAngle(tiltBaseRef.current.angle + (gamma - tiltBaseRef.current.gamma) * 2.2);
-    },
-  });
-
-  // Reset everything to defaults — shared by the Reset button and the Shift+R hotkey
-  const resetToDefaults = useCallback(() => {
-    applySnapshot({});
-    setIsMultiFxMode(false);
-    setIsAutoColor(true);
-    setActiveTab(null);
-    setAIPrompt('');
-  }, [applySnapshot]);
-
-  // ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS now live in
-  // constants/gradientEffects.ts.
-
-
-  // ─── Unified evolve: factor 0 = subtle nudge, 1 = full random ───────────────
+  const { gestureActionsRef, goBack, goForward, motionDenied, resetToDefaults, shakeEnabled, tiltEnabled, toggleMotion } = useGestureActions({ applySnapshot, evolveWithFactor, isControlsVisible, redoLastChange, redoStackRef, setAIPrompt, setActiveTab, setIsAutoColor, setIsControlsVisible, setIsMultiFxMode, setTargetAngle, targetAngleRef, toggleVCRPlayback, undoIndexRef, undoLastChange });
 
   // Capture current state for rating. Rides on buildSnapshot (the same
   // comprehensive, actively-maintained source of truth used by undo/redo)
@@ -1557,64 +889,9 @@ export function InteractiveGradient() {
   }, [showRatingUI, pendingRatingState, captureCurrentStateForRating]);
 
 
-  // Shuffle Audiovisuals - randomize the Audio Controls panel (sliders +
-  // BEAT/FX-on-Beat toggles), matching each control's actual slider range.
-  // Leaves Auto Gain untouched — it's a mode switch, not a randomizable range.
-
   // Helper function to add color stops to gradient with optional hue shift
   const addGradientStops = useCallback((gradient: CanvasGradient, colors: ColorRGB[], hardEdge?: boolean) => {
-    const count = colors.length;
-    if (count === 0) return;
-    
-    // Validate colors and replace any invalid ones
-    const validColors = colors.map(color => {
-      if (!color || isNaN(color.r) || isNaN(color.g) || isNaN(color.b)) {
-        return { r: 128, g: 128, b: 128 }; // Default gray for invalid colors
-      }
-      return {
-        r: Math.max(0, Math.min(255, color.r)),
-        g: Math.max(0, Math.min(255, color.g)),
-        b: Math.max(0, Math.min(255, color.b))
-      };
-    });
-    
-    // Apply hue shift if audio is reactive
-    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioTrebleLevel > 0;
-    
-    const applyHueShift = (color: ColorRGB): ColorRGB =>
-      shouldApplyHueShift ? shiftHueByTreble(color, audioTrebleLevel) : color;
-    
-    if (count === 1) {
-      const shifted = applyHueShift(validColors[0]);
-      gradient.addColorStop(0, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
-      return;
-    }
-
-    if (hardEdge) {
-      // A duplicate stop at each band's start AND end (rather than one
-      // shared, crossfading stop between neighbors) is what makes the
-      // canvas render a flat solid color per band with a hard cut at the
-      // boundary instead of a blend.
-      const bandStep = 1 / count;
-      for (let i = 0; i < count; i++) {
-        const shifted = applyHueShift(validColors[i]);
-        const rgb = `rgb(${shifted.r},${shifted.g},${shifted.b})`;
-        gradient.addColorStop(Math.min(1, i * bandStep), rgb);
-        gradient.addColorStop(Math.min(1, (i + 1) * bandStep), rgb);
-      }
-      return;
-    }
-
-    // Custom stop positions apply here too (Bias and Sharpness can't be
-    // expressed as native canvas stops — those only take effect on the WebGL
-    // Radial fill this is the fallback for).
-    const customStops = getActivePaletteMap().stops;
-    const useCustomStops = !!customStops && customStops.length === count;
-    const step = 1 / (count - 1);
-    for (let i = 0; i < count; i++) {
-      const shifted = applyHueShift(validColors[i]);
-      gradient.addColorStop(useCustomStops ? customStops![i] : i * step, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
-    }
+    addGradientStopsTo(gradient, colors, hardEdge, isAudioEnabled && isAudioReactive ? audioTrebleLevel : 0);
   }, [isAudioEnabled, isAudioReactive, audioTrebleLevel]);
 
   useBeatEffects({ isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed });
@@ -1646,8 +923,6 @@ export function InteractiveGradient() {
     setIsVCRRecording(false);
     setIsVCRPlaying(false);
   }, [isAutoMode]);
-
-  // VCR recording/playback effects are now in useVCRPlayback hook
 
   // Collapse all drawing-relevant state into one memoized object so the drawing
   // useEffect only does a single reference comparison per render instead of 150+.
@@ -1791,236 +1066,18 @@ export function InteractiveGradient() {
 
 
 
-  const handleInteraction = useCallback((clientX: number, clientY: number) => {
-    if (!isDragging) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Calculate angle from the center of the canvas's own display box, not
-    // the window — the canvas no longer spans the full viewport now that
-    // the rail is a docked sidebar the canvas area reflows around.
-    const canvasRect = canvas.getBoundingClientRect();
-    const centerX = canvasRect.left + canvasRect.width / 2;
-    const centerY = canvasRect.top + canvasRect.height / 2;
-    const deltaX = clientX - centerX;
-    const deltaY = clientY - centerY;
-
-    // Update gradient angle based on mouse position relative to center
-    if (previousPosition.current) {
-      const prevDeltaX = previousPosition.current.x - centerX;
-      const prevDeltaY = previousPosition.current.y - centerY;
-
-      // Calculate cross product to determine rotation direction
-      const crossProduct = prevDeltaX * deltaY - prevDeltaY * deltaX;
-
-      // If moving in a circular pattern, update the angle
-      if (Math.abs(crossProduct) > 100) { // Threshold to detect circular motion
-        const angleIncrement = crossProduct > 0 ? 5 : -5;
-        setTargetAngle(prev => prev + angleIncrement);
-      }
-    }
-
-    previousPosition.current = { x: clientX, y: clientY };
-
-    const currentTime = Date.now();
-    if (currentTime - lastChangeTime.current < CHANGE_INTERVAL) return;
-
-    // Calculate which part of the canvas was touched to determine which color to change
-    const relativeX = (clientX - canvasRect.left) / canvasRect.width;
-    
-    // Determine which color index to change based on horizontal position
-    const colorIndex = Math.floor(relativeX * gradientColors.length);
-    const clampedIndex = Math.max(0, Math.min(colorIndex, gradientColors.length - 1));
-
-    // Update only the selected color
-    setTargetColors(prev => 
-      prev.map((color, index) => {
-        if (index === clampedIndex) {
-          // If we have base AI colors, create a variation of the base color
-          if (baseAIColors && baseAIColors[index]) {
-            const baseColor = baseAIColors[index];
-            const maxDrift = 40; // Allow some variation during interaction
-            return {
-              r: Math.max(0, Math.min(255, baseColor.r + (Math.random() - 0.5) * maxDrift * 2)),
-              g: Math.max(0, Math.min(255, baseColor.g + (Math.random() - 0.5) * maxDrift * 2)),
-              b: Math.max(0, Math.min(255, baseColor.b + (Math.random() - 0.5) * maxDrift * 2)),
-            };
-          }
-          // No base colors, use random
-          return randomColor();
-        }
-        return color;
-      })
-    );
-    
-    lastChangeTime.current = currentTime;
-  }, [isDragging, gradientColors.length, baseAIColors, randomColor]);
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Clicking the canvas is "outside" whichever tab drawer (Gradient/
-    // Effects/Audio/Color/Presets) is open — same dismissal Escape already
-    // does, just reachable without the keyboard. Auto Shuffle/About already
-    // close on any outside click via their own document-level listeners
-    // (see the effect above renderAutoShufflePopover), so this only needs
-    // to cover the one popup that didn't have that: the main drawer.
-    if (activeTab) setActiveTab(null);
-    // Self-animating gradients — drag interaction conflicts with their own animation
-    if (NO_DRAG_TYPES.includes(gradientType ?? '')) return;
-    // Particles' 'flow-field' mode drifts on its own too — same reasoning
-    // as NO_DRAG_TYPES above, just mode- rather than type-gated since it's
-    // no longer its own standalone gradient type.
-    if (gradientType === 'particles' && particlesMode === 'flow-field') return;
-
-    setIsDragging(true);
-    previousPosition.current = null;
-  };
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    previousPosition.current = null;
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    handleInteraction(e.clientX, e.clientY);
-  }, [handleInteraction]);
-
-  const { handleTouchStart, handleTouchEnd, handleTouchCancel, handleTouchMove } = useTouchGestures({
-    activeTab, setActiveTab, setIsDragging, previousPosition, targetZoomRef, targetAngleRef, targetColorsRef,
-    gestureActionsRef, exportAsPNG, lastManualZoomTime, setTargetZoom, setTargetAngle, setTargetColors,
-    handleInteraction, isAutoMode,
-  });
-  const handleWheel = useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
-    // ctrlKey signals a trackpad pinch gesture — ignore it
-    if (e.ctrlKey) { e.preventDefault(); return; }
-    e.preventDefault();
-    lastManualZoomTime.current = Date.now();
-    const multiplier = (isAutoMode ? 0.01 : 0.025) * 0.5;
-    const zoomDelta = -e.deltaY * multiplier;
-    setTargetZoom(prev => Math.max(0.05, Math.min(20, prev + zoomDelta)));
-  }, [isAutoMode]);
+  const { handleMouseDown, handleMouseMove, handleMouseUp, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } = useCanvasPointer({ activeTab, baseAIColors, canvasRef, exportAsPNG, gestureActionsRef, gradientColors, gradientType, isAutoMode, isDragging, lastChangeTime, lastManualZoomTime, particlesMode, previousPosition, randomColor, setActiveTab, setIsDragging, setTargetAngle, setTargetColors, setTargetZoom, targetAngleRef, targetColorsRef, targetZoomRef });
 
   // Export animated GIF
   const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
 
   // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
 
-  useEffect(() => {
-    const currentRef = containerRef.current;
-    if (currentRef) {
-      const handleFullScreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement);
-          };
-
-      currentRef.addEventListener('fullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('mozfullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('webkitfullscreenchange', handleFullScreenChange);
-      currentRef.addEventListener('msfullscreenchange', handleFullScreenChange);
-
-      return () => {
-        currentRef.removeEventListener('fullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('mozfullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
-        currentRef.removeEventListener('msfullscreenchange', handleFullScreenChange);
-      };
-    }
-  }, []);
-
-  // Preset load effect, savePreset, loadPreset, deletePreset, renamePreset, updatePreset are now in usePresets hook
-
-  // Listen for fullscreen changes (e.g., user pressing ESC)
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, []);
+  useFullscreenSync({ containerRef, setIsFullscreen });
 
   useGlobalHotkeys({ shuffleAudiovisuals, gradientTypeRef, undoLastChange, redoLastChange, shuffleGradientType, randomizeEffects, setActiveTab, setIsControlsVisible, exportAsPNG, resetToDefaults, toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection, evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab, isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook, goBack, goForward });
 
-  // Manual touch-drag scroll for the mobile control panel — a fallback
-  // that doesn't depend on native momentum-scroll/touch-action behavior at
-  // all. Three rounds of CSS-only fixes (touchAction:'pan-y', separating
-  // transform off the scrolling element, removing a poisoning
-  // touchAction:'none' ancestor) all produced textbook-correct computed
-  // styles yet still failed to scroll on a real device, which points at an
-  // iOS Safari native-gesture quirk this couldn't pin down further without
-  // device access. This bypasses that entirely: touchmove deltas are read
-  // directly and applied to scrollTop by hand, so it can't be silently
-  // eaten by whatever's blocking the native gesture.
-  //
-  // Disambiguates by gesture DIRECTION rather than fully excluding drags
-  // that start on a range input — the first version excluded any touch
-  // starting on input/select, which worked fine on the Gradients tab
-  // (few, sparse sliders, easy to grab a gap) but effectively disabled
-  // scrolling on Effects/Multi-FX, which is dense with range sliders, so
-  // almost any drag started on or right next to one and fell through to
-  // the (broken) native path. Now every touch is allowed to become a
-  // scroll: once movement exceeds a small threshold, a mostly-vertical
-  // drag scrolls the panel (even if it started on a slider — the user is
-  // clearly trying to scroll, not drag it sideways), a mostly-horizontal
-  // drag is left alone so the slider's own native dragging still works.
-  useEffect(() => {
-    if (!isMobile) return;
-    const el = drawerRef.current;
-    if (!el) return;
-    const DIRECTION_THRESHOLD = 6; // px of movement before committing to scroll vs. slider-drag
-    let startX = 0;
-    let startY = 0;
-    let startScrollTop = 0;
-    let scrolling = false;
-    const onTouchStart = (e: TouchEvent) => {
-      scrolling = false;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      startScrollTop = el.scrollTop;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      const dx = touch.clientX - startX;
-      const dy = touch.clientY - startY;
-      if (!scrolling) {
-        const absDx = Math.abs(dx), absDy = Math.abs(dy);
-        if (absDx < DIRECTION_THRESHOLD && absDy < DIRECTION_THRESHOLD) {
-          return;
-        }
-        // Re-evaluated on every move rather than decided once and locked —
-        // real touch gestures are noisy in the first few pixels (the
-        // finger hasn't "settled" into a direction yet), so a one-shot
-        // decision on an early ambiguous/diagonal wobble could permanently
-        // misread a genuine vertical scroll as a horizontal slider-drag for
-        // the rest of that gesture. Biased toward scroll (0.8 ratio, not
-        // 1:1) since scrolling the panel is the much more common intent
-        // here and a slightly-diagonal scroll swipe shouldn't get read as
-        // "trying to drag the slider".
-        if (absDy < absDx * 0.8) {
-          return; // stays undecided — let native/slider handle this move, re-check next one
-        }
-        scrolling = true;
-      }
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      if (maxScroll <= 0) return;
-      el.scrollTop = Math.max(0, Math.min(maxScroll, startScrollTop - dy));
-      e.preventDefault();
-    };
-    const onTouchEnd = () => { scrolling = false; };
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
-    // activeTab included: the drawer only exists in the DOM while a tab is
-    // open, so drawerRef.current is a different (or null) node each time
-    // one opens/closes — this needs to re-run and re-attach listeners to
-    // whatever the current node actually is, not just once per isMobile.
-  }, [isMobile, activeTab]);
+  useDrawerTouchScroll({ activeTab, drawerRef, isMobile });
 
   // Load-in reveal — canvas starts invisible and fades in shortly after
   // mount instead of popping in fully-formed the instant the first frame is
@@ -2055,8 +1112,7 @@ export function InteractiveGradient() {
   // this — every key here is a local variable/function from this
   // component's own scope, so two tabs referencing the same name (e.g.
   // gridRows, used by both Gradients and Effects) are always the same
-  // value, never a collision. Same loosely-typed blob convention
-  // useSnapshot.ts/useRandomization.ts already use for this exact problem.
+  // value, never a collision.
   const controlDrawerTabProps = {
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, keepFamily, setKeepFamily, structuralSeed, setStructuralSeed,
@@ -2185,252 +1241,61 @@ export function InteractiveGradient() {
   // below, so the canvas area actually shrinks to share the frame with it
   // instead of being covered. Built once here and placed on whichever side
   // matches the layout (left of canvas on desktop, below it on mobile).
-  const dock = (
-    <div
-      data-role="dock"
-      className={isMobile ? 'flex-shrink-0 w-full flex flex-col' : 'flex-shrink-0 h-full flex flex-row'}
-    >
-      {!isMobile && (
-        <ControlRail
-          ref={panelRef}
-          isMobile={isMobile}
-          onWordmarkClick={openAboutPanel}
-          handleWavClick={handleWavClick}
-          isWavPressed={isWavPressed}
-          isAutoShuffleOn={isAutoShuffleOn}
-          isNewPresetPending={isNewPresetPending}
-          autoShuffleIntervalSec={autoShuffleIntervalSec}
-          formatAutoShuffleInterval={formatAutoShuffleInterval}
-          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
-          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
-          openAutoShufflePopover={openAutoShufflePopover}
-          openExportPopover={openExportPopover}
-          openRecordPopover={openRecordPopover}
-          exportAsPNG={exportAsPNG}
-          toggleGifRecording={toggleGifRecording}
-          isFinalizingGif={isFinalizingGif}
-          isRecordingGif={isRecordingGif}
-          undoLastChange={undoLastChange}
-          redoLastChange={redoLastChange}
-          undoDepth={undoDepth}
-          redoDepth={redoDepth}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isMicActive={isMicActive}
-          liveSubBassLevel={liveSubBassLevel}
-          liveBassLevel={liveBassLevel}
-          liveMidsLevel={liveMidsLevel}
-          liveTrebleLevel={liveTrebleLevel}
-          audioEnergy={audioEnergy}
-          isRecording={isRecording}
-          isEncoding={isEncoding}
-          encodingProgress={encodingProgress}
-          toggleVCRRecording={toggleVCRRecording}
-        />
-      )}
-
-      <ControlDrawer
-        ref={drawerRef}
-        activeTab={activeTab}
-        isMobile={isMobile}
-        mobileMaxHeight={mobilePanelMaxHeight}
-        tabProps={controlDrawerTabProps}
-        audioState={audioPanelState}
-        audioActions={audioPanelActions}
-      />
-
-      {isMobile && (
-        <ControlRail
-          ref={panelRef}
-          isMobile={isMobile}
-          onWordmarkClick={openAboutPanel}
-          handleWavClick={handleWavClick}
-          isWavPressed={isWavPressed}
-          isAutoShuffleOn={isAutoShuffleOn}
-          isNewPresetPending={isNewPresetPending}
-          autoShuffleIntervalSec={autoShuffleIntervalSec}
-          formatAutoShuffleInterval={formatAutoShuffleInterval}
-          autoShufflePopoverAnchor={autoShufflePopoverAnchor}
-          setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor}
-          openAutoShufflePopover={openAutoShufflePopover}
-          openExportPopover={openExportPopover}
-          openRecordPopover={openRecordPopover}
-          exportAsPNG={exportAsPNG}
-          toggleGifRecording={toggleGifRecording}
-          isFinalizingGif={isFinalizingGif}
-          isRecordingGif={isRecordingGif}
-          undoLastChange={undoLastChange}
-          redoLastChange={redoLastChange}
-          undoDepth={undoDepth}
-          redoDepth={redoDepth}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isMicActive={isMicActive}
-          liveSubBassLevel={liveSubBassLevel}
-          liveBassLevel={liveBassLevel}
-          liveMidsLevel={liveMidsLevel}
-          liveTrebleLevel={liveTrebleLevel}
-          audioEnergy={audioEnergy}
-          isRecording={isRecording}
-          isEncoding={isEncoding}
-          encodingProgress={encodingProgress}
-          toggleVCRRecording={toggleVCRRecording}
-        />
-      )}
-    </div>
-  );
+  const controlRailProps = {
+    isMobile,
+    onWordmarkClick: openAboutPanel,
+    handleWavClick,
+    isWavPressed,
+    isAutoShuffleOn,
+    isNewPresetPending,
+    autoShuffleIntervalSec,
+    formatAutoShuffleInterval,
+    autoShufflePopoverAnchor,
+    setAutoShufflePopoverAnchor,
+    openAutoShufflePopover,
+    openExportPopover,
+    openRecordPopover,
+    exportAsPNG,
+    toggleGifRecording,
+    isFinalizingGif,
+    isRecordingGif,
+    undoLastChange,
+    redoLastChange,
+    undoDepth,
+    redoDepth,
+    activeTab,
+    setActiveTab,
+    isMicActive,
+    liveSubBassLevel,
+    liveBassLevel,
+    liveMidsLevel,
+    liveTrebleLevel,
+    audioEnergy,
+    isRecording,
+    isEncoding,
+    encodingProgress,
+    toggleVCRRecording,
+  };
 
   return (
-    <div
-      className="fixed inset-0 overflow-hidden bg-black flex"
-      style={{ flexDirection: isMobile ? 'column' : 'row' }}
-      ref={containerRef}
-    >
-      {/* Canvas renders full-bleed behind the dock (fixed, out of flex flow)
-          so the dock's translucent background genuinely shows the gradient
-          through it, instead of just the root's opaque black. */}
-      <main ref={shakeWrapperRef} className="fixed inset-0 z-0" aria-label="Gradient canvas">
-        <canvas
-          ref={canvasRef}
-          role="img"
-          aria-label="Animated gradient artwork"
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-          onTouchMove={handleTouchMove}
-          onWheel={handleWheel}
-          className="w-full h-full"
-          style={{ touchAction: 'none', opacity: hasRevealed ? 1 : 0, transition: 'opacity 900ms ease-out' }}
-        />
-      </main>
-      {!isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
-      {/* Pure flex spacer — no content, so it must not intercept pointer
-          events. Without pointer-events-none, this (relative, DOM-order
-          after the canvas's fixed z-0 wrapper) painted above the canvas
-          across the entire non-dock area and silently swallowed every
-          click/drag meant for it in desktop layout. */}
-      <div className="relative flex-1 min-w-0 min-h-0 pointer-events-none" />
-      {isMobile && isControlsVisible && <div className="relative z-10 flex-shrink-0">{dock}</div>}
-
-      {/* Upper Right Controls */}
-      <div className={`absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="audio/*"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-        <input
-          ref={photoInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoFileChange}
-          className="hidden"
-        />
-      </div>
-
-      
-      {/* First-run hint — floats near wherever the rail currently is
-          (railRect), same content/dismiss logic as before, just
-          repositioned now that it can't sit inline under the wordmark
-          inside a card anymore (the rail is a slim strip with no room for
-          it). Hidden while a drawer is open so it can't overlap one. */}
-      {savePreview && (
-        <div
-          role="dialog"
-          aria-label="Save image"
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 p-4"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.86)' }}
-          onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
-        >
-          <img
-            src={savePreview.url}
-            alt="Your artwork. Press and hold to save it to Photos."
-            className="max-w-full object-contain shadow-2xl"
-            style={{ maxHeight: 'calc(100% - 120px)' }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <p className="text-[13px] text-white text-center">Press and hold the image, then tap <span className="font-semibold">Add to Photos</span></p>
-          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
-              <button
-                className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
-                onClick={async () => {
-                  const file = new File([savePreview.blob], savePreview.name, { type: 'image/png' });
-                  try { if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }); } catch { /* closed or unsupported */ }
-                }}
-              >Share…</button>
-            )}
-            <button
-              className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = savePreview.url;
-                link.download = savePreview.name;
-                link.click();
-              }}
-            >Download</button>
-            <button
-              className="px-4 py-2 text-[13px] font-semibold bg-white text-black"
-              onClick={() => { URL.revokeObjectURL(savePreview.url); setSavePreview(null); }}
-            >Done</button>
-          </div>
-        </div>
-      )}
-
-      {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
-      {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
-        <WavHint isMobile={isMobile} railRect={railRect} onDismiss={dismissWavHint} />
-      )}
-
-
-      {audioFile && (
-        <audio
-          ref={audioRef}
-          src={audioFile}
-          loop
-        />
-      )}
-
-      {/* Auto Shuffle interval popover — single render call site so opening
-          it from either trigger (collapsed cluster or expanded top row,
-          only one of which is ever mounted+clickable at a time) never
-          produces two portaled copies. */}
-      {renderAutoShufflePopover()}
-
-      <NoticeToast />
-
-      {/* Display-link-copied toast — brief confirmation for Shift+P */}
-      {isDisplayLinkCopied && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-wav-surface backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
-          Display link copied — open it in a new tab/window for live output
-        </div>
-      )}
-
-      {/* About panel. Mobile: a centered floating card, same as any other
-          modal — the rail there is a bottom bar, not a side column, so
-          there's no "attached to the panel" edge to dock against. Desktop:
-          fastened flush against the rail's right edge (no gap), square
-          corners (a docked extension of the rail rather than a floating
-          card), and stretches from the rail's own top down to the bottom
-          of the viewport — same footprint the canvas itself has. The
-          click-catcher behind it stays unblurred so the gradient result
-          underneath isn't blurred out; only the card itself keeps its own
-          surface. */}
-      {isAboutOpen && (
-        <AboutPanel
-          isMobile={isMobile} railRect={railRect} dialogRef={aboutDialogRef} onClose={() => setIsAboutOpen(false)}
-          isAutoShuffleOn={isAutoShuffleOn} setIsAutoShuffleOn={setIsAutoShuffleOn}
-          autoShuffleIntervalSec={autoShuffleIntervalSec} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
-          shakeEnabled={shakeEnabled} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} motionDenied={motionDenied}
-        />
-      )}
-
-    </div>
+    <GradientAppView
+    aboutDialogRef={aboutDialogRef} activeTab={activeTab} audioFile={audioFile} audioPanelActions={audioPanelActions}
+    audioPanelState={audioPanelState} audioRef={audioRef} autoShuffleIntervalSec={autoShuffleIntervalSec} autoShufflePopoverAnchor={autoShufflePopoverAnchor}
+    autoShufflePopoverRef={autoShufflePopoverRef} autoShuffleScope={autoShuffleScope} canvasRef={canvasRef} containerRef={containerRef}
+    controlDrawerTabProps={controlDrawerTabProps} controlRailProps={controlRailProps} copiedKey={copiedKey} copyText={copyText}
+    currentPlayerUrl={currentPlayerUrl} dismissWavHint={dismissWavHint} drawerRef={drawerRef} exportAsPNG={exportAsPNG}
+    exportAspect={exportAspect} exportSize={exportSize} fileInputRef={fileInputRef} handleFileUpload={handleFileUpload}
+    handleMouseDown={handleMouseDown} handleMouseMove={handleMouseMove} handleMouseUp={handleMouseUp} handlePhotoFileChange={handlePhotoFileChange}
+    handleTouchCancel={handleTouchCancel} handleTouchEnd={handleTouchEnd} handleTouchMove={handleTouchMove} handleTouchStart={handleTouchStart}
+    handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
+    isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
+    mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
+    setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview} setVideoLength={setVideoLength}
+    setVideoSize={setVideoSize} shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
+    startVideoTake={startVideoTake} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} videoLength={videoLength}
+    videoSize={videoSize}
+    />
   );
 }

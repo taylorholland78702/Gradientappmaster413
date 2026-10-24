@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  hslToRgb, rgbToHsl, blendRgb, paletteSegmentFor, sharpenFraction, biasToGamma, evenStops, samplePalette,
+  hslToRgb, rgbToHsl, adjustColorArrayLength, blendRgb, paletteSegmentFor, sharpenFraction, biasToGamma, evenStops, samplePalette,
   type PaletteSegment,
 } from './color';
 
@@ -162,5 +162,20 @@ describe('palette mapping', () => {
     expect(hard[4].r).toBeCloseTo(255, 5);
     expect(hard[1].r).toBeLessThan(2);
     expect(hard[3].r).toBeGreaterThan(253);
+  });
+});
+
+describe('adjustColorArrayLength', () => {
+  const c = (r: number) => ({ r, g: 0, b: 0 });
+  it('returns the same palette when the length already matches', () => {
+    const colors = [c(0), c(100)];
+    expect(adjustColorArrayLength(colors, 2)).toBe(colors);
+  });
+  it('picks evenly spaced colors when shrinking', () => {
+    expect(adjustColorArrayLength([c(0), c(10), c(20), c(30)], 2)).toEqual([c(0), c(20)]);
+  });
+  it('interpolates when growing, keeping the end colors', () => {
+    const out = adjustColorArrayLength([c(0), c(100)], 5);
+    expect(out.map(x => x.r)).toEqual([0, 25, 50, 75, 100]);
   });
 });

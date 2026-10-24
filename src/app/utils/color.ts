@@ -316,3 +316,43 @@ export function samplePalette(
   }
   return out;
 }
+
+// Resamples a palette to `targetLength` colors: evenly picks when shrinking, interpolates when growing.
+export function adjustColorArrayLength(colors: ColorRGB[], targetLength: number): ColorRGB[] {
+  if (colors.length === targetLength) {
+    return colors;
+  }
+
+  if (colors.length > targetLength) {
+    // If we have more colors than needed, evenly sample them
+    const step = colors.length / targetLength;
+    return Array.from({ length: targetLength }, (_, i) => {
+      const index = Math.floor(i * step);
+      return colors[index];
+    });
+  }
+
+  // If we need more colors, interpolate between existing ones
+  const result: ColorRGB[] = [];
+  const step = (colors.length - 1) / (targetLength - 1);
+
+  for (let i = 0; i < targetLength; i++) {
+    const position = i * step;
+    const index = Math.floor(position);
+    const fraction = position - index;
+
+    if (index >= colors.length - 1) {
+      result.push(colors[colors.length - 1]);
+    } else {
+      const color1 = colors[index];
+      const color2 = colors[index + 1];
+      result.push({
+        r: Math.round(color1.r + (color2.r - color1.r) * fraction),
+        g: Math.round(color1.g + (color2.g - color1.g) * fraction),
+        b: Math.round(color1.b + (color2.b - color1.b) * fraction),
+      });
+    }
+  }
+
+  return result;
+}
