@@ -48,6 +48,14 @@ describe('shuffle taste table', () => {
     for (const m of MOODS) for (const fx of Object.keys(m.effectBias)) expect(real.has(fx), `${m.id}: ${fx}`).toBe(true);
   });
 
+  it('favours ascii and halftone on pattern and dark-ground gradients (loved in the marking sessions), and no longer marks down emoji or kaleidoscope there', () => {
+    for (const kind of ['pattern', 'dark-ground'] as const) {
+      expect(EFFECT_AFFINITY[kind].ascii).toBeGreaterThanOrEqual(2);
+      expect(EFFECT_AFFINITY[kind].halftone).toBeGreaterThanOrEqual(2);
+      expect(EFFECT_AFFINITY[kind].emoji ?? 0).toBeGreaterThanOrEqual(0);
+    }
+    expect(EFFECT_AFFINITY.pattern.kaleidoscope ?? 0).toBeGreaterThanOrEqual(0);
+  });
   it('puts every gradient in a kind, and sorts the obvious ones', () => {
     for (const g of FEELING_LUCKY_GRADIENT_TYPES) expect(['dark-ground', 'smooth', 'pattern', 'particles']).toContain(gradientKind(g));
     expect(gradientKind('eclipse')).toBe('dark-ground');

@@ -612,7 +612,10 @@ export function useRandomization(params: RandomizationParams) {
     const highRatedResults = audioActive && audioHighRated.length >= 2 ? audioHighRated : allHighRated;
     // Scale blend probability with pool size so early favorites don't dominate
     const blendProbability = Math.min(0.6, highRatedResults.length * 0.08);
-    const usePreferences = highRatedResults.length >= 3 && Math.random() < blendProbability;
+    // The old 1-10 rating feature is gone but its saved ratings stay in this browser, and they were steering up to 60% of
+    // shuffles toward the same few gradients and effects (and into stacks with no effects, and fast speeds). Marks and
+    // the learner replaced them, so the saved ratings are no longer used.
+    const usePreferences = false && highRatedResults.length >= 3 && Math.random() < blendProbability;
     
     if (usePreferences && highRatedResults.length > 0) {
       // Weight by rating: higher-rated results are more likely to be picked
