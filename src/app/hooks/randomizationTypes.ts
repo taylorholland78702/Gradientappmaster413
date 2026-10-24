@@ -278,7 +278,6 @@ export interface RandomizationParams {
   setWindmillMode: (value: SetStateAction<"blades" | "helix">) => void;
   setWindmillZoomResponse: (value: SetStateAction<number>) => void;
   setFadeMode: (value: SetStateAction<"angle" | "light">) => void;
-  setGridMode: (value: SetStateAction<"classic" | "martin">) => void;
   setParticlesMode: (value: SetStateAction<"drift" | "flow-field" | "marks">) => void;
   setRadialBurstMode: (value: SetStateAction<"burst" | "sweep">) => void;
   setAngleHardEdge: (value: SetStateAction<boolean>) => void;

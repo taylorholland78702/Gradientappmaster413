@@ -15,7 +15,6 @@ export interface SnapshotValues {
   asciiChars: string;
   asciiColor: boolean;
   gridHardEdge: boolean;
-  gridMode: "classic" | "martin";
   radialHardEdge: boolean;
   radialAnimTime: number;
   radialSpeed: number;
