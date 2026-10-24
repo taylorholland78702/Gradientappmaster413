@@ -1,9 +1,7 @@
-import React, { forwardRef, useSyncExternalStore } from 'react';
-import { shuffleLearning } from '../utils/shuffleLearning';
-import { shuffleMarks } from '../utils/shuffleMarks';
+import React, { forwardRef } from 'react';
 import {
   Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
-  Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk, ThumbsDown,
+  Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
 
 type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
@@ -18,7 +16,6 @@ export interface ControlRailProps {
 
   // Shuffle / Auto Shuffle
   handleWavClick: () => void;
-  handleDislikeClick: () => void;
   isWavPressed: boolean;
   isAutoShuffleOn: boolean;
   isNewPresetPending: boolean;
@@ -96,17 +93,12 @@ export const WORDMARK_BOX_H = 91;
 export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function ControlRail(props, ref) {
   const {
     isMobile, onWordmarkClick,
-    handleWavClick, handleDislikeClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
+    handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
     autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover, openRecordPopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
     isRecording, isEncoding, encodingProgress, toggleVCRRecording,
   } = props;
-
-  // The dislike button works on a shuffled look, and the marking tool has its own Skip while it runs.
-  useSyncExternalStore(shuffleLearning.subscribe, shuffleLearning.getVersion, shuffleLearning.getVersion);
-  useSyncExternalStore(shuffleMarks.subscribe, shuffleMarks.getVersion, shuffleMarks.getVersion);
-  const canDislike = !!shuffleLearning.currentMeta && !shuffleMarks.active;
 
   const tabBtnClass = (tab: TabId) =>
     `${railBtnBase} ${activeTab === tab ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover hover:text-white'}`;
@@ -211,15 +203,6 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         aria-label="Shuffle to a new look"
       >
         <Shuffle weight="regular" className={iconCls} />
-      </button>
-      <button
-        onClick={handleDislikeClick}
-        className={`${railBtnBase} text-white hover:bg-wav-hover disabled:opacity-40 disabled:pointer-events-none`}
-        title="I don't like this: shuffle again and steer away from it"
-        aria-label="I don't like this look"
-        disabled={!canDislike}
-      >
-        <ThumbsDown weight="regular" className={iconCls} />
       </button>
       <button
         onClick={(e) => openAutoShufflePopover(e.currentTarget)}

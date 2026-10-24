@@ -834,13 +834,6 @@ export function InteractiveGradient() {
     window.setTimeout(() => setIsWavPressed(false), 200);
   };
 
-  // "I don't like this": a stronger vote than undo, kept for the marking tool's numbers, then a new look.
-  const handleDislikeClick = () => {
-    const meta = shuffleLearning.currentMeta;
-    if (meta && shuffleLearning.dislike()) shuffleMarks.recordDislike(meta);
-    handleWavClick();
-  };
-
   const {
     isAutoShuffleOn, setIsAutoShuffleOn, isNewPresetPending, setIsNewPresetPending,
     autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope,
@@ -1264,7 +1257,6 @@ export function InteractiveGradient() {
     isMobile,
     onWordmarkClick: openAboutPanel,
     handleWavClick,
-    handleDislikeClick,
     isWavPressed,
     isAutoShuffleOn,
     isNewPresetPending,
