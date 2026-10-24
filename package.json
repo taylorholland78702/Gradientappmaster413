@@ -17,6 +17,7 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "@phosphor-icons/react": "^2.1.10",
+    "fflate": "^0.8.3",
     "firebase": "^11.0.0",
     "gifenc": "^1.0.3",
     "mp4-muxer": "^5.2.2",

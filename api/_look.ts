@@ -1,3 +1,4 @@
+import { Inflate } from 'fflate';
 import names from './_lookNames.json';
 import { parseHexList, toHexList, type Rgb } from './_card';
 
@@ -9,14 +10,43 @@ export interface Look { gradient: string | null; effects: string[]; colors: Rgb[
 
 const MAX_PRESET_CHARS = 20000;
 
+const MAX_INFLATED_BYTES = 400_000;
+
+// Links come in two forms (see src/app/utils/shareLink.ts): the whole look as base64 JSON, or "~" followed by the
+// same JSON compressed. The compressed form keeps palette colors as 6-digit hex strings.
+function inflateCapped(bytes: Uint8Array): Uint8Array {
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  new Inflate((chunk) => {
+    total += chunk.length;
+    if (total > MAX_INFLATED_BYTES) throw new Error('too large');
+    chunks.push(chunk);
+  }).push(bytes, true);
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) { out.set(c, at); at += c.length; }
+  return out;
+}
+
+function hexToRgb(value: unknown): unknown {
+  const m = typeof value === 'string' ? /^#?([0-9a-f]{6})$/i.exec(value) : null;
+  if (!m) return value;
+  const n = parseInt(m[1], 16);
+  return { r: n >> 16, g: (n >> 8) & 255, b: n & 255 };
+}
+
 export function decodePreset(encoded: string): Record<string, unknown> | null {
   if (!encoded || encoded.length > MAX_PRESET_CHARS) return null;
   try {
-    const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const compressed = encoded.startsWith('~');
+    const padded = (compressed ? encoded.slice(1) : encoded).replace(/-/g, '+').replace(/_/g, '/');
     const binary = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4));
-    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    let bytes: Uint8Array = Uint8Array.from(binary, c => c.charCodeAt(0));
+    if (compressed) bytes = inflateCapped(bytes);
     const parsed = JSON.parse(new TextDecoder().decode(bytes));
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    if (compressed && Array.isArray(parsed.gradientColors)) parsed.gradientColors = parsed.gradientColors.map(hexToRgb);
+    return parsed as Record<string, unknown>;
   } catch {
     return null;
   }

@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useMemo, useRef, useState, type MutableRefObject, type SetStateAction, type Dispatch, type ReactNode } from 'react';
 import { DEFAULT_COLORS } from '../constants/gradientEffects';
 import { IS_DISPLAY_MODE } from '../constants/displayMode';
-import { decodePresetData } from '../utils/presetShare';
+import { readShareParam } from '../utils/shareLink';
 import { migrateId } from '../constants/gradientEffects';
 import { migrateIds } from '../constants/gradientEffects';
 import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
@@ -39,7 +39,7 @@ export function useSharedPresetLink(p: UseSharedPresetLinkParams) {
     const encoded = params.get('preset');
     if (!encoded) return;
     try {
-      const data = sanitizeSnapshot(decodePresetData(encoded) as PresetData);
+      const data = sanitizeSnapshot(readShareParam(encoded) as PresetData);
       getApplySnapshot()({
         ...data,
         gradientType: data.gradientType ? migrateId(data.gradientType) as GradientType : 'angle',

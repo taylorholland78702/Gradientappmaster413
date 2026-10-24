@@ -77,6 +77,18 @@ describe('reading a shared look', () => {
     expect(readLook({ gradientType: '<script>', activeEffects: ['<img onerror=1>'], gradientColors: 'nope' }).gradient).toBeNull();
     expect(readLook(decodePreset(enc([1, 2, 3])))).toEqual({ gradient: null, effects: [], colors: [] });
   });
+  it('reads the short (compressed) link form too, with hex palette colors', () => {
+    const json = JSON.stringify({ gradientType: 'waves', activeEffects: ['grain'], gradientColors: ['2b1055', '#ff5e7e'] });
+    const link = '~' + zlib.deflateRawSync(Buffer.from(json)).toString('base64url');
+    const look = readLook(decodePreset(link));
+    expect(look.gradient).toBe('waves');
+    expect(look.effects).toEqual(['grain']);
+    expect(look.colors).toEqual([{ r: 0x2b, g: 0x10, b: 0x55 }, { r: 0xff, g: 0x5e, b: 0x7e }]);
+  });
+  it('refuses a short link that would inflate to something huge', () => {
+    expect(decodePreset('~' + zlib.deflateRawSync(Buffer.alloc(5_000_000, 32)).toString('base64url'))).toBeNull();
+    expect(decodePreset('~not-a-real-link')).toBeNull();
+  });
   it('uses the default card when the link has no usable palette', () => {
     expect(cardPath(readLook(null))).toBe('/og-default.png');
     expect(cardPath(readLook(preset))).toBe('/api/og?c=0a141e-ff0064');
