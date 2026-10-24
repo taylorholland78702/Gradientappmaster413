@@ -1,6 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
+import { blendRgb, paletteSegment } from '../../utils/color';
 import type { DrawCtx } from '../canvasDrawTypes';
 export function drawWindmill(P: DrawCtx): CanvasGradient | undefined {
   const {
@@ -237,10 +237,10 @@ export function drawWindmill(P: DrawCtx): CanvasGradient | undefined {
                 }
 
                 const radialBoost = 1 + conicalBassPulse * (1 - dist / conicalMaxDist) * 0.8;
-                const mixed = getActiveColorBlend() === 'srgb' ? null : blendRgb(color1, color2, colorFrac);
-                spiralData[pixelIndex]     = Math.min(255, Math.round((mixed ? mixed.r : color1.r + (color2.r - color1.r) * colorFrac) * radialBoost));
-                spiralData[pixelIndex + 1] = Math.min(255, Math.round((mixed ? mixed.g : color1.g + (color2.g - color1.g) * colorFrac) * radialBoost));
-                spiralData[pixelIndex + 2] = Math.min(255, Math.round((mixed ? mixed.b : color1.b + (color2.b - color1.b) * colorFrac) * radialBoost));
+                const mixed = blendRgb(color1, color2, colorFrac);
+                spiralData[pixelIndex]     = Math.min(255, Math.round(mixed.r * radialBoost));
+                spiralData[pixelIndex + 1] = Math.min(255, Math.round(mixed.g * radialBoost));
+                spiralData[pixelIndex + 2] = Math.min(255, Math.round(mixed.b * radialBoost));
                 spiralData[pixelIndex + 3] = 255;
               }
             }

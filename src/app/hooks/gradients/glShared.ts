@@ -13,7 +13,7 @@
 // just with a GPU-rendered source image instead of a JS-computed ImageData.
 
 import { createQualityController, type QualityController } from '../../utils/adaptiveQuality';
-import { colorBlendIndex, getActiveColorBlend, getActivePaletteMap, biasToGamma } from '../../utils/color';
+import { getActivePaletteMap, biasToGamma } from '../../utils/color';
 
 export const MAX_FIELD_COLORS = 12;
 
@@ -44,14 +44,11 @@ float jsMod(float x, float m) {
   return x - trunc(x / m) * m;
 }`;
 
-// GLSL twin of color.ts's blendRgb — interpolates two palette colors in
-// sRGB (0, the plain mix() every shader used before), OKLab (1), or OKLCH
-// (2, hue travels the short way round the wheel). Splice into any shader
-// that lerps between palette stops, and call blendColors() in place of mix().
-// uBlendMode is uploaded from the frame's active mode (see setColorUniforms /
-// setPaletteMapUniforms).
+// GLSL twin of color.ts's blendRgb: palette colors mix in OKLab, which keeps the midpoint between saturated colors
+// vivid instead of the dim, grey one a straight sRGB lerp gives (blue to yellow passing through grey). Splice into
+// any shader that lerps between palette stops and call blendColors() in place of mix(); shaders that accumulate many
+// colors at once (the mesh gradients) go through blendIn() / blendOut().
 export const BLEND_COLORS_GLSL = `
-uniform int uBlendMode; // 0 sRGB, 1 OKLab, 2 OKLCH
 vec3 srgbToLinear(vec3 c) {
   return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
 }
@@ -79,42 +76,9 @@ vec3 oklabToRgb(vec3 lab) {
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s));
 }
-float safeHue(vec2 ab) {
-  return dot(ab, ab) < 1e-10 ? 0.0 : atan(ab.y, ab.x);
-}
-// Weighted-average helpers for shaders that mix many colors at once (the mesh gradients):
-// into the blend space, accumulate there, and back out.
-vec3 blendIn(vec3 c) {
-  if (uBlendMode == 0) return c;
-  if (uBlendMode == 3) return srgbToLinear(c);
-  return rgbToOklab(c);
-}
-vec3 blendOut(vec3 c) {
-  if (uBlendMode == 0) return c;
-  if (uBlendMode == 3) return linearToSrgb(c);
-  return oklabToRgb(c);
-}
-vec3 blendColors(vec3 a, vec3 b, float t) {
-  if (uBlendMode == 0) return mix(a, b, t);
-  if (uBlendMode == 3) return linearToSrgb(mix(srgbToLinear(a), srgbToLinear(b), t));
-  vec3 la = rgbToOklab(a);
-  vec3 lb = rgbToOklab(b);
-  if (uBlendMode == 1) return oklabToRgb(mix(la, lb, t));
-  const float PI = 3.14159265359;
-  float c1 = length(la.yz);
-  float c2 = length(lb.yz);
-  float h1 = safeHue(la.yz);
-  float h2 = safeHue(lb.yz);
-  if (c1 < 0.004) h1 = h2;
-  else if (c2 < 0.004) h2 = h1;
-  float dh = h2 - h1;
-  if (dh > PI) dh -= 2.0 * PI;
-  else if (dh < -PI) dh += 2.0 * PI;
-  float L = mix(la.x, lb.x, t);
-  float C = mix(c1, c2, t);
-  float h = h1 + dh * t;
-  return oklabToRgb(vec3(L, C * cos(h), C * sin(h)));
-}
+vec3 blendIn(vec3 c) { return rgbToOklab(c); }
+vec3 blendOut(vec3 c) { return oklabToRgb(c); }
+vec3 blendColors(vec3 a, vec3 b, float t) { return oklabToRgb(mix(rgbToOklab(a), rgbToOklab(b), t)); }
 
 // Palette lookup with stop positions, Bias and Sharpness — the GLSL twin of
 // paletteSegmentFor in color.ts (keep them in step). Needs uColors and
@@ -147,11 +111,10 @@ vec3 paletteLookup(float t) {
 }`;
 
 // Uploads everything paletteLookup/blendColors read besides the colors
-// themselves: the Blend mode, the stop positions, Bias (as a gamma) and
+// themselves: the stop positions, Bias (as a gamma) and
 // Sharpness. `colorCount` is how many colors were uploaded; custom stops only
 // apply when there is exactly one per uploaded color (otherwise even spacing).
 export function setPaletteMapUniforms(gl: WebGL2RenderingContext, program: WebGLProgram, colorCount: number) {
-  gl.uniform1i(gl.getUniformLocation(program, 'uBlendMode'), colorBlendIndex(getActiveColorBlend()));
   const { stops, bias, sharp } = getActivePaletteMap();
   const arr = new Float32Array(MAX_FIELD_COLORS);
   const custom = stops && stops.length === colorCount;

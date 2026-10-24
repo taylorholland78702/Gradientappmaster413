@@ -8,7 +8,6 @@
 // The dark single-light gradients (Light Beam, Edge Glow, Curtains, Eclipse,
 // Rays, Vortex) treat the palette's FIRST color as the near-black ground and
 // climb through the rest toward a hot core, so their looks all start dark.
-import type { ColorBlend } from '../utils/color';
 import type { GradientType } from './gradientEffects';
 
 // The gradient-specific sliders (and mode switches) a look may set via `params`.
@@ -52,7 +51,6 @@ export interface GradientLook {
   sharp?: number;
   contrast?: number;
   // Left alone (the user's choice) when omitted.
-  blend?: ColorBlend;
   // The gradient's own sliders/modes. Unlike the shared fields above, anything
   // not listed is left where it is (there is no single default to reset to).
   params?: LookParams;

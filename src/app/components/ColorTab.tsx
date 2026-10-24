@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shuffle, Plus, X } from '@phosphor-icons/react';
 import { type ColorRGB } from '../constants/gradientEffects';
-import { rgbToHex, hexToRgb, hslToRgb, samplePalette, type ColorBlend } from '../utils/color';
+import { rgbToHex, hexToRgb, hslToRgb, samplePalette } from '../utils/color';
 import { PALETTE_GROUPS, type PalettePreset } from '../constants/palettePresets';
 import { WAV_MOODS } from '../constants/gradientEffects';
 import { extractPalette } from '../utils/extractPalette';
@@ -21,16 +21,6 @@ export interface ColorTabProps {
   setColorsInstant: (colors: ColorRGB[]) => void;
   gradientColors: ColorRGB[];
   randomColor: () => ColorRGB;
-  paletteHue: number;
-  setPaletteHue: (v: number) => void;
-  paletteSaturation: number;
-  setPaletteSaturation: (v: number) => void;
-  paletteBrightness: number;
-  setPaletteBrightness: (v: number) => void;
-  paletteContrast: number;
-  setPaletteContrast: (v: number) => void;
-  colorBlend: ColorBlend;
-  setColorBlend: (v: ColorBlend) => void;
   paletteStops: number[] | null;
   setPaletteStops: (v: number[] | null) => void;
   paletteBias: number;
@@ -45,9 +35,6 @@ export interface ColorTabProps {
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
   saveCurrentState, setTargetColors, setColorsInstant, gradientColors, randomColor,
-  paletteHue, setPaletteHue, paletteSaturation, setPaletteSaturation,
-  paletteBrightness, setPaletteBrightness, paletteContrast, setPaletteContrast,
-  colorBlend, setColorBlend,
   paletteStops, setPaletteStops, paletteBias, setPaletteBias, paletteSharp, setPaletteSharp,
   keepFamily, setKeepFamily, shuffleColors,
 }) => {
@@ -76,7 +63,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
   const resampleTo = (n: number) => {
     if (n === gradientColors.length) return;
     saveCurrentState();
-    setColorsInstant(samplePalette(gradientColors, paletteStops, paletteBias, paletteSharp, colorBlend, n));
+    setColorsInstant(samplePalette(gradientColors, paletteStops, paletteBias, paletteSharp, n));
     setPaletteStops(null);
   };
 
@@ -135,7 +122,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
     const n = gradientColors.length;
     // Same length eases in; a different length is re-cut to fit and snaps (see setSwatch).
     if (n === colors.length) setTargetColors(colors);
-    else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
+    else setColorsInstant(samplePalette(colors, null, 0.5, 0, n));
     setPaletteStops(null);
   };
 
@@ -303,7 +290,6 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         setBias={setPaletteBias}
         sharp={paletteSharp}
         setSharp={setPaletteSharp}
-        blend={colorBlend}
         onBeforeChange={saveCurrentState}
       />
     </>

@@ -4,7 +4,7 @@
 // Bokeh), plus Vortex, Spectral, Drape and Flow Mesh.
 // Each is a pure function of (position, time) rendered in one fragment pass
 // and colored through the shared palette machinery in glShared.ts
-// (getMappedColor: Contrast, Palette Mode/Bands, and the sRGB/OKLab/OKLCH
+// (getMappedColor: Contrast, Palette Mode/Bands, and the OKLab
 // Blend all apply), so a new look inherits every existing color control
 // instead of reinventing them.
 //

@@ -1,6 +1,6 @@
 import type { CanvasDrawParams, DrawCtx, EffectCtx } from './canvasDrawTypes';
 import { useEffect, useRef } from 'react';
-import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
+import { setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame, setGLExportMode } from './gradients/glShared';
 import { resolveModulationKey, MODULATION_GAIN } from '../constants/modulatableParams';
@@ -203,7 +203,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     blurGaussianAmount, blurMotionAmount, blurMotionDirection, blurRadialAmount, blurType, canvasRef,
     causticsBrightness, causticsScale, chromaticAngle, chromaticOffset,
     chromaticTrailsBufferRef, chromaticTrailsDecay, chromaticTrailsOffset, colorShiftHue,
-    paletteHue = 0, paletteSaturation = 100, paletteBrightness = 0, paletteContrast = 0, concentricRingCount,
+    concentricRingCount,
     concentricRingWidth, helixTightness, helixTurns, ditherLevels, ditherType, drawParams,
     drawParamsDirtyRef, drawRef, duotoneColor1, duotoneColor2, duotoneColor3, duotoneIntensity,
     duotoneThreeColor, dustCrackleIntensity, emojiChars, emojiOffsetX, emojiSize,
@@ -532,16 +532,10 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     }
     const driftedColors = audioActiveForDrift ? rotateHue(gradientColors, hueDriftRef.current) : gradientColors;
     // Every palette interpolation site (CPU lerps + GL shaders) reads this.
-    setActiveColorBlend(params.colorBlend);
     setActivePaletteMap(params.paletteStops, params.paletteBias, params.paletteSharp);
-    // The palette adjustments happen before the draw context exists, so a binding on them is applied here.
     const boundLevels = { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 };
     const audioBound = !!(isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0);
-    const palette = { paletteHue, paletteSaturation, paletteBrightness, paletteContrast };
-    if (audioBound) applyAudioBindings(palette, audioBindings, boundLevels);
-    const renderColors = adjustPalette(driftedColors, {
-      hue: palette.paletteHue, saturation: palette.paletteSaturation, brightness: palette.paletteBrightness, contrast: palette.paletteContrast,
-    });
+    const renderColors = driftedColors;
 
     const drawCtx: DrawCtx = {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
