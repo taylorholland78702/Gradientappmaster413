@@ -677,8 +677,9 @@ export function useRandomization(params: RandomizationParams) {
           keptEffects.push(randomEffect);
         }
       }
-      // A look with no effects at all was skipped every time it came up (10 of 10 marked), so always add some.
-      while (keptEffects.length < 2) {
+      // Looks with no effects were kept 2 of 21 times when marked, and with one effect 4 of 15, so top the stack up.
+      const minBlendEffects = sparseBlend ? 2 : 3;
+      while (keptEffects.length < minBlendEffects) {
         const e = additionalEffectsPool[Math.floor(Math.random() * additionalEffectsPool.length)];
         if (!keptEffects.includes(e)) keptEffects.push(e);
       }
@@ -747,7 +748,8 @@ export function useRandomization(params: RandomizationParams) {
         shapeChangers: SHAPE_CHANGERS.filter(e => (ALL_EFFECTS as EffectType[]).includes(e)),
         costOf,
         costBudget,
-        minEffects: 2,
+        // Marked looks: 0-1 effects were kept about a third of the time, 2 effects two thirds, 3 or more 90%.
+        minEffects: 3,
         maxEffects: g => (isSparseContentGradient(g) ? 2 : 5),
         excluded: g => (isSparseContentGradient(g) ? CONTENT_ERASERS : []),
         learned: (kind, id) => shuffleLearning.weight(kind, id),
