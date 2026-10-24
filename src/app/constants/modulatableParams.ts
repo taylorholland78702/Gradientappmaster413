@@ -168,8 +168,6 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'posterizeLevels', label: 'Posterize Levels', category: 'Posterize', min: 2.0, max: 16.0 },
   { key: 'prismScale', label: 'Prism Scale', category: 'Prism', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'prismSpeed', label: 'Prism Speed', category: 'Prism', min: 0.0, max: 3.0, target: 'fieldSpeed' },
-  { key: 'radarBeamWidth', label: 'Radar Beam Width', category: 'Radar', min: 1.0, max: 90.0 },
-  { key: 'radarFadeLength', label: 'Radar Fade Length', category: 'Radar', min: 10.0, max: 180.0 },
   { key: 'radialSizeScale', label: 'Radial Size Scale', category: 'Radial', min: 0.25, max: 4.0 },
   { key: 'radialSpeed', label: 'Radial Speed', category: 'Radial', min: 0.1, max: 3.0 },
   { key: 'radialBurstCount', label: 'Radial Burst Count', category: 'Radial Burst', min: 3.0, max: 16.0 },

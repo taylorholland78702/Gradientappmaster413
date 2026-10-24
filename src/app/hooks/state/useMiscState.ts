@@ -20,11 +20,11 @@ export function useMiscState() {
     // modulated Speed useCanvasDraw last drew with, so audio-bound Speed still steers it.
     fieldAnimTime: 0, fieldSpeedLive: 1,
     audioSubBassLevel: 0, audioMidsLevel: 0, audioTrebleLevel: 0, audioEnergy: 0,
-    // gridRotation/radarSweepAngle: same ref-primary treatment as the anim
+    // gridRotation: same ref-primary treatment as the anim
     // times above — the main loop writes these directly every frame now
     // instead of calling setState, so draw() always reads a fresh value
     // without the state update forcing a full component re-render 60x/sec.
-    gridRotation: 0, radarSweepAngle: 0,
+    gridRotation: 0,
   });
   const [isDragging, setIsDragging] = useState(false);
   const lastChangeTime = useRef<number>(0);

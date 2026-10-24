@@ -76,6 +76,7 @@ describe('useBeatEffects', () => {
   });
 
   it('a sub-bass onset shakes the wrapper and settles back', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);          // the shake direction is random; make it a big one
     vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number);
     vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
     const { p, wrapper } = params({ shakeBeatEnabled: true, subBassOnsetTick: 1 });

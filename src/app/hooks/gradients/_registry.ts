@@ -23,7 +23,6 @@ import { drawMarbleGL, detectMarbleGLSupport } from './drawMarbleGL';
 import { drawLavaLampGL, detectLavaLampGLSupport } from './drawLavaLampGL';
 import { drawJuliaGL, detectJuliaGLSupport } from './drawJuliaGL';
 import { drawMetaballsGL, detectMetaballsGLSupport } from './drawMetaballsGL';
-import { drawRadialBurstSweepGL, detectRadialBurstGLSupport } from './drawRadialBurstGL';
 import { drawTilingGL, detectTilingGLSupport } from './drawTilingGL';
 import { drawTopographicGL, detectTopographicGLSupport } from './drawTopographicGL';
 import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
@@ -184,20 +183,6 @@ function drawMetaballsAuto(P: DrawCtx): CanvasGradient | undefined {
   return drawMetaballs(P);
 }
 
-// Only the 'sweep' submode has a genuine per-pixel loop worth porting — the
-// default burst mode already composites via native canvas gradients (see
-// drawRadialBurstGL.ts) — so this checks the mode before even attempting
-// the GL path, unlike the other Auto wrappers here.
-function drawRadialBurstAuto(P: DrawCtx): CanvasGradient | undefined {
-  if (P.radialBurstMode === 'sweep' && detectRadialBurstGLSupport()) {
-    try {
-      return drawRadialBurstSweepGL(P);
-    } catch (err) {
-      console.error('WebGL Radial Burst (sweep) failed, falling back to CPU:', err);
-    }
-  }
-  return drawRadialBurst(P);
-}
 
 function drawTilingAuto(P: DrawCtx): CanvasGradient | undefined {
   if (detectTilingGLSupport()) {
@@ -298,7 +283,7 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'particles': drawParticlesLazy,
   'prism': (P) => styleFieldAuto('prism', P),
   'radial': drawRadial,
-  'radial-burst': drawRadialBurstAuto,
+  'radial-burst': drawRadialBurst,
   'raindrops': (P) => styleFieldAuto('raindrops', P),
   'rays': (P) => styleFieldAuto('rays', P),
   'reaction-diffusion': drawReactionDiffusionLazy,

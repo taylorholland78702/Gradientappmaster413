@@ -3,7 +3,7 @@ import type { ColorRGB, GradientType } from '../constants/gradientEffects';
 
 // Copies state into refs so the animation loop and draw code can read the latest values without restarting. Moved out of InteractiveGradient unchanged.
 export interface UseRefMirrorsParams {
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; radarSweepAngle: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   flowerAnimTime: number;
   gradientColorsRef: MutableRefObject<ColorRGB[]>;
   gradientType: GradientType;
@@ -18,7 +18,6 @@ export interface UseRefMirrorsParams {
   isMicActive: boolean;
   isVCRPlaying: boolean;
   isVCRPlayingRef: MutableRefObject<boolean>;
-  radarSweepAngle: number;
   rotationDirection: "clockwise" | "counter";
   rotationDirectionRef: MutableRefObject<"clockwise" | "counter">;
   setTargetColors: (value: SetStateAction<ColorRGB[]>) => void;
@@ -35,12 +34,12 @@ export interface UseRefMirrorsParams {
 }
 
 export function useRefMirrors(p: UseRefMirrorsParams) {
-  const { animValuesRef, flowerAnimTime, gradientColorsRef, gradientType, gridRotation, isAudioActiveRef, isAudioEnabled, isAudioReactive, isAutoColor, isAutoColorRef, isAutoMode, isAutoModeRef, isMicActive, isVCRPlaying, isVCRPlayingRef, radarSweepAngle, rotationDirection, rotationDirectionRef, setTargetColors, targetAngle, targetAngleRef, targetColors, targetColorsRef, targetZoom, targetZoomRef, tilingAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, voronoiAnimTime } = p;
+  const { animValuesRef, flowerAnimTime, gradientColorsRef, gradientType, gridRotation, isAudioActiveRef, isAudioEnabled, isAudioReactive, isAutoColor, isAutoColorRef, isAutoMode, isAutoModeRef, isMicActive, isVCRPlaying, isVCRPlayingRef, rotationDirection, rotationDirectionRef, setTargetColors, targetAngle, targetAngleRef, targetColors, targetColorsRef, targetZoom, targetZoomRef, tilingAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, voronoiAnimTime } = p;
   // Keep target/mode refs in sync with state so the master RAF loop can read them without restarts.
   useEffect(() => { targetColorsRef.current = targetColors; }, [targetColors]);
   useEffect(() => { targetAngleRef.current = targetAngle; }, [targetAngle]);
   useEffect(() => { targetZoomRef.current = targetZoom; }, [targetZoom]);
-  // gridRotation/radarSweepAngle/voronoiAnimTime/flowerAnimTime/tilingAnimTime:
+  // gridRotation/voronoiAnimTime/flowerAnimTime/tilingAnimTime:
   // same pattern as targetAngleRef above — the main loop now writes these
   // directly into animValuesRef every frame instead of calling setState (see
   // the loop below), so state only changes from EXTERNAL setters (shuffle
@@ -50,7 +49,6 @@ export function useRefMirrors(p: UseRefMirrorsParams) {
   // the ref back to a value it may already hold (when triggered by the
   // loop's own periodic sync) is a harmless no-op, not a feedback loop.
   useEffect(() => { animValuesRef.current.gridRotation = gridRotation; }, [gridRotation]);
-  useEffect(() => { animValuesRef.current.radarSweepAngle = radarSweepAngle; }, [radarSweepAngle]);
   useEffect(() => { animValuesRef.current.voronoiAnimTime = voronoiAnimTime; }, [voronoiAnimTime]);
   useEffect(() => { animValuesRef.current.flowerAnimTime = flowerAnimTime; }, [flowerAnimTime]);
   useEffect(() => { animValuesRef.current.tilingAnimTime = tilingAnimTime; }, [tilingAnimTime]);

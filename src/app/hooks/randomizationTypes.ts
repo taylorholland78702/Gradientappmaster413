@@ -213,8 +213,6 @@ export interface RandomizationParams {
   setPixelSize: (value: SetStateAction<number>) => void;
   setPolygon2Sides: (value: SetStateAction<number>) => void;
   setPosterizeLevels: (value: SetStateAction<number>) => void;
-  setRadarBeamWidth: (value: SetStateAction<number>) => void;
-  setRadarFadeLength: (value: SetStateAction<number>) => void;
   setRadialBurstCount: (value: SetStateAction<number>) => void;
   setRadialBurstSize: (value: SetStateAction<number>) => void;
   setRadialBurstSpread: (value: SetStateAction<number>) => void;
@@ -279,7 +277,6 @@ export interface RandomizationParams {
   setWindmillZoomResponse: (value: SetStateAction<number>) => void;
   setFadeMode: (value: SetStateAction<"angle" | "light">) => void;
   setParticlesMode: (value: SetStateAction<"drift" | "flow-field" | "marks">) => void;
-  setRadialBurstMode: (value: SetStateAction<"burst" | "sweep">) => void;
   setAngleHardEdge: (value: SetStateAction<boolean>) => void;
   setGridHardEdge: (value: SetStateAction<boolean>) => void;
   setRadialHardEdge: (value: SetStateAction<boolean>) => void;

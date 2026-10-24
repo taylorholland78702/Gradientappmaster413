@@ -7,7 +7,7 @@ export function useShapesState() {
   // concentricRingWidth); 'polar-grid' folds in the former standalone Polar
   // Grid gradient — circular rings each subdivided into angular sectors
   // (polygon2Sides/concentricRingCount), same mode-toggle pattern as
-  // Windmill's 'blades'/'helix' and Radial Burst's 'burst'/'sweep'.
+  // Windmill's 'blades'/'helix'.
   const [shapesMode, setShapesMode] = useState<'polygon' | 'polar-grid'>('polygon');
 
   return {
