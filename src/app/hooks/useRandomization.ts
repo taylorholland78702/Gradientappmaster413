@@ -16,7 +16,7 @@ import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
-import { GRADIENT_MOD_CATEGORY, modCategoriesFor } from '../constants/gradientModCategories';
+import { GRADIENT_MOD_CATEGORY, GLOBAL_CATEGORIES, modCategoriesFor } from '../constants/gradientModCategories';
 export { GRADIENT_MOD_CATEGORY };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
@@ -559,7 +559,7 @@ export function useRandomization(params: RandomizationParams) {
     // bindings whose audio-reactivity is actually visible on screen, while
     // still leaving them selectable when they're the only options in a
     // sparse pool.
-    const candidates = paramPool.map((p) => ({ p, weight: LOW_VISIBILITY_MOD_KEYS.has(p.key) ? 1 : 4 }));
+    const candidates = paramPool.map((p) => ({ p, weight: LOW_VISIBILITY_MOD_KEYS.has(p.key) || (GLOBAL_CATEGORIES as readonly string[]).includes(p.category) ? 1 : 4 }));
     const shuffledParams: typeof paramPool = [];
     for (let i = 0; i < bindingCount && candidates.length > 0; i++) {
       const totalWeight = candidates.reduce((sum, c) => sum + c.weight, 0);

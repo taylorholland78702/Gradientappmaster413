@@ -32,6 +32,10 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
 // Every styled gradient also has the shared Swirl slider, filed under its own category.
 export const STYLED_GRADIENTS_CATEGORY = 'Styled gradients';
 
+// Settings every look has (palette adjustments, how the palette maps onto a gradient, the finishing pass), not tied to
+// one gradient or effect. They are part of every look, so Shuffle and share links always include them.
+export const GLOBAL_CATEGORIES = ['Palette', 'Palette Mapping', 'Finishing'] as const;
+
 // The modulation categories a look uses: its gradient's, the styled gradients' shared one, and its effects'.
 // Shuffle draws its random audio bindings from these, and share links carry only these settings.
 export function modCategoriesFor(
@@ -41,6 +45,7 @@ export function modCategoriesFor(
 ): Set<string> {
   const out = new Set<string>(GRADIENT_MOD_CATEGORY[gradientType ?? ''] ?? []);
   if (gradientType && (STYLE_FIELD_GRADIENT_TYPES as readonly string[]).includes(gradientType)) out.add(STYLED_GRADIENTS_CATEGORY);
+  for (const c of GLOBAL_CATEGORIES) out.add(c);
   for (const e of effects) for (const c of effectCategories[e] ?? []) out.add(c);
   return out;
 }

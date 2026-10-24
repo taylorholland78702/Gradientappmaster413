@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { adjustPalette, setActiveColorBlend, setActivePaletteMap, shiftHueByTreble } from '../utils/color';
 import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame, setGLExportMode } from './gradients/glShared';
-import { resolveModulationKey } from '../constants/modulatableParams';
+import { resolveModulationKey, MODULATION_GAIN } from '../constants/modulatableParams';
 import { publishLiveSpeeds } from '../constants/liveSpeeds';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
@@ -115,7 +115,7 @@ export function applyAudioBindings(targetObj: object, bindings: { param: string;
     const base = target[key];
     if (typeof base !== 'number') continue;
     const level = levels[binding.band as keyof typeof levels] ?? 0;
-    target[key] = base + level * binding.amount;
+    target[key] = base + level * binding.amount * (MODULATION_GAIN[binding.param] ?? 1);
   }
 }
 
@@ -137,7 +137,7 @@ function computeAudioBoundOverrides(baseObj: object, bindings: { param: string; 
     const level = levels[binding.band as keyof typeof levels] ?? 0;
     // Several entries can share one target (every styled gradient's Scale ->
     // fieldScale); their contributions stack on the same base value.
-    overrides[key] = (overrides[key] ?? value) + level * binding.amount;
+    overrides[key] = (overrides[key] ?? value) + level * binding.amount * (MODULATION_GAIN[binding.param] ?? 1);
   }
   return overrides;
 }
@@ -535,8 +535,13 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // Every palette interpolation site (CPU lerps + GL shaders) reads this.
     setActiveColorBlend(params.colorBlend);
     setActivePaletteMap(params.paletteStops, params.paletteBias, params.paletteSharp);
+    // The palette adjustments happen before the draw context exists, so a binding on them is applied here.
+    const boundLevels = { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 };
+    const audioBound = !!(isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0);
+    const palette = { paletteHue, paletteSaturation, paletteBrightness, paletteContrast };
+    if (audioBound) applyAudioBindings(palette, audioBindings, boundLevels);
     const renderColors = adjustPalette(driftedColors, {
-      hue: paletteHue, saturation: paletteSaturation, brightness: paletteBrightness, contrast: paletteContrast,
+      hue: palette.paletteHue, saturation: palette.paletteSaturation, brightness: palette.paletteBrightness, contrast: palette.paletteContrast,
     });
 
     const drawCtx: DrawCtx = {
@@ -554,8 +559,15 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       resolutionMultiplier: effectiveResolutionMultiplier,
     };
 
-    if (isAudioEnabled && isAudioReactive && audioBindings && audioBindings.length > 0) {
-      applyAudioBindings(drawCtx, audioBindings, { sub: audioSubBassLevel || 0, mids: audioMidsLevel || 0, treble: audioTrebleLevel || 0, energy: audioEnergy || 0 });
+    if (audioBound) {
+      // Finishing's brightness/contrast/saturation live inside one object; bind them as separate numbers, then put them back.
+      const grade = drawCtx.fieldGrade ?? { brightness: 1, contrast: 1, saturation: 1 };
+      const ctxNumbers = drawCtx as unknown as Record<string, number>;
+      ctxNumbers.fieldGradeBrightness = grade.brightness;
+      ctxNumbers.fieldGradeContrast = grade.contrast;
+      ctxNumbers.fieldGradeSaturation = grade.saturation;
+      applyAudioBindings(drawCtx, audioBindings, boundLevels);
+      drawCtx.fieldGrade = { brightness: ctxNumbers.fieldGradeBrightness, contrast: ctxNumbers.fieldGradeContrast, saturation: ctxNumbers.fieldGradeSaturation };
     }
     // The styled-field clock (advanced in InteractiveGradient.tsx) scales its rate by
     // the Speed this frame actually drew with, so an audio binding on Speed steers it.

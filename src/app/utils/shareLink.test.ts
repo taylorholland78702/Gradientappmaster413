@@ -6,7 +6,7 @@ import { isClassified } from '../constants/shareRelevance';
 import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
 import { MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
-import { GRADIENT_MOD_CATEGORY } from '../hooks/useRandomization';
+import { GRADIENT_MOD_CATEGORY, GLOBAL_CATEGORIES } from '../constants/gradientModCategories';
 import { encodePresetData } from './presetShare';
 import { deflateSync } from 'fflate';
 import sharedSnapshot from './__fixtures__/sharedSnapshot.json';
@@ -77,7 +77,7 @@ describe('share link format', () => {
   });
 
   it('every audio-modulation category belongs to a gradient or an effect, so its settings are carried when that one is in use', () => {
-    const owned = new Set<string>([...Object.values(GRADIENT_MOD_CATEGORY).flat(), ...Object.values(EFFECT_MOD_CATEGORY).flat(), 'Styled gradients']);
+    const owned = new Set<string>([...Object.values(GRADIENT_MOD_CATEGORY).flat(), ...Object.values(EFFECT_MOD_CATEGORY).flat(), ...GLOBAL_CATEGORIES, 'Styled gradients']);
     expect(MODULATABLE_PARAMS_BY_CATEGORY.map(g => g.category).filter(c => !owned.has(c))).toEqual([]);
   });
 

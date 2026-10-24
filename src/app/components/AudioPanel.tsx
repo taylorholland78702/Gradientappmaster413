@@ -110,7 +110,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setModParam(paramGroups(src)[0]?.params[0]?.param.key ?? modParam);
   };
   const chooseKind = (kind: ModKind) => {
-    const first = kind === modKind ? modSource : sourcesOf(kind).sort((a, b) => a.label.localeCompare(b.label))[0];
+    const first = kind === modKind ? modSource : groupedSources(kind)[0].sources[0];
     chooseSource(kind, first.id);
   };
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
@@ -406,9 +406,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     >
                       <option value="gradient">Gradient</option>
                       <option value="effect">Effect</option>
+                      <option value="global">Global</option>
                     </select>
                     <select
-                      aria-label={modKind === 'gradient' ? 'Gradient to modulate' : 'Effect to modulate'}
+                      aria-label={modKind === 'gradient' ? 'Gradient to modulate' : modKind === 'effect' ? 'Effect to modulate' : 'Group of global settings to modulate'}
                       value={modSourceId}
                       onChange={(e) => chooseSource(modKind, e.target.value)}
                       className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
