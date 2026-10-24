@@ -132,7 +132,6 @@ export function useRandomization(params: RandomizationParams) {
     // previously never destructured here — same silent-gap bug as the
     // Modulation one: sliders exist in the UI and are wired into
     // save/restore, but no shuffle path ever touched them.
-    setPaletteHue, setPaletteSaturation, setPaletteBrightness, setPaletteContrast,
     setCrtIntensity, setCrtScanlineSpacing, setDustCrackleColor, setDustCrackleLength, setGridCellAngleStep,
     setAuraGlowCount, setAuraGlowSpeed, setAuraGlowOpacity,
     // Same gap, found in a follow-up audit: mode/enum toggles and a few
@@ -465,18 +464,6 @@ export function useRandomization(params: RandomizationParams) {
     setAuraGlowSpeed(Math.random() * 2.9 + 0.1);                        // 0.1–3
     setAuraGlowOpacity(Math.random() * 0.9 + 0.1);                      // 0.1–1
 
-    // Global palette adjust (Color tab). Brightness/Contrast now match the
-    // ColorTab sliders' own ±25 bounds (see adjustPalette's defensive
-    // clamp for why — the two compound and blow a varied palette out to
-    // solid black/white well before either alone reaches its old ±100
-    // range), and Saturation stays off the slider's 30 floor so a shuffle
-    // doesn't regularly land on a near-fully-desaturated result. Hue uses
-    // the full range since a pure hue shift never destroys legibility the
-    // way extreme sat/contrast can.
-    setPaletteHue(Math.floor(Math.random() * 361) - 180);              // -180–180
-    setPaletteSaturation(Math.floor(Math.random() * 101) + 50);        // 50–150
-    setPaletteBrightness(Math.floor(Math.random() * 41) - 20);         // -20–20
-    setPaletteContrast(Math.floor(Math.random() * 41) - 20);           // -20–20
   }, []);
   const shuffleGradientType = useCallback(() => {
     saveCurrentState();

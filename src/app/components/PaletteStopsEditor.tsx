@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { type ColorRGB } from '../constants/gradientEffects';
 import {
-  type ColorBlend, DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
+  DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
 } from '../utils/color';
 import { SliderRow } from './SliderRow';
 
@@ -19,14 +19,13 @@ export interface PaletteStopsEditorProps {
   setBias: (v: number) => void;
   sharp: number;
   setSharp: (v: number) => void;
-  blend: ColorBlend;
   onBeforeChange?: () => void;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
-  colors, stops, setStops, bias, setBias, sharp, setSharp, blend, onBeforeChange,
+  colors, stops, setStops, bias, setBias, sharp, setSharp, onBeforeChange,
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const n = colors.length;
@@ -36,7 +35,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   const current = custom ? stops! : evenStops(n);
   const isDefault = !custom && bias === DEFAULT_PALETTE_BIAS && sharp === DEFAULT_PALETTE_SHARP;
 
-  const preview = samplePalette(colors, custom ? stops : null, bias, sharp, blend, PREVIEW_STEPS);
+  const preview = samplePalette(colors, custom ? stops : null, bias, sharp, PREVIEW_STEPS);
   const background = `linear-gradient(to right, ${preview
     .map((c, i) => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)}) ${((i / (PREVIEW_STEPS - 1)) * 100).toFixed(2)}%`)
     .join(', ')})`;

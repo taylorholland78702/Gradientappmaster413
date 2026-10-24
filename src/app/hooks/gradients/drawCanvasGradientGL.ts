@@ -4,7 +4,7 @@
 // A native canvas gradient is interpolated and rounded to 8 bits by the
 // browser with no dithering, so a slow ramp turns into flat strips (measured:
 // runs of 148-244 identical pixels on Radial). The same ramp done here is
-// blended with the active Blend setting (sRGB/OKLab/OKLCH) in float and
+// blended in OKLab in float and
 // dithered once, at the final 8-bit rounding (see DITHER_GLSL in glShared.ts).
 //
 // Rendered at the canvas's real backing resolution (not the CSS-pixel size the

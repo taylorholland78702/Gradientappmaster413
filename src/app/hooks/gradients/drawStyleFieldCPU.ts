@@ -1,5 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { getActiveColorBlend, getActivePaletteMap, samplePalette } from '../../utils/color';
+import { getActivePaletteMap, samplePalette } from '../../utils/color';
 import type { StyleFieldId } from './drawStyleFieldGL';
 import type { DrawCtx } from '../canvasDrawTypes';
 
@@ -152,7 +152,7 @@ export function drawStyleFieldCPU(id: StyleFieldId, P: DrawCtx): CanvasGradient 
 
   const { stops, bias, sharp } = getActivePaletteMap();
   const LUT_N = 128;
-  const lut = samplePalette(gradientColors, stops ?? null, bias ?? 0.5, sharp ?? 0, getActiveColorBlend(), LUT_N);
+  const lut = samplePalette(gradientColors, stops ?? null, bias ?? 0.5, sharp ?? 0, LUT_N);
   const at = (t: number) => lut[Math.min(LUT_N - 1, Math.max(0, Math.round(t * (LUT_N - 1))))];
 
   const t = fieldAnimTime ?? 0;

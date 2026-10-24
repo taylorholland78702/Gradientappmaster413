@@ -1,5 +1,5 @@
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
+import { blendRgb, paletteSegment } from '../../utils/color';
 import type { DrawCtx } from '../canvasDrawTypes';
 
 export function drawNoise(P: DrawCtx): CanvasGradient | undefined {
@@ -289,10 +289,10 @@ export function drawNoise(P: DrawCtx): CanvasGradient | undefined {
               const radialPulse = noiseBassBoost * (1 - dist / maxNoiseDist) * 0.8;
               const boost = 1 + radialPulse;
 
-              const mixed = getActiveColorBlend() === 'srgb' ? null : blendRgb(color1, color2, colorFrac);
-              noiseData[idx]     = Math.min(255, Math.round((mixed ? mixed.r : color1.r + (color2.r - color1.r) * colorFrac) * boost));
-              noiseData[idx + 1] = Math.min(255, Math.round((mixed ? mixed.g : color1.g + (color2.g - color1.g) * colorFrac) * boost));
-              noiseData[idx + 2] = Math.min(255, Math.round((mixed ? mixed.b : color1.b + (color2.b - color1.b) * colorFrac) * boost));
+              const mixed = blendRgb(color1, color2, colorFrac);
+              noiseData[idx]     = Math.min(255, Math.round(mixed.r * boost));
+              noiseData[idx + 1] = Math.min(255, Math.round(mixed.g * boost));
+              noiseData[idx + 2] = Math.min(255, Math.round(mixed.b * boost));
               noiseData[idx + 3] = 255;
             }
           }

@@ -8,14 +8,12 @@ import { inFamily } from '../utils/colorFamily';
 import { paletteFamily } from '../utils/colorFamily';
 import { samplePalette } from '../utils/color';
 import { startsDark } from '../constants/palettePresets';
-import type { ColorBlend } from '../utils/color';
 import type { ColorRGB, GradientType } from '../constants/gradientEffects';
 import type { Family } from '../utils/colorFamily';
 import type { GradientLook, LookParamKey } from '../constants/gradientLooks';
 
 // Looks and palettes: applying a Look (palette plus the gradient's own sliders), a library palette, the shuffle-colors button and the Same family option. Moved out of InteractiveGradient unchanged.
 export interface UseLooksParams {
-  colorBlend: "linear" | "srgb" | "oklab" | "oklch";
   gradientColorsRef: MutableRefObject<ColorRGB[]>;
   gradientTypeRef: MutableRefObject<GradientType>;
   saveCurrentState: () => void;
@@ -26,7 +24,6 @@ export interface UseLooksParams {
   setCausticsBrightness: (value: SetStateAction<number>) => void;
   setCausticsScale: (value: SetStateAction<number>) => void;
   setCausticsSpeed: (value: SetStateAction<number>) => void;
-  setColorBlend: (value: SetStateAction<ColorBlend>) => void;
   setColorsInstant: (colors: ColorRGB[]) => void;
   setFadeDirection: (value: SetStateAction<number>) => void;
   setFieldContrast: (value: SetStateAction<number>) => void;
@@ -109,7 +106,7 @@ export interface UseLooksParams {
 }
 
 export function useLooks(p: UseLooksParams) {
-  const { colorBlend, gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorBlend, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
+  const { gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setFlowerCircles, setFlowerScale, setFlowerSpread, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
   // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
   // doesn't to their defaults so a look always lands the same way. A palette the
@@ -128,7 +125,6 @@ export function useLooks(p: UseLooksParams) {
     setPaletteSharp(look.sharp ?? LOOK_DEFAULTS.sharp);
     setFieldContrast(look.contrast ?? LOOK_DEFAULTS.contrast);
     setPaletteStops(null);
-    if (look.blend) setColorBlend(look.blend);
     // The gradient's own sliders/modes. Only what the look lists is touched.
     if (look.params) {
       const setters: Record<LookParamKey, (v: any) => void> = { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -190,9 +186,9 @@ export function useLooks(p: UseLooksParams) {
     const colors = palette.colors.map(hexToRgb);
     const n = gradientColorsRef.current.length;
     if (colors.length === n) setTargetColors(colors);
-    else setColorsInstant(samplePalette(colors, null, 0.5, 0, colorBlend, n));
+    else setColorsInstant(samplePalette(colors, null, 0.5, 0, n));
     setPaletteStops(null);
-  }, [saveCurrentState, setTargetColors, setColorsInstant, colorBlend, setPaletteStops]);
+  }, [saveCurrentState, setTargetColors, setColorsInstant, setPaletteStops]);
 
   // The shuffle button beside the Looks & palettes menu: a random palette from the library
   // (one that starts dark when the gradient needs a dark backdrop), never the one already showing.

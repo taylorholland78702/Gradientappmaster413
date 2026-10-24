@@ -1,6 +1,6 @@
 import { DEG_TO_RAD, TWO_PI } from '../../constants/gradientEffects';
 import { getScratchImageData } from '../../utils/scratchCanvas';
-import { blendRgb, getActiveColorBlend, paletteSegment } from '../../utils/color';
+import { blendRgb, paletteSegment } from '../../utils/color';
 import type { DrawCtx } from '../canvasDrawTypes';
 export function drawRadialBurst(P: DrawCtx): CanvasGradient | undefined {
   const {

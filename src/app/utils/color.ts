@@ -32,74 +32,6 @@ export const rgbToHsl = (r: number, g: number, b: number): [number, number, numb
   return [h * 360, s * 100, l * 100];
 };
 
-export interface PaletteAdjust {
-  hue: number; // degrees, -180..180, 0 = no shift
-  saturation: number; // percent, 0..200, 100 = unchanged
-  brightness: number; // -100..100, 0 = unchanged
-  contrast: number; // -100..100, 0 = unchanged
-}
-
-// Global palette-level color grading — hue rotation, saturation scale,
-// brightness offset, and contrast, applied to the whole gradientColors
-// array. Mirrors rotateHue in useCanvasDraw.ts: a single transform composed
-// at one choke point rather than a control threaded through every gradient's
-// draw function. Early-returns the same array reference when every value is
-// at its default so idle sliders cost nothing per frame.
-export function adjustPalette(colors: ColorRGB[], adjust: PaletteAdjust): ColorRGB[] {
-  const { hue } = adjust;
-  const saturation = Math.max(30, adjust.saturation);
-  // Clamped here (not just at the ColorTab slider) so any source of an
-  // out-of-range value — a preset/undo-snapshot saved before the slider
-  // bounds were narrowed, or the adjacent number-input box, which HTML
-  // doesn't hard-clamp the way a range slider does — still can't reach the
-  // combined brightness+contrast region where a varied palette clips to
-  // solid black/white/gray (contrast scales the brightness offset too, so
-  // the two compound well before either alone would).
-  const brightness = Math.max(-25, Math.min(25, adjust.brightness));
-  const contrast = Math.max(-25, Math.min(25, adjust.contrast));
-  if (hue === 0 && adjust.saturation === 100 && adjust.brightness === 0 && adjust.contrast === 0) return colors;
-
-  // Standard contrast formula (used by most photo-editing tools): scales
-  // deviation from the midpoint (128) by a factor derived from the -255..255
-  // contrast range — our slider is -100..100, so it's rescaled by 2.55 first.
-  const c = contrast * 2.55;
-  const contrastFactor = (259 * (c + 255)) / (255 * (259 - c));
-  const brightnessOffset = brightness * 2.55;
-
-  return colors.map(({ r, g, b }) => {
-    const [h, s, l] = rgbToHsl(r, g, b);
-    const adjustedHsl = hslToRgb((h + hue + 360) % 360, Math.max(0, Math.min(100, s * (saturation / 100))), l);
-    const nr = contrastFactor * (adjustedHsl.r + brightnessOffset - 128) + 128;
-    const ng = contrastFactor * (adjustedHsl.g + brightnessOffset - 128) + 128;
-    const nb = contrastFactor * (adjustedHsl.b + brightnessOffset - 128) + 128;
-    return {
-      r: Math.round(Math.max(0, Math.min(255, nr))),
-      g: Math.round(Math.max(0, Math.min(255, ng))),
-      b: Math.round(Math.max(0, Math.min(255, nb))),
-    };
-  });
-}
-
-// How a gradient interpolates between two adjacent palette colors. 'srgb' is
-// the plain per-channel lerp every gradient used before this setting existed
-// (and stays the default, so existing looks and presets are unchanged).
-// 'oklab' blends in a perceptually uniform space, which avoids the dim, grey
-// midpoints a straight sRGB lerp produces between saturated colors (blue →
-// yellow passing through grey). 'oklch' does the same but travels around the
-// hue wheel instead of cutting across it, so transitions stay vivid.
-export type ColorBlend = 'srgb' | 'linear' | 'oklab' | 'oklch';
-export const COLOR_BLEND_MODES: ColorBlend[] = ['srgb', 'linear', 'oklab', 'oklch'];
-
-// Set once per frame from the draw params (useCanvasDraw) rather than threaded
-// through every gradient's draw function — ~15 interpolation sites across the
-// CPU and WebGL paths all need the same answer, and only one gradient is ever
-// drawing at a time.
-let activeColorBlend: ColorBlend = 'srgb';
-export const setActiveColorBlend = (mode: ColorBlend | undefined) => { activeColorBlend = mode ?? 'srgb'; };
-export const getActiveColorBlend = (): ColorBlend => activeColorBlend;
-// Matches `uBlendMode` in the GLSL (glShared's blendColorsGLSL).
-export const colorBlendIndex = (mode: ColorBlend): number => (mode === 'oklab' ? 1 : mode === 'oklch' ? 2 : mode === 'linear' ? 3 : 0);
-
 const srgbToLinear = (v: number): number => {
   const c = v / 255;
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -135,39 +67,12 @@ function oklabToRgb(L: number, a: number, b: number): ColorRGB {
   };
 }
 
-// Below this chroma a color is effectively grey and its hue angle is noise —
-// borrow the other endpoint's hue instead so grey → color doesn't swing
-// through the whole wheel.
-const ACHROMATIC_CHROMA = 0.004;
-
-// Interpolates between two palette colors by `t` (0-1) in the given space
-// (defaults to the frame's active mode). The 'srgb' path is bit-for-bit the
-// lerp the call sites used to inline, so switching the default is a no-op.
-export function blendRgb(c1: ColorRGB, c2: ColorRGB, t: number, mode: ColorBlend = activeColorBlend): ColorRGB {
-  if (mode === 'srgb') {
-    return { r: c1.r + (c2.r - c1.r) * t, g: c1.g + (c2.g - c1.g) * t, b: c1.b + (c2.b - c1.b) * t };
-  }
-  if (mode === 'linear') {
-    // Light-accurate mixing: average in linear light, not in the gamma-encoded values.
-    const mix = (a: number, b: number) => linearToSrgb(srgbToLinear(a) + (srgbToLinear(b) - srgbToLinear(a)) * t);
-    return { r: mix(c1.r, c2.r), g: mix(c1.g, c2.g), b: mix(c1.b, c2.b) };
-  }
+// Interpolates between two palette colors by `t` (0-1) in OKLab, a perceptually uniform space: the midpoint between
+// saturated colors stays vivid instead of the dim, grey one a straight sRGB lerp gives (blue to yellow through grey).
+export function blendRgb(c1: ColorRGB, c2: ColorRGB, t: number): ColorRGB {
   const [L1, a1, b1] = rgbToOklab(c1.r, c1.g, c1.b);
   const [L2, a2, b2] = rgbToOklab(c2.r, c2.g, c2.b);
-  if (mode === 'oklab') {
-    return oklabToRgb(L1 + (L2 - L1) * t, a1 + (a2 - a1) * t, b1 + (b2 - b1) * t);
-  }
-  const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
-  let h1 = Math.atan2(b1, a1), h2 = Math.atan2(b2, a2);
-  if (C1 < ACHROMATIC_CHROMA) h1 = h2;
-  else if (C2 < ACHROMATIC_CHROMA) h2 = h1;
-  let dh = h2 - h1;
-  if (dh > Math.PI) dh -= 2 * Math.PI;
-  else if (dh < -Math.PI) dh += 2 * Math.PI;
-  const L = L1 + (L2 - L1) * t;
-  const C = C1 + (C2 - C1) * t;
-  const h = h1 + dh * t;
-  return oklabToRgb(L, C * Math.cos(h), C * Math.sin(h));
+  return oklabToRgb(L1 + (L2 - L1) * t, a1 + (a2 - a1) * t, b1 + (b2 - b1) * t);
 }
 
 // Treble-driven hue rotation applied to a palette color when audio reactivity
@@ -304,7 +209,7 @@ export function paletteSegment(t: number, n: number): PaletteSegment {
 // every input explicitly (no module state) so a UI can preview settings that
 // aren't the live ones.
 export function samplePalette(
-  colors: ColorRGB[], stops: number[] | null, bias: number, sharp: number, blend: ColorBlend, steps: number,
+  colors: ColorRGB[], stops: number[] | null, bias: number, sharp: number, steps: number,
 ): ColorRGB[] {
   const seg: PaletteSegment = { i0: 0, f: 0 };
   const n = colors.length;
@@ -312,7 +217,7 @@ export function samplePalette(
   for (let s = 0; s < steps; s++) {
     if (n === 0) break;
     paletteSegmentFor(steps === 1 ? 0 : s / (steps - 1), n, stops, bias, sharp, seg);
-    out.push(n === 1 ? colors[0] : blendRgb(colors[seg.i0], colors[seg.i0 + 1], seg.f, blend));
+    out.push(n === 1 ? colors[0] : blendRgb(colors[seg.i0], colors[seg.i0 + 1], seg.f));
   }
   return out;
 }

@@ -22,7 +22,7 @@ const swatch = (colors: string[]) => `linear-gradient(to right, ${colors.join(',
 // tolerance, not an exact match.
 const distance = (hexes: string[], live: ColorRGB[]) => {
   let colors: ColorRGB[] = hexes.map(hexToRgb);
-  if (colors.length !== live.length) colors = samplePalette(colors, null, 0.5, 0, 'oklab', live.length);
+  if (colors.length !== live.length) colors = samplePalette(colors, null, 0.5, 0, live.length);
   let sum = 0;
   colors.forEach((c, i) => {
     const g = live[i];

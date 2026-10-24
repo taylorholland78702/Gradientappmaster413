@@ -42,46 +42,28 @@ describe('hslToRgb / rgbToHsl', () => {
 describe('blendRgb', () => {
   const blue = { r: 0, g: 0, b: 255 };
   const yellow = { r: 255, g: 255, b: 0 };
-  const red = { r: 255, g: 0, b: 0 };
-  const lum = (c: { r: number; g: number; b: number }) => 0.299 * c.r + 0.587 * c.g + 0.114 * c.b;
 
-  it('srgb mode is the plain per-channel lerp', () => {
-    expect(blendRgb(blue, yellow, 0.5, 'srgb')).toEqual({ r: 127.5, g: 127.5, b: 127.5 });
-  });
-
-  it('reproduces both endpoints in every mode', () => {
-    for (const mode of ['srgb', 'linear', 'oklab', 'oklch'] as const) {
-      for (const [c, t] of [[blue, 0], [yellow, 1]] as const) {
-        const out = blendRgb(blue, yellow, t, mode);
-        expect(out.r).toBeCloseTo(c.r, 0);
-        expect(out.g).toBeCloseTo(c.g, 0);
-        expect(out.b).toBeCloseTo(c.b, 0);
-      }
+  it('reproduces both endpoints', () => {
+    for (const [c, t] of [[blue, 0], [yellow, 1]] as const) {
+      const out = blendRgb(blue, yellow, t);
+      expect(out.r).toBeCloseTo(c.r, 0);
+      expect(out.g).toBeCloseTo(c.g, 0);
+      expect(out.b).toBeCloseTo(c.b, 0);
     }
   });
 
-  it('oklab keeps the blue→yellow midpoint saturated where srgb collapses to grey', () => {
-    const srgb = blendRgb(blue, yellow, 0.5, 'srgb');
-    const oklab = blendRgb(blue, yellow, 0.5, 'oklab');
-    expect(Math.max(srgb.r, srgb.g, srgb.b) - Math.min(srgb.r, srgb.g, srgb.b)).toBeCloseTo(0, 5);
+  it('keeps the blue to yellow midpoint saturated where a plain lerp collapses to grey', () => {
+    const lerp = { r: (blue.r + yellow.r) / 2, g: (blue.g + yellow.g) / 2, b: (blue.b + yellow.b) / 2 };
+    const oklab = blendRgb(blue, yellow, 0.5);
+    expect(Math.max(lerp.r, lerp.g, lerp.b) - Math.min(lerp.r, lerp.g, lerp.b)).toBeCloseTo(0, 5);
     expect(Math.max(oklab.r, oklab.g, oklab.b) - Math.min(oklab.r, oklab.g, oklab.b)).toBeGreaterThan(5);
   });
 
-  it('oklch routes through intermediate hues instead of straight across the wheel', () => {
-    const mid = blendRgb(red, blue, 0.5, 'oklch');
-    // Red→blue the short way passes through magenta/purple: strong red AND blue, little green.
-    expect(mid.g).toBeLessThan(mid.r);
-    expect(mid.g).toBeLessThan(mid.b);
-    expect(lum(mid)).toBeGreaterThan(0);
-  });
-
   it('stays inside the 0-255 byte range for out-of-gamut midpoints', () => {
-    for (const mode of ['oklab', 'oklch'] as const) {
-      const out = blendRgb({ r: 0, g: 255, b: 0 }, { r: 255, g: 0, b: 255 }, 0.37, mode);
-      for (const v of [out.r, out.g, out.b]) {
-        expect(v).toBeGreaterThanOrEqual(0);
-        expect(v).toBeLessThanOrEqual(255);
-      }
+    const out = blendRgb({ r: 0, g: 255, b: 0 }, { r: 255, g: 0, b: 255 }, 0.37);
+    for (const v of [out.r, out.g, out.b]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(255);
     }
   });
 });
@@ -155,9 +137,12 @@ describe('palette mapping', () => {
 
   it('samples a preview strip through the same mapping', () => {
     const colors = [{ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 }];
-    const strip = samplePalette(colors, null, 0.5, 0, 'srgb', 5);
-    expect(strip.map((c) => Math.round(c.r))).toEqual([0, 64, 128, 191, 255]);
-    const hard = samplePalette(colors, [0, 1], 0.5, 1, 'srgb', 5);
+    const strip = samplePalette(colors, null, 0.5, 0, 5);
+    // Blended in OKLab, so the ramp from black to white is not a straight line in sRGB, but it is monotonic and hits both ends.
+    expect(strip.map((c) => Math.round(c.r))[0]).toBe(0);
+    expect(Math.round(strip[4].r)).toBe(255);
+    for (let i = 1; i < strip.length; i++) expect(strip[i].r).toBeGreaterThan(strip[i - 1].r);
+    const hard = samplePalette(colors, [0, 1], 0.5, 1, 5);
     expect(hard[0].r).toBeCloseTo(0, 5);
     expect(hard[4].r).toBeCloseTo(255, 5);
     expect(hard[1].r).toBeLessThan(2);

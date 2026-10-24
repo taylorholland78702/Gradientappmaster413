@@ -2,7 +2,6 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { ColorRGB, EffectType, GradientType } from '../constants/gradientEffects';
 import type { AudioBinding } from './state/useAudioBindingsState';
 import type { WatercolorStyle } from './state/useWatercolorState';
-import type { ColorBlend } from '../utils/color';
 
 // Every live value that is saved in a snapshot (undo/redo, presets, display sync), plus its setter.
 // Generated from InteractiveGradient's call to useSnapshot, then checked against it by tsc.
@@ -38,7 +37,6 @@ export interface SnapshotValues {
   juliaSpeed: number;
   fieldContrast: number;
   paletteMode: "linear" | "banded" | "cyclic";
-  colorBlend: "linear" | "srgb" | "oklab" | "oklch";
   fieldScale: number;
   fieldSpeed: number;
   fieldShapes: { [x: string]: [number, number]; };
@@ -114,10 +112,6 @@ export interface SnapshotValues {
   colorShiftHue: number;
   concentricRingCount: number;
   concentricRingWidth: number;
-  paletteHue: number;
-  paletteSaturation: number;
-  paletteBrightness: number;
-  paletteContrast: number;
   helixTightness: number;
   helixTurns: number;
   contrastBeatEnabled: boolean;

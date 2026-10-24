@@ -270,10 +270,6 @@ export interface RandomizationParams {
   twistAmount: number;
   vignetteStrength: number;
   zoom: number;
-  setPaletteHue: (value: SetStateAction<number>) => void;
-  setPaletteSaturation: (value: SetStateAction<number>) => void;
-  setPaletteBrightness: (value: SetStateAction<number>) => void;
-  setPaletteContrast: (value: SetStateAction<number>) => void;
   setAuraGlowCount: (value: SetStateAction<number>) => void;
   setAuraGlowSpeed: (value: SetStateAction<number>) => void;
   setAuraGlowOpacity: (value: SetStateAction<number>) => void;

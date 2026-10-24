@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, type ColorBlend } from '../../utils/color';
+import { DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP } from '../../utils/color';
 
 // Shared post-processing controls for scalar-field gradients (Reaction-
 // Diffusion, Marble, Caustics, Topographic, Julia). A single field
@@ -10,11 +10,6 @@ export function useFieldMappingState() {
   const [fieldContrast, setFieldContrast] = useState(1);
   const [paletteMode, setPaletteMode] = useState<'linear' | 'banded' | 'cyclic'>('linear');
   const [paletteBands, setPaletteBands] = useState(5);
-  // How adjacent palette colors blend (sRGB/OKLab/OKLCH) — OKLab by default,
-  // so a fresh session gets even, non-muddy transitions; applies to every
-  // gradient, not just the scalar-field ones this hook is otherwise for, but
-  // it sits next to paletteMode since both are "how the palette is sampled."
-  const [colorBlend, setColorBlend] = useState<ColorBlend>('oklab');
   // Palette mapping (see paletteSegmentFor in utils/color.ts): where each color
   // sits along the ramp (null = evenly spaced; also ignored if its length no
   // longer matches the palette), plus Bias and Sharpness. Defaults reproduce the
@@ -39,8 +34,6 @@ export function useFieldMappingState() {
     setPaletteMode,
     paletteBands,
     setPaletteBands,
-    colorBlend,
-    setColorBlend,
     paletteStops,
     setPaletteStops,
     paletteBias,
