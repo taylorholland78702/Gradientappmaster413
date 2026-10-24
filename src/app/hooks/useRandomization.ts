@@ -17,7 +17,6 @@ import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { generatePalette, pickPalette } from '../utils/shufflePalette';
 import { shuffleLearning } from '../utils/shuffleLearning';
-import { getShuffleMood } from '../utils/shuffleMood';
 import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
@@ -602,7 +601,7 @@ export function useRandomization(params: RandomizationParams) {
     let finalEffects: EffectType[] = activeEffects;
     // The mood of this shuffle: it steers speed, how hard effects hit, how big the shape sliders run and which
     // effects are favoured (constants/shuffleTaste.ts), and it avoids the mood just used.
-    const mood = chooseMood(shuffleHistory, Math.random, getShuffleMood(), id => shuffleLearning.weight('mood', id));
+    const mood = chooseMood(shuffleHistory, Math.random, id => shuffleLearning.weight('mood', id));
     shuffleHistory.record('mood', mood.id);
     let chosenPalette: string | undefined;
 

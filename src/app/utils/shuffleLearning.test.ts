@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ShuffleLearning, type ShuffleMeta } from './shuffleLearning';
-import { chooseMood, rollCandidate, type RollOptions } from './shuffleScore';
+import { rollCandidate, type RollOptions } from './shuffleScore';
 import { ShuffleHistory } from './shuffleHistory';
-import { getShuffleMood, setShuffleMood } from './shuffleMood';
 import { moodById } from '../constants/shuffleTaste';
 import { ALL_EFFECTS } from '../constants/effectRegistry';
 import { FEELING_LUCKY_GRADIENT_TYPES, type EffectType } from '../constants/gradientEffects';
@@ -101,23 +100,5 @@ describe('using what was learned', () => {
     const neutral = share(undefined);
     expect(share((k, id) => (k === 'effect' && id === 'bloom' ? 0.5 : 1))).toBeLessThan(neutral);
     expect(share((k, id) => (k === 'effect' && id === 'bloom' ? 2 : 1))).toBeGreaterThan(neutral);
-  });
-});
-
-describe('holding a mood', () => {
-  it('uses the chosen mood every time, and any mood otherwise', () => {
-    const h = new ShuffleHistory();
-    for (let i = 0; i < 20; i++) expect(chooseMood(h, Math.random, 'bold').id).toBe('bold');
-    const seen = new Set(Array.from({ length: 60 }, () => chooseMood(h, Math.random, 'any').id));
-    expect(seen.size).toBeGreaterThan(3);
-  });
-  it('is remembered and refuses nonsense', () => {
-    expect(getShuffleMood()).toBe('any');
-    setShuffleMood('glitchy');
-    expect(getShuffleMood()).toBe('glitchy');
-    setShuffleMood('nonsense' as never);
-    expect(getShuffleMood()).toBe('glitchy');
-    expect(localStorage.getItem('wavShuffleMood')).toBe('glitchy');
-    setShuffleMood('any');
   });
 });
