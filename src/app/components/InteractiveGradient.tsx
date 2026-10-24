@@ -112,6 +112,7 @@ import { useStackState } from '../hooks/state/useStackState';
 import { useHatchState } from '../hooks/state/useHatchState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
+import { useShuffleQualityGate } from '../hooks/useShuffleQualityGate';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
 import { useSliderFill } from '../hooks/useSliderFill';
@@ -746,7 +747,7 @@ export function InteractiveGradient() {
   // by design.
   const {
     shuffleGradientType, randomizeEffects,
-    evolveWithFactor, shuffleAudiovisuals,
+    evolveWithFactor: evolveRaw, shuffleAudiovisuals,
   } = useRandomization({
     colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
@@ -808,6 +809,9 @@ export function InteractiveGradient() {
     setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
     setTriangulateVariation, setEmojiOffsetX,
   });
+
+  // Full shuffles are checked for washed-out results and re-rolled (see useShuffleQualityGate).
+  const evolveWithFactor = useShuffleQualityGate({ evolve: evolveRaw, canvasRef, gradientTypeRef, targetColorsRef, undoStackRef, undoIndexRef, setUndoDepth });
 
   // Shuffle click handler — single click = full remix, shared by both the
   // collapsed-cluster button and the expanded panel's tab-row shuffle
