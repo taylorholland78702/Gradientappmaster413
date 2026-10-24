@@ -16,6 +16,8 @@ import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { generatePalette, pickPalette } from '../utils/shufflePalette';
+import { shuffleLearning } from '../utils/shuffleLearning';
+import { getShuffleMood } from '../utils/shuffleMood';
 import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
@@ -600,8 +602,9 @@ export function useRandomization(params: RandomizationParams) {
     let finalEffects: EffectType[] = activeEffects;
     // The mood of this shuffle: it steers speed, how hard effects hit, how big the shape sliders run and which
     // effects are favoured (constants/shuffleTaste.ts), and it avoids the mood just used.
-    const mood = chooseMood(shuffleHistory);
+    const mood = chooseMood(shuffleHistory, Math.random, getShuffleMood(), id => shuffleLearning.weight('mood', id));
     shuffleHistory.record('mood', mood.id);
+    let chosenPalette: string | undefined;
 
     // Get high-rated results (7+) to use as preference guidance
     // When audio is active, prefer results that were also rated with audio on
@@ -743,6 +746,7 @@ export function useRandomization(params: RandomizationParams) {
         minEffects: 2,
         maxEffects: g => (isSparseContentGradient(g) ? 2 : 5),
         excluded: g => (isSparseContentGradient(g) ? CONTENT_ERASERS : []),
+        learned: (kind, id) => shuffleLearning.weight(kind, id),
       }, mood, shuffleHistory);
       const randomGradient: GradientType = picked.gradient;
       setGradientType(randomGradient);
@@ -821,14 +825,16 @@ export function useRandomization(params: RandomizationParams) {
         const okLooks = (looks ?? []).filter(l => inFamily(l.colors.map(hexToRgb), anchor));
         const okPalettes = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS).filter(p => inFamily(p.colors.map(hexToRgb), anchor));
         if (okLooks.length && roll < 0.6) {
-          const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
+          const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * shuffleLearning.weight('palette', `${finalGradientType}:${l.name}`));
           shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
+          chosenPalette = `${finalGradientType}:${look.name}`;
           // The family is fixed, so the Look's colours are kept as they are; its numbers still vary a little.
           applyLookValues(varyLook(look, lookVariation(mood.strength)), adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
           lookSeeded = true;
         } else if (okPalettes.length && roll < 0.7) {
-          const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
+          const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => shuffleLearning.weight('palette', n));
           shuffleHistory.record('palette', palette.name);
+          chosenPalette = palette.name;
           setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
         } else {
           setTargetColors(generateFamilyPalette(anchor, gradientColors.length, dark));
@@ -836,16 +842,17 @@ export function useRandomization(params: RandomizationParams) {
       } else if (looks?.length && roll < 0.65) {
         // A curated Look is the starting point: its numbers move a little, and its palette turns a few degrees about
         // half the time, so no two shuffles from the same Look are alike but it stays recognisably what was tuned.
-        const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
+        const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * shuffleLearning.weight('palette', `${finalGradientType}:${l.name}`));
         shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
+        chosenPalette = `${finalGradientType}:${look.name}`;
         const turn = Math.random() < 0.5 ? (Math.random() * 2 - 1) * (10 + 20 * mood.strength) : 0;
         const lookColors = nudgeHue(look.colors.map(hexToRgb), turn);
         applyLookValues(varyLook(look, lookVariation(mood.strength)), adjustColorArrayLength(lookColors, gradientColors.length));
         lookSeeded = true;
       } else if (roll < (looks?.length ? 0.85 : 0.5)) {
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
-        const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
-        if (palette) shuffleHistory.record('palette', palette.name);
+        const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => shuffleLearning.weight('palette', n));
+        if (palette) { shuffleHistory.record('palette', palette.name); chosenPalette = palette.name; }
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
       }
       // Starting from a Look, the styled gradients' shape sliders stay near their tuned position instead of wandering.
@@ -859,6 +866,8 @@ export function useRandomization(params: RandomizationParams) {
     // the Audio panel too, but only when audio is actually engaged, so a
     // Remix on a silent canvas doesn't reshuffle sensitivity/beat-sync
     // settings that have no visible effect yet.
+    // What this shuffle was made of, so a later undo (or leaving it alone, saving it, exporting it) can teach Shuffle.
+    if (finalGradientType) shuffleLearning.begin({ gradient: finalGradientType, effects: finalEffects, mood: mood.id, palette: chosenPalette });
     if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)

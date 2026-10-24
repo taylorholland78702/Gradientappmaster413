@@ -6,6 +6,7 @@ import {
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
 import { shareParam } from '../utils/shareLink';
+import { shuffleLearning } from '../utils/shuffleLearning';
 import type { useCanvasState } from './state/useCanvasState';
 import type { useMiscState } from './state/useMiscState';
 
@@ -83,6 +84,8 @@ export function useExportControls({
     const canvas = canvasRef.current;
     if (!canvas || isExportingRef.current) return;
     isExportingRef.current = true;
+    // Exporting a look is a sign it was wanted (a preview alone is not).
+    if (mode === 'download') shuffleLearning.like(1);
     const { size, aspect } = exportSettingsRef.current;
     const cssW = canvas.clientWidth || canvas.width;
     const cssH = canvas.clientHeight || canvas.height;

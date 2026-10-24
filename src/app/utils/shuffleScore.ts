@@ -1,5 +1,5 @@
 import type { EffectType, GradientType } from '../constants/gradientEffects';
-import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, type Mood } from '../constants/shuffleTaste';
+import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, moodById, type Mood, type MoodId } from '../constants/shuffleTaste';
 import { ShuffleHistory, pickWeighted } from './shuffleHistory';
 
 // Rolling and judging a shuffled look before it is drawn. Shuffle rolls several candidate looks (a gradient and an
@@ -33,16 +33,19 @@ export interface RollOptions {
   maxEffects: (gradient: GradientType) => number;
   // Effects a gradient should not get (content erasers on sparse gradients, say).
   excluded: (gradient: GradientType) => readonly EffectType[];
+  // Odds multiplier learned from what you keep and undo (1 when nothing is known).
+  learned?: (kind: 'gradient' | 'effect', id: string) => number;
 }
 
 // One candidate: a gradient, then a stack of effects chosen by taste, mood and what was shown lately.
 export function rollCandidate(opts: RollOptions, mood: Mood, history: ShuffleHistory, rng: () => number = Math.random): Candidate {
-  const gradient = pickWeighted(opts.gradientPool, g => history.weight('gradient', g), rng);
+  const learned = opts.learned ?? (() => 1);
+  const gradient = pickWeighted(opts.gradientPool, g => history.weight('gradient', g) * learned('gradient', g), rng);
   const excluded = opts.excluded(gradient);
   const cap = Math.min(opts.maxEffects(gradient), mood.maxEffects);
   const stack: EffectType[] = [];
   let spent = 0;
-  const weightOf = (fx: EffectType) => history.weight('effect', fx) * Math.pow(2, 0.6 * affinity(gradient, fx, mood));
+  const weightOf = (fx: EffectType) => history.weight('effect', fx) * learned('effect', fx) * Math.pow(2, 0.6 * affinity(gradient, fx, mood));
   const take = (fx: EffectType) => { stack.push(fx); spent += opts.costOf(fx); };
 
   const shapePool = opts.shapeChangers.filter(fx => !excluded.includes(fx));
@@ -71,9 +74,11 @@ export function chooseLook(opts: RollOptions, mood: Mood, history: ShuffleHistor
   return pickWeighted(candidates, c => Math.exp(c.score / temperature), rng);
 }
 
-// A mood for this shuffle, steering away from the one just used.
-export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random): Mood {
-  return pickWeighted(MOODS, m => history.weight('mood', m.id), rng);
+// A mood for this shuffle: the one you chose, or else one that steers away from the one just used (and toward the
+// ones you tend to keep).
+export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, forced?: MoodId | 'any', learnedMood?: (id: string) => number): Mood {
+  if (forced && forced !== 'any') return moodById(forced);
+  return pickWeighted(MOODS, m => history.weight('mood', m.id) * (learnedMood?.(m.id) ?? 1), rng);
 }
 
 // Scales a [min, max] range by a mood's strength: a gentle mood keeps the low end, a strong one uses all of it.

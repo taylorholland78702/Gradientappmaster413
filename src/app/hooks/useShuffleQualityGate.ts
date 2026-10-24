@@ -3,6 +3,7 @@ import { IS_DISPLAY_MODE } from '../constants/displayMode';
 import type { ColorRGB, GradientType } from '../constants/gradientEffects';
 import { isDullFrame, isDullPalette, measureFrame } from '../utils/frameQuality';
 import { scoreFrame, bestCandidate, GOOD_ENOUGH, type FrameCandidate } from '../utils/frameScore';
+import { shuffleLearning } from '../utils/shuffleLearning';
 import type { Snapshot } from './snapshotTypes';
 
 // A full shuffle rolls a look at random. This wraps it: it rolls, waits a few frames, scores what was drawn, and keeps the
@@ -63,7 +64,11 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
   return useCallback((factor: number) => {
     const canvas = canvasRef.current;
     // Small nudges, the standalone player, a hidden tab, or a shuffle already being judged: just run it.
-    if (factor < 1 || IS_DISPLAY_MODE || document.hidden || busyRef.current || !canvas) { evolveRef.current(factor); return; }
+    if (factor < 1 || IS_DISPLAY_MODE || document.hidden || busyRef.current || !canvas) {
+      evolveRef.current(factor);
+      if (factor >= 1) shuffleLearning.commit();
+      return;
+    }
 
     busyRef.current = true;
     const overlay = freezeFrame(canvas);
@@ -73,6 +78,7 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
       let pushed = 0;
       try {
         const candidates: FrameCandidate<Snapshot>[] = [];
+        shuffleLearning.reset();
         for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
           const topBefore = undoStackRef.current[undoStackRef.current.length - 1];
           evolveRef.current(factor);
@@ -89,6 +95,8 @@ export function useShuffleQualityGate({ evolve, canvasRef, gradientTypeRef, targ
         // Back to the best look tried, if it was not the last one drawn.
         const best = bestCandidate(candidates);
         if (best && best !== candidates[candidates.length - 1]) applyCandidateRef.current(best.value);
+        // The look that stayed on screen is the one to learn from.
+        shuffleLearning.commit(best ? candidates.indexOf(best) : undefined);
         // Each attempt saved the look before it. Keep only the first (what you had before shuffling).
         if (pushed > 1) {
           const drop = pushed - 1;

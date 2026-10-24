@@ -113,6 +113,7 @@ import { useHatchState } from '../hooks/state/useHatchState';
 import { useSlitScanState } from '../hooks/state/useSlitScanState';
 import { useSolarizeState } from '../hooks/state/useSolarizeState';
 import { useShuffleQualityGate } from '../hooks/useShuffleQualityGate';
+import { shuffleLearning } from '../utils/shuffleLearning';
 import { useGlobalHotkeys } from '../hooks/useGlobalHotkeys';
 import { useCanvasPointer } from '../hooks/useCanvasPointer';
 import { useSliderFill } from '../hooks/useSliderFill';
@@ -839,6 +840,8 @@ export function InteractiveGradient() {
     shuffleGradientType, randomizeEffects, randomColor, saveCurrentState, setTargetColors,
     gradientColorsRef, evolveWithFactor,
   });
+  // While Auto Shuffle changes the look on a timer, leaving a look alone says nothing about it.
+  shuffleLearning.paused = isAutoShuffleOn;
   const {
     exportSize, setExportSize, exportAspect, setExportAspect,
     videoSize, setVideoSize, videoLength, setVideoLength,

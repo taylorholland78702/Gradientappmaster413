@@ -118,6 +118,7 @@ export function scorePalette(colours: readonly ColorRGB[], gradient: string | nu
 // Picks among ready-made palettes, preferring well-scored ones and ones not shown lately.
 export function pickPalette<T extends { name: string; colors: string[] }>(
   pool: readonly T[], toColours: (p: T) => ColorRGB[], gradient: string | null, history: ShuffleHistory, rng: () => number = Math.random, temperature = 2,
+  learned: (name: string) => number = () => 1,
 ): T {
-  return pickWeighted(pool, p => history.weight('palette', p.name) * Math.exp(scorePalette(toColours(p), gradient) / temperature), rng);
+  return pickWeighted(pool, p => history.weight('palette', p.name) * learned(p.name) * Math.exp(scorePalette(toColours(p), gradient) / temperature), rng);
 }
