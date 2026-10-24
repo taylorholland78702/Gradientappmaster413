@@ -13,6 +13,8 @@ import { paletteFamily, inFamily, generateFamilyPalette } from '../utils/colorFa
 import { STYLE_SHAPE_CONTROLS } from '../constants/styleShapeControls';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
+import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
+import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
@@ -594,6 +596,10 @@ export function useRandomization(params: RandomizationParams) {
     // activeEffects state (those setters are async and haven't landed yet).
     let finalGradientType: GradientType | null = currentGradientType;
     let finalEffects: EffectType[] = activeEffects;
+    // The mood of this shuffle: it steers speed, how hard effects hit, how big the shape sliders run and which
+    // effects are favoured (constants/shuffleTaste.ts), and it avoids the mood just used.
+    const mood = chooseMood(shuffleHistory);
+    shuffleHistory.record('mood', mood.id);
 
     // Get high-rated results (7+) to use as preference guidance
     // When audio is active, prefer results that were also rated with audio on
@@ -627,6 +633,7 @@ export function useRandomization(params: RandomizationParams) {
         : currentGradientType || FEELING_LUCKY_GRADIENT_TYPES[Math.floor(Math.random() * FEELING_LUCKY_GRADIENT_TYPES.length)];
       setGradientType(targetGradientType);
       finalGradientType = targetGradientType;
+      shuffleHistory.record('gradient', targetGradientType);
 
       // Blend colors from base with some random variation
       const blendedColors = baseResult.data.gradientColors.map((baseColor: ColorRGB) => {
@@ -668,6 +675,7 @@ export function useRandomization(params: RandomizationParams) {
       }
       setActiveEffects(keptEffects);
       finalEffects = keptEffects;
+      shuffleHistory.record('effect', keptEffects);
       if (keptEffects.includes('emoji')) setEmojiChars(pickRandomEmojiSet(5));
       setIsMultiFxMode(true);
       
@@ -739,67 +747,37 @@ export function useRandomization(params: RandomizationParams) {
       const gradientPool = (audioActive && Math.random() < 0.7)
         ? AUDIO_GRADIENTS
         : FEELING_LUCKY_GRADIENT_TYPES;
-      // Uniform pick — every gradient type in the pool has an equal chance.
-      const randomGradient: GradientType = gradientPool[Math.floor(Math.random() * gradientPool.length)];
-      setGradientType(randomGradient);
-      finalGradientType = randomGradient;
-
-      const sparseGradient = isSparseContentGradient(randomGradient);
-
       // Effects during ratings phase: keep gradients legible so ratings are meaningful.
       // Heavy shape-changers mask the gradient entirely; only allow them stacked with a light effect.
       const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
       // When audio is active, prefer effects that visibly react to audio
       const LIGHT_FX: EffectType[] = (audioActive ? AUDIO_EFFECTS : ALL_EFFECTS)
-        .filter(e => !SHAPE_CHANGERS.includes(e as EffectType))
-        .filter(e => !(sparseGradient && CONTENT_ERASERS.includes(e as EffectType)));
-      // Roll a total COST budget (not a raw effect count), n is spent in
-      // cost-units (see EFFECT_COST above) rather than one unit per effect.
-      // A budget that lands on a couple of heavy effects (chromatic-trails,
-      // grid-effect, triangulate, halftone, dither at 3 each) naturally
-      // stops there, while the same budget spent on light effects (bloom,
-      // vignette, posterize, etc. at 1 each) still fills out a dense stack —
-      // bounds total per-frame compute cost instead of just effect count.
-      // At most one shape-changer is included (they mask the gradient
-      // entirely when stacked), the rest are light/audio effects.
-      // Average EFFECT_COST is ~1.8-2, so hitting 5 effects needs a budget
-      // around 9-10 — a floor of 5 plus a 0-10 triangular spread keeps cost
-      // from being the thing that usually stops selection short of the
-      // MAX_SHUFFLE_EFFECTS cap below (previously floored at 1, which let
-      // a couple of mid-cost effects exhaust the budget well before 5
-      // effects were picked — a shuffle topping out around 2-3 in
-      // practice despite the cap already being higher).
-      const MIN_SHUFFLE_EFFECTS = 2;
-      // Capped tighter for sparse-content gradients (particles/attractor/
-      // fireworks/lightning) — even "light" effects compound when stacked
-      // 3+ deep on a frame that's mostly black to start with.
-      const MAX_SHUFFLE_EFFECTS = sparseGradient ? 2 : 5;
+        .filter(e => !SHAPE_CHANGERS.includes(e as EffectType)) as EffectType[];
+      // The cost budget (see EFFECT_COST): a couple of heavy effects stop a stack early, light ones fill it out,
+      // which bounds per-frame compute instead of just effect count. Average EFFECT_COST is about 2, so reaching
+      // 5 effects needs a budget around 9-10; a floor of 9 plus a 0-10 triangular spread keeps cost from being
+      // what usually stops a stack short of the cap.
       const costBudget = 9 + Math.floor(((Math.random() + Math.random()) / 2) * 10);
-      const selectedEffects: EffectType[] = [];
-      let spentCost = 0;
-      const shuffledLight = [...LIGHT_FX].sort(() => Math.random() - 0.5);
-      if (Math.random() < 0.5) {
-        const shapeChanger = SHAPE_CHANGERS[Math.floor(Math.random() * SHAPE_CHANGERS.length)];
-        selectedEffects.push(shapeChanger);
-        spentCost += costOf(shapeChanger);
-      }
-      for (const fx of shuffledLight) {
-        if (selectedEffects.length >= MAX_SHUFFLE_EFFECTS) break;
-        const cost = costOf(fx);
-        if (spentCost + cost > costBudget) continue;
-        selectedEffects.push(fx);
-        spentCost += cost;
-      }
-      // A low budget roll landing on costlier effects first can come up
-      // short of even a couple of effects (or none at all) — a shuffle
-      // that sometimes turns effects off entirely reads as broken rather
-      // than as a deliberate "clean" look, so guarantee at least
-      // MIN_SHUFFLE_EFFECTS by topping up from the same shuffled pool,
-      // overriding the cost budget for just the extra picks needed.
-      for (const fx of shuffledLight) {
-        if (selectedEffects.length >= MIN_SHUFFLE_EFFECTS) break;
-        if (!selectedEffects.includes(fx)) selectedEffects.push(fx);
-      }
+      // Roll several candidate looks (a gradient and an effect stack), score them against the taste table, the
+      // mood and what was shown lately, and take one of the better ones. Sparse-content gradients (points on
+      // black) take at most 2 effects and none that erase content.
+      const picked = chooseLook({
+        gradientPool,
+        lightEffects: LIGHT_FX,
+        shapeChangers: SHAPE_CHANGERS.filter(e => (ALL_EFFECTS as EffectType[]).includes(e)),
+        costOf,
+        costBudget,
+        minEffects: 2,
+        maxEffects: g => (isSparseContentGradient(g) ? 2 : 5),
+        excluded: g => (isSparseContentGradient(g) ? CONTENT_ERASERS : []),
+      }, mood, shuffleHistory);
+      const randomGradient: GradientType = picked.gradient;
+      setGradientType(randomGradient);
+      finalGradientType = randomGradient;
+      const selectedEffects: EffectType[] = picked.effects;
+      const spentCost = picked.spentCost;
+      shuffleHistory.record('gradient', randomGradient);
+      shuffleHistory.record('effect', selectedEffects);
 
       setActiveEffects(selectedEffects);
       finalEffects = selectedEffects;
@@ -811,17 +789,17 @@ export function useRandomization(params: RandomizationParams) {
       setTargetZoom(1);
       setZoom(1);
 
-      // Speed: bias toward 1–4 range
-      const speedOptions = [0.5, 1, 1, 2, 2, 3, 3, 4, 5, 6, 8, 10];
-      setVcrPlaybackSpeed(speedOptions[Math.floor(Math.random() * speedOptions.length)]);
+      // Speed comes from the mood: calm and soft stay slow, bold and glitchy run fast.
+      setVcrPlaybackSpeed(mood.speeds[Math.floor(Math.random() * mood.speeds.length)]);
 
       setRotationDirection(Math.random() < 0.5 ? 'clockwise' : 'counter');
 
       setKaleidoscopeSegments(randIntInRange(RANGES.kaleidoscopeSegments));
-      setPixelSize(randIntInRange(RANGES.pixelSize));
+      // How hard effects hit follows the mood's strength (a gentle mood keeps the low end of each range).
+      setPixelSize(randIntInRange(scaleRange(RANGES.pixelSize, mood.strength)));
       setTriangleSize(randIntInRange(RANGES.triangleSize));
-      setChromaticOffset(randIntInRange(RANGES.chromaticOffset));
-      setGrainIntensity(Math.random() * 0.2);                        // 0–0.2
+      setChromaticOffset(randIntInRange(scaleRange(RANGES.chromaticOffset, mood.strength)));
+      setGrainIntensity(Math.random() * (0.06 + 0.14 * mood.strength));   // 0.06–0.2 at most
       setGrainSize(Math.floor(Math.random() * 6) + 1);                // 1–6
       setGessoWhiteness(Math.random() * 0.3 + 0.55);                  // 0.55–0.85
       setGessoTexture(Math.random() * 0.6);                           // 0–0.6
@@ -845,11 +823,11 @@ export function useRandomization(params: RandomizationParams) {
       // that kept the old one would hand back the same cells/veins every time.
       setStructuralSeed(Math.floor(Math.random() * 1000000));
       // Fresh shape sliders for the gradient it landed on (they're kept per gradient).
-      const shape = () => Math.round((0.7 + Math.random() * 0.9) * 20) / 20;
+      const shape = () => Math.round((mood.shape[0] + Math.random() * (mood.shape[1] - mood.shape[0])) * 20) / 20;
       setFieldShapes(finalGradientType && STYLE_SHAPE_CONTROLS[finalGradientType]
         ? { [finalGradientType]: [shape(), shape()] } : {});
       // Now and then a styled gradient gets a little twist; most shuffles stay straight.
-      setFieldSwirl(finalGradientType && STYLE_SHAPE_CONTROLS[finalGradientType] && Math.random() < 0.35 ? Math.round(Math.random() * 60) / 100 : 0);
+      setFieldSwirl(finalGradientType && STYLE_SHAPE_CONTROLS[finalGradientType] && Math.random() < mood.swirlChance ? Math.round(Math.random() * 60) / 100 : 0);
       setPaletteStops(null);
       setPaletteBias(0.5);
       setPaletteSharp(0);
@@ -866,21 +844,25 @@ export function useRandomization(params: RandomizationParams) {
         const okLooks = (looks ?? []).filter(l => inFamily(l.colors.map(hexToRgb), anchor));
         const okPalettes = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS).filter(p => inFamily(p.colors.map(hexToRgb), anchor));
         if (okLooks.length && roll < 0.35) {
-          const look = okLooks[Math.floor(Math.random() * okLooks.length)];
+          const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
+          shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
           applyLookValues(look, adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
         } else if (okPalettes.length && roll < 0.7) {
-          const palette = okPalettes[Math.floor(Math.random() * okPalettes.length)];
+          const palette = pickWeighted(okPalettes, p => shuffleHistory.weight('palette', p.name));
+          shuffleHistory.record('palette', palette.name);
           setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
         } else {
           setTargetColors(generateFamilyPalette(anchor, gradientColors.length, dark));
         }
       } else if (looks?.length && roll < 0.4) {
-        const look = looks[Math.floor(Math.random() * looks.length)];
+        const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`));
+        shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
         const lookColors = look.colors.map(hexToRgb);
         applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
       } else if (roll < (looks?.length ? 0.75 : 0.5)) {
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
-        const palette = pool[Math.floor(Math.random() * pool.length)];
+        const palette = pickWeighted(pool, p => shuffleHistory.weight('palette', p.name));
+        if (palette) shuffleHistory.record('palette', palette.name);
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
       }
     }
