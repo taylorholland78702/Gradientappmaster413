@@ -26,7 +26,6 @@ export interface GradientsTabProps {
   gridColumns: number; setGridColumns: (v: number) => void;
   gridCellAngleStep: number; setGridCellAngleStep: (v: number) => void;
   gridHardEdge: boolean; setGridHardEdge: (v: boolean) => void;
-  gridMode: 'classic' | 'martin'; setGridMode: (v: 'classic' | 'martin') => void;
 
   // Polar Grid
   polygon2Sides: number; setPolygon2Sides: (v: number) => void;
@@ -238,7 +237,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const {
     gradientType, setGradientType, getGradientDisplayName, shuffleGradientType,
     rotationDirection, setRotationDirection,
-    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge, gridMode, setGridMode,
+    gridRows, setGridRows, gridColumns, setGridColumns, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge,
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
@@ -464,31 +463,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         </div>
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-white">Mode:</label>
-              <div className="flex items-center gap-1 flex-1 ml-2">
-                <button
-                  onClick={() => setGridMode('classic')}
-                  aria-pressed={gridMode === 'classic'}
-                  className={choice(gridMode === 'classic', 'flex-1')}
-                >
-                  Classic
-                </button>
-                <button
-                  onClick={() => setGridMode('martin')}
-                  aria-pressed={gridMode === 'martin'}
-                  className={choice(gridMode === 'martin', 'flex-1')}
-                >
-                  Martin
-                </button>
-              </div>
-            </div>
-            {gridMode === 'classic' && renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
+            {renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
             <SliderRow label="Rows:" value={gridRows} onChange={setGridRows} min="2" max="50" />
             <SliderRow label="Columns:" value={gridColumns} onChange={setGridColumns} min="2" max="50" />
-            {gridMode === 'classic' && (
-              <SliderRow label="Cell Angle Step:" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation" value={gridCellAngleStep} onChange={setGridCellAngleStep} min="0" max="90" />
-            )}
+            <SliderRow label="Cell Angle Step:" title="Rotation added per row/column — 30° gives the default herringbone look, 0° gives uniform bands, 90° gives a checkerboard-like alternation" value={gridCellAngleStep} onChange={setGridCellAngleStep} min="0" max="90" />
           </div>
         )}
 

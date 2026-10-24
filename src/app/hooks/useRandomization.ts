@@ -165,7 +165,7 @@ export function useRandomization(params: RandomizationParams) {
     // stray sliders that had real UI controls but no shuffle path ever
     // touched them, either because they were never destructured here at
     // all or (structuralSeed) only ever got rerolled by a big audio hit.
-    setWindmillMode, setWindmillZoomResponse, setFadeMode, setGridMode, setParticlesMode, setRadialBurstMode,
+    setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, setRadialBurstMode,
     setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
     setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity,
     setTriangulateVariation, setEmojiOffsetX,
@@ -177,7 +177,6 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstMode(Math.random() < 0.5 ? 'burst' : 'sweep');
     setGridShapeSize(Math.floor(Math.random() * 99) + 1);              // 1–99
     setGridVariation(Math.random());                                    // 0–1
-    setGridMode(Math.random() < 0.5 ? 'classic' : 'martin');
     setFadeMode(Math.random() < 0.5 ? 'angle' : 'light');
     setAngleHardEdge(Math.random() < 0.5);
     setGridHardEdge(Math.random() < 0.5);
