@@ -102,7 +102,7 @@ describe('every bindable setting reaches the draw', () => {
     return new Set(text.match(/\b\w+\b/g));
   })();
   // Put together inside useCanvasDraw from a larger object.
-  const VIRTUAL = new Set(['fieldGradeBrightness', 'fieldGradeContrast', 'fieldGradeSaturation']);
+  const VIRTUAL = new Set<string>();
 
   it('is passed to useCanvasDraw', () => {
     const missing = MODULATABLE_PARAMS.map(p => resolveModulationKey(p.key)).filter(k => !handedToDraw.has(k) && !VIRTUAL.has(k));
@@ -120,9 +120,8 @@ describe('every bindable setting reaches the draw', () => {
     expect(labels).toEqual(expect.arrayContaining([STYLE_SHAPE_CONTROLS.smoke[0].label, STYLE_SHAPE_CONTROLS.smoke[1].label, 'Swirl']));
   });
 
-  it('offers the palette, palette mapping and finishing settings under Global', () => {
-    expect(sourcesOf('global').map(s => s.label).sort()).toEqual(['Finishing', 'Palette', 'Palette Mapping']);
+  it('offers the palette, palette and palette mapping settings under Global', () => {
+    expect(sourcesOf('global').map(s => s.label).sort()).toEqual(['Palette', 'Palette Mapping']);
     expect(bindingLabel('paletteHue')).toBe('Palette · Hue');
-    expect(bindingLabel('fieldExposure')).toBe('Finishing · Exposure');
   });
 });

@@ -559,16 +559,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       resolutionMultiplier: effectiveResolutionMultiplier,
     };
 
-    if (audioBound) {
-      // Finishing's brightness/contrast/saturation live inside one object; bind them as separate numbers, then put them back.
-      const grade = drawCtx.fieldGrade ?? { brightness: 1, contrast: 1, saturation: 1 };
-      const ctxNumbers = drawCtx as unknown as Record<string, number>;
-      ctxNumbers.fieldGradeBrightness = grade.brightness;
-      ctxNumbers.fieldGradeContrast = grade.contrast;
-      ctxNumbers.fieldGradeSaturation = grade.saturation;
-      applyAudioBindings(drawCtx, audioBindings, boundLevels);
-      drawCtx.fieldGrade = { brightness: ctxNumbers.fieldGradeBrightness, contrast: ctxNumbers.fieldGradeContrast, saturation: ctxNumbers.fieldGradeSaturation };
-    }
+    if (audioBound) applyAudioBindings(drawCtx, audioBindings, boundLevels);
     // The styled-field clock (advanced in InteractiveGradient.tsx) scales its rate by
     // the Speed this frame actually drew with, so an audio binding on Speed steers it.
     if (typeof drawCtx.fieldSpeed === 'number') av.fieldSpeedLive = Math.max(0, drawCtx.fieldSpeed);
