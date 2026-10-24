@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 
 /** Class string for one chip. `layout` carries only placement (flex-1, shrink-0, min-w-0, ...). */
 export const choice = (active: boolean, layout = '') =>
-  `wav-choice px-1.5 text-[10px] transition-all ${layout} ${active ? 'bg-white text-black font-bold' : 'bg-black/25 text-white hover:bg-white/15'}`.replace(/\s+/g, ' ').trim();
+  `wav-choice px-1.5 text-[10px] transition-all ${layout} ${active ? 'bg-white text-black font-bold' : 'bg-wav-field text-white hover:bg-wav-hover'}`.replace(/\s+/g, ' ').trim();
 
 export interface ChoiceOption<T extends string | number> {
   id: T;

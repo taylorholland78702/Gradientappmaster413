@@ -59,7 +59,7 @@ export interface ControlRailProps {
 // horizontal wrapped bar, a horizontal line on desktop's vertical column
 // (each orthogonal to the axis the buttons are stacked along).
 const RailSep: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
-  <div className={isMobile ? 'w-px h-5 bg-white/50 mx-0.5 flex-shrink-0' : 'w-5 h-px bg-white/50 my-0.5 flex-shrink-0'} />
+  <div className={isMobile ? 'w-px h-5 bg-wav-line-strong mx-0.5 flex-shrink-0' : 'w-5 h-px bg-wav-line-strong my-0.5 flex-shrink-0'} />
 );
 
 const railBtnBase = 'wav-rail-btn w-[30px] h-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0 transition-all';
@@ -100,7 +100,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   } = props;
 
   const tabBtnClass = (tab: TabId) =>
-    `${railBtnBase} ${activeTab === tab ? 'bg-white/20 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`;
+    `${railBtnBase} ${activeTab === tab ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover hover:text-white'}`;
 
   // Mobile icons are 20% larger than desktop's (23px vs 19px) — set
   // independently rather than scaling together, since desktop already
@@ -197,7 +197,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
 
       <button
         onClick={handleWavClick}
-        className={`${railBtnBase} ${isWavPressed ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'}`}
+        className={`${railBtnBase} ${isWavPressed ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover'}`}
         title="Shuffle (Shift+W)"
         aria-label="Shuffle to a new look"
       >
@@ -205,7 +205,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       </button>
       <button
         onClick={(e) => openAutoShufflePopover(e.currentTarget)}
-        className={`${railBtnBase} ${isAutoShuffleOn ? 'bg-white/20 text-white' : 'text-white hover:bg-white/15'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
+        className={`${railBtnBase} ${isAutoShuffleOn ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
         title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
         aria-label="Auto Shuffle settings"
         aria-pressed={isAutoShuffleOn}
@@ -257,7 +257,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button
         onClick={toggleVCRRecording}
         disabled={isEncoding}
-        className={`${railBtnBase} text-white hover:bg-white/15 relative`}
+        className={`${railBtnBase} text-white hover:bg-wav-hover relative`}
         title={isEncoding ? `Encoding… ${encodingProgress}%` : 'Record Video (V)'}
         aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
       >
@@ -280,7 +280,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       </button>
       <button
         onClick={(e) => openExportPopover(e.currentTarget)}
-        className={`${railBtnBase} text-white hover:bg-white/15`}
+        className={`${railBtnBase} text-white hover:bg-wav-hover`}
         title="Save PNG — size and aspect (S saves right away)"
         aria-label="Save PNG"
       >
@@ -289,7 +289,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button
         onClick={toggleGifRecording}
         disabled={isFinalizingGif}
-        className={`${railBtnBase} text-white hover:bg-white/15 relative`}
+        className={`${railBtnBase} text-white hover:bg-wav-hover relative`}
         title={isFinalizingGif ? 'Finalizing GIF…' : isRecordingGif ? 'Stop GIF recording (click to finish)' : 'Record GIF (Shift+S)'}
         aria-label={isFinalizingGif ? 'Finalizing GIF' : isRecordingGif ? 'Stop GIF recording' : 'Record GIF'}
       >

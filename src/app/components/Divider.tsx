@@ -7,8 +7,8 @@ export const Divider: React.FC<{ orientation?: 'vertical' | 'horizontal' }> = ({
   <div
     className={
       orientation === 'vertical'
-        ? 'w-px self-stretch bg-white/20 flex-shrink-0'
-        : 'h-px w-full bg-white/20 flex-shrink-0'
+        ? 'w-px self-stretch bg-wav-active flex-shrink-0'
+        : 'h-px w-full bg-wav-active flex-shrink-0'
     }
   />
 );

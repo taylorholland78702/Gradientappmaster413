@@ -1,4 +1,4 @@
-import { Infinity as InfinityIcon } from '@phosphor-icons/react';
+import { Switch } from './Switch';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC, AUTO_SHUFFLE_SCOPES, type AutoShuffleScope } from '../constants/autoShuffle';
 import { ChoiceChips } from './choice';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
@@ -14,19 +14,8 @@ export function AutoShufflePopout({
 }) {
   return (<>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs flex items-center gap-2 text-white"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle</span>
-        <button
-          onClick={() => setIsAutoShuffleOn(prev => !prev)}
-          aria-pressed={isAutoShuffleOn}
-          aria-label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'}
-          className="relative inline-flex w-8 h-[18px] rounded-full transition-colors shrink-0"
-          style={{ backgroundColor: isAutoShuffleOn ? '#ffffff' : 'rgba(255, 255, 255, 0.15)' }}
-        >
-          <span
-            className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-transform"
-            style={{ backgroundColor: isAutoShuffleOn ? '#000000' : '#ffffff', transform: isAutoShuffleOn ? 'translateX(18px)' : 'translateX(2px)' }}
-          />
-        </button>
+        <span className="text-[10px] text-wav-text-2">Remix automatically</span>
+        <Switch on={isAutoShuffleOn} onChange={on => setIsAutoShuffleOn(() => on)} label={isAutoShuffleOn ? 'Turn off Auto Shuffle' : 'Turn on Auto Shuffle'} />
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -44,8 +33,7 @@ export function AutoShufflePopout({
           max={AUTO_SHUFFLE_MAX_SEC}
           value={autoShuffleIntervalSec}
           onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-          className="text-[10px] w-12 text-right rounded px-1 text-white"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
+          className="wav-slider-value text-[10px] w-12 text-right rounded px-1 text-white bg-wav-field border border-wav-line"
           aria-label="Auto Shuffle interval in seconds"
         />
       </div>
@@ -61,6 +49,6 @@ export function AutoShufflePopout({
         value={autoShuffleIntervalSec}
         onChange={setAutoShuffleIntervalSec}
       />
-      <p className="text-[10px] text-white/50">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
+      <p className="text-[10px] text-wav-text-3">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
   </>);
 }

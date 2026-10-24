@@ -213,7 +213,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             card-in-a-card when the drawer wrapped this component. */}
         <div className="w-full">
           {/* Top row: MULTI + Shuffle + RESET — folded into the same rounded rectangle as the effects grid below */}
-          <div className="w-full flex gap-0 border-b border-white/50">
+          <div className="w-full flex gap-0 border-b border-wav-line-strong">
             <button
               onClick={() => {
                 const next = !isMultiFxMode;
@@ -233,19 +233,19 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 }
               }}
               aria-pressed={isMultiFxMode}
-              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-white/50 ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap border-r border-wav-line-strong ${isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
               title="Toggle Multi-FX (M)"
             >MULTI</button>
             <button
               onClick={randomizeEffects}
-              className="wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center border-r border-white/50"
+              className="wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center border-r border-wav-line-strong"
               title="Shuffle Effects (Shift+F)"
               aria-label="Shuffle Effects"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
             <button
               onClick={() => { setActiveEffects([]); setIsMultiFxMode(false); }}
               aria-pressed={activeEffects.length === 0 && !isMultiFxMode}
-              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-white/10'}`}
+              className={`wav-choice flex-1 px-0.5 py-1.5 text-[10px] font-semibold transition-all whitespace-nowrap ${activeEffects.length === 0 && !isMultiFxMode ? 'bg-white text-black font-bold' : 'text-white hover:bg-wav-hover'}`}
             >RESET</button>
           </div>
           {(() => {
@@ -295,12 +295,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-white/50 ${isLeftColumn ? 'border-r border-white/50' : ''} ${
+                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-wav-line-strong ${isLeftColumn ? 'border-r border-wav-line-strong' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
-                            ? 'text-white/30 wav-disabled-text cursor-not-allowed'
-                            : 'text-white hover:bg-white/10'
+                            ? 'text-wav-text-3 wav-disabled-text cursor-not-allowed'
+                            : 'text-white hover:bg-wav-hover'
                       }`}
                     >
                       {effect.label}
@@ -329,7 +329,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       onChange={(e) => setAsciiChars(e.target.value)}
                       placeholder=" .:-=+*x#%@"
                       title="Darkest to brightest, left to right"
-                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1"
                     />
                     <label className="text-[10px] text-white whitespace-nowrap">Color:</label>
                     <button
@@ -479,7 +479,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       }}
                       title="Shuffle Colors"
                       aria-label="Shuffle Colors"
-                      className="shrink-0 p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all"
+                      className="shrink-0 p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all"
                     >
                       <Shuffle weight="regular" className="w-3 h-3" />
                     </button>
@@ -540,39 +540,39 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       onFocus={() => setIsEmojiPickerOpen(true)}
                       placeholder="😴🙂😃🤩🔥"
                       title="Darkest to brightest, left to right — click to pick from the emoji picker"
-                      className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1"
+                      className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1"
                     />
                     {isEmojiPickerOpen && (
                       <button
                         onClick={() => setIsEmojiPickerOpen(false)}
-                        className="shrink-0 text-[10px] text-white bg-white/15 hover:bg-white/25 rounded px-1.5 py-1"
+                        className="shrink-0 text-[10px] text-white bg-wav-hover hover:bg-wav-active rounded px-1.5 py-1"
                       >Done</button>
                     )}
                   </div>
                   {isEmojiPickerOpen && (
-                    <div className="mt-1 border border-white/20 rounded bg-black/40">
+                    <div className="mt-1 border border-wav-line rounded bg-wav-field">
                       <input
                         type="text"
                         value={emojiPickerSearch}
                         onChange={(e) => setEmojiPickerSearch(e.target.value)}
                         placeholder="Search emoji…"
-                        className="w-full text-[10px] text-white bg-black/25 border-b border-white/20 px-1.5 py-1 outline-none"
+                        className="w-full text-[10px] text-white bg-wav-field border-b border-wav-line px-1.5 py-1 outline-none"
                       />
                       <div className="max-h-40 overflow-y-auto px-1 py-1">
                         {(() => {
                           const categories = emojiPickerCategories;
                           if (categories.length === 0) {
-                            return <div className="text-[10px] text-white/40 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
+                            return <div className="text-[10px] text-wav-text-3 text-center py-2">No emoji match "{emojiPickerSearch}"</div>;
                           }
                           return categories.map((cat) => (
                             <div key={cat.label} className="mb-1">
-                              <div className="text-[9px] text-white/50 mb-0.5">{cat.label}</div>
+                              <div className="text-[9px] text-wav-text-3 mb-0.5">{cat.label}</div>
                               <div className="flex flex-wrap gap-0.5">
                                 {cat.emojis.map((em, i) => (
                                   <button
                                     key={`${cat.label}-${i}`}
                                     onClick={() => setEmojiChars(prev => prev + em.char)}
-                                    className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-white/15 transition-all"
+                                    className="w-7 h-7 flex items-center justify-center text-lg rounded hover:bg-wav-hover transition-all"
                                     title={em.name}
                                     aria-label={em.name}
                                   >{em.char}</button>
@@ -787,7 +787,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handlePhotoFileClick}
-                      className="flex-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/15 text-white hover:bg-white/25 transition-all truncate"
+                      className="flex-1 px-2 py-1 rounded text-[10px] font-semibold bg-wav-hover text-white hover:bg-wav-active transition-all truncate"
                       title={photoFileName || 'Upload a photo'}
                     >{photoFileName ? `📷 ${photoFileName}` : 'Upload Photo…'}</button>
                   </div>

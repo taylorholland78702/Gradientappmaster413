@@ -110,18 +110,18 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   );
 
   return (
-    <section className="w-full px-1.5 pt-2.5 border-t border-white/15" aria-label="Ramp">
+    <section className="w-full px-1.5 pt-2.5 border-t border-wav-line" aria-label="Ramp">
       <div className="flex items-center justify-between mb-1.5">
-        <h3 className="text-[10px] text-white/80 font-medium">Ramp</h3>
+        <h3 className="text-[10px] text-wav-text-2 font-medium">Ramp</h3>
         {!isDefault && (
-          <button onClick={reset} className="text-[10px] text-white/50 hover:text-white transition-all">Reset</button>
+          <button onClick={reset} className="text-[10px] text-wav-text-3 hover:text-white transition-all">Reset</button>
         )}
       </div>
 
       {/* Live preview of the exact ramp (Blend, Bias and Sharpness included),
           with one draggable handle per palette color underneath. */}
       <div className="px-[7px]">
-        <div className="h-4 w-full border border-white/20" style={{ background }} aria-hidden="true" />
+        <div className="h-4 w-full border border-wav-line" style={{ background }} aria-hidden="true" />
         <div ref={trackRef} className="relative h-5 w-full touch-none select-none">
           {current.map((pos, i) => (
             <div
@@ -135,7 +135,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
               onPointerDown={onPointerDown(i)}
               onPointerMove={onPointerMove(i)}
               onKeyDown={onKeyDown(i)}
-              className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-white/70 shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-wav-line-strong shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               style={{ left: `${pos * 100}%`, background: rgbToHex(colors[i]) }}
               title={`Color ${i + 1} — drag to reposition (arrow keys nudge)`}
             />

@@ -370,7 +370,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               Flattening to one level removes that discrepancy. */}
           <button
             onClick={() => isMicActive ? stopMicVisualization() : startMicVisualization(selectedAudioDeviceId)}
-            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center"
+            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center"
             title={isMicActive ? 'Turn Mic Off' : 'Turn Mic On (A)'}
             aria-label={isMicActive ? 'Turn Mic Off' : 'Turn Mic On'}
           >
@@ -381,12 +381,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               ? <Microphone weight="regular" className={`w-4 h-4 transition-colors ${Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel) > 0.04 ? 'text-green-500' : ''}`} />
               : <MicrophoneSlash weight="regular" className="w-4 h-4" />}
           </button>
-          <div className="w-px h-4 bg-white/50 flex-shrink-0" />
+          <div className="w-px h-4 bg-wav-line-strong flex-shrink-0" />
           {/* Device select — a Microphone icon alongside the caret ties this
               dropdown visually to the mic toggle next to it (previously
               just an unlabeled caret, easy to miss that it's an input-
               device picker rather than some other menu). */}
-          <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-white transition-all ${isMicActive ? 'hover:bg-white/15' : 'opacity-40'}`}>
+          <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-white transition-all ${isMicActive ? 'hover:bg-wav-hover' : 'opacity-40'}`}>
             {isMicActive && (
               <select
                 value={selectedAudioDeviceId}
@@ -411,14 +411,14 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <Microphone weight="regular" className="w-3.5 h-3.5 pointer-events-none opacity-60" />
             <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
           </div>
-          <div className="w-px h-4 bg-white/50 flex-shrink-0" />
+          <div className="w-px h-4 bg-wav-line-strong flex-shrink-0" />
           {/* Upload — labeled now (was a bare + with only a hover title),
               since a plus on its own next to a mic icon and a device
               dropdown read as another mic-related control rather than a
               separate "load a file instead" action. */}
           <button
             onClick={onAudioFileClick}
-            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-white/15 flex items-center justify-center gap-1"
+            className="wav-choice flex-1 px-2 py-1.5 text-xs font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center gap-1"
             title="Load Audio File"
             aria-label="Load Audio File"
           >
@@ -448,7 +448,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       {/* Always open now — was gated behind its own dropdown toggle
           (Parameters button), which just added an extra click to reach
           the panel's main controls every time. */}
-      <div className="w-full px-1.5 py-2 border-t border-white/50">
+      <div className="w-full px-1.5 py-2 border-t border-wav-line-strong">
           <div className="flex flex-col gap-2">
 
             {/* Style presets — one-click starting points for common audio/
@@ -471,7 +471,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
               {customPresets.length > 0 && (
                 <div className="flex flex-wrap gap-1 items-center" role="group" aria-label="Your saved style presets">
-                  <span className="text-[10px] text-white/50">Yours</span>
+                  <span className="text-[10px] text-wav-text-3">Yours</span>
                   {[...customPresets].sort((a, b) => a.name.localeCompare(b.name)).map((preset) => (
                     <button
                       key={preset.name}
@@ -484,14 +484,14 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-[10px] text-white/60">Style</span>
+              <span className="flex-1 text-[10px] text-wav-text-2">Style</span>
               {selectedCustomPreset ? (
                 <>
                   <button
                     onClick={updateSelectedCustomPreset}
                     title={`Overwrite "${selectedCustomPreset.name}" with the current settings`}
                     aria-label={`Overwrite "${selectedCustomPreset.name}" with the current settings`}
-                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                    className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                   >
                     <FloppyDisk weight="regular" className="w-3.5 h-3.5" />
                   </button>
@@ -499,7 +499,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     onClick={deleteSelectedCustomPreset}
                     title={`Delete "${selectedCustomPreset.name}"`}
                     aria-label={`Delete "${selectedCustomPreset.name}"`}
-                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                    className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                   >
                     <Trash weight="regular" className="w-3.5 h-3.5" />
                   </button>
@@ -509,7 +509,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   onClick={() => { setIsNamingPreset(true); setPresetNameDraft(''); }}
                   title="Save current settings as a new Style Preset"
                   aria-label="Save current settings as a new Style Preset"
-                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                  className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                 >
                   <Plus weight="bold" className="w-3.5 h-3.5" />
                 </button>
@@ -518,7 +518,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 onClick={handleShuffleAudio}
                 title="Shuffle Audio Controls — picks a random Style Preset and reshuffles Modulation bindings (scoped to the active gradient/effects)"
                 aria-label="Shuffle Audio Controls"
-                className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
               >
                 <Shuffle weight="regular" className="w-3.5 h-3.5" />
               </button>
@@ -536,14 +536,14 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     if (e.key === 'Escape') setIsNamingPreset(false);
                   }}
                   placeholder="Preset name..."
-                  className="flex-1 min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded px-1.5 py-1"
+                  className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded px-1.5 py-1"
                 />
                 <button
                   onClick={confirmSaveNewPreset}
                   disabled={!presetNameDraft.trim()}
                   title="Save"
                   aria-label="Save"
-                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 disabled:opacity-40 transition-all flex-shrink-0"
+                  className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover disabled:opacity-40 transition-all flex-shrink-0"
                 >
                   <Check weight="bold" className="w-3.5 h-3.5" />
                 </button>
@@ -551,7 +551,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   onClick={() => setIsNamingPreset(false)}
                   title="Cancel"
                   aria-label="Cancel"
-                  className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                  className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                 >
                   <X weight="bold" className="w-3.5 h-3.5" />
                 </button>
@@ -567,68 +567,68 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
             {/* Band column headers — titles show the actual Hz range each band listens to */}
             <div className="flex gap-2">
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-white/80 font-medium" title="~20-60Hz — kick drum fundamental">Sub</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-white/80 font-medium" title="~60-250Hz">Bass</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-white/80 font-medium" title="~250Hz-2kHz">Mids</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-white/80 font-medium" title="~2-8kHz — hi-hats, snare crack, presence">Treble</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~20-60Hz — kick drum fundamental">Sub</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~60-250Hz">Bass</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~250Hz-2kHz">Mids</div>
+              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~2-8kHz — hi-hats, snare crack, presence">Treble</div>
             </div>
 
             {/* Band columns — Sub / Bass / Mids / Treble */}
             <div className="flex gap-2 items-start overflow-hidden">
 
               {/* Sub-bass */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-wav-field">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                  <div className="flex-1 relative rounded overflow-hidden bg-wav-hover">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
                     <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <input type="number" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
+                <input type="number" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
                 <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} aria-pressed={subBassBeatSync} className={choice(subBassBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Bass */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-wav-field">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                  <div className="flex-1 relative rounded overflow-hidden bg-wav-hover">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
                     <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <input type="number" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
+                <input type="number" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
                 <button onClick={() => setBassBeatSync(!bassBeatSync)} aria-pressed={bassBeatSync} className={choice(bassBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Mids */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-wav-field">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                  <div className="flex-1 relative rounded overflow-hidden bg-wav-hover">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
                     <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <input type="number" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
+                <input type="number" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
                 <button onClick={() => setMidsBeatSync(!midsBeatSync)} aria-pressed={midsBeatSync} className={choice(midsBeatSync, 'w-full')}>BEAT</button>
               </div>
 
               {/* Treble */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-black/20">
+              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 rounded-lg px-2 pt-1.5 pb-2 bg-wav-field">
                 <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative rounded overflow-hidden bg-white/8">
+                  <div className="flex-1 relative rounded overflow-hidden bg-wav-hover">
                     <div className="w-full absolute bottom-0 rounded transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
                   </div>
                   <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
                     <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
                   </div>
                 </div>
-                <input type="number" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier value" className="w-full text-[10px] text-white text-center bg-black/25 border border-white/20 rounded px-0.5" />
+                <input type="number" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
                 <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} aria-pressed={trebleBeatSync} className={choice(trebleBeatSync, 'w-full')}>BEAT</button>
               </div>
             </div>
@@ -640,7 +640,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 splitting it with an inline label — "Contrast"/"Palette"
                 were getting squeezed to the point of near-illegibility. */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] text-white/80 font-medium">FX on Beat</label>
+              <label className="text-[10px] text-wav-text-2 font-medium">FX on Beat</label>
               <div className="flex gap-1.5">
                 <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={choice(zoomBeatEnabled, 'flex-1')}>Zoom</button>
                 <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={choice(shakeBeatEnabled, 'flex-1')}>Shake</button>
@@ -656,8 +656,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
             >
-              <span className="text-[10px] text-white/80 font-medium">Advanced</span>
-              <CaretDown weight="regular" className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${showAdvanced ? 'rotate-180' : ''}`} />
+              <span className="text-[10px] text-wav-text-2 font-medium">Advanced</span>
+              <CaretDown weight="regular" className={`w-4 h-4 text-wav-text-3 transition-transform shrink-0 ${showAdvanced ? 'rotate-180' : ''}`} />
             </button>
 
             {showAdvanced && (
@@ -668,7 +668,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               <div className="flex flex-col gap-2">
                 {quickBindKeys && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] text-white/60">Quick bind for this gradient</span>
+                    <span className="text-[10px] text-wav-text-2">Quick bind for this gradient</span>
                     <div className="flex flex-wrap gap-1">
                       {QUICK_BINDS.map(q => {
                         const param = quickBindKeys[q.target];
@@ -695,12 +695,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     {audioBindings.map((b) => {
                       const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
                       return (
-                        <div key={b.id} className="flex items-center gap-1.5 bg-black/25 rounded px-1.5 py-1">
+                        <div key={b.id} className="flex items-center gap-1.5 bg-wav-field rounded px-1.5 py-1">
                           <span className="text-[10px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
                           <select
                             value={b.band}
                             onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
-                            className="text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                            className="text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-0.5 flex-shrink-0"
                           >
                             {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
                               <option key={band} value={band}>{BAND_LABELS[band]}</option>
@@ -711,12 +711,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                             min="-10" max="10" step="0.1"
                             value={b.amount}
                             onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: Number(e.target.value) } : x))}
-                            className="w-9 text-[10px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-0.5 flex-shrink-0"
+                            className="w-9 text-[10px] text-white text-right bg-wav-field border border-wav-line rounded px-1 py-0.5 flex-shrink-0"
                             title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
                           />
                           <button
                             onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
-                            className="relative wav-hit text-white/50 hover:text-white transition-all"
+                            className="relative wav-hit text-wav-text-3 hover:text-white transition-all"
                             title="Remove binding"
                             aria-label="Remove binding"
                           >
@@ -731,7 +731,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   <select
                     value={modParam}
                     onChange={(e) => setModParam(e.target.value)}
-                    className="flex-[4] min-w-0 text-[10px] text-white bg-black/25 border border-white/20 rounded pl-1 pr-4 py-1"
+                    className="flex-[4] min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
                   >
                     {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
                       <optgroup key={group.category} label={group.category}>
@@ -744,7 +744,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   <select
                     value={modBand}
                     onChange={(e) => setModBand(e.target.value as AudioBinding['band'])}
-                    className="text-[10px] text-white bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                    className="text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-1 flex-shrink-0"
                   >
                     {(Object.keys(BAND_LABELS) as AudioBinding['band'][]).map(band => (
                       <option key={band} value={band}>{BAND_LABELS[band]}</option>
@@ -755,12 +755,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     min="-10" max="10" step="0.1"
                     value={modAmount}
                     onChange={(e) => setModAmount(Number(e.target.value))}
-                    className="w-7 text-[10px] text-white text-right bg-black/25 border border-white/20 rounded px-1 py-1 flex-shrink-0"
+                    className="w-7 text-[10px] text-white text-right bg-wav-field border border-wav-line rounded px-1 py-1 flex-shrink-0"
                     title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
                   />
                   <button
                     onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
-                    className="p-1 rounded bg-black/25 text-white hover:bg-white/15 transition-all flex-shrink-0"
+                    className="p-1 rounded bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                     title="Add modulation binding"
                     aria-label="Add modulation binding"
                   >
@@ -775,10 +775,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full px-1.5 pt-2 border-t border-white/50">
+        <div className="w-full px-1.5 pt-2 border-t border-wav-line-strong">
           <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full h-px bg-white/20"></div>
+              <div className="w-full h-px bg-wav-active"></div>
             </div>
             {waveformData.map((amplitude, index) => {
               const height = Math.max(1, amplitude * 17.5);
@@ -801,7 +801,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <div className="flex-1 min-w-0">
               <div className="text-white text-[9px] font-semibold truncate leading-tight">{audioFileName}</div>
               {audioFileMetadata && (
-                <div className="text-white/60 text-[8px] leading-tight">
+                <div className="text-wav-text-2 text-[8px] leading-tight">
                   {(audioFileMetadata.sampleRate / 1000).toFixed(1)} kHz • {Math.floor(audioFileMetadata.duration / 60)}:{String(Math.floor(audioFileMetadata.duration % 60)).padStart(2, '0')}
                 </div>
               )}

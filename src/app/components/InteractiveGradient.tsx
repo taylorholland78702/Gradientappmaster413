@@ -16,7 +16,7 @@
  * - Mouse wheel scroll zoom
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { Shuffle, X } from '@phosphor-icons/react';
+import { Shuffle, X, Camera, Infinity as InfinityIcon } from '@phosphor-icons/react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useTouchGestures } from '../hooks/useTouchGestures';
@@ -1788,7 +1788,11 @@ export function InteractiveGradient() {
   const renderAutoShufflePopover = () => {
     if (!autoShufflePopoverAnchor) return null;
     return (
-      <PopoverPortal anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}>
+      <PopoverPortal
+        anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
+        title={popoverMode === 'export' ? 'Save & share' : 'Auto Shuffle'}
+        icon={popoverMode === 'export' ? <Camera weight="regular" className="w-4 h-4 shrink-0" /> : <InfinityIcon weight="regular" className="w-4 h-4 shrink-0" />}
+      >
         {popoverMode === 'export' ? (
           <ExportPopout
             isMobile={isMobile}
@@ -3426,7 +3430,7 @@ export function InteractiveGradient() {
             style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-white/70 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
+              <span className="text-wav-text-2 text-xs font-semibold tracking-wide uppercase">Rate this result</span>
               {isAudioEnabled && isAudioReactive && <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-semibold">🎤 Audio</span>}
             </div>
             <div className="flex gap-2">
@@ -3451,13 +3455,13 @@ export function InteractiveGradient() {
               </button>
               <button
                 onClick={skipRating}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white/50 hover:text-white/80 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-wav-text-3 hover:text-wav-text-2 transition-all"
                 style={{ background: 'rgba(255,255,255,0.06)' }}
               >
                 Skip
               </button>
             </div>
-            <span className="text-white/30 text-[10px]">{ratedResults.length} rated</span>
+            <span className="text-wav-text-3 text-[10px]">{ratedResults.length} rated</span>
           </div>
         </div>
       )}
@@ -3486,7 +3490,7 @@ export function InteractiveGradient() {
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
               <button
-                className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+                className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
                 onClick={async () => {
                   const file = new File([savePreview.blob], savePreview.name, { type: 'image/png' });
                   try { if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file] }); } catch { /* closed or unsupported */ }
@@ -3494,7 +3498,7 @@ export function InteractiveGradient() {
               >Share…</button>
             )}
             <button
-              className="px-4 py-2 text-[13px] font-semibold bg-white/15 text-white"
+              className="px-4 py-2 text-[13px] font-semibold bg-wav-hover text-white"
               onClick={() => {
                 const link = document.createElement('a');
                 link.href = savePreview.url;
@@ -3511,9 +3515,9 @@ export function InteractiveGradient() {
       )}
 
       {/* First-run pointer to the wāv button, where the full gesture guide lives. */}
-      {showWavHint && !activeTab && railRect && (
+      {showWavHint && !activeTab && !autoShufflePopoverAnchor && !isAboutOpen && railRect && (
         <div
-          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/25 border border-white/10 text-white/80 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
+          className={`fixed z-40 pointer-events-auto flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-wav-field border border-wav-line text-wav-text-2 max-w-[220px] ${isMobile ? 'wav-mobile' : ''}`}
           style={isMobile
             ? { left: railRect.left, bottom: window.innerHeight - railRect.top + 8 }
             : { left: railRect.right + 12, top: railRect.top }}
@@ -3523,7 +3527,7 @@ export function InteractiveGradient() {
           </span>
           <button
             onClick={dismissWavHint}
-            className="relative wav-hit text-white/50 hover:text-white transition-all flex-shrink-0"
+            className="relative wav-hit text-wav-text-3 hover:text-white transition-all flex-shrink-0"
             title="Dismiss"
             aria-label="Dismiss hint"
           >
@@ -3549,7 +3553,7 @@ export function InteractiveGradient() {
 
       {/* Display-link-copied toast — brief confirmation for Shift+P */}
       {isDisplayLinkCopied && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-black/70 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-wav-surface backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full shadow-lg z-50">
           Display link copied — open it in a new tab/window for live output
         </div>
       )}

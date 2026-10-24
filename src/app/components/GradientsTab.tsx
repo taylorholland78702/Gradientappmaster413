@@ -357,7 +357,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               shortcut), matching Effects' own Shuffle button. */}
           <button
             onClick={shuffleGradientType}
-            className="wav-choice w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-white/10 flex items-center justify-center gap-1.5 border-b border-white/50"
+            className="wav-choice w-full px-1 py-1.5 text-[10px] font-semibold transition-all text-white hover:bg-wav-hover flex items-center justify-center gap-1.5 border-b border-wav-line-strong"
             title="Shuffle Gradient Type"
             aria-label="Shuffle Gradient Type"
           ><Shuffle weight="regular" className="w-4 h-4" /></button>
@@ -384,10 +384,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={entry.key}
                       onClick={() => setGradientType(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
                       aria-pressed={active}
-                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-white/50 ${!isLastColumn ? 'border-r border-white/50' : ''} ${
+                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-wav-line-strong ${!isLastColumn ? 'border-r border-wav-line-strong' : ''} ${
                         active
                           ? 'bg-white text-black font-bold'
-                          : 'text-white hover:bg-white/10'
+                          : 'text-white hover:bg-wav-hover'
                       }`}
                     >
                       {entry.label}
@@ -424,7 +424,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {/* Gradient-specific Controls */}
         {/* Grid Controls */}
         {GRADIENT_DESCRIPTIONS[gradientType] && (
-          <p className="w-full px-1.5 pt-1.5 text-[10px] leading-snug text-white/60">{GRADIENT_DESCRIPTIONS[gradientType]}</p>
+          <p className="w-full px-1.5 pt-1.5 text-[10px] leading-snug text-wav-text-2">{GRADIENT_DESCRIPTIONS[gradientType]}</p>
         )}
         {currentFamily && (
           <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
@@ -445,7 +445,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             of its settings, constants/gradientLooks.ts) first, then a large library of
             colors-only palettes (constants/palettePresets.ts) that works with every gradient. */}
         <div className="w-full flex flex-col gap-1 px-1.5 py-1">
-          <label className="text-[10px] text-white/80 font-medium">Looks &amp; palettes</label>
+          <label className="text-[10px] text-wav-text-2 font-medium">Looks &amp; palettes</label>
           <div className="flex items-stretch gap-1">
             <div className="flex-1 min-w-0">
               <LooksMenu
@@ -460,7 +460,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               onClick={shuffleColors}
               title="Shuffle colors — a random palette from the library"
               aria-label="Shuffle colors"
-              className="px-2.5 flex items-center justify-center text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+              className="px-2.5 flex items-center justify-center text-white bg-wav-field hover:bg-wav-hover border border-wav-line transition-all"
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
           </div>
         </div>
@@ -511,12 +511,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 const v = Math.floor(Number(e.target.value));
                 if (Number.isFinite(v)) setStructuralSeed(Math.min(999999, Math.max(0, v)));
               }}
-              className="flex-1 min-w-0 px-1.5 py-0.5 text-[10px] text-white bg-black/25 border border-white/15 tabular-nums"
+              className="flex-1 min-w-0 px-1.5 py-0.5 text-[10px] text-white bg-wav-field border border-wav-line tabular-nums"
             />
             <button
               onClick={() => setStructuralSeed(Math.floor(Math.random() * 1000000))}
               title="Roll a new pattern layout"
-              className="px-2 py-0.5 text-[10px] text-white bg-black/25 hover:bg-white/15 border border-white/15 transition-all"
+              className="px-2 py-0.5 text-[10px] text-white bg-wav-field hover:bg-wav-hover border border-wav-line transition-all"
             >
               Reroll
             </button>

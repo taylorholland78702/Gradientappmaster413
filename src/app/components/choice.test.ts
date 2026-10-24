@@ -15,9 +15,9 @@ describe('choice()', () => {
     }
   });
 
-  it('selected is white with black bold text, resting is black 25% with a white 15% hover', () => {
+  it('selected is white with black bold text, resting is the field fill with the shared hover fill', () => {
     expect(choice(true)).toContain('bg-white text-black font-bold');
-    expect(choice(false)).toContain('bg-black/25 text-white hover:bg-white/15');
+    expect(choice(false)).toContain('bg-wav-field text-white hover:bg-wav-hover');
     expect(choice(false)).not.toContain('font-bold');
   });
 

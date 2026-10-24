@@ -108,8 +108,8 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       style={isMobile ? { maxHeight: mobileMaxHeight } : { width: DESKTOP_DRAWER_SCALED_W }}
       className={
         isMobile
-          ? 'wav-mobile flex-shrink-0 w-full pointer-events-auto bg-black/75 rounded-none overflow-y-auto overflow-x-hidden'
-          : 'flex-shrink-0 h-full pointer-events-auto bg-black/75 rounded-none overflow-y-auto overflow-x-hidden'
+          ? 'wav-mobile flex-shrink-0 w-full pointer-events-auto bg-wav-surface rounded-none overflow-y-auto overflow-x-hidden'
+          : 'flex-shrink-0 h-full pointer-events-auto bg-wav-surface rounded-none overflow-y-auto overflow-x-hidden'
       }
     >
     {/* The title lives OUTSIDE the scaled wrapper: a sticky element inside a
@@ -117,10 +117,10 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
         top by 30% of however far you'd scrolled. Sized by hand to match what the
         scale would have made it. */}
     <div
-      className="flex items-center justify-center sticky top-0 bg-black/75 border-b border-white/50 z-10"
+      className="flex items-center justify-center sticky top-0 bg-wav-surface border-b border-wav-line-strong z-10"
       style={isMobile ? { padding: '6px 12px' } : { padding: `${6 * DESKTOP_DRAWER_SCALE}px ${12 * DESKTOP_DRAWER_SCALE}px` }}
     >
-      <span className="text-white/90 font-semibold" style={{ fontSize: isMobile ? 15 : 15 * DESKTOP_DRAWER_SCALE }}>{TAB_LABELS[activeTab]}</span>
+      <span className="text-white font-semibold" style={{ fontSize: isMobile ? 15 : 15 * DESKTOP_DRAWER_SCALE }}>{TAB_LABELS[activeTab]}</span>
     </div>
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
         above. Mobile renders this content directly at natural size. */}

@@ -1,4 +1,3 @@
-import { Camera } from '@phosphor-icons/react';
 import type { ColorRGB } from '../constants/gradientEffects';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
@@ -24,24 +23,22 @@ export function ExportPopout({
   gradientColors: ColorRGB[]; paletteStops: Parameters<typeof formatPalette>[1];
 }) {
   return (<>
-      <span className="text-xs flex items-center gap-2 text-white"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save &amp; share</span>
       {([
         { label: 'Size', options: EXPORT_SIZES, value: exportSize, set: setExportSize, hint: 'Long edge of the saved image. Re-renders the artwork at that size.' },
         { label: 'Aspect', options: EXPORT_ASPECTS, value: exportAspect, set: setExportAspect, hint: 'Crops the center of what you see to this shape.' },
       ] as { label: string; options: { id: string; label: string }[]; value: string; set: (v: never) => void; hint: string }[]).map(g => (
         <div key={g.label} className="flex flex-col gap-1" title={g.hint}>
-          <span className="text-[10px] text-white/60">{g.label}</span>
+          <span className="text-[10px] text-wav-text-2">{g.label}</span>
           <ChoiceChips ariaLabel={`Export ${g.label.toLowerCase()}`} options={g.options} value={g.value} onChange={g.set as (id: string) => void} />
         </div>
       ))}
       <button
         onClick={() => { exportAsPNG(); closePopover(); }}
-        className="wav-choice text-[11px] font-semibold transition-all"
-        style={{ backgroundColor: '#ffffff', color: '#000000' }}
+        className="wav-choice text-[11px] font-semibold transition-all bg-white text-black"
       >Save PNG</button>
-      {!isMobile && <p className="text-[10px] text-white/50">The S key saves with these settings.</p>}
-      <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <span className="text-[10px] text-white/60" title="Records the live artwork, with sound if audio is on, as an MP4">Record video</span>
+      {!isMobile && <p className="text-[10px] text-wav-text-3">The S key saves with these settings.</p>}
+      <div className="flex flex-col gap-1 pt-1 border-t border-wav-line">
+        <span className="text-[10px] text-wav-text-2" title="Records the live artwork, with sound if audio is on, as an MP4">Record video</span>
         {([
           { label: 'Size', options: VIDEO_SIZES, value: videoSize, set: setVideoSize },
           { label: 'Length', options: VIDEO_LENGTHS, value: videoLength, set: setVideoLength },
@@ -50,13 +47,12 @@ export function ExportPopout({
         ))}
         <button
           onClick={startVideoTake}
-          className="wav-choice text-[11px] font-semibold transition-all"
-          style={isRecording ? { backgroundColor: '#ef4444', color: '#ffffff' } : { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
+          className={`wav-choice text-[11px] font-semibold transition-all text-white ${isRecording ? 'bg-wav-recording' : 'bg-wav-hover'}`}
         >{isRecording ? 'Stop recording' : 'Start recording'}</button>
-        {videoSize === '4k' && <p className="text-[10px] text-white/50">4K is heavy: busy gradients or effects may drop frames.</p>}
+        {videoSize === '4k' && <p className="text-[10px] text-wav-text-3">4K is heavy: busy gradients or effects may drop frames.</p>}
       </div>
-      <div className="flex flex-col gap-1 pt-1" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <span className="text-[10px] text-white/60" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
+      <div className="flex flex-col gap-1 pt-1 border-t border-wav-line">
+        <span className="text-[10px] text-wav-text-2" title="A snippet that shows this look, live, on any web page">Embed on a website</span>
         <div className="flex gap-1">
           {([['box', 'Box 16:9'], ['background', 'Background']] as [EmbedKind, string][]).map(([kind, label]) => (
             <button
@@ -67,7 +63,7 @@ export function ExportPopout({
             >{copiedKey === `embed-${kind}` ? 'Copied' : label}</button>
           ))}
         </div>
-        <span className="text-[10px] text-white/60 pt-1">Copy palette as</span>
+        <span className="text-[10px] text-wav-text-2 pt-1">Copy palette as</span>
         <div className="flex gap-1">
           {([['hex', 'Hex'], ['css', 'CSS'], ['tailwind', 'Tailwind'], ['json', 'JSON']] as [PaletteFormat, string][]).map(([fmt, label]) => (
             <button
