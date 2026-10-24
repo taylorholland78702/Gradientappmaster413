@@ -13,14 +13,17 @@ const MAX_KEYS = 400;
 const DISLIKE_WEIGHT = 2;    // The dislike button counts twice as much as an undo.
 const DECAY = 0.985;          // Every signal makes older ones count slightly less.
 
-interface Stored { v: 1; up: Record<string, number>; down: Record<string, number>; total: number }
+// Version 2: what was learned under version 1 came largely from looks with no effects, which were disliked for that
+// reason and not for their gradient, so it is dropped once and learning starts again.
+const STORE_VERSION = 2;
+interface Stored { v: typeof STORE_VERSION; up: Record<string, number>; down: Record<string, number>; total: number }
 
 const idsOf = (m: ShuffleMeta): string[] => [
   `gradient:${m.gradient}`, ...m.effects.map(e => `effect:${e}`), `mood:${m.mood}`, ...(m.palette ? [`palette:${m.palette}`] : []),
 ];
 
 export class ShuffleLearning {
-  private data: Stored = { v: 1, up: {}, down: {}, total: 0 };
+  private data: Stored = { v: STORE_VERSION, up: {}, down: {}, total: 0 };
   private attempts: ShuffleMeta[] = [];
   private current: { meta: ShuffleMeta; at: number; judged: boolean; disliked: boolean } | null = null;
   private listeners = new Set<() => void>();
@@ -37,7 +40,7 @@ export class ShuffleLearning {
     try {
       const raw = this.storage?.getItem(KEY);
       const parsed = raw ? JSON.parse(raw) as Stored : null;
-      if (parsed && parsed.v === 1 && typeof parsed.total === 'number' && parsed.up && parsed.down) this.data = parsed;
+      if (parsed && parsed.v === STORE_VERSION && typeof parsed.total === 'number' && parsed.up && parsed.down) this.data = parsed;
     } catch { /* start fresh */ }
   }
   private save() { try { this.storage?.setItem(KEY, JSON.stringify(this.data)); } catch { /* not persisted */ } }
@@ -90,11 +93,11 @@ export class ShuffleLearning {
   get currentMeta(): ShuffleMeta | null { return this.current?.meta ?? null; }
 
   // An explicit vote (the marking tool): counts however long ago the shuffle was, and replaces a weaker earlier signal.
-  vote(direction: 'up' | 'down') {
+  vote(direction: 'up' | 'down', amount = 1) {
     const c = this.current;
     if (!c) return;
     c.judged = true; this.clearTimer();
-    this.note(direction, c.meta);
+    this.note(direction, c.meta, amount);
   }
 
   // The dislike button: a stronger vote than an undo, at any time, once per look. Returns whether it counted.
@@ -124,7 +127,7 @@ export class ShuffleLearning {
   }
 
   private clearTimer() { if (this.dwellTimer) { clearTimeout(this.dwellTimer); this.dwellTimer = null; } }
-  clear() { this.data = { v: 1, up: {}, down: {}, total: 0 }; this.attempts = []; this.current = null; this.clearTimer(); this.save(); this.emit(); }
+  clear() { this.data = { v: STORE_VERSION, up: {}, down: {}, total: 0 }; this.attempts = []; this.current = null; this.clearTimer(); this.save(); this.emit(); }
   // For tests and the settings panel.
   get signals() { return this.data.total; }
 }

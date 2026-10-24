@@ -5,7 +5,7 @@ import { shuffleLearning } from './shuffleLearning';
 const memory = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); }, removeItem: (k: string) => { m.delete(k); } }; };
 const features = (over = {}) => ({ mean: 120, sd: 40, colourfulness: 0.4, detail: 0.03, entropy: 0.7, lit: 0.9, ...over });
 const look = (score: number, over: Partial<PendingLook> = {}): PendingLook => ({ meta: { gradient: 'smoke', effects: ['bloom', 'grain'], mood: 'calm', palette: 'Ink' }, score, dull: false, features: features(), ...over });
-const mark = (verdict: 'keep' | 'skip', score: number, over: Partial<PendingLook> = {}, at = 1): Mark => ({ ...look(score, over), verdict, at });
+const mark = (verdict: 'keep' | 'skip' | 'love', score: number, over: Partial<PendingLook> = {}, at = 1): Mark => ({ ...look(score, over), verdict, at });
 
 describe('score agreement', () => {
   it('is 1 when every keep scored above every skip, 0.5 for no signal, 0 when reversed', () => {
@@ -93,6 +93,41 @@ describe('a marking session', () => {
     expect(new ShuffleMarks(store).allMarks).toHaveLength(0);
     store.setItem('wavShuffleMarks', JSON.stringify([{ verdict: 'maybe' }, null, 3]));
     expect(new ShuffleMarks(store).allMarks).toHaveLength(0);
+  });
+});
+
+describe('loved looks', () => {
+  const other = (over = {}) => look(0.5, { meta: { gradient: 'grid', effects: ['halftone'], mood: 'bold' }, ...over });
+  it('count as keeps everywhere, are counted on their own, and are stored', () => {
+    const store = memory();
+    const m = new ShuffleMarks(store, () => 5);
+    m.start();
+    for (const [v, sc] of [['love', 0.9], ['love', 0.85], ['love', 0.8], ['keep', 0.6], ['keep', 0.55], ['keep', 0.5], ['skip', 0.2], ['skip', 0.15], ['skip', 0.1]] as const) {
+      m.setCurrent(v === 'skip' ? other() : look(sc)); m.mark(v);
+    }
+    const s = summarize(m.sessionMarks);
+    expect(s.kept).toBe(6); expect(s.skipped).toBe(3); expect(s.loved).toBe(3);
+    expect(s.gradients.find(r => r.id === 'smoke')).toMatchObject({ kept: 6, loved: 3, total: 6 });
+    expect(new ShuffleMarks(store).allMarks.filter(x => x.verdict === 'love')).toHaveLength(3);
+    expect(JSON.parse(m.export()).summary.loved).toBe(3);
+  });
+  it('are compared with the rest once there are three of each', () => {
+    const marks: Mark[] = [
+      ...[0.9, 0.85, 0.8].map(s => mark('love', s, { features: features({ detail: 0.2 }) })),
+      ...[0.6, 0.5, 0.4].map(s => mark('keep', s, { features: features({ detail: 0.02 }) })),
+    ];
+    const s = summarize(marks);
+    expect(s.lovedAuc).toBe(1);
+    expect(s.lovedFeatures[0]).toMatchObject({ name: 'detail' });
+    expect(s.lovedFeatures[0].effect).toBeGreaterThan(1);
+    expect(summarize(marks.slice(0, 4)).lovedAuc).toBeNull();
+  });
+  it('teach the learner more than a keep does', () => {
+    const before = shuffleLearning.signals;
+    shuffleLearning.begin(look(0.5).meta); shuffleLearning.commit();
+    const m = new ShuffleMarks(memory());
+    m.start(); m.setCurrent(look(0.5)); m.mark('love');
+    expect(shuffleLearning.signals).toBe(before + 1);
   });
 });
 

@@ -24,7 +24,7 @@ export function ShuffleMarkBar({ onShuffle }: { onShuffle: () => void }) {
     wasActive.current = active;
   }, [active, onShuffle]);
 
-  const mark = useCallback((verdict: 'keep' | 'skip') => {
+  const mark = useCallback((verdict: 'keep' | 'skip' | 'love') => {
     if (!shuffleMarks.mark(verdict)) return;
     if (shuffleMarks.sessionMarks.length >= shuffleMarks.target) setSummaryOpen(true);
     else window.setTimeout(onShuffle, 120);
@@ -38,6 +38,7 @@ export function ShuffleMarkBar({ onShuffle }: { onShuffle: () => void }) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'k' || e.key === 'K') { e.preventDefault(); mark('keep'); }
       else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); mark('skip'); }
+      else if (e.key === 'y' || e.key === 'Y') { e.preventDefault(); mark('love'); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -66,7 +67,7 @@ export function ShuffleMarkBar({ onShuffle }: { onShuffle: () => void }) {
     const worst = [...s.effects, ...s.gradients].filter(r => r.total >= 3 && r.rate <= 0.25).sort((a, b) => a.rate - b.rate).slice(0, 4);
     return (
       <div className={`${shell} w-[360px]`} style={top} role="dialog" aria-label="Shuffle marking results">
-        <div className="text-[11px] font-bold">You kept {s.kept} of {s.total} ({pct(s.keepRate)})</div>
+        <div className="text-[11px] font-bold">You kept {s.kept} of {s.total} ({pct(s.keepRate)}){s.loved > 0 ? `, ${s.loved} of them loved` : ''}</div>
         {s.scoreAuc !== null
           ? <div>The frame score put your keeps above your skips {pct(s.scoreAuc)} of the time (50% is chance, 100% is perfect).</div>
           : <div className="text-wav-text-2">Mark at least three of each to see how well the frame score agrees with you.</div>}
@@ -91,10 +92,11 @@ export function ShuffleMarkBar({ onShuffle }: { onShuffle: () => void }) {
         <button onClick={() => (done > 0 ? setSummaryOpen(true) : shuffleMarks.stop())} className="text-wav-text-3 hover:text-white transition-all">{done > 0 ? 'Finish' : 'Cancel'}</button>
       </div>
       <div className="flex gap-1">
+        <button onClick={() => mark('love')} disabled={!ready} className={choice(false, 'flex-1 disabled:opacity-50')} title="One of the best: counts as a keep, and a stronger vote">Love (Y)</button>
         <button onClick={() => mark('keep')} disabled={!ready} className={choice(false, 'flex-1 disabled:opacity-50')}>Keep (K)</button>
         <button onClick={() => mark('skip')} disabled={!ready} className={choice(false, 'flex-1 disabled:opacity-50')}>Skip (N)</button>
       </div>
-      <div className="text-wav-text-3">{ready ? 'Would you want to keep looking at this?' : 'Shuffling…'}</div>
+      <div className="text-wav-text-3">{ready ? 'Would you want to keep looking at this? Love is for the best ones.' : 'Shuffling…'}</div>
     </div>
   );
 }

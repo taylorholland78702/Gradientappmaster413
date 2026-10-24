@@ -5,7 +5,10 @@ import { shuffleLearning, type ShuffleMeta } from './shuffleLearning';
 // against your taste. Each mark stores what the look was made of and what the frame score thought of it. The marks also
 // teach the shuffle's learner straight away. Stored in this browser; "Copy results" gives the numbers.
 
-export type Verdict = 'keep' | 'skip';
+// 'love' is a keep that you would pick out of the others: it counts as a keep everywhere and as a stronger vote for the learner.
+export type Verdict = 'keep' | 'skip' | 'love';
+const isKept = (m: { verdict: Verdict }) => m.verdict !== 'skip';
+const LOVE_WEIGHT = 2;
 export interface PendingLook { meta: ShuffleMeta; score: number; dull: boolean; features: FrameFeatures }
 // A look disliked with the dislike button, outside a marking session. The frame measurements are there when the
 // quality gate measured the look.
@@ -21,20 +24,23 @@ export const DEFAULT_TARGET = 30;
 // Probability that a randomly chosen kept look scored higher than a randomly chosen skipped one: 0.5 is no
 // better than chance, 1 is a perfect ranking. Null until both kinds have at least three marks.
 export function auc(marks: readonly Mark[]): number | null {
-  const kept = marks.filter(m => m.verdict === 'keep'), skipped = marks.filter(m => m.verdict === 'skip');
-  if (kept.length < 3 || skipped.length < 3) return null;
-  let wins = 0;
-  for (const k of kept) for (const s of skipped) wins += k.score > s.score ? 1 : k.score === s.score ? 0.5 : 0;
-  return wins / (kept.length * skipped.length);
+  return aucOf(marks.filter(isKept), marks.filter(m => !isKept(m)));
 }
 
-export interface RateRow { id: string; kept: number; total: number; rate: number }
+function aucOf(better: readonly Mark[], worse: readonly Mark[]): number | null {
+  if (better.length < 3 || worse.length < 3) return null;
+  let wins = 0;
+  for (const k of better) for (const s of worse) wins += k.score > s.score ? 1 : k.score === s.score ? 0.5 : 0;
+  return wins / (better.length * worse.length);
+}
+
+export interface RateRow { id: string; kept: number; loved: number; total: number; rate: number }
 
 function rates(marks: readonly Mark[], idsOf: (m: Mark) => readonly string[], minTotal: number): RateRow[] {
-  const table = new Map<string, { kept: number; total: number }>();
+  const table = new Map<string, { kept: number; loved: number; total: number }>();
   for (const m of marks) for (const id of new Set(idsOf(m))) {
-    const row = table.get(id) ?? { kept: 0, total: 0 };
-    row.total++; if (m.verdict === 'keep') row.kept++;
+    const row = table.get(id) ?? { kept: 0, loved: 0, total: 0 };
+    row.total++; if (isKept(m)) row.kept++; if (m.verdict === 'love') row.loved++;
     table.set(id, row);
   }
   return [...table].filter(([, r]) => r.total >= minTotal).map(([id, r]) => ({ id, ...r, rate: r.kept / r.total }));
@@ -51,28 +57,37 @@ export interface MarkSummary {
   gradients: RateRow[]; effects: RateRow[]; moods: RateRow[];
   // Which frame measurements differ most between kept and skipped looks (difference of means over the pooled spread).
   features: { name: string; keptMean: number; skippedMean: number; effect: number }[];
+  // The looks marked Love against all the rest: how many, whether the score put them on top, and what set them apart.
+  loved: number;
+  lovedAuc: number | null;
+  lovedFeatures: { name: string; lovedMean: number; restMean: number; effect: number }[];
 }
 
 export function summarize(marks: readonly Mark[]): MarkSummary {
-  const kept = marks.filter(m => m.verdict === 'keep'), skipped = marks.filter(m => m.verdict === 'skip');
+  const kept = marks.filter(isKept), skipped = marks.filter(m => !isKept(m));
   let bestThreshold: MarkSummary['bestThreshold'] = null;
   if (kept.length >= 3 && skipped.length >= 3) {
     for (const t of [...new Set(marks.map(m => m.score))].sort((a, b) => a - b)) {
-      const right = marks.filter(m => (m.score >= t) === (m.verdict === 'keep')).length / marks.length;
+      const right = marks.filter(m => (m.score >= t) === isKept(m)).length / marks.length;
       if (!bestThreshold || right > bestThreshold.accuracy) bestThreshold = { threshold: +t.toFixed(3), accuracy: +right.toFixed(3) };
     }
   }
   const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
   const sd = (xs: number[]) => { const m = mean(xs); return Math.sqrt(mean(xs.map(x => (x - m) ** 2))); };
-  const features = kept.length >= 3 && skipped.length >= 3 ? FEATURE_KEYS.map(name => {
-    const a = kept.map(m => m.features[name]), b = skipped.map(m => m.features[name]);
-    const pooled = Math.sqrt((sd(a) ** 2 + sd(b) ** 2) / 2) || 1;
-    return { name, keptMean: +mean(a).toFixed(3), skippedMean: +mean(b).toFixed(3), effect: +((mean(a) - mean(b)) / pooled).toFixed(2) };
-  }).sort((x, y) => Math.abs(y.effect) - Math.abs(x.effect)) : [];
+  // How far apart the two groups' means are on each frame measurement, in pooled spreads, biggest first.
+  const differences = (a: readonly Mark[], b: readonly Mark[]) => (a.length >= 3 && b.length >= 3 ? FEATURE_KEYS.map(name => {
+    const x = a.map(m => m.features[name]), y = b.map(m => m.features[name]);
+    const pooled = Math.sqrt((sd(x) ** 2 + sd(y) ** 2) / 2) || 1;
+    return { name, aMean: +mean(x).toFixed(3), bMean: +mean(y).toFixed(3), effect: +((mean(x) - mean(y)) / pooled).toFixed(2) };
+  }).sort((p, q) => Math.abs(q.effect) - Math.abs(p.effect)) : []);
+  const features = differences(kept, skipped).map(d => ({ name: d.name, keptMean: d.aMean, skippedMean: d.bMean, effect: d.effect }));
+  const lovedMarks = marks.filter(m => m.verdict === 'love'), rest = marks.filter(m => m.verdict !== 'love');
+  const lovedFeatures = differences(lovedMarks, rest).map(d => ({ name: d.name, lovedMean: d.aMean, restMean: d.bMean, effect: d.effect }));
   const byRate = (rows: RateRow[]) => rows.sort((a, b) => b.total - a.total || a.rate - b.rate);
   return {
     total: marks.length, kept: kept.length, skipped: skipped.length, keepRate: marks.length ? kept.length / marks.length : 0,
     scoreAuc: auc(marks), bestThreshold, features,
+    loved: lovedMarks.length, lovedAuc: aucOf(lovedMarks, rest), lovedFeatures,
     gradients: byRate(rates(marks, m => [m.meta.gradient], 2)),
     effects: byRate(rates(marks, m => m.meta.effects, 3)),
     moods: byRate(rates(marks, m => [m.meta.mood], 2)),
@@ -93,7 +108,7 @@ export class ShuffleMarks {
     try {
       const raw = this.storage?.getItem(KEY);
       const parsed = raw ? JSON.parse(raw) : null;
-      if (Array.isArray(parsed)) this.marks = parsed.filter(m => m && (m.verdict === 'keep' || m.verdict === 'skip') && m.meta && m.features);
+      if (Array.isArray(parsed)) this.marks = parsed.filter(m => m && (m.verdict === 'keep' || m.verdict === 'skip' || m.verdict === 'love') && m.meta && m.features);
     } catch { /* start fresh */ }
     try {
       const raw = this.storage?.getItem(DISLIKE_KEY);
@@ -139,7 +154,7 @@ export class ShuffleMarks {
     this.marks = [...this.marks, mark].slice(-MAX_MARKS);
     this.pending = null;
     // The marks teach the learner too, as clear votes.
-    shuffleLearning.vote(verdict === 'keep' ? 'up' : 'down');
+    shuffleLearning.vote(verdict === 'skip' ? 'down' : 'up', verdict === 'love' ? LOVE_WEIGHT : 1);
     try { this.storage?.setItem(KEY, JSON.stringify(this.marks)); } catch { /* not persisted */ }
     this.emit();
     return mark;
