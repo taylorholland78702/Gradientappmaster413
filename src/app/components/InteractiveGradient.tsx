@@ -133,6 +133,8 @@ import { useAutoColor } from '../hooks/useAutoColor';
 import { useBeatEffects } from '../hooks/useBeatEffects';
 import { usePhotoUpload } from '../hooks/usePhotoUpload';
 import { generateAIColors as generateAIColorsFor } from '../utils/aiColors';
+import { addGradientStops as addGradientStopsTo } from '../utils/gradientStops';
+import { adjustColorArrayLength } from '../utils/color';
 import { NoticeToast } from './NoticeToast';
 import { WavHint } from './WavHint';
 import { sanitizeSnapshot } from '../utils/sanitizeSnapshot';
@@ -872,49 +874,6 @@ export function InteractiveGradient() {
     return GRADIENT_DISPLAY_NAMES[type] ?? type;
   }, []);
 
-  // Helper function to adjust color array to target length — hoisted above
-  // useRandomization() since feelingLucky's preference-blend branch calls it
-  // directly (it must exist in the params object passed to that hook, and
-  // that call happens at render time, before a definition further down the
-  // component body would be initialized).
-  const adjustColorArrayLength = useCallback((colors: ColorRGB[], targetLength: number): ColorRGB[] => {
-    if (colors.length === targetLength) {
-      return colors;
-    }
-
-    if (colors.length > targetLength) {
-      // If we have more colors than needed, evenly sample them
-      const step = colors.length / targetLength;
-      return Array.from({ length: targetLength }, (_, i) => {
-        const index = Math.floor(i * step);
-        return colors[index];
-      });
-    }
-
-    // If we need more colors, interpolate between existing ones
-    const result: ColorRGB[] = [];
-    const step = (colors.length - 1) / (targetLength - 1);
-
-    for (let i = 0; i < targetLength; i++) {
-      const position = i * step;
-      const index = Math.floor(position);
-      const fraction = position - index;
-
-      if (index >= colors.length - 1) {
-        result.push(colors[colors.length - 1]);
-      } else {
-        const color1 = colors[index];
-        const color2 = colors[index + 1];
-        result.push({
-          r: Math.round(color1.r + (color2.r - color1.r) * fraction),
-          g: Math.round(color1.g + (color2.g - color1.g) * fraction),
-          b: Math.round(color1.b + (color2.b - color1.b) * fraction),
-        });
-      }
-    }
-
-    return result;
-  }, []);
 
   // WAV button / Shuffle randomization — extracted to useRandomization.ts
   // (splitting-plan step 2). Wires ~150 setters spanning nearly every
@@ -1207,58 +1166,7 @@ export function InteractiveGradient() {
 
   // Helper function to add color stops to gradient with optional hue shift
   const addGradientStops = useCallback((gradient: CanvasGradient, colors: ColorRGB[], hardEdge?: boolean) => {
-    const count = colors.length;
-    if (count === 0) return;
-    
-    // Validate colors and replace any invalid ones
-    const validColors = colors.map(color => {
-      if (!color || isNaN(color.r) || isNaN(color.g) || isNaN(color.b)) {
-        return { r: 128, g: 128, b: 128 }; // Default gray for invalid colors
-      }
-      return {
-        r: Math.max(0, Math.min(255, color.r)),
-        g: Math.max(0, Math.min(255, color.g)),
-        b: Math.max(0, Math.min(255, color.b))
-      };
-    });
-    
-    // Apply hue shift if audio is reactive
-    const shouldApplyHueShift = isAudioEnabled && isAudioReactive && audioTrebleLevel > 0;
-    
-    const applyHueShift = (color: ColorRGB): ColorRGB =>
-      shouldApplyHueShift ? shiftHueByTreble(color, audioTrebleLevel) : color;
-    
-    if (count === 1) {
-      const shifted = applyHueShift(validColors[0]);
-      gradient.addColorStop(0, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
-      return;
-    }
-
-    if (hardEdge) {
-      // A duplicate stop at each band's start AND end (rather than one
-      // shared, crossfading stop between neighbors) is what makes the
-      // canvas render a flat solid color per band with a hard cut at the
-      // boundary instead of a blend.
-      const bandStep = 1 / count;
-      for (let i = 0; i < count; i++) {
-        const shifted = applyHueShift(validColors[i]);
-        const rgb = `rgb(${shifted.r},${shifted.g},${shifted.b})`;
-        gradient.addColorStop(Math.min(1, i * bandStep), rgb);
-        gradient.addColorStop(Math.min(1, (i + 1) * bandStep), rgb);
-      }
-      return;
-    }
-
-    // Custom stop positions apply here too (Bias and Sharpness can't be
-    // expressed as native canvas stops — those only take effect on the WebGL
-    // Radial fill this is the fallback for).
-    const customStops = getActivePaletteMap().stops;
-    const useCustomStops = !!customStops && customStops.length === count;
-    const step = 1 / (count - 1);
-    for (let i = 0; i < count; i++) {
-      const shifted = applyHueShift(validColors[i]);
-      gradient.addColorStop(useCustomStops ? customStops![i] : i * step, `rgb(${shifted.r},${shifted.g},${shifted.b})`);
-    }
+    addGradientStopsTo(gradient, colors, hardEdge, isAudioEnabled && isAudioReactive ? audioTrebleLevel : 0);
   }, [isAudioEnabled, isAudioReactive, audioTrebleLevel]);
 
   useBeatEffects({ isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed });
