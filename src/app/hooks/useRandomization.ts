@@ -15,6 +15,7 @@ import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
+import { generatePalette, pickPalette } from '../utils/shufflePalette';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
@@ -714,35 +715,6 @@ export function useRandomization(params: RandomizationParams) {
     } else {
       // Full random generation — curated ranges for better results
 
-      // Harmonious color generation: pick a base hue, generate analogous/complementary palette
-      const baseHue = Math.random() * 360;
-      const colorScheme = Math.random();
-      const harmonyColors = gradientColors.map((_, i) => {
-        let hue: number;
-        if (colorScheme < 0.4) {
-          hue = (baseHue + (i - 1) * 30 + (Math.random() * 20 - 10) + 360) % 360;
-        } else if (colorScheme < 0.7) {
-          hue = (baseHue + (i % 2 === 0 ? 0 : 150 + Math.random() * 60) + (Math.random() * 20 - 10) + 360) % 360;
-        } else {
-          hue = (baseHue + i * 120 + (Math.random() * 30 - 15) + 360) % 360;
-        }
-        const sat = 60 + Math.random() * 35;  // 60–95%
-        const lit = 42 + Math.random() * 28;  // 42–70% — prevents near-black or near-white
-        const c = hslToRgb(hue, sat, lit);
-        // Hard clamp: ensure perceived brightness is never too dark or too washed out
-        const brightness = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
-        if (brightness < 40) {
-          const boost = 40 / Math.max(1, brightness);
-          return { r: Math.min(255, Math.round(c.r * boost)), g: Math.min(255, Math.round(c.g * boost)), b: Math.min(255, Math.round(c.b * boost)) };
-        }
-        if (brightness > 220) {
-          const scale = 220 / brightness;
-          return { r: Math.round(c.r * scale), g: Math.round(c.g * scale), b: Math.round(c.b * scale) };
-        }
-        return c;
-      });
-      setTargetColors(harmonyColors);
-
       // When audio is active, bias toward audio-reactive gradients (70% chance)
       const gradientPool = (audioActive && Math.random() < 0.7)
         ? AUDIO_GRADIENTS
@@ -774,6 +746,9 @@ export function useRandomization(params: RandomizationParams) {
       const randomGradient: GradientType = picked.gradient;
       setGradientType(randomGradient);
       finalGradientType = randomGradient;
+      // A palette built by rule for this kind of gradient (a hue harmony, a dark-to-bright ramp, fewer distinct colours
+      // for patterns). Most shuffles replace it further down with a curated Look or a library palette.
+      setTargetColors(generatePalette({ gradient: randomGradient, count: gradientColors.length }));
       const selectedEffects: EffectType[] = picked.effects;
       const spentCost = picked.spentCost;
       shuffleHistory.record('gradient', randomGradient);
@@ -848,7 +823,7 @@ export function useRandomization(params: RandomizationParams) {
           shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
           applyLookValues(look, adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
         } else if (okPalettes.length && roll < 0.7) {
-          const palette = pickWeighted(okPalettes, p => shuffleHistory.weight('palette', p.name));
+          const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
           shuffleHistory.record('palette', palette.name);
           setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
         } else {
@@ -861,7 +836,7 @@ export function useRandomization(params: RandomizationParams) {
         applyLookValues(look, adjustColorArrayLength(lookColors, gradientColors.length));
       } else if (roll < (looks?.length ? 0.75 : 0.5)) {
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
-        const palette = pickWeighted(pool, p => shuffleHistory.weight('palette', p.name));
+        const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory);
         if (palette) shuffleHistory.record('palette', palette.name);
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
       }
