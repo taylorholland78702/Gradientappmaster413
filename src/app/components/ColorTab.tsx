@@ -42,12 +42,6 @@ export interface ColorTabProps {
   shuffleColors: () => void;
 }
 
-const COLOR_BLEND_OPTIONS: { value: ColorBlend; label: string; hint: string }[] = [
-  { value: 'srgb', label: 'sRGB', hint: 'Straight per-channel blend — the classic look' },
-  { value: 'linear', label: 'Linear', hint: 'Mixes in linear light — physically correct, brighter midpoints than sRGB' },
-  { value: 'oklab', label: 'OKLab', hint: 'Perceptual blend — no muddy grey midpoints between saturated colors' },
-  { value: 'oklch', label: 'OKLCH', hint: 'Perceptual blend that travels around the hue wheel — vivid transitions' },
-];
 
 const ColorTabInner: React.FC<ColorTabProps> = ({
   saveCurrentState, setTargetColors, setColorsInstant, gradientColors, randomColor,
@@ -57,7 +51,6 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
   paletteStops, setPaletteStops, paletteBias, setPaletteBias, paletteSharp, setPaletteSharp,
   keepFamily, setKeepFamily, shuffleColors,
 }) => {
-  const isPaletteAdjusted = paletteHue !== 0 || paletteSaturation !== 100 || paletteBrightness !== 0 || paletteContrast !== 0;
 
   // setColorsInstant (not setGradientColors/setTargetColors called
   // separately) — the render loop lerps gradientColorsRef.current toward
@@ -154,18 +147,6 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
 
   const [startFrom, setStartFrom] = React.useState<'palettes' | 'moods' | 'image'>('palettes');
 
-  const adjustRows: { label: string; value: number; set: (v: number) => void; min: number; max: number }[] = [
-    { label: 'Hue', value: paletteHue, set: setPaletteHue, min: -180, max: 180 },
-    { label: 'Saturation', value: paletteSaturation, set: setPaletteSaturation, min: 30, max: 200 },
-    // Brightness/Contrast ranges narrowed from ±100 — adjustPalette's math
-    // compounds the two (contrast scales the brightness offset too), so pushing
-    // both toward the same sign near ±100 blew the whole palette out to solid
-    // black/white well before either slider hit its own end. ±25 keeps real
-    // range of motion while staying inside the region where a varied palette
-    // never fully clips (see adjustPalette's own defensive clamp).
-    { label: 'Brightness', value: paletteBrightness, set: setPaletteBrightness, min: -25, max: 25 },
-    { label: 'Contrast', value: paletteContrast, set: setPaletteContrast, min: -25, max: 25 },
-  ];
 
   const chip = (active: boolean) =>
     `px-2 py-1 text-[10px] border transition-all ${active ? 'bg-white text-black font-bold border-white' : 'text-white bg-wav-field hover:bg-wav-hover border-wav-line'}`;
@@ -325,37 +306,6 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
         blend={colorBlend}
         onBeforeChange={saveCurrentState}
       />
-
-      {/* Blend space, then palette-wide adjustments — applied to the whole
-          gradientColors array at a single point (see adjustPalette in
-          utils/color.ts), so they work the same however the palette arrived. */}
-      <section className="w-full px-1.5 pt-2.5 border-t border-wav-line flex flex-col gap-2" aria-label="Blend and adjust">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] text-wav-text-2 font-medium">Blend &amp; adjust</h3>
-          {isPaletteAdjusted && (
-            <button
-              onClick={() => { setPaletteHue(0); setPaletteSaturation(100); setPaletteBrightness(0); setPaletteContrast(0); }}
-              className="text-[10px] text-wav-text-3 hover:text-white transition-all"
-            >Reset</button>
-          )}
-        </div>
-        <div className="flex gap-1" role="group" aria-label="Color blend space">
-          {COLOR_BLEND_OPTIONS.map(({ value, label, hint }) => (
-            <button
-              key={value}
-              onClick={() => setColorBlend(value)}
-              aria-pressed={colorBlend === value}
-              title={hint}
-              className={choice(colorBlend === value, 'flex-1')}
-            >{label}</button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          {adjustRows.map(({ label, value, set, min, max }) => (
-            <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} />
-          ))}
-        </div>
-      </section>
     </>
   );
 };

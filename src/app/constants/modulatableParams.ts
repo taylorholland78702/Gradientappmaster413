@@ -31,10 +31,6 @@ export interface ModulatableParam {
 
 export const MODULATABLE_PARAMS: ModulatableParam[] = [
   // Global settings: every look has them, so they are not tied to one gradient or effect.
-  { key: 'paletteHue', label: 'Palette Hue', category: 'Palette', min: -180.0, max: 180.0, gain: 40 },
-  { key: 'paletteSaturation', label: 'Palette Saturation', category: 'Palette', min: 30.0, max: 200.0, gain: 15 },
-  { key: 'paletteBrightness', label: 'Palette Brightness', category: 'Palette', min: -25.0, max: 25.0, gain: 8 },
-  { key: 'paletteContrast', label: 'Palette Contrast', category: 'Palette', min: -25.0, max: 25.0, gain: 8 },
   { key: 'fieldContrast', label: 'Palette Mapping Contrast', category: 'Palette Mapping', min: 0.3, max: 3.0 },
   { key: 'paletteBands', label: 'Palette Mapping Bands', category: 'Palette Mapping', min: 2.0, max: 16.0, gain: 3 },
   { key: 'asciiSize', label: 'Ascii Size', category: 'ASCII', min: 6.0, max: 40.0 },

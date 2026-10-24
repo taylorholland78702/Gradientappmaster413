@@ -424,10 +424,11 @@ export function useSnapshot(params: SnapshotParams) {
     setHalftoneMoveSpeed(snapshot.halftoneMoveSpeed ?? 1);
     setVignetteStrength(snapshot.vignetteStrength ?? 0.5);
     setColorShiftHue(snapshot.colorShiftHue ?? 5);
-    setPaletteHue(snapshot.paletteHue ?? 0);
-    setPaletteSaturation(snapshot.paletteSaturation ?? 100);
-    setPaletteBrightness(snapshot.paletteBrightness ?? 0);
-    setPaletteContrast(snapshot.paletteContrast ?? 0);
+    // Palette hue/saturation/brightness/contrast and the blend space no longer have controls, so a saved value cannot be changed back.
+    setPaletteHue(0);
+    setPaletteSaturation(100);
+    setPaletteBrightness(0);
+    setPaletteContrast(0);
     setDigitalNoiseIntensity(snapshot.digitalNoiseIntensity ?? 0.3);
     setDuotoneIntensity(snapshot.duotoneIntensity ?? 1);
     setDuotoneColor1(snapshot.duotoneColor1 ?? '#000033');
@@ -541,7 +542,7 @@ export function useSnapshot(params: SnapshotParams) {
     setAuraGlowOpacity(snapshot.auraGlowOpacity ?? 0.8);
     setFieldContrast(snapshot.fieldContrast ?? 1);
     setPaletteMode(snapshot.paletteMode ?? 'linear');
-    setColorBlend(snapshot.colorBlend ?? 'srgb');
+    setColorBlend('srgb');
     setFieldScale(snapshot.fieldScale ?? 1);
     setFieldSpeed(snapshot.fieldSpeed ?? 1);
     setFieldShapes(snapshot.fieldShapes ?? {});
