@@ -9,6 +9,7 @@ import type { GridEffectWorkerRequest, GridEffectWorkerResponse } from './gridEf
 
 export const applyGridEffectWorkerAuto = createWorkerAutoEffect<GridEffectWorkerRequest, GridEffectWorkerResponse>({
   workerUrl: new URL('./gridEffectWorker.ts', import.meta.url),
+  snapshotBeforePaint: true,
   effectName: 'Grid effect',
   cpuFallback: applyGridEffect,
   shouldRun: (P) => P.canvas.width !== 0 && P.canvas.height !== 0,
