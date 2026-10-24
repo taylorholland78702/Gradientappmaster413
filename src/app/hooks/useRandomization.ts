@@ -16,34 +16,8 @@ import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
 
-// Maps a gradient/effect id to the MODULATABLE_PARAMS `category` string(s)
-// that hold its sliders, so shuffleAudiovisuals can restrict random
-// Modulation bindings to whatever is actually on screen instead of any of
-// the ~130 params across every gradient/effect. An array because a few ids
-// share sliders with another category (Polar Grid reuses Shapes' Ring
-// Count/Width; the Grid effect reuses the Grid gradient's Rows/Columns).
-// Not every id has an entry — freeform/linear/mesh no longer exist, and
-// photo has a modulatable category but is excluded elsewhere from random
-// pools since it's a no-op with no uploaded image.
-export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
-  angle: ['Angle'], attractor: ['Attractor'], caustics: ['Caustics'],
-  fireworks: ['Fireworks'], flower: ['Flower'], grid: ['Grid'],
-  julia: ['Julia Set'], 'lava-lamp': ['Lava Lamp'], lightning: ['Lightning'], marble: ['Marble'],
-  metaballs: ['Metaballs'],
-  noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
-  'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
-  voronoi: ['Voronoi'], windmill: ['Windmill', 'Helix'],
-  stack: ['Stack'], hatch: ['Hatch'],
-  // Styled-field gradients (drawStyleFieldGL.ts): each has its own Scale/Speed
-  // entries in MODULATABLE_PARAMS under its display name ('Halftone (Gradient)'
-  // is disambiguated from the Halftone effect's category).
-  contour: ['Contour'], glass: ['Glass'], holographic: ['Holographic'],
-  mercury: ['Mercury'], mesh: ['Mesh'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
-  tunnel: ['Tunnel'], waves: ['Waves'], 'light-beam': ['Light Beam'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
-  eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
-  'flow-mesh': ['Flow Mesh'], ribbon: ['Ribbon'], iridescent: ['Iridescent'],
-  embers: ['Embers'], bands: ['Bands'],
-};
+import { GRADIENT_MOD_CATEGORY, modCategoriesFor } from '../constants/gradientModCategories';
+export { GRADIENT_MOD_CATEGORY };
 const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&', ' .,;!vlLFE$', ' 01', ' .·•●'];
 
 // These gradient types draw a handful of small bright elements on an
@@ -571,11 +545,7 @@ export function useRandomization(params: RandomizationParams) {
     setContrastBeatEnabled(Math.random() < 0.5);
     setPaletteBeatEnabled(Math.random() < 0.5);
 
-    const activeModCategories = new Set<string>();
-    (GRADIENT_MOD_CATEGORY[effectiveGradientType ?? ''] ?? []).forEach((c) => activeModCategories.add(c));
-    (effectiveActiveEffects as string[]).forEach((effect) => {
-      (EFFECT_MOD_CATEGORY[effect] ?? []).forEach((c) => activeModCategories.add(c));
-    });
+    const activeModCategories = modCategoriesFor(effectiveGradientType, effectiveActiveEffects as string[], EFFECT_MOD_CATEGORY);
     const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
     // Fall back to the full pool only if the current gradient/effects have no
     // modulatable sliders at all, so Shuffle still does something useful.

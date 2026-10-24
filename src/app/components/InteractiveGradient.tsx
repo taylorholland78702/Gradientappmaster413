@@ -1053,7 +1053,7 @@ export function InteractiveGradient() {
     liquidScale,
     liquidStrength, crtIntensity, crtScanlineSpacing, marbleOctaves, marbleSpeed, marbleTurbulence, marbleVeinFreq,
     metaballCount, metaballSize, mirrorMode, mirrorTileCount,
-    noiseDirection, noiseOctaves, noiseScale, noiseSpeed,
+    noiseDirection, noiseOctaves, noiseScale, noiseSpeed, attractorSpeed, emojiRotateSpeed, flowSpeed, metaballSpeed,
     noiseType, noiseWarp, photoBlendMode, photoImageRef, photoOpacity, pixelSize,
     polygon2Sides, posterizeLevels,
     radialBurstCount, radialBurstSize, radialBurstSpread,
@@ -1222,7 +1222,7 @@ export function InteractiveGradient() {
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
-    audioBindings,
+    audioBindings, gradientType,
     quickBindKeys: (() => {
       // Styled gradients register '<camelId>Scale' / '<camelId>Speed' in MODULATABLE_PARAMS.
       const id = gradientType.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());

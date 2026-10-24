@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CaretDown, Plus, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
-import { MODULATABLE_PARAMS, MODULATABLE_PARAMS_BY_CATEGORY } from '../constants/modulatableParams';
+import { findSource, sourcesOf, groupedSources, paramGroups, bindingLabel, type ModKind } from '../constants/modulationTree';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { SliderRow } from './SliderRow';
 import { choice } from './choice';
@@ -50,6 +50,7 @@ export interface AudioPanelState {
   audioBindings: AudioBinding[];
   // The active gradient's own Scale/Speed modulation keys (styled gradients), for the quick-bind chips.
   quickBindKeys: { scale: string; speed: string } | null;
+  gradientType: string | null;
 }
 
 export interface AudioPanelActions {
@@ -92,11 +93,26 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
-    audioBindings, quickBindKeys,
+    audioBindings, quickBindKeys, gradientType,
     zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
   } = state;
 
-  const [modParam, setModParam] = useState(MODULATABLE_PARAMS[0].key);
+  // The picker is a tree (Gradient/Effect > one of them > its setting); it opens on the gradient on screen.
+  const initialSource = findSource('gradient', gradientType ?? '') ?? sourcesOf('gradient')[0];
+  const [modKind, setModKind] = useState<ModKind>(initialSource.kind);
+  const [modSourceId, setModSourceId] = useState(initialSource.id);
+  const modSource = findSource(modKind, modSourceId) ?? initialSource;
+  const [modParam, setModParam] = useState(() => paramGroups(initialSource)[0].params[0].param.key);
+  const chooseSource = (kind: ModKind, id: string) => {
+    const src = findSource(kind, id);
+    if (!src) return;
+    setModKind(kind); setModSourceId(id);
+    setModParam(paramGroups(src)[0]?.params[0]?.param.key ?? modParam);
+  };
+  const chooseKind = (kind: ModKind) => {
+    const first = kind === modKind ? modSource : sourcesOf(kind).sort((a, b) => a.label.localeCompare(b.label))[0];
+    chooseSource(kind, first.id);
+  };
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
   const [modAmount, setModAmount] = useState(1);
   // Modulation (the only thing behind this toggle) opens by default now —
@@ -345,12 +361,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 {audioBindings.length > 0 && (
                   <div className="flex flex-col gap-2 mb-1">
                     {audioBindings.map((b) => {
-                      const meta = MODULATABLE_PARAMS.find(p => p.key === b.param);
+                      const bindingName = bindingLabel(b.param);
                       return (
                         <div key={b.id} className="flex items-center gap-1.5 bg-wav-field px-1.5 py-1">
-                          <span className="text-[10px] text-white flex-1 truncate">{meta ? meta.label : b.param}</span>
+                          <span className="text-[10px] text-white flex-1 truncate">{bindingName}</span>
                           <select
-                            aria-label={`Audio band for ${meta ? meta.label : b.param}`}
+                            aria-label={`Audio band for ${bindingName}`}
                             value={b.band}
                             onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, band: e.target.value as AudioBinding['band'] } : x))}
                             className="text-[10px] text-white bg-wav-field border border-wav-line rounded px-1 py-0.5 flex-shrink-0"
@@ -380,21 +396,43 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                     })}
                   </div>
                 )}
-                <div className="flex items-center gap-1">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1">
+                    <select
+                      aria-label="Kind of setting to modulate"
+                      value={modKind}
+                      onChange={(e) => chooseKind(e.target.value as ModKind)}
+                      className="w-[72px] flex-shrink-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
+                    >
+                      <option value="gradient">Gradient</option>
+                      <option value="effect">Effect</option>
+                    </select>
+                    <select
+                      aria-label={modKind === 'gradient' ? 'Gradient to modulate' : 'Effect to modulate'}
+                      value={modSourceId}
+                      onChange={(e) => chooseSource(modKind, e.target.value)}
+                      className="flex-1 min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
+                    >
+                      {groupedSources(modKind).map(({ group, sources }) => group ? (
+                        <optgroup key={group} label={group}>
+                          {sources.map(src => <option key={src.id} value={src.id}>{src.label}</option>)}
+                        </optgroup>
+                      ) : sources.map(src => <option key={src.id} value={src.id}>{src.label}</option>))}
+                    </select>
+                  </div>
                   <select
                     aria-label="Parameter to modulate"
                     value={modParam}
                     onChange={(e) => setModParam(e.target.value)}
-                    className="flex-[4] min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
+                    className="w-full min-w-0 text-[10px] text-white bg-wav-field border border-wav-line rounded pl-1 pr-4 py-1"
                   >
-                    {MODULATABLE_PARAMS_BY_CATEGORY.map(group => (
-                      <optgroup key={group.category} label={group.category}>
-                        {group.params.map(p => (
-                          <option key={p.key} value={p.key}>{p.label}</option>
-                        ))}
-                      </optgroup>
-                    ))}
+                    {paramGroups(modSource).map(group => {
+                      const options = group.params.map(({ param, label }) => <option key={param.key} value={param.key}>{label}</option>);
+                      return group.title ? <optgroup key={group.title} label={group.title}>{options}</optgroup> : options;
+                    })}
                   </select>
+                </div>
+                <div className="flex items-center gap-1">
                   <select
                     aria-label="Audio band"
                     value={modBand}
