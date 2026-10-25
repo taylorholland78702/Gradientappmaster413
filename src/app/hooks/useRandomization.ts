@@ -16,7 +16,11 @@ import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { generatePalette, pickPalette } from '../utils/shufflePalette';
-import { shuffleLearning } from '../utils/shuffleLearning';
+import { shuffleLearning, type LearnedKind } from '../utils/shuffleLearning';
+import { USE_LEARNED_TASTE } from '../constants/shuffleTaste';
+
+// What you have kept steers Shuffle only while USE_LEARNED_TASTE is on; otherwise every learned multiplier is 1.
+const learnedWeight = (kind: LearnedKind, id: string) => (USE_LEARNED_TASTE ? shuffleLearning.weight(kind, id) : 1);
 import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import type { AudioBinding } from './state/useAudioBindingsState';
@@ -601,7 +605,7 @@ export function useRandomization(params: RandomizationParams) {
     let finalEffects: EffectType[] = activeEffects;
     // The mood of this shuffle: it steers speed, how hard effects hit, how big the shape sliders run and which
     // effects are favoured (constants/shuffleTaste.ts), and it avoids the mood just used.
-    const mood = chooseMood(shuffleHistory, Math.random, id => shuffleLearning.weight('mood', id));
+    const mood = chooseMood(shuffleHistory, Math.random, id => learnedWeight('mood', id));
     shuffleHistory.record('mood', mood.id);
     let chosenPalette: string | undefined;
 
@@ -755,7 +759,7 @@ export function useRandomization(params: RandomizationParams) {
         minEffects: 3,
         maxEffects: g => (isSparseContentGradient(g) ? 2 : 5),
         excluded: g => (isSparseContentGradient(g) ? CONTENT_ERASERS : []),
-        learned: (kind, id) => shuffleLearning.weight(kind, id),
+        learned: (kind, id) => learnedWeight(kind, id),
       }, mood, shuffleHistory);
       const randomGradient: GradientType = picked.gradient;
       setGradientType(randomGradient);
@@ -834,14 +838,14 @@ export function useRandomization(params: RandomizationParams) {
         const okLooks = (looks ?? []).filter(l => inFamily(l.colors.map(hexToRgb), anchor));
         const okPalettes = (dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS).filter(p => inFamily(p.colors.map(hexToRgb), anchor));
         if (okLooks.length && roll < 0.6) {
-          const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * shuffleLearning.weight('palette', `${finalGradientType}:${l.name}`));
+          const look = pickWeighted(okLooks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * learnedWeight('palette', `${finalGradientType}:${l.name}`));
           shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
           chosenPalette = `${finalGradientType}:${look.name}`;
           // The family is fixed, so the Look's colours are kept as they are; its numbers still vary a little.
           applyLookValues(varyLook(look, lookVariation(mood.strength)), adjustColorArrayLength(look.colors.map(hexToRgb), gradientColors.length));
           lookSeeded = true;
         } else if (okPalettes.length && roll < 0.7) {
-          const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => shuffleLearning.weight('palette', n));
+          const palette = pickPalette(okPalettes, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => learnedWeight('palette', n));
           shuffleHistory.record('palette', palette.name);
           chosenPalette = palette.name;
           setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
@@ -851,7 +855,7 @@ export function useRandomization(params: RandomizationParams) {
       } else if (looks?.length && roll < 0.65) {
         // A curated Look is the starting point: its numbers move a little, and its palette turns a few degrees about
         // half the time, so no two shuffles from the same Look are alike but it stays recognisably what was tuned.
-        const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * shuffleLearning.weight('palette', `${finalGradientType}:${l.name}`));
+        const look = pickWeighted(looks, l => shuffleHistory.weight('palette', `${finalGradientType}:${l.name}`) * learnedWeight('palette', `${finalGradientType}:${l.name}`));
         shuffleHistory.record('palette', `${finalGradientType}:${look.name}`);
         chosenPalette = `${finalGradientType}:${look.name}`;
         const turn = Math.random() < 0.5 ? (Math.random() * 2 - 1) * (10 + 20 * mood.strength) : 0;
@@ -860,7 +864,7 @@ export function useRandomization(params: RandomizationParams) {
         lookSeeded = true;
       } else if (roll < (looks?.length ? 0.85 : 0.5)) {
         const pool = dark ? PALETTE_PRESETS.filter(startsDark) : PALETTE_PRESETS;
-        const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => shuffleLearning.weight('palette', n));
+        const palette = pickPalette(pool, p => p.colors.map(hexToRgb), finalGradientType, shuffleHistory, Math.random, 2, n => learnedWeight('palette', n));
         if (palette) { shuffleHistory.record('palette', palette.name); chosenPalette = palette.name; }
         if (palette) setTargetColors(adjustColorArrayLength(palette.colors.map(hexToRgb), gradientColors.length));
       }

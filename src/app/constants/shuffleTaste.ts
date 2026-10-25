@@ -4,6 +4,10 @@ import type { EffectType, GradientType } from './gradientEffects';
 // records which effects flatter which kinds of gradient, which pairs fight each other, and the moods a shuffle can
 // take. It is data, so changing what Shuffle likes means editing this file and nothing else.
 
+// The learner (utils/shuffleLearning.ts) still records what you keep, love and undo, but its odds multipliers only steer
+// Shuffle while this is true. Off for now; flip it back to bring learned taste back.
+export const USE_LEARNED_TASTE = false;
+
 export type GradientKind = 'dark-ground' | 'smooth' | 'pattern' | 'particles';
 
 // How a gradient looks, for choosing effects: a few bright shapes on black, a soft full-frame field, a repeating
