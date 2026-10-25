@@ -1195,7 +1195,7 @@ export function InteractiveGradient() {
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels, halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK,
     halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
-    invertAmount, setInvertAmount, duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2,
+    duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2,
     duotoneColor3, setDuotoneColor3, duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridSides, setGridSides, gridShapeSize, setGridShapeSize, gridVariation, setGridVariation,
     gridRotationDirection, setGridRotationDirection, vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount,

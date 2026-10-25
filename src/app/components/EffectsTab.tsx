@@ -94,7 +94,6 @@ export interface EffectsTabProps {
   halftoneMove: boolean; setHalftoneMove: (v: boolean) => void;
   halftoneVariation: number; setHalftoneVariation: (v: number) => void;
   // Invert
-  invertAmount: number; setInvertAmount: (v: number) => void;
   // Duotone
   duotoneColor1: string; setDuotoneColor1: (v: string) => void;
   duotoneColor2: string; setDuotoneColor2: (v: string) => void;
@@ -171,7 +170,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
     halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
-    invertAmount, setInvertAmount,
     duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
@@ -694,11 +692,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={impastoStrength} onChange={setImpastoStrength} min="1" max="7" step="0.1" />
                   <SliderRow label="Light Angle:" value={impastoLightAngle} onChange={setImpastoLightAngle} min="0" max="359" step="1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('invert') && (
-                <EffectSection id="invert" label="Invert" isMulti={isMulti} expanded={!collapsedEffects.has('invert')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Amount:" value={invertAmount} onChange={setInvertAmount} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('kaleidoscope') && (
