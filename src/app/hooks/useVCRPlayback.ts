@@ -355,7 +355,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         const frameTimestampUs = (timestamp - recordingStartTimestampRef.current) * 1000;
         // A phone's encoder can fall behind a big canvas; skip a frame rather than let the queue grow until it fails.
         if (encoder.encodeQueueSize <= 6) {
-          const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs });
+          // Safari's encoder passes the frame's duration through as-is, and the mp4 writer rejects chunks without one.
+          const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs, duration: Math.round(FRAME_INTERVAL_MS * 1000) });
           // Keyframe every 2 seconds so the file is seekable without being too big.
           encoder.encode(frame, { keyFrame: videoFrameIndexRef.current % (CAPTURE_FPS * 2) === 0 });
           frame.close();
