@@ -13,6 +13,15 @@ import { choice } from './choice';
 // Gradients (besides the styled-field ones) that move, so show the shared Speed slider.
 const ANIMATED_GRADIENTS: string[] = ['stack', 'hatch', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower'];
 
+// Classic Gray-Scott feed/kill regimes.
+const REACTION_DIFFUSION_PATTERNS = [
+  { name: 'Spots', feed: 0.03, kill: 0.062 },
+  { name: 'Mitosis', feed: 0.0367, kill: 0.0649 },
+  { name: 'Maze', feed: 0.029, kill: 0.057 },
+  { name: 'Coral', feed: 0.0545, kill: 0.062 },
+  { name: 'Stripes', feed: 0.078, kill: 0.061 },
+];
+
 export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
@@ -696,12 +705,24 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'reaction-diffusion' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
-            {[
-              { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
-              { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
-            ))}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-white">Pattern:</label>
+              <div className="flex flex-wrap items-center gap-1 flex-1 ml-2">
+                {REACTION_DIFFUSION_PATTERNS.map((p) => {
+                  const active = Math.abs(reactionDiffusionFeed - p.feed) < 0.004 && Math.abs(reactionDiffusionKill - p.kill) < 0.003;
+                  return (
+                    <button
+                      key={p.name}
+                      onClick={() => { setReactionDiffusionFeed(p.feed); setReactionDiffusionKill(p.kill); }}
+                      aria-pressed={active}
+                      className={choice(active, 'flex-1')}
+                    >
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
