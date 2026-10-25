@@ -1,9 +1,9 @@
 import { Switch } from './Switch';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC, AUTO_SHUFFLE_SCOPES, type AutoShuffleScope } from '../constants/autoShuffle';
 import { ChoiceChips } from './choice';
-import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
+import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec } from '../utils/autoShuffle';
 
-// The Auto Shuffle popout: on/off, interval slider, what to change, and quick interval presets.
+// The Auto Shuffle popout: on/off, interval slider and what to change.
 export function AutoShufflePopout({
   isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec,
   autoShuffleScope, setAutoShuffleScope,
@@ -27,27 +27,24 @@ export function AutoShufflePopout({
           className="flex-1"
           aria-label="Auto Shuffle interval"
         />
-        <input
-          type="number"
-          min={AUTO_SHUFFLE_MIN_SEC}
-          max={AUTO_SHUFFLE_MAX_SEC}
-          value={autoShuffleIntervalSec}
-          onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
-          className="wav-slider-value text-[10px] w-12 text-right rounded px-1 text-white bg-wav-field border border-wav-line"
-          aria-label="Auto Shuffle interval in seconds"
-        />
+        <label className="wav-slider-value flex items-center gap-1 text-[10px] rounded px-1 text-white bg-wav-field border border-wav-line">
+          <input
+            type="number"
+            min={AUTO_SHUFFLE_MIN_SEC}
+            max={AUTO_SHUFFLE_MAX_SEC}
+            value={autoShuffleIntervalSec}
+            onChange={(e) => setAutoShuffleIntervalSec(Number(e.target.value))}
+            className="w-9 text-right bg-transparent text-white outline-none"
+            aria-label="Auto Shuffle interval in seconds"
+          />
+          <span className="text-wav-text-2">sec</span>
+        </label>
       </div>
       <ChoiceChips
         ariaLabel="What Auto Shuffle changes"
         options={AUTO_SHUFFLE_SCOPES.map(o => ({ id: o.id, label: o.label, title: o.hint }))}
         value={autoShuffleScope}
         onChange={setAutoShuffleScope}
-      />
-      <ChoiceChips
-        ariaLabel="Auto Shuffle interval presets"
-        options={[5, 15, 60, 300].map(sec => ({ id: sec, label: formatAutoShuffleInterval(sec) }))}
-        value={autoShuffleIntervalSec}
-        onChange={setAutoShuffleIntervalSec}
       />
   </>);
 }

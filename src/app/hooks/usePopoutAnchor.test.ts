@@ -27,7 +27,7 @@ describe('usePopoutAnchor', () => {
     hook.unmount();
   });
 
-  it('Save & share and Record grow upward from their button', () => {
+  it('Save & share grows upward from their button', () => {
     const { hook } = setup();
     const trigger = document.createElement('button');
     trigger.getBoundingClientRect = () => ({ top: 400, bottom: window.innerHeight - 20 }) as DOMRect;
@@ -39,7 +39,7 @@ describe('usePopoutAnchor', () => {
 
   it('on mobile it opens full width above the bottom bar', () => {
     const { hook } = setup({ isMobile: true });
-    hook.act(() => hook.current.openRecordPopover());
+    hook.act(() => hook.current.openExportPopover());
     expect(hook.current.autoShufflePopoverAnchor).toMatchObject({ left: 0, width: window.innerWidth, bottom: window.innerHeight - 100 });
     hook.unmount();
   });
@@ -47,10 +47,10 @@ describe('usePopoutAnchor', () => {
   it('pressing the same button again closes it; another button swaps the popout', () => {
     const { hook } = setup();
     hook.act(() => hook.current.openExportPopover());
-    hook.act(() => hook.current.openRecordPopover());
-    expect(hook.current.popoverMode).toBe('record');
+    hook.act(() => hook.current.openAutoShufflePopover());
+    expect(hook.current.popoverMode).toBe('autoShuffle');
     expect(hook.current.autoShufflePopoverAnchor).not.toBeNull();
-    hook.act(() => hook.current.openRecordPopover());
+    hook.act(() => hook.current.openAutoShufflePopover());
     expect(hook.current.autoShufflePopoverAnchor).toBeNull();
     hook.unmount();
   });

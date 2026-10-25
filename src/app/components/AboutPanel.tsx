@@ -100,7 +100,7 @@ export function AboutPanel({
               <span className="text-[10px] text-wav-text-3 shrink-0">sec</span>
             </div>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Camera weight="regular" className="w-4 h-4 shrink-0" /> Save PNG — save the current frame as an 8K image shaped like your screen; the button opens the save and embed options, S saves right away</span><Kbd label="S" /></p>
-            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — capture video of the live animation; the button opens size and length</span><Kbd label="V" /></p>
+            <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Circle weight="regular" className="w-4 h-4 shrink-0" /> Record — start or stop a 4K video of the live animation</span><Kbd label="V" /></p>
             <p className="flex items-center justify-between gap-2"><span className="flex items-center gap-2"><Gif weight="regular" className="w-4 h-4 shrink-0" /> GIF — start/stop recording an animated GIF</span><Kbd label="Shift+S" /></p>
           </div>
 

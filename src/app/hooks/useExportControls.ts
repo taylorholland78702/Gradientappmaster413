@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
-  type VideoSize, type VideoLength, VIDEO_SIZES, VIDEO_LENGTHS,
-  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
+  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, VIDEO_LONG_EDGE, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
 import { shareParam } from '../utils/shareLink';
@@ -33,17 +32,9 @@ export function useExportControls({
   const setExportAspect = (v: ExportAspect) => { setExportAspectState(v); try { localStorage.setItem('exportAspect', v); } catch { /* not persisted */ } };
   const exportSettingsRef = useRef({ size: exportSize, aspect: exportAspect });
   exportSettingsRef.current = { size: exportSize, aspect: exportAspect };
-  const [videoSize, setVideoSizeState] = useState<VideoSize>(() => {
-    try { const v = localStorage.getItem('videoSize'); return VIDEO_SIZES.some(o => o.id === v) ? (v as VideoSize) : 'screen'; } catch { return 'screen'; }
-  });
-  const [videoLength, setVideoLengthState] = useState<VideoLength>(() => {
-    try { const v = localStorage.getItem('videoLength'); return VIDEO_LENGTHS.some(o => o.id === v) ? (v as VideoLength) : 'manual'; } catch { return 'manual'; }
-  });
-  const setVideoSize = (v: VideoSize) => { setVideoSizeState(v); try { localStorage.setItem('videoSize', v); } catch { /* not persisted */ } };
-  const setVideoLength = (v: VideoLength) => { setVideoLengthState(v); try { localStorage.setItem('videoLength', v); } catch { /* not persisted */ } };
   // True from the moment a take is started from the Save popout until it ends, so the larger render
   // size can be put back and the length timer cleared however the take stops.
-  const videoTakeRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; sized: boolean } | null>(null);
+  const videoTakeRef = useRef<{ sized: boolean } | null>(null);
   const isRecordingNowRef = useRef(false);
   isRecordingNowRef.current = isRecording;
   // "Copied" feedback for the share buttons in the Save popout: which one, for a moment.
@@ -146,15 +137,15 @@ export function useExportControls({
     return exportAsPNG('download', { w, h, name: 'wallpaper' });
   }, [exportAsPNG]);
 
-  // Starts (or stops) a video take from the Save popout. A chosen size re-renders the artwork at that
-  // size first, since the encoder is fixed to the canvas size at the moment recording begins.
+  // Starts (or stops) a video take. It always records at 4K, so the artwork is re-rendered at that size first,
+  // since the encoder is fixed to the canvas size at the moment recording begins.
   const startVideoTake = async () => {
     if (isRecording) { toggleVCRRecording(); return; }
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const longEdge = VIDEO_SIZES.find(o => o.id === videoSize)?.longEdge ?? 0;
+    const longEdge = VIDEO_LONG_EDGE;
     let sized = false;
-    if (longEdge > 0) {
+    {
       const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
       // H.264 wants even width and height: nudge the scale until both come out even.
       let mult = Math.min(longEdge / Math.max(cssW, cssH), EXPORT_MAX_EDGE / Math.max(cssW, cssH));
@@ -169,16 +160,13 @@ export function useExportControls({
       await nextFrame();
       await nextFrame();
     }
-    videoTakeRef.current = { timer: null, sized };
+    videoTakeRef.current = { sized };
     toggleVCRRecording();
-    const seconds = VIDEO_LENGTHS.find(o => o.id === videoLength)?.seconds ?? 0;
-    if (seconds > 0) videoTakeRef.current.timer = setTimeout(() => toggleVCRRecording(), seconds * 1000);
     // If recording never actually began (encoders unavailable, permission refused), put the size back.
     setTimeout(() => {
       const take = videoTakeRef.current;
       if (take && !isRecordingNowRef.current) {
         videoTakeRef.current = null;
-        if (take.timer) clearTimeout(take.timer);
         if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
       }
     }, 6000);
@@ -188,13 +176,11 @@ export function useExportControls({
     if (isRecording || !videoTakeRef.current) return;
     const take = videoTakeRef.current;
     videoTakeRef.current = null;
-    if (take.timer) clearTimeout(take.timer);
     if (take.sized) { exportRender.multiplier = 0; drawParamsDirtyRef.current = true; }
   }, [isRecording]);
 
   return {
     exportSize, setExportSize, exportAspect, setExportAspect,
-    videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,

@@ -6,7 +6,7 @@ import { RailPopouts } from './RailPopouts';
 import { WavHint } from './WavHint';
 import { AboutPanel } from './AboutPanel';
 import type { AutoShuffleScope } from '../constants/autoShuffle';
-import type { ExportAspect, ExportSize, VideoLength, VideoSize } from '../constants/exportOptions';
+import type { ExportAspect, ExportSize } from '../constants/exportOptions';
 
 // The app's markup: the full-bleed canvas, the dock (control rail and drawer), hidden file inputs, hint, popouts and About. All state and handlers come in as props. Moved out of InteractiveGradient unchanged.
 export interface GradientAppViewParams {
@@ -55,7 +55,7 @@ export interface GradientAppViewParams {
   motionDenied: boolean;
   panelRef: MutableRefObject<HTMLElement>;
   photoInputRef: MutableRefObject<HTMLInputElement>;
-  popoverMode: "autoShuffle" | "export" | "record";
+  popoverMode: "autoShuffle" | "export";
   railRect: { top: number; left: number; right: number; bottom: number; width: number; height: number; };
   savePreview: { url: string; blob: Blob; name: string; };
   setAutoShuffleIntervalSec: (sec: number) => void;
@@ -66,20 +66,16 @@ export interface GradientAppViewParams {
   setIsAboutOpen: (value: SetStateAction<boolean>) => void;
   setIsAutoShuffleOn: (value: SetStateAction<boolean>) => void;
   setSavePreview: (value: SetStateAction<{ url: string; blob: Blob; name: string; }>) => void;
-  setVideoLength: (v: VideoLength) => void;
-  setVideoSize: (v: VideoSize) => void;
   shakeEnabled: boolean;
   shakeWrapperRef: MutableRefObject<HTMLDivElement>;
   showWavHint: boolean;
   startVideoTake: () => Promise<void>;
   tiltEnabled: boolean;
   toggleMotion: (kind: "shake" | "tilt") => Promise<void>;
-  videoLength: "manual" | "5" | "10" | "30";
-  videoSize: "screen" | "1080" | "4k" | "720";
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, setVideoLength, setVideoSize, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion, videoLength, videoSize } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
   const dock = (
     <div
       data-role="dock"
@@ -229,7 +225,6 @@ export function GradientAppView(p: GradientAppViewParams) {
         mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
         setAnchor={setAutoShufflePopoverAnchor}
         exportProps={{ copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
-        recordProps={{ videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake }}
         autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
       />
 

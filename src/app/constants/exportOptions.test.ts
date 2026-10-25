@@ -1,31 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import {
-  EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_SIZES, VIDEO_LENGTHS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget, centerCrop,
+  EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_LONG_EDGE, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget, centerCrop,
 } from './exportOptions';
 
 const ids = (xs: { id: string }[]) => xs.map(x => x.id);
 
 describe('export options', () => {
-  it('offers 4K for both PNG and video', () => {
+  it('offers 4K for PNG, and video always records at 4K', () => {
     expect(ids(EXPORT_SIZES)).toContain('4k');
-    expect(ids(VIDEO_SIZES)).toContain('4k');
     expect(EXPORT_SIZES.find(o => o.id === '4k')?.longEdge).toBe(3840);
-    expect(VIDEO_SIZES.find(o => o.id === '4k')?.longEdge).toBe(3840);
+    expect(VIDEO_LONG_EDGE).toBe(3840);
   });
 
   it('has unique ids in every list', () => {
-    for (const list of [EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_SIZES, VIDEO_LENGTHS]) {
+    for (const list of [EXPORT_SIZES, EXPORT_ASPECTS]) {
       expect(new Set(ids(list)).size).toBe(list.length);
     }
   });
 
   it('keeps "screen" first and sizes ascending', () => {
     expect(EXPORT_SIZES[0].id).toBe('screen');
-    expect(VIDEO_SIZES[0].id).toBe('screen');
-    for (const list of [EXPORT_SIZES, VIDEO_SIZES]) {
-      const edges = list.map(o => o.longEdge);
-      expect(edges).toEqual([...edges].sort((a, b) => a - b));
-    }
+    const edges = EXPORT_SIZES.map(o => o.longEdge);
+    expect(edges).toEqual([...edges].sort((a, b) => a - b));
   });
 
   it('keeps the largest PNG inside the canvas ceilings', () => {

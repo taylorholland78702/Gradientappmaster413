@@ -2,23 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ExportPopout } from './ExportPopout';
-import { RecordPopout } from './RecordPopout';
 import { AutoShufflePopout } from './AutoShufflePopout';
 
 const noop = () => {};
 
 const exportProps = (over: Partial<Parameters<typeof ExportPopout>[0]> = {}) => ({
   isMobile: false,
-  exportAsPNG: noop, closePopover: noop,
+  closePopover: noop,
   copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
   saveWallpaper: noop,
-  ...over,
-});
-
-const recordProps = (over: Partial<Parameters<typeof RecordPopout>[0]> = {}) => ({
-  videoSize: 'screen' as const, setVideoSize: noop,
-  videoLength: 'manual' as const, setVideoLength: noop,
-  isRecording: false, startVideoTake: noop,
   ...over,
 });
 
@@ -61,32 +53,6 @@ describe('ExportPopout', () => {
   });
 });
 
-describe('RecordPopout', () => {
-  const html = renderToStaticMarkup(createElement(RecordPopout, recordProps()));
-
-  it('offers the video sizes, with 4K, and the take lengths', () => {
-    expect(groupLabels(html, 'Video size')).toEqual(['Screen', '720p', '1080p', '4K']);
-    expect(groupLabels(html, 'Video length')).toEqual(['Until I stop', '5s', '10s', '30s']);
-  });
-
-  it('has a Start recording button', () => {
-    expect(html).toContain('Start recording');
-  });
-
-  it('marks the chosen video size pressed', () => {
-    const h = renderToStaticMarkup(createElement(RecordPopout, recordProps({ videoSize: '4k' })));
-    expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(1);
-  });
-
-  it('turns into Stop recording and locks the choices while a take is running', () => {
-    const rec = renderToStaticMarkup(createElement(RecordPopout, recordProps({ isRecording: true })));
-    expect(rec).toContain('Stop recording');
-    expect(rec).not.toContain('Start recording');
-    expect(rec).toMatch(/disabled=""[^>]*>720p/);
-    expect(rec).toMatch(/disabled=""[^>]*>10s/);
-  });
-});
-
 describe('AutoShufflePopout', () => {
   const base = {
     isAutoShuffleOn: false, setIsAutoShuffleOn: vi.fn(),
@@ -94,10 +60,11 @@ describe('AutoShufflePopout', () => {
     autoShuffleScope: 'all' as const, setAutoShuffleScope: vi.fn(),
   };
 
-  it('lists the scopes and interval presets', () => {
+  it('lists the scopes, with the interval in seconds and no preset buttons', () => {
     const html = renderToStaticMarkup(createElement(AutoShufflePopout, base));
     expect(groupLabels(html, 'What Auto Shuffle changes')).toEqual(['All', 'Gradient', 'Effects', 'Colors']);
-    expect(groupLabels(html, 'Auto Shuffle interval presets')).toEqual(['5s', '15s', '1m', '5m']);
+    expect(html).not.toContain('Auto Shuffle interval presets');
+    expect(html).toMatch(/aria-label="Auto Shuffle interval in seconds"[^>]*\/?>\s*<span[^>]*>sec</);
   });
 
   it('reflects on/off state and the chosen scope', () => {
