@@ -14,15 +14,27 @@ export interface PaletteStopsEditorProps {
   colors: ColorRGB[];
   stops: number[] | null;
   setStops: (stops: number[] | null) => void;
+  // Picks a new color for a stop: tapping a handle (without dragging it) opens the browser's color picker.
+  setColor: (index: number, hex: string) => void;
   onBeforeChange?: () => void;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
-  colors, stops, setStops, onBeforeChange,
+  colors, stops, setStops, setColor, onBeforeChange,
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  // Where a handle was pressed and whether it has been dragged since, to tell a tap from a drag.
+  const pressRef = useRef<{ x: number; moved: boolean } | null>(null);
+  const pickerRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const openPicker = (index: number) => {
+    const el = pickerRefs.current[index];
+    if (!el) return;
+    onBeforeChange?.();
+    if (typeof el.showPicker === 'function') { try { el.showPicker(); return; } catch { /* fall back to click */ } }
+    el.click();
+  };
   const n = colors.length;
   // Saved positions only apply while there is one per color; add/remove a
   // swatch and the palette quietly goes back to even spacing.
@@ -52,15 +64,25 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   const onPointerDown = (index: number) => (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
+    pressRef.current = { x: e.clientX, moved: false };
     onBeforeChange?.();
   };
   const onPointerMove = (index: number) => (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    const press = pressRef.current;
+    if (press && !press.moved && Math.abs(e.clientX - press.x) < 4) return;
+    if (press) press.moved = true;
     move(index, positionFromPointer(e.clientX));
+  };
+  const onPointerUp = (index: number) => () => {
+    const press = pressRef.current;
+    pressRef.current = null;
+    if (press && !press.moved) openPicker(index);
   };
   const onKeyDown = (index: number) => (e: React.KeyboardEvent<HTMLDivElement>) => {
     const step = e.shiftKey ? 0.05 : 0.01;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); onBeforeChange?.(); move(index, current[index] - step); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(index); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); onBeforeChange?.(); move(index, current[index] - step); }
     else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); onBeforeChange?.(); move(index, current[index] + step); }
   };
 
@@ -92,11 +114,22 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
               aria-valuenow={Math.round(pos * 100)}
               onPointerDown={onPointerDown(i)}
               onPointerMove={onPointerMove(i)}
+              onPointerUp={onPointerUp(i)}
               onKeyDown={onKeyDown(i)}
               className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-wav-line-strong shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               style={{ left: `${pos * 100}%`, background: rgbToHex(colors[i]) }}
-              title={`Color ${i + 1} — drag to reposition (arrow keys nudge)`}
-            />
+              title={`Color ${i + 1} — tap to change the color, drag to reposition (arrow keys nudge)`}
+            >
+              <input
+                ref={el => { pickerRefs.current[i] = el; }}
+                type="color"
+                value={rgbToHex(colors[i])}
+                onChange={(e) => setColor(i, e.target.value)}
+                tabIndex={-1}
+                aria-label={`Color ${i + 1}`}
+                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+              />
+            </div>
           ))}
         </div>
       </div>
