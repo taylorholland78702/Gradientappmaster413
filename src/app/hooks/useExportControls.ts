@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
-  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, VIDEO_LONG_EDGE, wallpaperTarget,
+  EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
+import { videoEncoderCandidates, pickVideoMultiplier, VIDEO_FPS } from '../utils/videoEncoding';
 import { shareParam } from '../utils/shareLink';
 import { shuffleLearning } from '../utils/shuffleLearning';
 import type { useCanvasState } from './state/useCanvasState';
@@ -143,15 +144,19 @@ export function useExportControls({
     if (isRecording) { toggleVCRRecording(); return; }
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const longEdge = VIDEO_LONG_EDGE;
     let sized = false;
     {
       const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
-      // H.264 wants even width and height: nudge the scale until both come out even.
-      let mult = Math.min(longEdge / Math.max(cssW, cssH), EXPORT_MAX_EDGE / Math.max(cssW, cssH));
-      for (let k = 0; k < 60; k++, mult += 0.0007) {
-        if (Math.floor(cssW * mult) % 2 === 0 && Math.floor(cssH * mult) % 2 === 0) break;
-      }
+      // 4K where the device's encoder takes it; phones step down to the biggest size theirs can really do.
+      const supports = typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined'
+        ? async (w: number, h: number) => {
+            for (const config of videoEncoderCandidates(w, h, VIDEO_FPS)) {
+              try { if ((await VideoEncoder.isConfigSupported(config)).supported) return true; } catch { /* next */ }
+            }
+            return false;
+          }
+        : null;
+      const mult = await pickVideoMultiplier(cssW, cssH, supports);
       exportRender.multiplier = mult;
       drawParamsDirtyRef.current = true;
       sized = true;

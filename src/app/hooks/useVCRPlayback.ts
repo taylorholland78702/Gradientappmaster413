@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
+import { videoEncoderCandidates, VIDEO_FPS } from '../utils/videoEncoding';
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 export interface ColorRGB {
@@ -34,7 +35,7 @@ export interface UseVCRPlaybackParams {
   audioFile: string | null;
 }
 
-const CAPTURE_FPS = 30;
+const CAPTURE_FPS = VIDEO_FPS;
 const FRAME_INTERVAL_MS = 1000 / CAPTURE_FPS;
 // Recording had no duration cap at all — vcrRecordedFrames (metadata,
 // growing 20x/sec), ffmpeg's frameDataRef (raw JPEGs, one per captured
@@ -555,16 +556,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     let selectedConfig: VideoEncoderConfig | null = null;
 
     if (typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined' && canvas) {
-      const candidates = [
-        // Desktop-tuned: High profile, level 5.2, hardware-preferred, high
-        // bitrate — the original config, kept first so desktop (where it's
-        // already known to work) picks the same quality as before.
-        { codec: 'avc1.640034', width: canvas.width, height: canvas.height, bitrate: 20_000_000, framerate: CAPTURE_FPS, hardwareAcceleration: 'prefer-hardware' as const },
-        // Broadly-compatible fallback: Main profile, level 4.0, no hardware
-        // preference (let the browser use software encoding if that's all
-        // it has), lower bitrate — what mobile encoders can actually do.
-        { codec: 'avc1.4d0028', width: canvas.width, height: canvas.height, bitrate: 8_000_000, framerate: CAPTURE_FPS, hardwareAcceleration: 'no-preference' as const },
-      ];
+      // Same ladder the Record button probed when it chose the take's size (desktop first, then what phones can do).
+      const candidates = videoEncoderCandidates(canvas.width, canvas.height, CAPTURE_FPS);
       for (const config of candidates) {
         try {
           const support = await VideoEncoder.isConfigSupported(config);
