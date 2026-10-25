@@ -24,6 +24,12 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
   paletteStops, setPaletteStops,
 }) => {
 
+  // setColorsInstant (not setTargetColors): it updates the render loop's own copy of the colors along
+  // with React state, so the edit isn't written over a moment later.
+  const setColor = (index: number, hex: string) => {
+    setColorsInstant(gradientColors.map((c, i) => (i === index ? hexToRgb(hex) : c)));
+  };
+
   // Re-cut the current ramp into n evenly spaced colors, so changing the count
   // keeps the palette's overall look instead of adding or dropping arbitrary ones.
   const resampleTo = (n: number) => {
@@ -75,6 +81,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
           colors={gradientColors}
           stops={paletteStops}
           setStops={setPaletteStops}
+          setColor={setColor}
           onBeforeChange={saveCurrentState}
         />
       </section>
