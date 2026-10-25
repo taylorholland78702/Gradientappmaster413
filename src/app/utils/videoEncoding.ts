@@ -13,6 +13,9 @@ export function videoEncoderCandidates(width: number, height: number, framerate:
 }
 
 // Longest edges a take may use, 4K first. A device settles on the biggest one its encoder accepts.
+// A phone records at about its own screen's resolution: 4K frames are more than its memory and encoder keep up with.
+export const PHONE_VIDEO_MAX_EDGE = 2560;
+
 export const VIDEO_EDGE_LADDER = [3840, 2560, 1920, 1280];
 
 // The render multiplier that puts the canvas's long edge at `longEdge`, nudged until both sides come out even
@@ -31,9 +34,10 @@ export function evenVideoScale(cssW: number, cssH: number, longEdge: number): nu
 export async function pickVideoMultiplier(
   cssW: number, cssH: number,
   supports: ((w: number, h: number) => Promise<boolean>) | null,
+  maxEdge = Infinity,
 ): Promise<number> {
   if (!supports) return evenVideoScale(cssW, cssH, VIDEO_EDGE_LADDER[VIDEO_EDGE_LADDER.length - 1]);
-  for (const edge of VIDEO_EDGE_LADDER) {
+  for (const edge of VIDEO_EDGE_LADDER.filter(e => e <= maxEdge)) {
     const mult = evenVideoScale(cssW, cssH, edge);
     let ok = false;
     try { ok = await supports(Math.floor(cssW * mult), Math.floor(cssH * mult)); } catch { ok = false; }
