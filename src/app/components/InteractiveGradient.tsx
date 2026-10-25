@@ -1152,7 +1152,7 @@ export function InteractiveGradient() {
     fireworksCount, setFireworksCount, fireworksParticleCount, setFireworksParticleCount, fireworksTrailFade, setFireworksTrailFade,
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
-    fieldContrast, setFieldContrast, paletteMode, setPaletteMode, fieldScale, fieldSpeed, fieldShapeA, fieldShapeB, fieldSwirl, paletteStops, paletteBias, paletteSharp, setFieldScale, setFieldSpeed, setFieldShapeA, setFieldShapeB, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp, paletteBands, setPaletteBands,
+    fieldContrast, setFieldContrast, paletteMode, setPaletteMode, fieldScale, fieldSpeed, vcrPlaybackSpeed, setVcrPlaybackSpeed, fieldShapeA, fieldShapeB, fieldSwirl, paletteStops, paletteBias, paletteSharp, setFieldScale, setFieldSpeed, setFieldShapeA, setFieldShapeB, setFieldSwirl, setPaletteStops, setPaletteBias, setPaletteSharp, paletteBands, setPaletteBands,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
