@@ -157,7 +157,7 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (!activeEffects.includes('liquid') || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed), 16);
+    const id = setInterval(() => setLiquidAnimTime(t => t + 0.02 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'liquidSpeed', 1)), 16);
     return () => clearInterval(id);
   }, [activeEffects, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive]);
 

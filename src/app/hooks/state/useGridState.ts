@@ -15,8 +15,12 @@ export function useGridState() {
   // across it, turning the grid into a solid-color mosaic (Mondrian-style)
   // instead of a field of tiny gradients.
   const [gridHardEdge, setGridHardEdge] = useState(false);
+  // How fast the Grid effect spins when a rotation direction is on (1 = the original pace).
+  const [gridEffectSpeed, setGridEffectSpeed] = useState(1);
 
   return {
+    gridEffectSpeed,
+    setGridEffectSpeed,
     gridSides,
     setGridSides,
     gridRows,
