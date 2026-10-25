@@ -6,6 +6,7 @@ import { LooksMenu } from './LooksMenu';
 import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 import { SliderRow } from './SliderRow';
+import { PointPad } from './PointPad';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
@@ -741,8 +742,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'angle' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(angleHardEdge, setAngleHardEdge)}
-            <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
-            <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
+            <PointPad label="Center" x={angleCenterX} y={angleCenterY} onChange={(x, y) => { setAngleCenterX(x); setAngleCenterY(y); }} />
           </div>
         )}
         
@@ -850,8 +850,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'radial' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(radialHardEdge, setRadialHardEdge)}
-            <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
-            <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
+            <PointPad label="Center" x={angleCenterX} y={angleCenterY} onChange={(x, y) => { setAngleCenterX(x); setAngleCenterY(y); }} />
             <SliderRow label="Scale:" value={radialSizeScale} onChange={setRadialSizeScale} min="0.25" max="4" step="0.05" />
             <SliderRow label="Speed:" value={radialSpeed} onChange={setRadialSpeed} min="0.1" max="3" step="0.1" />
           </div>
