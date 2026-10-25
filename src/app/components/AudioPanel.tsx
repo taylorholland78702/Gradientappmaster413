@@ -4,6 +4,9 @@ import { findSource, sourcesOf, paramGroups, bindingLabel } from '../constants/m
 import { AudioParamPicker } from './AudioParamPicker';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { SliderRow } from './SliderRow';
+import { BandMeter } from './BandMeter';
+import { AmountScrub } from './AmountScrub';
+import { AUDIO_FEELS, matchingFeel } from '../constants/audioFeels';
 import { choice } from './choice';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
@@ -124,6 +127,32 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
   } = actions;
 
+  const BANDS = [
+    { key: 'sub', label: 'Sub', hint: '~20-60Hz — kick drum fundamental', level: liveSubBassLevel, gain: subBassMultiplier, setGain: setSubBassMultiplier, beat: subBassBeatSync, setBeat: setSubBassBeatSync },
+    { key: 'bass', label: 'Bass', hint: '~60-250Hz', level: liveBassLevel, gain: bassMultiplier, setGain: setBassMultiplier, beat: bassBeatSync, setBeat: setBassBeatSync },
+    { key: 'mids', label: 'Mids', hint: '~250Hz-2kHz', level: liveMidsLevel, gain: midsMultiplier, setGain: setMidsMultiplier, beat: midsBeatSync, setBeat: setMidsBeatSync },
+    { key: 'treble', label: 'Treble', hint: '~2-8kHz — hi-hats, snare crack, presence', level: liveTrebleLevel, gain: trebleMultiplier, setGain: setTrebleMultiplier, beat: trebleBeatSync, setBeat: setTrebleBeatSync },
+  ];
+  // The live level of whatever band a binding listens to, for the bar on its row.
+  const bandLevel = (band: AudioBinding['band']) =>
+    band === 'sub' ? liveSubBassLevel : band === 'mids' ? liveMidsLevel : band === 'treble' ? liveTrebleLevel
+      : Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel);
+
+  const currentFeel = matchingFeel({
+    intensity: masterSensitivity,
+    gains: { sub: subBassMultiplier, bass: bassMultiplier, mids: midsMultiplier, treble: trebleMultiplier },
+    beatSync: { sub: subBassBeatSync, bass: bassBeatSync, mids: midsBeatSync, treble: trebleBeatSync },
+    beatFx: { zoom: zoomBeatEnabled, shake: shakeBeatEnabled, contrast: contrastBeatEnabled, palette: paletteBeatEnabled },
+  });
+  const applyFeel = (id: (typeof AUDIO_FEELS)[number]['id']) => {
+    const f = AUDIO_FEELS.find(x => x.id === id);
+    if (!f) return;
+    setMasterSensitivity(f.intensity);
+    setSubBassMultiplier(f.gains.sub); setBassMultiplier(f.gains.bass); setMidsMultiplier(f.gains.mids); setTrebleMultiplier(f.gains.treble);
+    setSubBassBeatSync(f.beatSync.sub); setBassBeatSync(f.beatSync.bass); setMidsBeatSync(f.beatSync.mids); setTrebleBeatSync(f.beatSync.treble);
+    setZoomBeatEnabled(f.beatFx.zoom); setShakeBeatEnabled(f.beatFx.shake); setContrastBeatEnabled(f.beatFx.contrast); setPaletteBeatEnabled(f.beatFx.palette);
+  };
+
   return (
     <>
       {/* Audiovisuals Section — single pill */}
@@ -227,74 +256,26 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 which now force both true regardless of what a saved
                 snapshot/preset says). */}
 
-            <SliderRow label="Intensity:" value={masterSensitivity} onChange={setMasterSensitivity} min="0" max="10" step="0.1" />
-
-            {/* Band column headers — titles show the actual Hz range each band listens to */}
-            <div className="flex gap-2">
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~20-60Hz — kick drum fundamental">Sub</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~60-250Hz">Bass</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~250Hz-2kHz">Mids</div>
-              <div className="w-0 flex-1 min-w-0 text-center text-[10px] text-wav-text-2 font-medium" title="~2-8kHz — hi-hats, snare crack, presence">Treble</div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] text-wav-text-2 font-medium" title="A starting point for intensity, band gains and beat effects. Everything stays adjustable.">Feel</span>
+              <div className="flex gap-1.5" role="group" aria-label="Audio feel">
+                {AUDIO_FEELS.map(f => (
+                  <button key={f.id} onClick={() => applyFeel(f.id)} aria-pressed={currentFeel === f.id} title={f.hint} className={choice(currentFeel === f.id, 'flex-1')}>{f.label}</button>
+                ))}
+              </div>
             </div>
 
-            {/* Band columns — Sub / Bass / Mids / Treble */}
+            <SliderRow label="Intensity:" value={masterSensitivity} onChange={setMasterSensitivity} min="0" max="10" step="0.1" />
+
+            {/* Four bands. The bar is both the live level and the gain: drag it to set how hard the band reacts. */}
             <div className="flex gap-2 items-start overflow-hidden">
-
-              {/* Sub-bass */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
-                <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative overflow-hidden bg-wav-hover">
-                    <div className="w-full absolute bottom-0 transition-none" style={{height: `${Math.min(100, liveSubBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
-                  </div>
-                  <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
-                  </div>
+              {BANDS.map(b => (
+                <div key={b.key} className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
+                  <div className="text-[10px] text-wav-text-2 font-medium" title={b.hint}>{b.label}</div>
+                  <BandMeter label={b.label} level={b.level} value={b.gain} onChange={b.setGain} />
+                  <button onClick={() => b.setBeat(!b.beat)} aria-pressed={b.beat} className={choice(b.beat, 'w-full')}>BEAT</button>
                 </div>
-                <input type="number" min="0" max="5" step="0.1" value={subBassMultiplier} onChange={(e) => setSubBassMultiplier(Number(e.target.value))} aria-label="Sub multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
-                <button onClick={() => setSubBassBeatSync(!subBassBeatSync)} aria-pressed={subBassBeatSync} className={choice(subBassBeatSync, 'w-full')}>BEAT</button>
-              </div>
-
-              {/* Bass */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
-                <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative overflow-hidden bg-wav-hover">
-                    <div className="w-full absolute bottom-0 transition-none" style={{height: `${Math.min(100, liveBassLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
-                  </div>
-                  <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
-                  </div>
-                </div>
-                <input type="number" min="0" max="5" step="0.1" value={bassMultiplier} onChange={(e) => setBassMultiplier(Number(e.target.value))} aria-label="Bass multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
-                <button onClick={() => setBassBeatSync(!bassBeatSync)} aria-pressed={bassBeatSync} className={choice(bassBeatSync, 'w-full')}>BEAT</button>
-              </div>
-
-              {/* Mids */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
-                <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative overflow-hidden bg-wav-hover">
-                    <div className="w-full absolute bottom-0 transition-none" style={{height: `${Math.min(100, liveMidsLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
-                  </div>
-                  <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
-                  </div>
-                </div>
-                <input type="number" min="0" max="5" step="0.1" value={midsMultiplier} onChange={(e) => setMidsMultiplier(Number(e.target.value))} aria-label="Mids multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
-                <button onClick={() => setMidsBeatSync(!midsBeatSync)} aria-pressed={midsBeatSync} className={choice(midsBeatSync, 'w-full')}>BEAT</button>
-              </div>
-
-              {/* Treble */}
-              <div className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
-                <div className="flex gap-1.5 w-full" style={{height: '60px'}}>
-                  <div className="flex-1 relative overflow-hidden bg-wav-hover">
-                    <div className="w-full absolute bottom-0 transition-none" style={{height: `${Math.min(100, liveTrebleLevel * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)'}} />
-                  </div>
-                  <div style={{width: '16px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'visible'}}>
-                    <input type="range" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier" style={{width: '60px', height: '16px', transform: 'rotate(-90deg)', cursor: 'pointer'}} />
-                  </div>
-                </div>
-                <input type="number" min="0" max="5" step="0.1" value={trebleMultiplier} onChange={(e) => setTrebleMultiplier(Number(e.target.value))} aria-label="Treble multiplier value" className="w-full text-[10px] text-white text-center bg-wav-field border border-wav-line rounded px-0.5" />
-                <button onClick={() => setTrebleBeatSync(!trebleBeatSync)} aria-pressed={trebleBeatSync} className={choice(trebleBeatSync, 'w-full')}>BEAT</button>
-              </div>
+              ))}
             </div>
 
             {/* FX on Beat — previously only settable via Style Presets and
@@ -371,14 +352,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                               <option key={band} value={band}>{BAND_LABELS[band]}</option>
                             ))}
                           </select>
-                          <input
-                            type="number"
-                            min="-10" max="10" step="0.1"
-                            value={b.amount}
-                            onChange={(e) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: Number(e.target.value) } : x))}
-                            className="w-9 text-[10px] text-white text-right bg-wav-field border border-wav-line rounded px-1 py-0.5 flex-shrink-0"
-                            title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
-                          />
+                          {/* What it is doing right now: the band's live level times the amount. */}
+                          <div className="w-8 h-1.5 shrink-0 bg-wav-hover overflow-hidden" role="img" aria-label={`${bindingName} live drive`} title="Live drive: the band's level times the amount">
+                            <div className={`h-full ${b.amount < 0 ? 'bg-wav-recording' : 'bg-wav-ok'}`} style={{ width: `${Math.min(100, bandLevel(b.band) * Math.abs(b.amount) * 100)}%` }} />
+                          </div>
+                          <AmountScrub value={b.amount} label={`Amount for ${bindingName}`} onChange={(v) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: v } : x))} title="Amount — multiplies the band's live level before adding it to the control's base value. Drag sideways to change." />
                           <button
                             onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
                             className="relative wav-hit text-wav-text-3 hover:text-white transition-all"
@@ -404,15 +382,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                       <option key={band} value={band}>{BAND_LABELS[band]}</option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    aria-label="Modulation amount"
-                    min="-10" max="10" step="0.1"
-                    value={modAmount}
-                    onChange={(e) => setModAmount(Number(e.target.value))}
-                    className="w-7 text-[10px] text-white text-right bg-wav-field border border-wav-line rounded px-1 py-1 flex-shrink-0"
-                    title="Modulation amount — multiplies the band's live level before adding it to the slider's base value"
-                  />
+                  <AmountScrub value={modAmount} label="Modulation amount" onChange={setModAmount} />
                   <button
                     onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
                     className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
