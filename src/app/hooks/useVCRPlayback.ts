@@ -84,6 +84,8 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   >(null);
   const encoderErrorRef = useRef<string | null>(null);
   const hasAudioTrackRef = useRef(false);
+  // What the video encoder actually produced, so a failed export can say why instead of guessing.
+  const encoderStatsRef = useRef({ framesIn: 0, chunksOut: 0, sawDecoderConfig: false });
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -296,6 +298,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     audioChunksRef.current = [];
     const hasAudioTrack = startAudioCapture() && typeof AudioEncoder !== 'undefined';
     encoderErrorRef.current = null;
+    encoderStatsRef.current = { framesIn: 0, chunksOut: 0, sawDecoderConfig: false };
     hasAudioTrackRef.current = hasAudioTrack;
 
     const target = new ArrayBufferTarget();
@@ -313,7 +316,16 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     videoFrameIndexRef.current = 0;
 
     const encoder = new VideoEncoder({
-      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      output: (chunk, meta) => {
+        encoderStatsRef.current.chunksOut += 1;
+        if (meta?.decoderConfig) encoderStatsRef.current.sawDecoderConfig = true;
+        try {
+          muxer.addVideoChunk(chunk, meta);
+        } catch (err) {
+          console.error('Muxer rejected a video chunk:', err);
+          encoderErrorRef.current = err instanceof Error ? err.message : 'The video could not be packaged';
+        }
+      },
       error: (err) => { console.error('VideoEncoder error:', err); encoderErrorRef.current = err.message || 'The video encoder stopped'; },
     });
     encoder.configure(config);
@@ -341,11 +353,15 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         // duration. Real-elapsed-time timestamps keep the exported
         // duration correct regardless of how many frames actually landed.
         const frameTimestampUs = (timestamp - recordingStartTimestampRef.current) * 1000;
-        const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs });
-        // Keyframe every 2 seconds so the file is seekable without being too big.
-        encoder.encode(frame, { keyFrame: videoFrameIndexRef.current % (CAPTURE_FPS * 2) === 0 });
-        frame.close();
-        videoFrameIndexRef.current += 1;
+        // A phone's encoder can fall behind a big canvas; skip a frame rather than let the queue grow until it fails.
+        if (encoder.encodeQueueSize <= 6) {
+          const frame = new VideoFrame(canvas, { timestamp: frameTimestampUs });
+          // Keyframe every 2 seconds so the file is seekable without being too big.
+          encoder.encode(frame, { keyFrame: videoFrameIndexRef.current % (CAPTURE_FPS * 2) === 0 });
+          frame.close();
+          videoFrameIndexRef.current += 1;
+          encoderStatsRef.current.framesIn += 1;
+        }
       }
       captureRafRef.current = requestAnimationFrame(captureFrame);
     };
@@ -390,6 +406,10 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         }
 
         if (encoderErrorRef.current) throw new Error(encoderErrorRef.current);
+        const stats = encoderStatsRef.current;
+        if (stats.chunksOut === 0 || !stats.sawDecoderConfig) {
+          throw new Error(`this device's video encoder returned no usable video (${stats.framesIn} frames in, ${stats.chunksOut} out, ${stats.sawDecoderConfig ? 'with' : 'without'} stream info)`);
+        }
 
         // Sound is a bonus: if it can't be added the take still exports, without it.
         if (hasAudioTrackRef.current && audioBlob && audioBlob.size > 1000) {
