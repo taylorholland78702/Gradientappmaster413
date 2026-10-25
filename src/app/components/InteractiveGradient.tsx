@@ -1082,7 +1082,7 @@ export function InteractiveGradient() {
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } = useCanvasPointer({ activeTab, baseAIColors, canvasRef, exportAsPNG, gestureActionsRef, gradientColors, gradientType, isAutoMode, isDragging, lastChangeTime, lastManualZoomTime, particlesMode, previousPosition, randomColor, setActiveTab, setIsDragging, setTargetAngle, setTargetColors, setTargetZoom, targetAngleRef, targetColorsRef, targetZoomRef });
 
   // Export animated GIF
-  const { isRecordingGif, isFinalizingGif, toggleGifRecording } = useGifExport({ canvasRef });
+  const { isRecordingGif, isFinalizingGif, toggleGifRecording, gifResult, clearGifResult } = useGifExport({ canvasRef });
 
   // startRecording/stopRecording/toggleVCRRecording/toggleVCRPlayback/handleStop are now in useVCRPlayback hook
 
@@ -1302,7 +1302,7 @@ export function InteractiveGradient() {
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
     isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
-    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} videoResult={videoResult} clearVideoResult={clearVideoResult} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
     setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
     shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}

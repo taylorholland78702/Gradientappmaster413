@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { GIFEncoder } from 'gifenc';
 import { quantizeFrame } from '../utils/gifDither';
 import { centerCrop } from '../constants/exportOptions';
+import { isTouchPlatform } from '../utils/touchPlatform';
+import type { VideoResult } from '../components/VideoResultDialog';
 import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 
 // Downscale target for the encoded GIF — full-canvas-resolution GIFs (this
@@ -33,6 +35,7 @@ export interface UseGifExportParams {
 export function useGifExport({ canvasRef }: UseGifExportParams) {
   const [isRecordingGif, setIsRecordingGif] = useState(false);
   const [isFinalizingGif, setIsFinalizingGif] = useState(false);
+  const [gifResult, setGifResult] = useState<VideoResult | null>(null);
   // Read inside the capture loop instead of isRecordingGif directly — state
   // updates aren't synchronous with the click that requests a stop, so the
   // loop would otherwise capture at least one extra frame (or more, if
@@ -167,14 +170,21 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
         }
         const blob = new Blob([bytes as BlobPart], { type: 'image/gif' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `wav-${Date.now()}.gif`;
-        link.click();
-        URL.revokeObjectURL(url);
+        const name = `wav-${Date.now()}.gif`;
+        if (isTouchPlatform()) {
+          // Phones drop a download started by script after a long encode; a dialog gives a tap to save or share.
+          setGifResult({ kind: 'ready', media: 'gif', url, blob, name });
+        } else {
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = name;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
       }
     } catch (err) {
       console.error('GIF export failed:', err);
+      setGifResult({ kind: 'error', message: 'The GIF could not be saved on this device.' });
     } finally {
       window.removeEventListener('beforeunload', onBeforeUnload);
       isRecordingRef.current = false;
@@ -183,5 +193,9 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
     }
   }, [canvasRef, getWorker]);
 
-  return { isRecordingGif, isFinalizingGif, toggleGifRecording };
+  const clearGifResult = useCallback(() => {
+    setGifResult(prev => { if (prev?.kind === 'ready') URL.revokeObjectURL(prev.url); return null; });
+  }, []);
+
+  return { isRecordingGif, isFinalizingGif, toggleGifRecording, gifResult, clearGifResult };
 }
