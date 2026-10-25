@@ -4,7 +4,7 @@ import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection } from './EffectSection';
-import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
+import { EMOJI_PICKER_CATEGORIES, isEmojiRenderable, pickRandomEmojiSet } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
 import { AngleDial } from './AngleDial';
 import { StepperRow } from './StepperRow';
@@ -194,11 +194,13 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
   // ones triggered by unrelated effect state elsewhere in the tab), not
   // just when the emoji picker's search query actually changed.
   const emojiPickerCategories = useMemo(() => {
+    // Checked only while the picker is open: each emoji is tested once on this device, and only drawable ones show.
+    if (!isEmojiPickerOpen) return [];
     const q = emojiPickerSearch.trim().toLowerCase();
-    return q
-      ? EMOJI_PICKER_CATEGORIES.map(cat => ({ ...cat, emojis: cat.emojis.filter(em => em.name.includes(q)) })).filter(cat => cat.emojis.length > 0)
-      : EMOJI_PICKER_CATEGORIES;
-  }, [emojiPickerSearch]);
+    return EMOJI_PICKER_CATEGORIES
+      .map(cat => ({ ...cat, emojis: cat.emojis.filter(em => (!q || em.name.includes(q)) && isEmojiRenderable(em.char)) }))
+      .filter(cat => cat.emojis.length > 0);
+  }, [emojiPickerSearch, isEmojiPickerOpen]);
 
   return (
     <>
@@ -272,6 +274,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       title={wouldExceedBudget ? 'Effect stack is at its performance budget — remove one to add another' : undefined}
                       aria-pressed={isActive}
                       onClick={() => {
+                        // Turning Emoji on draws a fresh random set each time.
+                        if (effect.value === 'emoji' && !isActive && (isMultiFxMode ? !wouldExceedBudget : true)) setEmojiChars(pickRandomEmojiSet(5));
                         if (isMultiFxMode) {
                           // Multi-FX mode: toggle effects on/off
                           if (isActive) {

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
+import { pickRandomEmojiSet } from '../../constants/emojiPicker';
 
 export function useEmojiState() {
   const [emojiSize, setEmojiSize] = useState(28);
-  const [emojiChars, setEmojiChars] = useState('😴🙂😃🤩🔥');
+  const [emojiChars, setEmojiChars] = useState(() => pickRandomEmojiSet(5));
   const [emojiRotateSpeed, setEmojiRotateSpeed] = useState(41);
   const [emojiAnimTime, setEmojiAnimTime] = useState(0);
   const [emojiOffsetX, setEmojiOffsetX] = useState(0);
