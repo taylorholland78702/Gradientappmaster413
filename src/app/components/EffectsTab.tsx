@@ -6,6 +6,10 @@ import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
+import { AngleDial } from './AngleDial';
+import { StepperRow } from './StepperRow';
+import { HueStrip } from './HueStrip';
+import { PointPad } from './PointPad';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
@@ -330,7 +334,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('aura-glow') && (
                 <EffectSection id="aura-glow" label="Aura Glow" isMulti={isMulti} expanded={!collapsedEffects.has('aura-glow')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Lights:" value={auraGlowCount} onChange={setAuraGlowCount} min="1" max="6" step="1" />
-                  <SliderRow label="Speed:" value={auraGlowSpeed} onChange={setAuraGlowSpeed} min="0.1" max="3" step="0.1" />
                   <SliderRow label="Intensity:" value={auraGlowOpacity} onChange={setAuraGlowOpacity} min="0.1" max="1" step="0.05" />
                 </EffectSection>
               )}
@@ -381,7 +384,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   {blurType === 'motion' && (
                     <>
                       <SliderRow label="Strength:" value={blurMotionAmount} onChange={setBlurMotionAmount} min="1" max="50" />
-                      <SliderRow label="Direction:" value={blurMotionDirection} onChange={setBlurMotionDirection} min="0" max="360" />
+                      <AngleDial label="Direction" value={blurMotionDirection} onChange={setBlurMotionDirection} />
                     </>
                   )}
                   {(blurType === 'radial' || blurType === 'zoom') && (
@@ -392,19 +395,17 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('chromatic') && (
                 <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Offset:" value={chromaticOffset} onChange={setChromaticOffset} min="1" max="200" />
-                  <SliderRow label="Angle:" value={chromaticAngle} onChange={setChromaticAngle} min="0" max="360" />
+                  <AngleDial label="Angle" value={chromaticAngle} onChange={setChromaticAngle} />
                 </EffectSection>
               )}
               {activeEffects.includes('chromatic-trails') && (
                 <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Decay:" value={chromaticTrailsDecay} onChange={setChromaticTrailsDecay} min="0.5" max="0.99" step="0.01" />
-                  <SliderRow label="Offset:" value={chromaticTrailsOffset} onChange={setChromaticTrailsOffset} min="1" max="30" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('crt') && (
                 <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Intensity:" value={crtIntensity} onChange={setCrtIntensity} min="0" max="1" step="0.05" />
-                  <SliderRow label="Scanlines:" value={crtScanlineSpacing} onChange={setCrtScanlineSpacing} min="1" max="6" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('dada') && (
@@ -435,7 +436,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                     </div>
                   </div>
-                  <SliderRow label="Levels:" value={ditherLevels} onChange={setDitherLevels} min="2" max="16" step="1" />
                   {ditherType === 'bayer' && (
                     <SliderRow label="Scale:" value={ditherScale} onChange={setDitherScale} min="1" max="8" step="1" />
                   )}
@@ -501,9 +501,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('emoji') && (
                 <EffectSection id="emoji" label="Emoji" isMulti={isMulti} expanded={!collapsedEffects.has('emoji')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Cell Size:" value={emojiSize} onChange={setEmojiSize} min="10" max="60" />
-                  <SliderRow label="Rotate:" value={emojiRotateSpeed} onChange={setEmojiRotateSpeed} min="0" max="180" />
-                  <SliderRow label="Size Var:" value={emojiSizeVariation} onChange={setEmojiSizeVariation} min="0" max="100" />
-                  <SliderRow label="Row Offset:" title="Shifts every other row horizontally, like a brick or polka-dot pattern" value={emojiOffsetX} onChange={setEmojiOffsetX} min={-emojiSize} max={emojiSize} />
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Emojis:</label>
                     <input
@@ -562,14 +559,13 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('feedback') && (
                 <EffectSection id="feedback" label="Feedback" isMulti={isMulti} expanded={!collapsedEffects.has('feedback')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Decay:" value={feedbackDecay} onChange={setFeedbackDecay} min="0.5" max="0.97" step="0.01" />
-                  <SliderRow label="Zoom:" value={feedbackZoom} onChange={setFeedbackZoom} min="0" max="5" step="0.1" />
-                  <SliderRow label="Spin:" value={feedbackRotation} onChange={setFeedbackRotation} min="-10" max="10" step="0.5" />
+                  <span className="text-[10px] text-white">Spin (across) and zoom (down):</span>
+                  <PointPad label="Zoom and spin" x={((feedbackRotation + 10) / 20) * 100} y={(feedbackZoom / 5) * 100} onChange={(x, y) => { setFeedbackRotation(Math.round(((x / 100) * 20 - 10) * 2) / 2); setFeedbackZoom(Math.round((y / 100) * 50) / 10); }} />
                 </EffectSection>
               )}
               {activeEffects.includes('gesso') && (
                 <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Whiteness:" value={gessoWhiteness} onChange={setGessoWhiteness} min="0" max="0.94" step="0.01" />
-                  <SliderRow label="Texture:" value={gessoTexture} onChange={setGessoTexture} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
@@ -612,7 +608,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Crackle:" value={dustCrackleIntensity} onChange={setDustCrackleIntensity} min="0" max="1" step="0.05" />
                   {dustCrackleIntensity > 0 && (
                     <>
-                      <SliderRow label="Crack Length:" value={dustCrackleLength} onChange={setDustCrackleLength} min="0.3" max="3" step="0.1" />
                       <div className="flex items-center justify-between gap-1">
                         <label className="text-[10px] text-white whitespace-nowrap">Crack Color:</label>
                         <input
@@ -658,12 +653,11 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                     </div>
                   </div>
-                  <SliderRow label="Sides:" value={gridSides} onChange={setGridSides} min="1" max="10" />
+                  <StepperRow label="Sides" value={gridSides} onChange={setGridSides} min={1} max={10} />
                   <SliderRow label="Rows:" value={gridRows} onChange={setGridRows} min="2" max="50" />
                   <SliderRow label="Columns:" value={gridColumns} onChange={setGridColumns} min="2" max="50" />
                   {/* Grid Effect Shape Size Control */}
                   <SliderRow label="Size:" value={gridShapeSize} onChange={setGridShapeSize} min={1} max={100} step={1} />
-                  <SliderRow label="Variation:" value={gridVariation} onChange={setGridVariation} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
 
@@ -674,7 +668,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('halftone') && (
                 <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={!collapsedEffects.has('halftone')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Dot Size:" value={halftoneSize} onChange={setHalftoneSize} min="2" max="200" />
-                  <SliderRow label="Variation:" value={halftoneVariation} onChange={setHalftoneVariation} min="0" max="1" step="0.01" />
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
@@ -690,13 +683,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('impasto') && (
                 <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={impastoStrength} onChange={setImpastoStrength} min="1" max="7" step="0.1" />
-                  <SliderRow label="Light Angle:" value={impastoLightAngle} onChange={setImpastoLightAngle} min="0" max="359" step="1" />
+                  <AngleDial label="Light Angle" value={impastoLightAngle} onChange={setImpastoLightAngle} max={359} />
                 </EffectSection>
               )}
               {activeEffects.includes('kaleidoscope') && (
                 <EffectSection id="kaleidoscope" label="Kaleido" isMulti={isMulti} expanded={!collapsedEffects.has('kaleidoscope')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Segments:" value={kaleidoscopeSegments} onChange={setKaleidoscopeSegments} min="2" max="50" />
-                  <SliderRow label="Speed:" value={kaleidoscopeRotateSpeed} onChange={setKaleidoscopeRotateSpeed} min="0" max="5" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('liquid') && (
@@ -720,7 +712,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   {mirrorMode === 'grid' && (
-                    <SliderRow label="Tiles:" value={mirrorTileCount} onChange={setMirrorTileCount} min="2" max="16" step="1" />
+                    <StepperRow label="Tiles" value={mirrorTileCount} onChange={setMirrorTileCount} min={2} max={16} />
                   )}
                 </EffectSection>
               )}
@@ -762,12 +754,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Levels:" value={posterizeLevels} onChange={setPosterizeLevels} min="2" max="16" />
+                  <StepperRow label="Levels" value={posterizeLevels} onChange={setPosterizeLevels} min={2} max={16} />
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (
                 <EffectSection id="shift" label="Shift" isMulti={isMulti} expanded={!collapsedEffects.has('shift')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Hue:" value={colorShiftHue} onChange={setColorShiftHue} min="0" max="255" />
+                  <HueStrip label="Hue" value={colorShiftHue} onChange={setColorShiftHue} />
                 </EffectSection>
               )}
               {activeEffects.includes('slit-scan') && (
@@ -805,25 +797,21 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <SliderRow label="Strength:" value={slitScanIntensity} onChange={setSlitScanIntensity} min="0.1" max="10" step="0.1" />
-                  <SliderRow label="History:" value={slitScanHistory} onChange={setSlitScanHistory} min="12" max="120" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
                 <EffectSection id="triangulate" label="Triangulate" isMulti={isMulti} expanded={!collapsedEffects.has('triangulate')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Size:" value={triangleSize} onChange={setTriangleSize} min="10" max="200" />
-                <SliderRow label="Variation:" title="Fraction of cells that flip to the other diagonal split, for an irregular woven look instead of a uniform pattern" value={triangulateVariation} onChange={setTriangulateVariation} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('vhs') && (
                 <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={!collapsedEffects.has('vhs')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Intensity:" value={vhsGlitchIntensity} onChange={setVhsGlitchIntensity} min="0" max="1" step="0.05" />
-                  <SliderRow label="Jitter:" value={vhsJitterAmount} onChange={setVhsJitterAmount} min="50" max="400" step="10" />
                 </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={!collapsedEffects.has('vignette')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Intensity:" value={vignetteStrength} onChange={setVignetteStrength} min="0" max="1" step="0.05" />
-                  <SliderRow label="Softness:" value={vignetteSoftness} onChange={setVignetteSoftness} min="0" max="100" />
                 </EffectSection>
               )}
               {activeEffects.includes('watercolor') && (
@@ -854,7 +842,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('wave') && (
                 <EffectSection id="wave" label="Wave" isMulti={isMulti} expanded={!collapsedEffects.has('wave')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={waveDistortionStrength} onChange={setWaveDistortionStrength} min="5" max="100" />
-                  <SliderRow label="Rotation:" value={waveDistortionRotation} onChange={setWaveDistortionRotation} min="0" max="360" />
+                  <AngleDial label="Rotation" value={waveDistortionRotation} onChange={setWaveDistortionRotation} />
                 </EffectSection>
               )}
             </div>

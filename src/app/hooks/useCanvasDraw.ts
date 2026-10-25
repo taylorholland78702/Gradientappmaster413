@@ -557,6 +557,10 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // the Speed this frame actually drew with, so an audio binding on Speed steers it.
     if (typeof drawCtx.fieldSpeed === 'number') av.fieldSpeedLive = Math.max(0, drawCtx.fieldSpeed);
     publishLiveSpeeds(av.liveSpeeds, drawCtx);
+    // The shared Speed also paces the effects that spin or drift inside the draw call.
+    const playbackSpeed = av.liveSpeeds.playbackSpeed ?? 1;
+    drawCtx.kaleidoscopeRotateSpeed *= playbackSpeed;
+    drawCtx.auraGlowSpeed *= playbackSpeed;
 
     // Computed once per frame, not once per active effect — every binding
     // always reads off the same unmodified `params`, so re-deriving this

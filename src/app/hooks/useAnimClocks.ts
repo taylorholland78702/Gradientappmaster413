@@ -61,6 +61,8 @@ export interface UseAnimClocksParams {
 
 export function useAnimClocks(p: UseAnimClocksParams) {
   const { activeEffects, animValuesRef, causticsSpeed, marbleSpeed, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef } = p;
+  // Effects that animate inside the draw call (Aura Glow, Kaleido) have no clock of their own; publish the shared Speed for them.
+  useEffect(() => { animValuesRef.current.liveSpeeds.playbackSpeed = vcrPlaybackSpeed; }, [animValuesRef, vcrPlaybackSpeed]);
   // Each of these local clocks is skipped entirely in Display mode — that
   // tab's copies are pushed from the controller instead (see the animation
   // sync effect below), so the two windows stay frame-locked instead of
