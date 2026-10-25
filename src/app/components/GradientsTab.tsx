@@ -9,6 +9,9 @@ import { SliderRow } from './SliderRow';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
+// Gradients (besides the styled-field ones) that move, so show the shared Speed slider.
+const ANIMATED_GRADIENTS: string[] = ['stack', 'hatch', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower'];
+
 export interface GradientsTabProps {
   gradientType: GradientType;
   setGradientType: (t: GradientType) => void;
@@ -139,6 +142,8 @@ export interface GradientsTabProps {
   // Shared Scale/Speed for the styled-field gradients (Smoke, Glass, Mesh, ...)
   fieldScale: number; setFieldScale: (v: number) => void;
   fieldSpeed: number; setFieldSpeed: (v: number) => void;
+  // The one Speed for every animated gradient (the app's playback rate; the [ and ] keys step it too).
+  vcrPlaybackSpeed: number; setVcrPlaybackSpeed: (v: number) => void;
   fieldSwirl: number; setFieldSwirl: (v: number) => void;
   fieldShapeA: number; setFieldShapeA: (v: number) => void;
   fieldShapeB: number; setFieldShapeB: (v: number) => void;
@@ -260,7 +265,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     lightningBoltCount, setLightningBoltCount, lightningJitter, setLightningJitter, lightningBranchiness, setLightningBranchiness,
     reactionDiffusionFeed, setReactionDiffusionFeed, reactionDiffusionKill, setReactionDiffusionKill, reactionDiffusionSpeed, setReactionDiffusionSpeed,
     fieldContrast, setFieldContrast, paletteMode, setPaletteMode, paletteBands, setPaletteBands,
-    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors,
+    fieldScale, setFieldScale, fieldSpeed, setFieldSpeed, vcrPlaybackSpeed, setVcrPlaybackSpeed, fieldShapeA, setFieldShapeA, fieldShapeB, setFieldShapeB, fieldSwirl, setFieldSwirl, applyGradientLook, applyPalette, shuffleColors, gradientColors,
     topographicScale, setTopographicScale, topographicBands, setTopographicBands, topographicLineWidth, setTopographicLineWidth,
     waveInterferenceSourceCount, setWaveInterferenceSourceCount, waveInterferenceFrequency, setWaveInterferenceFrequency, waveInterferenceSpeed, setWaveInterferenceSpeed,
     meshWireframeGridSize, setMeshWireframeGridSize, meshWireframeJitter, setMeshWireframeJitter, meshWireframeLineWidth, setMeshWireframeLineWidth,
@@ -450,6 +455,12 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ><Shuffle weight="regular" className="w-4 h-4" /></button>
           </div>
         </div>
+        {/* One Speed for every animated gradient. */}
+        {(STYLE_FIELD_GRADIENT_TYPES.includes(gradientType) || ANIMATED_GRADIENTS.includes(gradientType)) && (
+          <div className="w-full flex flex-col gap-2 px-1.5 py-1">
+            <SliderRow label="Speed:" title="How fast the gradient animates. The [ and ] keys step it too." value={vcrPlaybackSpeed} onChange={setVcrPlaybackSpeed} min="0.1" max="4" step="0.1" />
+          </div>
+        )}
         {gradientType === 'grid' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(gridHardEdge, setGridHardEdge)}
@@ -474,7 +485,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Speed:" value={stackSpeed} onChange={setStackSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -487,7 +497,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Layers', value: hatchLayers, set: setHatchLayers, min: 1, max: 4, step: 1 },
               { label: 'Spacing', value: hatchSpacing, set: setHatchSpacing, min: 3, max: 40, step: 1 },
               { label: 'Response', value: hatchResponse, set: setHatchResponse, min: 0, max: 1, step: 0.05 },
-              { label: 'Speed', value: hatchSpeed, set: setHatchSpeed, min: 0.1, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
@@ -504,7 +513,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Speed:" value={causticsSpeed} onChange={setCausticsSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -514,7 +522,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Blobs', value: lavaBlobCount, set: setLavaBlobCount, min: 2, max: 12, step: 1 },
               { label: 'Blob Size', value: lavaBlobSize, set: setLavaBlobSize, min: 0.05, max: 0.4, step: 0.01 },
-              { label: 'Speed', value: lavaSpeed, set: setLavaSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
@@ -527,7 +534,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {renderFieldMappingRows()}
             {[
               { label: 'Scale', value: fieldScale, set: setFieldScale, min: 0.3, max: 3, step: 0.05 },
-              { label: 'Speed', value: fieldSpeed, set: setFieldSpeed, min: 0, max: 3, step: 0.05 },
               { label: 'Swirl', value: fieldSwirl, set: setFieldSwirl, min: 0, max: 2, step: 0.05, hint: 'Twists the pattern around the center, more toward the edges (the Mesh gradients and Tunnel ignore it)' },
               // Two extra sliders specific to the gradient (constants/styleShapeControls.ts).
               ...((STYLE_SHAPE_CONTROLS[gradientType] ?? []).map((c, i) => ({
@@ -552,7 +558,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Speed:" value={marbleSpeed} onChange={setMarbleSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -561,7 +566,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Count', value: metaballCount, set: setMetaballCount, min: 2, max: 14, step: 1 },
               { label: 'Size', value: metaballSize, set: setMetaballSize, min: 0.05, max: 0.4, step: 0.01 },
-              { label: 'Speed', value: metaballSpeed, set: setMetaballSpeed, min: 0.1, max: 5, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
@@ -577,7 +581,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Speed:" value={truchetSpeed} onChange={setTruchetSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -585,7 +588,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {[
               { label: 'Points', value: attractorPointCount, set: setAttractorPointCount, min: 1, max: 20, step: 1 },
-              { label: 'Speed', value: attractorSpeed, set: setAttractorSpeed, min: 0.1, max: 5, step: 0.1 },
               { label: 'Scale', value: attractorScale, set: setAttractorScale, min: 0.3, max: 3, step: 0.1 },
               { label: 'Size', value: attractorDotSize, set: setAttractorDotSize, min: 0.5, max: 6, step: 0.1 },
               { label: 'Fade', value: attractorTrailFade, set: setAttractorTrailFade, min: 0.01, max: 0.3, step: 0.01 },
@@ -632,7 +634,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {(particlesMode === 'flow-field'
               ? [
                   { label: 'Particles', value: flowParticleCount, set: setFlowParticleCount, min: 20, max: 800, step: 10 },
-                  { label: 'Speed', value: flowSpeed, set: setFlowSpeed, min: 0.1, max: 5, step: 0.1 },
                   { label: 'Scale', value: flowScale, set: setFlowScale, min: 0.5, max: 10, step: 0.5 },
                   { label: 'Thickness', value: flowThickness, set: setFlowThickness, min: 0.5, max: 6, step: 0.5 },
                 ]
@@ -646,7 +647,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
                   { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
                   { label: 'Sides', value: particlesSides, set: setParticlesSides, min: 1, max: 8, step: 1 },
-                  { label: 'Speed', value: particlesSpeed, set: setParticlesSpeed, min: 0.1, max: 5, step: 0.1 },
                   { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
                   { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
                 ]
@@ -700,7 +700,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Feed Rate', value: reactionDiffusionFeed, set: setReactionDiffusionFeed, min: 0.02, max: 0.08, step: 0.001 },
               { label: 'Kill Rate', value: reactionDiffusionKill, set: setReactionDiffusionKill, min: 0.04, max: 0.07, step: 0.001 },
-              { label: 'Speed', value: reactionDiffusionSpeed, set: setReactionDiffusionSpeed, min: 0.2, max: 3, step: 0.1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
@@ -733,7 +732,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Speed:" value={juliaSpeed} onChange={setJuliaSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -782,7 +780,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <SliderRow label="Ring Count:" value={concentricRingCount} onChange={setConcentricRingCount} min="1" max="30" />
               </>
             )}
-            <SliderRow label="Speed:" value={shapesSpeed} onChange={setShapesSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -841,7 +838,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             <SliderRow label="Detail:" value={noiseOctaves} onChange={setNoiseOctaves} min="1" max="8" />
             <SliderRow label="Direction:" value={noiseDirection} onChange={setNoiseDirection} min="0" max="360" />
             <SliderRow label="Warp:" value={noiseWarp} onChange={setNoiseWarp} min="0" max="1" step="0.01" />
-            <SliderRow label="Speed:" value={noiseSpeed} onChange={setNoiseSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -853,7 +849,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
             <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
             <SliderRow label="Scale:" value={radialSizeScale} onChange={setRadialSizeScale} min="0.25" max="4" step="0.05" />
-            <SliderRow label="Speed:" value={radialSpeed} onChange={setRadialSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -871,7 +866,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <SliderRow label="Cell Count:" value={voronoiCellCount} onChange={setVoronoiCellCount} min="3" max="30" />
             <SliderRow label="Distortion:" value={voronoiDistortion} onChange={setVoronoiDistortion} min="0" max="100" />
-            <SliderRow label="Speed:" value={voronoiSpeed} onChange={setVoronoiSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
@@ -883,7 +877,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             <SliderRow label="Spread:" value={flowerSpread} onChange={setFlowerSpread} min="0.3" max="2.5" step="0.05" />
             <SliderRow label="Symmetry:" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices" value={flowerSymmetry} onChange={setFlowerSymmetry} min="3" max="12" step="1" />
             <SliderRow label="Opacity:" value={flowerOpacity} onChange={setFlowerOpacity} min="0.2" max="1.5" step="0.05" />
-            <SliderRow label="Speed:" value={flowerSpeed} onChange={setFlowerSpeed} min="0.1" max="3" step="0.1" />
           </div>
         )}
 
