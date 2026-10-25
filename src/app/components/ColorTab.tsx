@@ -89,7 +89,7 @@ const ColorTabInner: React.FC<ColorTabProps> = ({
       {/* Curated palettes to start from. */}
       <section className="w-full px-1.5 pt-2.5 border-t border-wav-line flex flex-col gap-2" aria-label="Palettes">
         <h3 className="text-[10px] text-wav-text-2 font-medium">Palettes</h3>
-        <div className="max-h-72 overflow-y-auto flex flex-col gap-2 pr-0.5">
+        <div className="flex flex-col gap-2">
           {PALETTE_GROUPS.map(g => (
             <div key={g.group} className="flex flex-col gap-1">
               <span className="text-[10px] text-wav-text-3">{g.group}</span>
