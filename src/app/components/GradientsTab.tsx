@@ -741,7 +741,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'angle' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderHardEdgeToggle(angleHardEdge, setAngleHardEdge)}
-            <SliderRow label="Start Angle:" value={angleStartOffset} onChange={setAngleStartOffset} min="0" max="360" />
             <SliderRow label="Center X:" value={angleCenterX} onChange={setAngleCenterX} min="0" max="100" />
             <SliderRow label="Center Y:" value={angleCenterY} onChange={setAngleCenterY} min="0" max="100" />
           </div>
