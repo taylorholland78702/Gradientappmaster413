@@ -482,7 +482,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
               { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
               { label: 'Length', value: stackLength, set: setStackLength, min: 0.1, max: 2, step: 0.05 },
-              { label: 'Response', value: stackResponse, stackSpeed, set: setStackResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
@@ -497,7 +496,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Layers', value: hatchLayers, set: setHatchLayers, min: 1, max: 4, step: 1 },
               { label: 'Spacing', value: hatchSpacing, set: setHatchSpacing, min: 3, max: 40, step: 1 },
-              { label: 'Response', value: hatchResponse, set: setHatchResponse, min: 0, max: 1, step: 0.05 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}

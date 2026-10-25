@@ -570,7 +570,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Whiteness:" value={gessoWhiteness} onChange={setGessoWhiteness} min="0" max="0.94" step="0.01" />
                   <SliderRow label="Texture:" value={gessoTexture} onChange={setGessoTexture} min="0" max="1" step="0.01" />
-                  <SliderRow label="Response:" value={gessoResponse} onChange={setGessoResponse} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
