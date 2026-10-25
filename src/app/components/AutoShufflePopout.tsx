@@ -1,7 +1,6 @@
 import { Switch } from './Switch';
 import { AUTO_SHUFFLE_MIN_SEC, AUTO_SHUFFLE_MAX_SEC, AUTO_SHUFFLE_SCOPES, type AutoShuffleScope } from '../constants/autoShuffle';
 import { ChoiceChips } from './choice';
-import { shuffleMarks } from '../utils/shuffleMarks';
 import { autoShuffleSliderMax, autoShuffleSecToSlider, autoShuffleSliderToSec, formatAutoShuffleInterval } from '../utils/autoShuffle';
 
 // The Auto Shuffle popout: on/off, interval slider, what to change, and quick interval presets.
@@ -50,11 +49,5 @@ export function AutoShufflePopout({
         value={autoShuffleIntervalSec}
         onChange={setAutoShuffleIntervalSec}
       />
-      <button
-        onClick={() => shuffleMarks.start()}
-        className="self-start text-[10px] text-white hover:text-wav-text-2 transition-all"
-        title="Shuffle 30 looks and mark each Keep or Skip. It teaches Shuffle what you like and gives numbers to tune it."
-      >Help tune Shuffle (mark 30 looks)</button>
-      <p className="text-[10px] text-wav-text-3">Remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</p>
   </>);
 }

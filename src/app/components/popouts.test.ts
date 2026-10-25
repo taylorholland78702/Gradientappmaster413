@@ -9,8 +9,6 @@ const noop = () => {};
 
 const exportProps = (over: Partial<Parameters<typeof ExportPopout>[0]> = {}) => ({
   isMobile: false,
-  exportSize: 'screen' as const, setExportSize: noop,
-  exportAspect: 'screen' as const, setExportAspect: noop,
   exportAsPNG: noop, closePopover: noop,
   copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
   saveWallpaper: noop,
@@ -35,16 +33,11 @@ const groupLabels = (html: string, label: string) => {
 describe('ExportPopout', () => {
   const html = renderToStaticMarkup(createElement(ExportPopout, exportProps()));
 
-  it('shows 4K in the PNG size row', () => {
-    expect(groupLabels(html, 'Export size')).toEqual(['Screen', '1080p', '4K', '8K']);
-  });
-
-  it('shows the PNG aspect row', () => {
-    expect(groupLabels(html, 'Export aspect')).toEqual(['Screen', '1:1', '4:5', '16:9', '9:16']);
-  });
-
-  it('has Save PNG, the wallpaper button and the embed buttons', () => {
+  it('has one Save PNG button and the embed buttons', () => {
     expect(html).toContain('Save PNG');
+    expect(html).not.toContain('Export size');
+    expect(html).not.toContain('Export aspect');
+    expect(html).not.toContain('Save as wallpaper');
     expect(html).toContain('Box 16:9');
     expect(html).toContain('Background');
     expect(html).not.toContain('recording');
@@ -52,19 +45,10 @@ describe('ExportPopout', () => {
     expect(html).not.toContain('Copy palette');
   });
 
-  it('marks the selected size pressed', () => {
-    const h = renderToStaticMarkup(createElement(ExportPopout, exportProps({ exportSize: '4k' })));
-    expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(1);
-  });
-
   it('shows the key hint only on desktop', () => {
-    expect(html).toContain('The S key saves');
+    expect(html).toContain('The S key saves it too');
     const mobile = renderToStaticMarkup(createElement(ExportPopout, exportProps({ isMobile: true })));
-    expect(mobile).not.toContain('The S key saves');
-  });
-
-  it('offers a wallpaper at this screen\'s own size', () => {
-    expect(html).toMatch(/Save as wallpaper · \d+×\d+/);
+    expect(mobile).not.toContain('The S key saves it too');
   });
 
   it('is stills only: no looping clip, GIF, MP4 or video controls', () => {
@@ -87,12 +71,10 @@ describe('RecordPopout', () => {
 
   it('has a Start recording button', () => {
     expect(html).toContain('Start recording');
-    expect(html).not.toContain('4K is heavy');
   });
 
-  it('warns that 4K is heavy and marks it pressed', () => {
+  it('marks the chosen video size pressed', () => {
     const h = renderToStaticMarkup(createElement(RecordPopout, recordProps({ videoSize: '4k' })));
-    expect(h).toContain('4K is heavy');
     expect(h.match(/aria-pressed="true"[^>]*>(4K)</g)?.length).toBe(1);
   });
 
@@ -116,7 +98,6 @@ describe('AutoShufflePopout', () => {
     const html = renderToStaticMarkup(createElement(AutoShufflePopout, base));
     expect(groupLabels(html, 'What Auto Shuffle changes')).toEqual(['All', 'Gradient', 'Effects', 'Colors']);
     expect(groupLabels(html, 'Auto Shuffle interval presets')).toEqual(['5s', '15s', '1m', '5m']);
-    expect(html).toContain('Remix every 7s');
   });
 
   it('reflects on/off state and the chosen scope', () => {

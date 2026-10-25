@@ -140,9 +140,9 @@ export function useExportControls({
     }
   }, []);
 
-  // Saves the look as a wallpaper for this device: its screen size in real pixels, shaped like the screen.
+  // Saves the look as an 8K PNG shaped like this device's screen. This is the only PNG the Save button writes.
   const saveWallpaper = useCallback(() => {
-    const { w, h } = wallpaperTarget(window.screen.width, window.screen.height, window.devicePixelRatio || 1);
+    const { w, h } = wallpaperTarget(window.screen.width, window.screen.height);
     return exportAsPNG('download', { w, h, name: 'wallpaper' });
   }, [exportAsPNG]);
 

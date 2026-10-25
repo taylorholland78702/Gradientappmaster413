@@ -36,12 +36,22 @@ export const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[
 export const EXPORT_MAX_EDGE = 8192;
 export const EXPORT_MAX_PIXELS = 40_000_000;
 
-// "Wallpaper": a PNG at this device's own screen resolution (CSS size x pixel ratio), whatever shape the window is,
+// "Wallpaper": the one PNG the app saves. It is shaped like this device's screen and its long edge is 8K (7680),
 // scaled down only if it would pass the canvas ceilings above.
-export function wallpaperTarget(screenWidth: number, screenHeight: number, pixelRatio: number): { w: number; h: number } {
-  let w = Math.max(1, Math.round(screenWidth * pixelRatio));
-  let h = Math.max(1, Math.round(screenHeight * pixelRatio));
+export const WALLPAPER_LONG_EDGE = 7680;
+export function wallpaperTarget(screenWidth: number, screenHeight: number): { w: number; h: number } {
+  const sw = Math.max(1, screenWidth), sh = Math.max(1, screenHeight);
+  const k0 = WALLPAPER_LONG_EDGE / Math.max(sw, sh);
+  let w = Math.max(1, Math.round(sw * k0));
+  let h = Math.max(1, Math.round(sh * k0));
   const k = Math.min(1, EXPORT_MAX_EDGE / Math.max(w, h), Math.sqrt(EXPORT_MAX_PIXELS / (w * h)));
   if (k < 1) { w = Math.max(1, Math.floor(w * k)); h = Math.max(1, Math.floor(h * k)); }
   return { w, h };
+}
+
+// The centered region of a width x height source with the given shape (width / height), in the source's pixels.
+export function centerCrop(srcW: number, srcH: number, ratio: number): { x: number; y: number; w: number; h: number } {
+  let w = srcW, h = srcH;
+  if (ratio > 0) { if (srcW / srcH > ratio) w = srcH * ratio; else h = srcW / ratio; }
+  return { x: (srcW - w) / 2, y: (srcH - h) / 2, w, h };
 }

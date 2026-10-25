@@ -228,7 +228,7 @@ export function GradientAppView(p: GradientAppViewParams) {
       <RailPopouts
         mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
         setAnchor={setAutoShufflePopoverAnchor}
-        exportProps={{ exportSize, setExportSize, exportAspect, setExportAspect, exportAsPNG, copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
+        exportProps={{ copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
         recordProps={{ videoSize, setVideoSize, videoLength, setVideoLength, isRecording, startVideoTake }}
         autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
       />

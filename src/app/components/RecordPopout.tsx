@@ -23,6 +23,5 @@ export function RecordPopout({
       onClick={startVideoTake}
       className={`wav-choice text-[11px] font-semibold transition-all text-white ${isRecording ? 'bg-wav-recording' : 'bg-wav-hover'}`}
     >{isRecording ? 'Stop recording' : 'Start recording'}</button>
-    {videoSize === '4k' && <p className="text-[10px] text-wav-text-3">4K is heavy: busy gradients or effects may drop frames.</p>}
   </>);
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_SIZES, VIDEO_LENGTHS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
+  EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_SIZES, VIDEO_LENGTHS, EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget, centerCrop,
 } from './exportOptions';
 
 const ids = (xs: { id: string }[]) => xs.map(x => x.id);
@@ -36,22 +36,36 @@ describe('export options', () => {
 });
 
 describe('wallpaperTarget', () => {
-  it('is the screen in real pixels', () => {
-    expect(wallpaperTarget(390, 844, 3)).toEqual({ w: 1170, h: 2532 });
-    expect(wallpaperTarget(1440, 900, 2)).toEqual({ w: 2880, h: 1800 });
-    expect(wallpaperTarget(1920, 1080, 1)).toEqual({ w: 1920, h: 1080 });
+  it('is 8K on the long edge, shaped like the screen', () => {
+    expect(wallpaperTarget(1920, 1080)).toEqual({ w: 7680, h: 4320 });
+    const t = wallpaperTarget(1440, 900);
+    expect(t.w).toBe(7680);
+    expect(t.w / t.h).toBeCloseTo(1440 / 900, 2);
   });
   it('keeps portrait and landscape as the device reports them', () => {
-    const p = wallpaperTarget(390, 844, 3), l = wallpaperTarget(844, 390, 3);
+    const p = wallpaperTarget(390, 844), l = wallpaperTarget(844, 390);
     expect(p.w).toBe(l.h); expect(p.h).toBe(l.w);
   });
-  it('scales down, keeping the shape, when a screen is past the canvas ceilings', () => {
-    const t = wallpaperTarget(6016, 3384, 3);   // an 18k-wide virtual screen
-    expect(Math.max(t.w, t.h)).toBeLessThanOrEqual(EXPORT_MAX_EDGE);
-    expect(t.w * t.h).toBeLessThanOrEqual(EXPORT_MAX_PIXELS);
-    expect(t.w / t.h).toBeCloseTo(6016 / 3384, 2);
+  it('stays inside the canvas ceilings', () => {
+    for (const [w, h] of [[1920, 1080], [1440, 900], [390, 844], [3440, 1440], [1000, 1000]]) {
+      const t = wallpaperTarget(w, h);
+      expect(Math.max(t.w, t.h)).toBeLessThanOrEqual(EXPORT_MAX_EDGE);
+      expect(t.w * t.h).toBeLessThanOrEqual(EXPORT_MAX_PIXELS);
+      expect(t.w / t.h).toBeCloseTo(w / h, 1);
+    }
   });
   it('never returns an empty image', () => {
-    expect(wallpaperTarget(0, 0, 0)).toEqual({ w: 1, h: 1 });
+    const t = wallpaperTarget(0, 0);
+    expect(t.w).toBeGreaterThanOrEqual(1); expect(t.h).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('centerCrop', () => {
+  it('takes the centered region with the wanted shape', () => {
+    expect(centerCrop(1000, 1000, 2)).toEqual({ x: 0, y: 250, w: 1000, h: 500 });
+    expect(centerCrop(1000, 500, 1)).toEqual({ x: 250, y: 0, w: 500, h: 500 });
+  });
+  it('keeps everything when no shape is asked for', () => {
+    expect(centerCrop(800, 600, 0)).toEqual({ x: 0, y: 0, w: 800, h: 600 });
   });
 });
