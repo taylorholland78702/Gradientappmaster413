@@ -3,7 +3,6 @@ import { CaretDown, Plus, Microphone, MicrophoneSlash, X } from '@phosphor-icons
 import { findSource, sourcesOf, paramGroups, bindingLabel } from '../constants/modulationTree';
 import { AudioParamPicker } from './AudioParamPicker';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
-import { SliderRow } from './SliderRow';
 import { BandMeter } from './BandMeter';
 import { AmountScrub } from './AmountScrub';
 import { choice } from './choice';
@@ -13,6 +12,9 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
 };
 
 // One-tap bindings for the active gradient's shared Scale / Speed.
+// New bindings start here; the drag on the binding's own row sets the real amount.
+const NEW_BINDING_AMOUNT = 1;
+
 const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBinding['band']; amount: number }[] = [
   { label: 'Scale ← Bass', target: 'scale', band: 'sub', amount: 0.6 },
   { label: 'Scale ← Energy', target: 'scale', band: 'energy', amount: 0.5 },
@@ -92,7 +94,7 @@ interface AudioPanelProps {
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
   const {
     isMicActive, micError, audioInputDevices, selectedAudioDeviceId,
-    masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
+    autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
     bassBeatSync, midsBeatSync, trebleBeatSync,
     liveBassLevel, liveMidsLevel, liveTrebleLevel,
     audioFileName, waveformData, audioFileMetadata,
@@ -112,14 +114,13 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     if (src) setModParam(paramGroups(src)[0].params[0].param.key);
   }, [gradientType]);
   const [modBand, setModBand] = useState<AudioBinding['band']>('mids');
-  const [modAmount, setModAmount] = useState(1);
   // Modulation (the only thing behind this toggle) opens by default now —
   // the toggle itself stays, just for collapsing it back once open.
   const [showAdvanced, setShowAdvanced] = useState(true);
 
   const {
     setSelectedAudioDeviceId, setMicError,
-    setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
+    setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
@@ -240,8 +241,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 which now force both true regardless of what a saved
                 snapshot/preset says). */}
 
-            <SliderRow label="Intensity:" value={masterSensitivity} onChange={setMasterSensitivity} min="0" max="10" step="0.1" />
-
             {/* Four bands. The bar is both the live level and the gain: drag it to set how hard the band reacts. */}
             <div className="flex gap-2.5 items-start overflow-hidden">
               {BANDS.map(b => (
@@ -361,9 +360,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                       <option key={band} value={band}>{BAND_LABELS[band]}</option>
                     ))}
                   </select>
-                  <AmountScrub value={modAmount} label="Modulation amount" onChange={setModAmount} />
                   <button
-                    onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: modAmount }])}
+                    onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: NEW_BINDING_AMOUNT }])}
                     className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                     title="Add modulation binding"
                     aria-label="Add modulation binding"
