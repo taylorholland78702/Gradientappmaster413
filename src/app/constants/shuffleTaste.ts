@@ -25,22 +25,22 @@ export const gradientKind = (gradient: string | null | undefined): GradientKind 
 // gradient, clutters it, or fights what it already does). Effects not listed are neutral.
 export const EFFECT_AFFINITY: Record<GradientKind, Partial<Record<EffectType, number>>> = {
   'dark-ground': {
-    bloom: 2, 'aura-glow': 2, halftone: 2, ascii: 2, grain: 1, chromatic: 1, shift: 1, crt: 1, wave: 1, kaleidoscope: 1,
-    posterize: -1, dither: -1, invert: -1, watercolor: -1, 'grid-effect': -1, vhs: -1, 'slit-scan': -1, feedback: -1,
+    bloom: 2, 'aura-glow': 2, halftone: 2, ascii: 2, grain: 1, chromatic: 1, shift: 1, crt: 1, mirror: 1, kaleidoscope: 1,
+    wave: -1, vignette: -1, posterize: -1, dither: -1, invert: -1, watercolor: -1, 'grid-effect': -1, vhs: -1, 'slit-scan': -1, feedback: -1,
     duotone: -2, 'oil-paint': -2, impasto: -2, gesso: -2,
   },
   smooth: {
-    grain: 2, bloom: 1, chromatic: 1, wave: 1, liquid: 1, shift: 1, mirror: 1, kaleidoscope: 1, watercolor: 1,
-    'oil-paint': 1, blur: -1, feedback: -1, vhs: -1, 'slit-scan': -1,
+    grain: 2, bloom: 1, chromatic: 1, liquid: 1, shift: 1, mirror: 1, kaleidoscope: 1, watercolor: 1,
+    'oil-paint': 1, wave: -1, vignette: -1, blur: -1, feedback: -1, vhs: -1, 'slit-scan': -1,
   },
   pattern: {
-    halftone: 2, ascii: 2, grain: 1, chromatic: 1, bloom: 1, shift: 1, crt: 1, liquid: 1,
-    pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, vhs: -1, feedback: -1,
+    halftone: 2, ascii: 2, grain: 1, chromatic: 1, bloom: 1, shift: 1, crt: 1, liquid: 1, mirror: 1,
+    wave: -1, vignette: -1, pixelate: -1, triangulate: -1, blur: -1, 'slit-scan': -1, vhs: -1, feedback: -1,
     'grid-effect': -2,
   },
   particles: {
     bloom: 2, 'aura-glow': 2, chromatic: 1, grain: 1, mirror: 1,
-    blur: -1, posterize: -2, dither: -2, halftone: -2, 'oil-paint': -2, impasto: -2, duotone: -2, pixelate: -2,
+    wave: -1, vignette: -1, blur: -1, posterize: -2, dither: -2, halftone: -2, 'oil-paint': -2, impasto: -2, duotone: -2, pixelate: -2,
   },
 };
 
@@ -56,6 +56,9 @@ export const EFFECT_PAIRS: readonly [EffectType, EffectType, number][] = [
   ['bloom', 'chromatic', 1], ['vhs', 'crt', 1],
 ];
 
+// Odds multiplier for gradients you tended to skip across the marking sessions (tunnel, and the dark line and particle ones).
+export const GRADIENT_WEIGHT: Partial<Record<GradientType, number>> = { attractor: 0.5, 'edge-glow': 0.5, 'light-beam': 0.5, tunnel: 0.6 };
+
 export type MoodId = 'calm' | 'soft' | 'cinematic' | 'bold' | 'dense' | 'glitchy';
 
 export interface Mood {
@@ -68,6 +71,8 @@ export interface Mood {
   shape: readonly [number, number];
   // Chance a styled gradient gets a twist.
   swirlChance: number;
+  // Odds multiplier for picking this mood at all (1 when left out).
+  weight?: number;
   maxEffects: number;
   // Chance the stack includes one heavy shape-changing effect (kaleidoscope, pixelate, ...).
   shapeChangerChance: number;
@@ -77,14 +82,14 @@ export interface Mood {
 
 export const MOODS: readonly Mood[] = [
   { id: 'calm', speeds: [1, 2, 2, 3], strength: 0.3, shape: [0.8, 1.2], swirlChance: 0.15, maxEffects: 3, shapeChangerChance: 0.2,
-    effectBias: { bloom: 1, grain: 1, wave: 1, chromatic: -1, vhs: -1 } },
+    effectBias: { bloom: 1, grain: 1, chromatic: -1, vhs: -1 } },
   { id: 'soft', speeds: [1, 2, 2, 3], strength: 0.25, shape: [0.8, 1.1], swirlChance: 0.2, maxEffects: 3, shapeChangerChance: 0.1,
     effectBias: { bloom: 1, 'aura-glow': 1, blur: 1, watercolor: 1, posterize: -1, dither: -1, pixelate: -1 } },
-  { id: 'cinematic', speeds: [1, 2, 2, 3], strength: 0.5, shape: [0.8, 1.3], swirlChance: 0.2, maxEffects: 4, shapeChangerChance: 0.15,
+  { id: 'cinematic', weight: 0.6, speeds: [1, 2, 2, 3], strength: 0.5, shape: [0.8, 1.3], swirlChance: 0.2, maxEffects: 4, shapeChangerChance: 0.15,
     effectBias: { grain: 1, bloom: 1, chromatic: 1, crt: -1 } },
-  { id: 'bold', speeds: [2, 3, 3, 4, 5], strength: 0.8, shape: [0.7, 1.6], swirlChance: 0.45, maxEffects: 5, shapeChangerChance: 0.5,
-    effectBias: { kaleidoscope: 1, mirror: 1, chromatic: 1, shift: 1, liquid: 1, wave: 1 } },
-  { id: 'dense', speeds: [2, 3, 3, 4], strength: 0.6, shape: [1.2, 1.9], swirlChance: 0.3, maxEffects: 4, shapeChangerChance: 0.45,
+  { id: 'bold', weight: 0.8, speeds: [2, 3, 3, 4, 5, 6], strength: 0.8, shape: [0.7, 1.6], swirlChance: 0.45, maxEffects: 5, shapeChangerChance: 0.5,
+    effectBias: { kaleidoscope: 1, mirror: 1, chromatic: 1, shift: 1, liquid: 1 } },
+  { id: 'dense', speeds: [2, 3, 3, 4, 5], strength: 0.6, shape: [1.2, 1.9], swirlChance: 0.3, maxEffects: 4, shapeChangerChance: 0.45,
     effectBias: { grain: 1, halftone: 1, dither: 1, kaleidoscope: 1, mirror: 1, blur: -1 } },
   { id: 'glitchy', speeds: [3, 4, 4, 5, 6, 8], strength: 1, shape: [0.7, 1.7], swirlChance: 0.5, maxEffects: 5, shapeChangerChance: 0.7,
     effectBias: { chromatic: 1, crt: 1, shift: 1, pixelate: 1, 'slit-scan': 1, 'chromatic-trails': 1, bloom: -1, watercolor: -1 } },
