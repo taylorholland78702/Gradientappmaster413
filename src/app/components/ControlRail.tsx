@@ -25,7 +25,6 @@ export interface ControlRailProps {
   setAutoShufflePopoverAnchor: (v: null) => void;
   openAutoShufflePopover: (triggerEl?: HTMLElement | null) => void;
   openExportPopover: (triggerEl?: HTMLElement | null) => void;
-  openRecordPopover: (triggerEl?: HTMLElement | null) => void;
 
   // Export
   exportAsPNG: () => void;
@@ -53,7 +52,8 @@ export interface ControlRailProps {
   isRecording: boolean;
   isEncoding: boolean;
   encodingProgress: number;
-  toggleVCRRecording: () => void;
+  // Starts a 4K take, or stops the one running.
+  recordVideo: () => void;
 }
 
 // Short centered hairline between rail groups — a vertical pipe on mobile's
@@ -94,10 +94,10 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const {
     isMobile, onWordmarkClick,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
-    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover, openRecordPopover,
+    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
-    isRecording, isEncoding, encodingProgress, toggleVCRRecording,
+    isRecording, isEncoding, encodingProgress, recordVideo,
   } = props;
 
   const tabBtnClass = (tab: TabId) =>
@@ -256,10 +256,10 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           Play/Stop and Playback Speed buttons; with just this one button
           left there, it's simpler inlined here directly). */}
       <button
-        onClick={(e) => (isRecording ? toggleVCRRecording() : openRecordPopover(e.currentTarget))}
+        onClick={recordVideo}
         disabled={isEncoding}
         className={`${railBtnBase} text-white hover:bg-wav-hover relative`}
-        title={isEncoding ? `Encoding… ${encodingProgress}%` : isRecording ? 'Stop recording (V)' : 'Record video — size and length (V starts right away)'}
+        title={isEncoding ? `Encoding… ${encodingProgress}%` : isRecording ? 'Stop recording (V)' : 'Record 4K video (V)'}
         aria-label={isEncoding ? `Encoding, ${encodingProgress} percent` : 'Record Video'}
       >
         {isEncoding ? (

@@ -846,7 +846,6 @@ export function InteractiveGradient() {
   shuffleLearning.paused = isAutoShuffleOn;
   const {
     exportSize, setExportSize, exportAspect, setExportAspect,
-    videoSize, setVideoSize, videoLength, setVideoLength,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,
@@ -872,7 +871,7 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openRecordPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
+  const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
@@ -1089,7 +1088,7 @@ export function InteractiveGradient() {
 
   useFullscreenSync({ containerRef, setIsFullscreen });
 
-  useGlobalHotkeys({ shuffleAudiovisuals, gradientTypeRef, undoLastChange, redoLastChange, shuffleGradientType, randomizeEffects, setActiveTab, setIsControlsVisible, exportAsPNG: saveWallpaper, resetToDefaults, toggleVCRRecording, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection, evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab, isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook, goBack, goForward });
+  useGlobalHotkeys({ shuffleAudiovisuals, gradientTypeRef, undoLastChange, redoLastChange, shuffleGradientType, randomizeEffects, setActiveTab, setIsControlsVisible, exportAsPNG: saveWallpaper, resetToDefaults, toggleVCRRecording: startVideoTake, toggleVCRPlayback, setVcrPlaybackSpeed, setRotationDirection, evolveWithFactor, setIsMultiFxMode, isAboutOpen, setIsAboutOpen, activeTab, isControlsVisible, toggleDisplayWindow, setIsAutoShuffleOn, toggleGifRecording, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, applyGradientLook, goBack, goForward });
 
   useDrawerTouchScroll({ activeTab, drawerRef, isMobile });
 
@@ -1266,7 +1265,6 @@ export function InteractiveGradient() {
     setAutoShufflePopoverAnchor,
     openAutoShufflePopover,
     openExportPopover,
-    openRecordPopover,
     exportAsPNG,
     toggleGifRecording,
     isFinalizingGif,
@@ -1286,7 +1284,7 @@ export function InteractiveGradient() {
     isRecording,
     isEncoding,
     encodingProgress,
-    toggleVCRRecording,
+    recordVideo: startVideoTake,
   };
 
   return (
@@ -1306,10 +1304,9 @@ export function InteractiveGradient() {
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
     popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
-    setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview} setVideoLength={setVideoLength}
-    setVideoSize={setVideoSize} shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
-    startVideoTake={startVideoTake} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion} videoLength={videoLength}
-    videoSize={videoSize}
+    setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
+    shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
+    startVideoTake={startVideoTake} tiltEnabled={tiltEnabled} toggleMotion={toggleMotion}
     />
     </>
   );

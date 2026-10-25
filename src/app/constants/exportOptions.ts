@@ -15,22 +15,8 @@ export const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[
   { id: '16:9', label: '16:9', ratio: 16 / 9 },
   { id: '9:16', label: '9:16', ratio: 9 / 16 },
 ];
-// Save Video options. Size is the recorded video's long edge (the artwork is re-rendered at that
-// size for the take); Length stops the take for you, or leaves it to the Record button.
-export type VideoSize = 'screen' | '720' | '1080' | '4k';
-export type VideoLength = 'manual' | '5' | '10' | '30';
-export const VIDEO_SIZES: { id: VideoSize; label: string; longEdge: number }[] = [
-  { id: 'screen', label: 'Screen', longEdge: 0 },
-  { id: '720', label: '720p', longEdge: 1280 },
-  { id: '1080', label: '1080p', longEdge: 1920 },
-  { id: '4k', label: '4K', longEdge: 3840 },
-];
-export const VIDEO_LENGTHS: { id: VideoLength; label: string; seconds: number }[] = [
-  { id: 'manual', label: 'Until I stop', seconds: 0 },
-  { id: '5', label: '5s', seconds: 5 },
-  { id: '10', label: '10s', seconds: 10 },
-  { id: '30', label: '30s', seconds: 30 },
-];
+// Record Video always writes 4K: this is the long edge of the take (the artwork is re-rendered at that size).
+export const VIDEO_LONG_EDGE = 3840;
 
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 export const EXPORT_MAX_EDGE = 8192;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type MutableRefObject, type SetStateAction
 
 type TabId = 'gradients' | 'effects' | 'audio' | 'color' | 'presets';
 
-// Where the rail's popouts (Auto Shuffle, Save & share, Record) and the About panel open, and when they close. Moved out of InteractiveGradient unchanged.
+// Where the rail's popouts (Auto Shuffle, Save & share) and the About panel open, and when they close. Moved out of InteractiveGradient unchanged.
 export interface UsePopoutAnchorParams {
   panelRef: MutableRefObject<HTMLElement>;
   isMobile: boolean;
@@ -14,7 +14,7 @@ export interface UsePopoutAnchorParams {
 export function usePopoutAnchor(p: UsePopoutAnchorParams) {
   const { panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen } = p;
   // Which popout the shared anchor below is showing.
-  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export' | 'record'>('autoShuffle');
+  const [popoverMode, setPopoverMode] = useState<'autoShuffle' | 'export'>('autoShuffle');
   const [autoShufflePopoverAnchor, setAutoShufflePopoverAnchor] = useState<{ top?: number; bottom?: number; left: number; width: number; height?: number } | null>(null);
   const autoShufflePopoverRef = useRef<HTMLDivElement>(null);
   // The button that opened the popover — excluded from the outside-click
@@ -26,7 +26,7 @@ export function usePopoutAnchor(p: UsePopoutAnchorParams) {
   // mobile opens it flush above the (bottom-docked) panel at full width
   // (matching the mobile drawer), instead of floating just below whichever
   // button was clicked.
-  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' | 'record' = 'autoShuffle') => {
+  const openAutoShufflePopover = (triggerEl?: HTMLElement | null, mode: 'autoShuffle' | 'export' = 'autoShuffle') => {
     // Pressing the button of the popout that's already open closes it (the other
     // button's popout swaps in instead of just closing).
     if (autoShufflePopoverAnchor && popoverMode === mode) { setAutoShufflePopoverAnchor(null); return; }
@@ -51,15 +51,12 @@ export function usePopoutAnchor(p: UsePopoutAnchorParams) {
       const triggerRect = triggerEl ? triggerEl.getBoundingClientRect() : rect;
       // The export popout is tall and its button sits near the bottom of the rail, so
       // it grows upward from the button's bottom edge instead of downward off-screen.
-      if (mode === 'export' || mode === 'record') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
+      if (mode === 'export') setAutoShufflePopoverAnchor({ bottom: Math.max(8, window.innerHeight - triggerRect.bottom), left: rect.right, width: 240 });
       else setAutoShufflePopoverAnchor({ top: triggerRect.top, left: rect.right, width: 240 });
     }
   };
   const openExportPopover = (triggerEl?: HTMLElement | null) => {
     openAutoShufflePopover(triggerEl, 'export');
-  };
-  const openRecordPopover = (triggerEl?: HTMLElement | null) => {
-    openAutoShufflePopover(triggerEl, 'record');
   };
   // Same "own popout" treatment as Auto Shuffle above — opening About
   // closes whatever tab drawer/Auto Shuffle popover happened to be open
@@ -98,5 +95,5 @@ export function usePopoutAnchor(p: UsePopoutAnchorParams) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [autoShufflePopoverAnchor]);
-  return { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openRecordPopover, openAboutPanel };
+  return { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openAboutPanel };
 }
