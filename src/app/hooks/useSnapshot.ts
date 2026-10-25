@@ -1,5 +1,6 @@
 import type { Snapshot, SnapshotParams } from './snapshotTypes';
 import { useCallback } from 'react';
+import { DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP } from '../utils/color';
 import { type GradientType, DEFAULT_COLORS, migrateId } from '../constants/gradientEffects';
 
 export type { SnapshotParams };
@@ -538,8 +539,9 @@ export function useSnapshot(params: SnapshotParams) {
     setFieldShapes(snapshot.fieldShapes ?? {});
     setFieldSwirl(snapshot.fieldSwirl ?? 0);
     setPaletteStops(snapshot.paletteStops ?? null);
-    setPaletteBias(snapshot.paletteBias ?? 0.5);
-    setPaletteSharp(snapshot.paletteSharp ?? 0);
+    // Bias and Sharpness are no longer adjustable, so a saved or shared look always loads with the defaults.
+    setPaletteBias(DEFAULT_PALETTE_BIAS);
+    setPaletteSharp(DEFAULT_PALETTE_SHARP);
     setPaletteBands(snapshot.paletteBands ?? 5);
     setInvertAmount(snapshot.invertAmount ?? 1);
     setStructuralSeed(snapshot.structuralSeed ?? 0);

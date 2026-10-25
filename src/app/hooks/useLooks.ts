@@ -166,9 +166,9 @@ export function useLooks(p: UseLooksParams) {
     setFieldSwirl(0);
   }, [saveCurrentState, applyLookValues, setFieldShapes, setFieldSwirl, gradientTypeRef]);
 
-  // "Same family": Shuffle keeps to the color family the palette was in when this was switched on (or
-  // when you last picked a palette yourself), so a run of shuffles reads as one mood.
-  const [keepFamily, setKeepFamilyState] = useState(() => { try { return localStorage.getItem('wavKeepFamily') === '1'; } catch { return false; } });
+  // "Same family" (Shuffle keeping to the color family it started in) is off: Shuffle picks any color. The
+  // mechanism stays, but nothing turns it on and a saved setting from before is ignored.
+  const [keepFamily, setKeepFamilyState] = useState(false);
   const colorFamilyRef = useRef<{ enabled: boolean; anchor: Family | null }>({ enabled: keepFamily, anchor: null });
   colorFamilyRef.current.enabled = keepFamily;
   if (keepFamily && !colorFamilyRef.current.anchor && gradientColorsRef.current.length) colorFamilyRef.current.anchor = paletteFamily(gradientColorsRef.current);
@@ -179,7 +179,7 @@ export function useLooks(p: UseLooksParams) {
   };
 
   // A colors-only palette from the library: eases in when it has as many colors as now, else
-  // is re-cut to the current count (same rule as the Color tab's Start from > Palettes).
+  // is re-cut to the current count (same rule as the Color tab's Palettes list).
   const applyPalette = useCallback((palette: { colors: string[] }, opts?: { fromShuffle?: boolean }) => {
     if (!opts?.fromShuffle) colorFamilyRef.current.anchor = null; // your own pick re-anchors the family
     saveCurrentState();

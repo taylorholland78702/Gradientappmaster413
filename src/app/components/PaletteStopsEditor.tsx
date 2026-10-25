@@ -3,7 +3,6 @@ import { type ColorRGB } from '../constants/gradientEffects';
 import {
   DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, evenStops, rgbToHex, samplePalette,
 } from '../utils/color';
-import { SliderRow } from './SliderRow';
 
 // How close two neighboring stops may get — stops must stay in order (the
 // shader and CPU lookups walk them left to right), and a sliver of space keeps
@@ -15,17 +14,13 @@ export interface PaletteStopsEditorProps {
   colors: ColorRGB[];
   stops: number[] | null;
   setStops: (stops: number[] | null) => void;
-  bias: number;
-  setBias: (v: number) => void;
-  sharp: number;
-  setSharp: (v: number) => void;
   onBeforeChange?: () => void;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
-  colors, stops, setStops, bias, setBias, sharp, setSharp, onBeforeChange,
+  colors, stops, setStops, onBeforeChange,
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const n = colors.length;
@@ -33,9 +28,9 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   // swatch and the palette quietly goes back to even spacing.
   const custom = !!stops && stops.length === n;
   const current = custom ? stops! : evenStops(n);
-  const isDefault = !custom && bias === DEFAULT_PALETTE_BIAS && sharp === DEFAULT_PALETTE_SHARP;
+  const isDefault = !custom;
 
-  const preview = samplePalette(colors, custom ? stops : null, bias, sharp, PREVIEW_STEPS);
+  const preview = samplePalette(colors, custom ? stops : null, DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP, PREVIEW_STEPS);
   const background = `linear-gradient(to right, ${preview
     .map((c, i) => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)}) ${((i / (PREVIEW_STEPS - 1)) * 100).toFixed(2)}%`)
     .join(', ')})`;
@@ -72,29 +67,17 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
   const reset = () => {
     onBeforeChange?.();
     setStops(null);
-    setBias(DEFAULT_PALETTE_BIAS);
-    setSharp(DEFAULT_PALETTE_SHARP);
   };
 
-  const sliderRow = (label: string, value: number, set: (v: number) => void, hint: string) => (
-    <SliderRow
-      label={`${label}:`} title={hint} value={value} onChange={set}
-      onNumberChange={(v) => set(clamp(v || 0, 0, 1))}
-      min="0" max="1" step="0.01"
-    />
-  );
-
   return (
-    <section className="w-full px-1.5 pt-2.5 border-t border-wav-line" aria-label="Ramp">
-      <div className="flex items-center justify-between mb-1.5">
-        <h3 className="text-[10px] text-wav-text-2 font-medium">Ramp</h3>
-        {!isDefault && (
-          <button onClick={reset} className="text-[10px] text-wav-text-3 hover:text-white transition-all">Reset</button>
-        )}
-      </div>
+    <div className="w-full" aria-label="Ramp">
+      {!isDefault && (
+        <div className="flex justify-end mb-1">
+          <button onClick={reset} className="text-[10px] text-wav-text-3 hover:text-white transition-all">Reset spacing</button>
+        </div>
+      )}
 
-      {/* Live preview of the exact ramp (Blend, Bias and Sharpness included),
-          with one draggable handle per palette color underneath. */}
+      {/* Live preview of the exact ramp with one draggable handle per palette color underneath. */}
       <div className="px-[7px]">
         <div className="h-4 w-full border border-wav-line" style={{ background }} aria-hidden="true" />
         <div ref={trackRef} className="relative h-5 w-full touch-none select-none">
@@ -117,12 +100,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
           ))}
         </div>
       </div>
-
-      <div className="flex flex-col gap-2 mt-1">
-        {sliderRow('Bias', bias, setBias, 'Slides the midpoint — higher gives more of the later colors, lower more of the earlier ones')}
-        {sliderRow('Sharpness', sharp, setSharp, 'Tightens the blend between neighboring colors toward hard bands')}
-      </div>
-    </section>
+    </div>
   );
 };
 
