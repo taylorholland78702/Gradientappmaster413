@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
 import { videoEncoderCandidates, VIDEO_FPS } from '../utils/videoEncoding';
+import { isTouchPlatform } from '../utils/touchPlatform';
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 export interface ColorRGB {
@@ -36,6 +37,8 @@ export interface UseVCRPlaybackParams {
 }
 
 const CAPTURE_FPS = VIDEO_FPS;
+const AUDIO_SAMPLE_RATE = 48_000;
+const AUDIO_CHANNELS = 2;
 const FRAME_INTERVAL_MS = 1000 / CAPTURE_FPS;
 // Recording had no duration cap at all — vcrRecordedFrames (metadata,
 // growing 20x/sec), ffmpeg's frameDataRef (raw JPEGs, one per captured
@@ -74,6 +77,13 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   const [vcrPlaybackIndex, setVcrPlaybackIndex] = useState(0);
   const [isEncoding, setIsEncoding] = useState(false);
   const [encodingProgress, setEncodingProgress] = useState(0);
+  // The finished take. Desktops download it straight away; phones show it in a dialog so a tap can save or share it
+  // (a script-triggered download after a long encode is dropped there). An error shows the same way, never silently.
+  const [videoResult, setVideoResult] = useState<
+    { kind: 'ready'; url: string; blob: Blob; name: string } | { kind: 'error'; message: string } | null
+  >(null);
+  const encoderErrorRef = useRef<string | null>(null);
+  const hasAudioTrackRef = useRef(false);
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -181,6 +191,26 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     return ffmpeg;
   }, []);
 
+  const deliverVideo = useCallback((blob: Blob) => {
+    const name = `wav-${Date.now()}.mp4`;
+    const url = URL.createObjectURL(blob);
+    if (isTouchPlatform()) {
+      setVideoResult({ kind: 'ready', url, blob, name });
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const clearVideoResult = useCallback(() => {
+    setVideoResult(prev => { if (prev?.kind === 'ready') URL.revokeObjectURL(prev.url); return null; });
+  }, []);
+
   const startAudioCapture = useCallback((): boolean => {
     try {
       let audioStream: MediaStream | null = null;
@@ -193,10 +223,9 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         if (tracks.length > 0) audioStream = new MediaStream(tracks);
       }
       if (audioStream) {
-        const audioMime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : 'audio/webm';
-        const ar = new MediaRecorder(audioStream, { mimeType: audioMime });
+        // Safari records audio/mp4, not webm.
+        const audioMime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(m => MediaRecorder.isTypeSupported(m));
+        const ar = new MediaRecorder(audioStream, audioMime ? { mimeType: audioMime } : undefined);
         ar.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
         ar.start();
         audioRecorderRef.current = ar;
@@ -213,12 +242,14 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // is cheap relative to video, so this doesn't meaningfully slow the export.
   const muxAudioBlob = useCallback(async (audioBlob: Blob, muxer: Muxer<ArrayBufferTarget>) => {
     const arrayBuf = await audioBlob.arrayBuffer();
-    const audioCtx = new AudioContext();
+    if (typeof AudioEncoder === 'undefined') throw new Error('No audio encoder on this device');
+    const audioCtx = new AudioContext({ sampleRate: AUDIO_SAMPLE_RATE });
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
     await audioCtx.close();
 
-    const numberOfChannels = audioBuffer.numberOfChannels;
-    const sampleRate = audioBuffer.sampleRate;
+    // The muxer's audio track was declared as 48 kHz stereo before the take began; match it (mono is doubled).
+    const numberOfChannels = AUDIO_CHANNELS;
+    const sampleRate = AUDIO_SAMPLE_RATE;
 
     await new Promise<void>((resolve, reject) => {
       const encoder = new AudioEncoder({
@@ -238,7 +269,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         const frames = Math.min(CHUNK_FRAMES, audioBuffer.length - frameOffset);
         const planar = new Float32Array(frames * numberOfChannels);
         for (let ch = 0; ch < numberOfChannels; ch++) {
-          planar.set(audioBuffer.getChannelData(ch).subarray(frameOffset, frameOffset + frames), ch * frames);
+          planar.set(audioBuffer.getChannelData(Math.min(ch, audioBuffer.numberOfChannels - 1)).subarray(frameOffset, frameOffset + frames), ch * frames);
         }
         const audioData = new AudioData({
           format: 'f32-planar',
@@ -261,6 +292,12 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Audio first: whether there is any decides if the file gets an audio track (it can't be added afterward).
+    audioChunksRef.current = [];
+    const hasAudioTrack = startAudioCapture() && typeof AudioEncoder !== 'undefined';
+    encoderErrorRef.current = null;
+    hasAudioTrackRef.current = hasAudioTrack;
+
     const target = new ArrayBufferTarget();
     const muxer = new Muxer({
       target,
@@ -269,6 +306,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         width: canvas.width,
         height: canvas.height,
       },
+      ...(hasAudioTrack ? { audio: { codec: 'aac' as const, numberOfChannels: AUDIO_CHANNELS, sampleRate: AUDIO_SAMPLE_RATE } } : {}),
       fastStart: 'in-memory',
     });
     muxerRef.current = muxer;
@@ -276,19 +314,16 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
 
     const encoder = new VideoEncoder({
       output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-      error: (err) => console.error('VideoEncoder error:', err),
+      error: (err) => { console.error('VideoEncoder error:', err); encoderErrorRef.current = err.message || 'The video encoder stopped'; },
     });
     encoder.configure(config);
     videoEncoderRef.current = encoder;
 
-    audioChunksRef.current = [];
     isCapturingRef.current = true;
     lastFrameTimeRef.current = 0;
     recordingStartTimestampRef.current = 0;
     isRecordingRef.current = true;
     setIsRecording(true);
-
-    startAudioCapture();
 
     const captureFrame = (timestamp: number) => {
       if (!isCapturingRef.current) return;
@@ -334,7 +369,12 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     videoEncoderRef.current = null;
     muxerRef.current = null;
 
-    if (!encoder || !muxer || videoFrameIndexRef.current === 0) return;
+    if (!encoder || !muxer) return;
+    if (videoFrameIndexRef.current === 0) {
+      try { encoder.close(); } catch { /* already closed */ }
+      setVideoResult({ kind: 'error', message: 'Nothing was recorded. Try again, and let it run for a few seconds.' });
+      return;
+    }
 
     const finalize = async (audioBlob: Blob | null) => {
       setIsEncoding(true);
@@ -349,25 +389,24 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           encoder.close();
         }
 
-        const hasAudio = audioBlob && audioBlob.size > 1000;
-        if (hasAudio) {
+        if (encoderErrorRef.current) throw new Error(encoderErrorRef.current);
+
+        // Sound is a bonus: if it can't be added the take still exports, without it.
+        if (hasAudioTrackRef.current && audioBlob && audioBlob.size > 1000) {
           setEncodingProgress(50);
-          await muxAudioBlob(audioBlob!, muxer);
+          try {
+            await muxAudioBlob(audioBlob, muxer);
+          } catch (err) {
+            console.warn('Audio could not be added, exporting video only:', err);
+          }
         }
 
         muxer.finalize();
         const { buffer } = muxer.target as ArrayBufferTarget;
-        const blob = new Blob([buffer], { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `wav-${Date.now()}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        deliverVideo(new Blob([buffer], { type: 'video/mp4' }));
       } catch (err) {
         console.error('WebCodecs export failed:', err);
+        setVideoResult({ kind: 'error', message: `The video could not be saved (${err instanceof Error ? err.message : 'unknown error'}).` });
       } finally {
         setIsEncoding(false);
         setEncodingProgress(0);
@@ -491,15 +530,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           await ffmpeg.exec(outputArgs);
 
           const data = await ffmpeg.readFile('out.mp4') as Uint8Array;
-          const blob = new Blob([data as BlobPart], { type: 'video/mp4' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `wav-${Date.now()}.mp4`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          deliverVideo(new Blob([data as BlobPart], { type: 'video/mp4' }));
         } finally {
           // Clean up ffmpeg FS regardless of success or failure — this used
           // to only run after a full success, so any failure partway
@@ -517,6 +548,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
         }
       } catch (err) {
         console.error('FFmpeg encoding failed:', err);
+        setVideoResult({ kind: 'error', message: 'The video could not be saved on this device.' });
       } finally {
         setIsEncoding(false);
         setEncodingProgress(0);
@@ -555,7 +587,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const canvas = canvasRef.current;
     let selectedConfig: VideoEncoderConfig | null = null;
 
-    if (typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined' && canvas) {
+    if (typeof VideoEncoder !== 'undefined' && canvas) {
       // Same ladder the Record button probed when it chose the take's size (desktop first, then what phones can do).
       const candidates = videoEncoderCandidates(canvas.width, canvas.height, CAPTURE_FPS);
       for (const config of candidates) {
@@ -709,6 +741,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     vcrPlaybackSpeed, setVcrPlaybackSpeed,
     vcrPlaybackIndex, setVcrPlaybackIndex,
     isEncoding, encodingProgress,
+    videoResult, clearVideoResult,
     // Refs
     mediaRecorderRef,
     recordedChunksRef,

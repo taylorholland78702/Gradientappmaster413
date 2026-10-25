@@ -4,7 +4,8 @@ import {
   EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
-import { videoEncoderCandidates, pickVideoMultiplier, VIDEO_FPS } from '../utils/videoEncoding';
+import { videoEncoderCandidates, pickVideoMultiplier, VIDEO_FPS, PHONE_VIDEO_MAX_EDGE } from '../utils/videoEncoding';
+import { isTouchPlatform } from '../utils/touchPlatform';
 import { shareParam } from '../utils/shareLink';
 import { shuffleLearning } from '../utils/shuffleLearning';
 import type { useCanvasState } from './state/useCanvasState';
@@ -148,7 +149,7 @@ export function useExportControls({
     {
       const cssW = canvas.clientWidth || canvas.width, cssH = canvas.clientHeight || canvas.height;
       // 4K where the device's encoder takes it; phones step down to the biggest size theirs can really do.
-      const supports = typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined'
+      const supports = typeof VideoEncoder !== 'undefined'
         ? async (w: number, h: number) => {
             for (const config of videoEncoderCandidates(w, h, VIDEO_FPS)) {
               try { if ((await VideoEncoder.isConfigSupported(config)).supported) return true; } catch { /* next */ }
@@ -156,7 +157,7 @@ export function useExportControls({
             return false;
           }
         : null;
-      const mult = await pickVideoMultiplier(cssW, cssH, supports);
+      const mult = await pickVideoMultiplier(cssW, cssH, supports, isTouchPlatform() ? PHONE_VIDEO_MAX_EDGE : Infinity);
       exportRender.multiplier = mult;
       drawParamsDirtyRef.current = true;
       sized = true;

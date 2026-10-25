@@ -26,3 +26,11 @@ describe('pickVideoMultiplier', () => {
     }
   });
 });
+
+describe('pickVideoMultiplier on phones', () => {
+  it('never goes above the phone cap, even when 4K would be accepted', async () => {
+    const m = await pickVideoMultiplier(390, 844, async () => true, 2560);
+    expect(longEdge(390, 844, m)).toBeLessThanOrEqual(2564);
+    expect(longEdge(390, 844, m)).toBeGreaterThanOrEqual(2558);
+  });
+});
