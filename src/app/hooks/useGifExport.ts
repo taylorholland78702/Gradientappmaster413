@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GIFEncoder } from 'gifenc';
 import { quantizeFrame } from '../utils/gifDither';
+import { centerCrop } from '../constants/exportOptions';
 import type { GifWorkerRequest, GifWorkerResponse } from './gifEncodeWorker';
 
 // Downscale target for the encoded GIF — full-canvas-resolution GIFs (this
 // app's canvas is often 1000px+ wide) would make quantize()/applyPalette()
 // slow enough per frame to stall the capture loop, and produce multi-tens-
 // of-MB files for something meant to be a quick shareable clip. 720px wide
-// keeps phone-screen clips sharp; aspect ratio is preserved.
+// keeps phone-screen clips sharp. The clip is shaped like this device's screen (the same shape as Save PNG).
 const MAX_GIF_WIDTH = 720;
 const GIF_FPS = 15;
 const FRAME_DELAY = 1000 / GIF_FPS;
@@ -93,9 +94,11 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
 
     try {
       const recordingStart = performance.now();
-      const scale = Math.min(1, MAX_GIF_WIDTH / canvas.width);
-      const width = Math.max(1, Math.round(canvas.width * scale));
-      const height = Math.max(1, Math.round(canvas.height * scale));
+      // The centered region of the canvas shaped like the device's screen, scaled down to the width cap.
+      const crop = centerCrop(canvas.width, canvas.height, window.screen.width / Math.max(1, window.screen.height));
+      const scale = Math.min(1, MAX_GIF_WIDTH / crop.w);
+      const width = Math.max(1, Math.round(crop.w * scale));
+      const height = Math.max(1, Math.round(crop.h * scale));
 
       const scratch = document.createElement('canvas');
       scratch.width = width;
@@ -139,7 +142,7 @@ export function useGifExport({ canvasRef }: UseGifExportParams) {
         }
         await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY));
         if (!isRecordingRef.current) break;
-        scratchCtx.drawImage(canvas, 0, 0, width, height);
+        scratchCtx.drawImage(canvas, crop.x, crop.y, crop.w, crop.h, 0, 0, width, height);
         const { data } = scratchCtx.getImageData(0, 0, width, height);
         await encodeFrame(data);
         frameCount++;

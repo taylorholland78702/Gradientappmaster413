@@ -282,7 +282,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button
         onClick={(e) => openExportPopover(e.currentTarget)}
         className={`${railBtnBase} text-white hover:bg-wav-hover`}
-        title="Save PNG — size and aspect (S saves right away)"
+        title="Save PNG — 8K, shaped like your screen (S saves right away)"
         aria-label="Save PNG"
       >
         <Camera weight="regular" className={iconCls} />
