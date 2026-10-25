@@ -7,6 +7,7 @@ import { type PalettePreset } from '../constants/palettePresets';
 import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleShapeControls';
 import { SliderRow } from './SliderRow';
 import { PointPad } from './PointPad';
+import { AngleDial } from './AngleDial';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
@@ -648,14 +649,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               : particlesMode === 'marks'
               ? [
                   { label: 'Count', value: marksCount, set: setMarksCount, min: 1, max: 16, step: 1 },
-                  { label: 'Size', value: marksSize, set: setMarksSize, min: 10, max: 80, step: 5 },
                   { label: 'Decay', value: marksDecay, set: setMarksDecay, min: 0.5, max: 0.99, step: 0.01 },
                 ]
               : [
                   { label: 'Count', value: particlesCount, set: setParticlesCount, min: 10, max: 500, step: 10 },
-                  { label: 'Size', value: particlesSize, set: setParticlesSize, min: 0.5, max: 10, step: 0.5 },
                   { label: 'Sides', value: particlesSides, set: setParticlesSides, min: 1, max: 8, step: 1 },
-                  { label: 'Trail', value: particlesTrail, set: setParticlesTrail, min: 0.02, max: 0.5, step: 0.01 },
                   { label: 'Gravity', value: particlesGravity, set: setParticlesGravity, min: 0, max: 3, step: 0.1 },
                 ]
             ).map(({ label, value, set, min, max, step }, i, arr) => (
@@ -669,12 +667,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             {[
               { label: 'Tile Size', value: tilingSize, set: setTilingSize, min: 30, max: 300, step: 10 },
               { label: 'Symmetry', value: tilingSymmetry, set: setTilingSymmetry, min: 2, max: 12, step: 1 },
-              { label: 'Complexity', value: tilingComplexity, set: setTilingComplexity, min: 0.5, max: 10, step: 0.5 },
-              { label: 'Rotation', value: tilingRotation, set: setTilingRotation, min: 0, max: 360, step: 1 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
               <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
-            <SliderRow label="Row Offset:" title="Shifts every other tile row horizontally, like a brick or polka-dot pattern" value={tilingRowOffset} onChange={setTilingRowOffset} min={-tilingSize} max={tilingSize} />
+            <AngleDial label="Rotation" value={tilingRotation} onChange={setTilingRotation} />
           </div>
         )}
 
@@ -744,9 +740,14 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {gradientType === 'julia' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             {renderFieldMappingRows()}
+            <span className="text-[10px] text-white">Shape (real across, imaginary down):</span>
+            <PointPad
+              label="Julia constant"
+              x={(juliaReal + 1) * 50}
+              y={(juliaImaginary + 1) * 50}
+              onChange={(x, y) => { setJuliaReal(Math.round(x) / 50 - 1); setJuliaImaginary(Math.round(y) / 50 - 1); }}
+            />
             {[
-              { label: 'Real (c)', value: juliaReal, set: setJuliaReal, min: -1, max: 1, step: 0.01 },
-              { label: 'Imag (c)', value: juliaImaginary, set: setJuliaImaginary, min: -1, max: 1, step: 0.01 },
               { label: 'Zoom', value: juliaZoom, set: setJuliaZoom, min: 0.3, max: 3, step: 0.1 },
               { label: 'Detail', value: juliaIterations, juliaSpeed, set: setJuliaIterations, min: 20, max: 120, step: 5 },
             ].map(({ label, value, set, min, max, step }, i, arr) => (
@@ -831,7 +832,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 <SliderRow label="Rotations:" value={windmillRotations} onChange={setWindmillRotations} min="1" max="10" />
                 <SliderRow label="Tightness:" value={windmillTightness} onChange={setWindmillTightness} min="1" max="20" />
                 <SliderRow label="Thickness:" value={windmillThickness} onChange={setWindmillThickness} min="5" max="100" />
-                <SliderRow label="Zoom Response:" title="How strongly the global zoom control (audio-reactive pulsing) affects the spiral's rotation count — 0 ignores zoom entirely, 1 responds as strongly as other gradients" value={windmillZoomResponse} onChange={setWindmillZoomResponse} min="0" max="1" step="0.05" />
               </>
             ) : (
               <>
@@ -855,7 +855,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
             </div>
             <SliderRow label="Scale:" value={noiseScale} onChange={setNoiseScale} min="10" max="200" />
             <SliderRow label="Detail:" value={noiseOctaves} onChange={setNoiseOctaves} min="1" max="8" />
-            <SliderRow label="Direction:" value={noiseDirection} onChange={setNoiseDirection} min="0" max="360" />
+            <AngleDial label="Direction" value={noiseDirection} onChange={setNoiseDirection} />
             <SliderRow label="Warp:" value={noiseWarp} onChange={setNoiseWarp} min="0" max="1" step="0.01" />
           </div>
         )}
@@ -875,7 +875,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <SliderRow label="Burst Count:" value={radialBurstCount} onChange={setRadialBurstCount} min="3" max="16" />
             <SliderRow label="Spread:" value={radialBurstSpread} onChange={setRadialBurstSpread} min="10" max="100" />
-            <SliderRow label="Size:" value={radialBurstSize} onChange={setRadialBurstSize} min="10" max="200" />
           </div>
         )}
 
@@ -892,9 +891,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
             <SliderRow label="Circles:" value={flowerCircles} onChange={setFlowerCircles} min="1" max="12" />
             <SliderRow label="Scale:" value={flowerScale} onChange={setFlowerScale} min="0.1" max="3" step="0.1" />
-            <SliderRow label="Spread:" value={flowerSpread} onChange={setFlowerSpread} min="0.3" max="2.5" step="0.05" />
             <SliderRow label="Symmetry:" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices" value={flowerSymmetry} onChange={setFlowerSymmetry} min="3" max="12" step="1" />
-            <SliderRow label="Opacity:" value={flowerOpacity} onChange={setFlowerOpacity} min="0.2" max="1.5" step="0.05" />
           </div>
         )}
 
