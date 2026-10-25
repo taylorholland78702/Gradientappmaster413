@@ -11,10 +11,10 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
 };
 
-// One-tap bindings for the active gradient's shared Scale / Speed.
 // New bindings start here; the drag on the binding's own row sets the real amount.
 const NEW_BINDING_AMOUNT = 1;
 
+// One-tap bindings for the active gradient's shared Scale / Speed.
 const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBinding['band']; amount: number }[] = [
   { label: 'Scale ← Bass', target: 'scale', band: 'sub', amount: 0.6 },
   { label: 'Scale ← Energy', target: 'scale', band: 'energy', amount: 0.5 },
