@@ -1,5 +1,5 @@
 import type { EffectType, GradientType } from '../constants/gradientEffects';
-import { EFFECT_AFFINITY, EFFECT_PAIRS, GRADIENT_WEIGHT, MOODS, gradientKind, type Mood } from '../constants/shuffleTaste';
+import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, type Mood } from '../constants/shuffleTaste';
 import { ShuffleHistory, pickWeighted } from './shuffleHistory';
 
 // Rolling and judging a shuffled look before it is drawn. Shuffle rolls several candidate looks (a gradient and an
@@ -40,7 +40,7 @@ export interface RollOptions {
 // One candidate: a gradient, then a stack of effects chosen by taste, mood and what was shown lately.
 export function rollCandidate(opts: RollOptions, mood: Mood, history: ShuffleHistory, rng: () => number = Math.random): Candidate {
   const learned = opts.learned ?? (() => 1);
-  const gradient = pickWeighted(opts.gradientPool, g => history.weight('gradient', g) * learned('gradient', g) * (GRADIENT_WEIGHT[g] ?? 1), rng);
+  const gradient = pickWeighted(opts.gradientPool, g => history.weight('gradient', g) * learned('gradient', g), rng);
   const excluded = opts.excluded(gradient);
   const cap = Math.min(opts.maxEffects(gradient), mood.maxEffects);
   const stack: EffectType[] = [];
@@ -78,7 +78,7 @@ export function chooseLook(opts: RollOptions, mood: Mood, history: ShuffleHistor
 
 // A mood for this shuffle, steering away from the one just used (and toward the ones you tend to keep).
 export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, learnedMood?: (id: string) => number): Mood {
-  return pickWeighted(MOODS, m => history.weight('mood', m.id) * (m.weight ?? 1) * (learnedMood?.(m.id) ?? 1), rng);
+  return pickWeighted(MOODS, m => history.weight('mood', m.id) * (learnedMood?.(m.id) ?? 1), rng);
 }
 
 // Scales a [min, max] range by a mood's strength: a gentle mood keeps the low end, a strong one uses all of it.
