@@ -6,7 +6,6 @@ import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { SliderRow } from './SliderRow';
 import { BandMeter } from './BandMeter';
 import { AmountScrub } from './AmountScrub';
-import { AUDIO_FEELS, matchingFeel } from '../constants/audioFeels';
 import { choice } from './choice';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
@@ -138,21 +137,6 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     band === 'sub' ? liveSubBassLevel : band === 'mids' ? liveMidsLevel : band === 'treble' ? liveTrebleLevel
       : Math.max(liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel);
 
-  const currentFeel = matchingFeel({
-    intensity: masterSensitivity,
-    gains: { sub: subBassMultiplier, bass: bassMultiplier, mids: midsMultiplier, treble: trebleMultiplier },
-    beatSync: { sub: subBassBeatSync, bass: bassBeatSync, mids: midsBeatSync, treble: trebleBeatSync },
-    beatFx: { zoom: zoomBeatEnabled, shake: shakeBeatEnabled, contrast: contrastBeatEnabled, palette: paletteBeatEnabled },
-  });
-  const applyFeel = (id: (typeof AUDIO_FEELS)[number]['id']) => {
-    const f = AUDIO_FEELS.find(x => x.id === id);
-    if (!f) return;
-    setMasterSensitivity(f.intensity);
-    setSubBassMultiplier(f.gains.sub); setBassMultiplier(f.gains.bass); setMidsMultiplier(f.gains.mids); setTrebleMultiplier(f.gains.treble);
-    setSubBassBeatSync(f.beatSync.sub); setBassBeatSync(f.beatSync.bass); setMidsBeatSync(f.beatSync.mids); setTrebleBeatSync(f.beatSync.treble);
-    setZoomBeatEnabled(f.beatFx.zoom); setShakeBeatEnabled(f.beatFx.shake); setContrastBeatEnabled(f.beatFx.contrast); setPaletteBeatEnabled(f.beatFx.palette);
-  };
-
   return (
     <>
       {/* Audiovisuals Section — single pill */}
@@ -248,31 +232,22 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
       {/* Always open now — was gated behind its own dropdown toggle
           (Parameters button), which just added an extra click to reach
           the panel's main controls every time. */}
-      <div className="w-full px-1.5 py-2 border-t border-wav-line-strong">
-          <div className="flex flex-col gap-2">
+      <div className="w-full px-3 py-4 border-t border-wav-line-strong">
+          <div className="flex flex-col gap-5">
 
                         {/* Auto Gain and Depth Layer have no UI controls — always on
                 (see useAudioReactivity.ts's defaults and useSnapshot.ts,
                 which now force both true regardless of what a saved
                 snapshot/preset says). */}
 
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-wav-text-2 font-medium" title="A starting point for intensity, band gains and beat effects. Everything stays adjustable.">Feel</span>
-              <div className="flex gap-1.5" role="group" aria-label="Audio feel">
-                {AUDIO_FEELS.map(f => (
-                  <button key={f.id} onClick={() => applyFeel(f.id)} aria-pressed={currentFeel === f.id} title={f.hint} className={choice(currentFeel === f.id, 'flex-1')}>{f.label}</button>
-                ))}
-              </div>
-            </div>
-
             <SliderRow label="Intensity:" value={masterSensitivity} onChange={setMasterSensitivity} min="0" max="10" step="0.1" />
 
             {/* Four bands. The bar is both the live level and the gain: drag it to set how hard the band reacts. */}
-            <div className="flex gap-2 items-start overflow-hidden">
+            <div className="flex gap-2.5 items-start overflow-hidden">
               {BANDS.map(b => (
-                <div key={b.key} className="flex flex-col items-center gap-1 w-0 flex-1 min-w-0 px-2 pt-1.5 pb-2 bg-wav-field">
+                <div key={b.key} className="flex flex-col items-center gap-2 w-0 flex-1 min-w-0 px-2 pt-2.5 pb-3 bg-wav-field">
                   <div className="text-[10px] text-wav-text-2 font-medium" title={b.hint}>{b.label}</div>
-                  <BandMeter label={b.label} level={b.level} value={b.gain} onChange={b.setGain} />
+                  <BandMeter label={b.label} level={b.level} value={b.gain} onChange={b.setGain} height={92} />
                   <button onClick={() => b.setBeat(!b.beat)} aria-pressed={b.beat} className={choice(b.beat, 'w-full')}>BEAT</button>
                 </div>
               ))}
@@ -284,9 +259,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 above) so all four buttons get the full row width instead of
                 splitting it with an inline label — "Contrast"/"Palette"
                 were getting squeezed to the point of near-illegibility. */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               <label className="text-[10px] text-wav-text-2 font-medium">FX on Beat</label>
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={choice(zoomBeatEnabled, 'flex-1')}>Zoom</button>
                 <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={choice(shakeBeatEnabled, 'flex-1')}>Shake</button>
                 <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={choice(contrastBeatEnabled, 'flex-1')}>Contrast</button>
@@ -299,7 +274,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 it's opt-in rather than always taking up space. */}
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center justify-between w-full py-1 text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
+              className="flex items-center justify-between w-full pt-4 pb-1 border-t border-wav-line text-left bg-transparent outline-none hover:bg-transparent active:bg-transparent focus:outline-none appearance-none"
             >
               <span className="text-[10px] text-wav-text-2 font-medium">Advanced</span>
               <CaretDown weight="regular" className={`w-4 h-4 text-wav-text-3 transition-transform shrink-0 ${showAdvanced ? 'rotate-180' : ''}`} />
@@ -310,9 +285,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                  Applied generically by param key in useCanvasDraw.ts, so
                  every entry in MODULATABLE_PARAMS works without a bind-icon
                  on each individual slider row. */
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {quickBindKeys && (
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] text-wav-text-2">Quick bind for this gradient</span>
                     <div className="flex flex-wrap gap-1">
                       {QUICK_BINDS.map(q => {
@@ -336,12 +311,23 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </div>
                 )}
                 {audioBindings.length > 0 && (
-                  <div className="flex flex-col gap-2 mb-1">
+                  <div className="flex flex-col gap-2.5">
                     {audioBindings.map((b) => {
                       const bindingName = bindingLabel(b.param);
                       return (
-                        <div key={b.id} className="flex items-center gap-1.5 bg-wav-field px-1.5 py-1">
-                          <span className="text-[10px] text-white flex-1 min-w-0 break-words">{bindingName}</span>
+                        <div key={b.id} className="flex flex-col gap-2 bg-wav-field px-2 py-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-[10px] text-white min-w-0 break-words">{bindingName}</span>
+                            <button
+                              onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
+                              className="relative wav-hit text-wav-text-3 hover:text-white transition-all shrink-0"
+                              title="Remove binding"
+                              aria-label="Remove binding"
+                            >
+                              <X weight="bold" className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
                           <select
                             aria-label={`Audio band for ${bindingName}`}
                             value={b.band}
@@ -353,18 +339,11 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                             ))}
                           </select>
                           {/* What it is doing right now: the band's live level times the amount. */}
-                          <div className="w-8 h-1.5 shrink-0 bg-wav-hover overflow-hidden" role="img" aria-label={`${bindingName} live drive`} title="Live drive: the band's level times the amount">
+                          <div className="flex-1 min-w-0 h-1.5 bg-wav-hover overflow-hidden" role="img" aria-label={`${bindingName} live drive`} title="Live drive: the band's level times the amount">
                             <div className={`h-full ${b.amount < 0 ? 'bg-wav-recording' : 'bg-wav-ok'}`} style={{ width: `${Math.min(100, bandLevel(b.band) * Math.abs(b.amount) * 100)}%` }} />
                           </div>
                           <AmountScrub value={b.amount} label={`Amount for ${bindingName}`} onChange={(v) => setAudioBindings(prev => prev.map(x => x.id === b.id ? { ...x, amount: v } : x))} title="Amount — multiplies the band's live level before adding it to the control's base value. Drag sideways to change." />
-                          <button
-                            onClick={() => setAudioBindings(prev => prev.filter(x => x.id !== b.id))}
-                            className="relative wav-hit text-wav-text-3 hover:text-white transition-all"
-                            title="Remove binding"
-                            aria-label="Remove binding"
-                          >
-                            <X weight="bold" className="w-3 h-3" />
-                          </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -400,8 +379,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
 
       {/* Audio Waveform Display */}
       {audioFileName && waveformData.length > 0 && (
-        <div className="w-full px-1.5 pt-2 border-t border-wav-line-strong">
-          <div className="w-full h-5 mb-0.5 flex items-center justify-between gap-0.5 relative">
+        <div className="w-full px-3 py-3 border-t border-wav-line-strong">
+          <div className="w-full h-5 mb-1.5 flex items-center justify-between gap-0.5 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-wav-active"></div>
             </div>
