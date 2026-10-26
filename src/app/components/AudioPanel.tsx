@@ -193,7 +193,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 ))}
               </select>
             )}
-            <Microphone weight="regular" className="w-3.5 h-3.5 pointer-events-none opacity-60" />
+            <span className="text-xs font-semibold whitespace-nowrap pointer-events-none">Input</span>
             <CaretDown weight="regular" className="w-4 h-4 pointer-events-none" />
           </div>
           <div className="w-px h-4 bg-wav-line-strong flex-shrink-0" />
