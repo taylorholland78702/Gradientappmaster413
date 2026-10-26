@@ -80,10 +80,12 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
   // The finished take. Desktops download it straight away; phones show it in a dialog so a tap can save or share it
   // (a script-triggered download after a long encode is dropped there). An error shows the same way, never silently.
   const [videoResult, setVideoResult] = useState<
-    { kind: 'ready'; url: string; blob: Blob; name: string } | { kind: 'error'; message: string } | null
+    { kind: 'ready'; url: string; blob: Blob; name: string; note?: string } | { kind: 'error'; message: string } | null
   >(null);
   const encoderErrorRef = useRef<string | null>(null);
   const hasAudioTrackRef = useRef(false);
+  // Whether this device can encode AAC, probed before the take starts: only then does the file get an audio track.
+  const aacOkRef = useRef(false);
   // What the video encoder actually produced, so a failed export can say why instead of guessing.
   const encoderStatsRef = useRef({ framesIn: 0, chunksOut: 0, sawDecoderConfig: false });
 
@@ -193,11 +195,11 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     return ffmpeg;
   }, []);
 
-  const deliverVideo = useCallback((blob: Blob) => {
+  const deliverVideo = useCallback((blob: Blob, note?: string) => {
     const name = `wav-${Date.now()}.mp4`;
     const url = URL.createObjectURL(blob);
-    if (isTouchPlatform()) {
-      setVideoResult({ kind: 'ready', url, blob, name });
+    if (isTouchPlatform() || note) {
+      setVideoResult({ kind: 'ready', url, blob, name, note });
       return;
     }
     const a = document.createElement('a');
@@ -296,7 +298,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
 
     // Audio first: whether there is any decides if the file gets an audio track (it can't be added afterward).
     audioChunksRef.current = [];
-    const hasAudioTrack = startAudioCapture() && typeof AudioEncoder !== 'undefined';
+    const hasAudioTrack = startAudioCapture() && aacOkRef.current;
     encoderErrorRef.current = null;
     encoderStatsRef.current = { framesIn: 0, chunksOut: 0, sawDecoderConfig: false };
     hasAudioTrackRef.current = hasAudioTrack;
@@ -412,6 +414,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           throw new Error(`this device's video encoder returned no usable video (${stats.framesIn} frames in, ${stats.chunksOut} out, ${stats.sawDecoderConfig ? 'with' : 'without'} stream info)`);
         }
 
+        let audioNote: string | undefined;
         // Sound is a bonus: if it can't be added the take still exports, without it.
         if (hasAudioTrackRef.current && audioBlob && audioBlob.size > 1000) {
           setEncodingProgress(50);
@@ -419,12 +422,13 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
             await muxAudioBlob(audioBlob, muxer);
           } catch (err) {
             console.warn('Audio could not be added, exporting video only:', err);
+            audioNote = 'Saved without sound: this device could not add the audio.';
           }
         }
 
         muxer.finalize();
         const { buffer } = muxer.target as ArrayBufferTarget;
-        deliverVideo(new Blob([buffer], { type: 'video/mp4' }));
+        deliverVideo(new Blob([buffer], { type: 'video/mp4' }), audioNote);
       } catch (err) {
         console.error('WebCodecs export failed:', err);
         setVideoResult({ kind: 'error', message: `The video could not be saved (${err instanceof Error ? err.message : 'unknown error'}).` });
@@ -619,6 +623,13 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
           // Try the next candidate.
         }
       }
+    }
+
+    aacOkRef.current = false;
+    if (selectedConfig && typeof AudioEncoder !== 'undefined') {
+      try {
+        aacOkRef.current = !!(await AudioEncoder.isConfigSupported({ codec: 'mp4a.40.2', sampleRate: AUDIO_SAMPLE_RATE, numberOfChannels: AUDIO_CHANNELS, bitrate: 192_000 })).supported;
+      } catch { aacOkRef.current = false; }
     }
 
     usingWebCodecsRef.current = !!selectedConfig;
