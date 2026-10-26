@@ -267,6 +267,20 @@ export function InteractiveGradient() {
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, [isMobile, isControlsVisible, activeTab]);
+  // The canvas takes its size from its container each time it draws, but a still picture only draws when something
+  // changed. Turning a phone (or resizing a window) changes nothing else, so mark it for a redraw, or it keeps the
+  // old shape's scaling until something else wakes it.
+  useEffect(() => {
+    const redraw = () => { drawParamsDirtyRef.current = true; };
+    window.addEventListener('resize', redraw);
+    window.addEventListener('orientationchange', redraw);
+    window.visualViewport?.addEventListener('resize', redraw);
+    return () => {
+      window.removeEventListener('resize', redraw);
+      window.removeEventListener('orientationchange', redraw);
+      window.visualViewport?.removeEventListener('resize', redraw);
+    };
+  }, [drawParamsDirtyRef]);
   // Nothing moved focus into the About panel when it opened (via the "?"
   // key or a click) — a keyboard/screen-reader user got no indication a
   // dialog had appeared, since focus just stayed wherever it was on the

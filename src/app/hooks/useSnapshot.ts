@@ -1,3 +1,4 @@
+import { orientedGrid } from '../utils/canvasScale';
 import type { Snapshot, SnapshotParams } from './snapshotTypes';
 import { useCallback } from 'react';
 import { DEFAULT_PALETTE_BIAS, DEFAULT_PALETTE_SHARP } from '../utils/color';
@@ -140,6 +141,7 @@ export function useSnapshot(params: SnapshotParams) {
 
   const buildSnapshot = useCallback(() => {
     return {
+      canvasAspect: Number((window.innerWidth / Math.max(1, window.innerHeight)).toFixed(2)),
       gradientColors: [...gradientColors],
       targetColors: [...targetColors],
       gradientType,
@@ -442,8 +444,10 @@ export function useSnapshot(params: SnapshotParams) {
     setDuotoneThreeColor(snapshot.duotoneThreeColor || false);
     setVhsGlitchIntensity(snapshot.vhsGlitchIntensity ?? 0.2);
     setVhsJitterAmount(snapshot.vhsJitterAmount ?? 300);
-    setGridRows(snapshot.gridRows ?? 25);
-    setGridColumns(snapshot.gridColumns ?? 25);
+    // Rows and columns follow the screen's shape: a look made landscape opens with them swapped on a portrait phone.
+    const grid = orientedGrid(snapshot, window.innerWidth >= window.innerHeight);
+    setGridRows(grid.rows ?? 25);
+    setGridColumns(grid.columns ?? 25);
     setPolygon2Sides(snapshot.polygon2Sides ?? 5);
     setWaveDistortionStrength(snapshot.waveDistortionStrength ?? 100);
     setWindmillTightness(snapshot.windmillTightness ?? 11);
