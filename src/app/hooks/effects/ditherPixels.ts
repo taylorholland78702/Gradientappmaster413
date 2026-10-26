@@ -38,21 +38,51 @@ export function ditherPixels(data: Uint8ClampedArray, displayWidth: number, disp
         }
       }
     }
+  } else if (scale === 1) {
+    floydSteinberg(data, displayWidth, displayHeight, st);
   } else {
+    // Chunkier error diffusion: dither a picture `scale` times smaller (each block averaged), then blow it back up.
+    const sw = Math.ceil(displayWidth / scale), sh = Math.ceil(displayHeight / scale);
+    const small = new Uint8ClampedArray(sw * sh * 4);
+    for (let by = 0; by < sh; by++) {
+      for (let bx = 0; bx < sw; bx++) {
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let y = by * scale; y < Math.min(displayHeight, (by + 1) * scale); y++) {
+          for (let x = bx * scale; x < Math.min(displayWidth, (bx + 1) * scale); x++) {
+            const i = (y * displayWidth + x) * 4;
+            r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+          }
+        }
+        const o = (by * sw + bx) * 4;
+        small[o] = r / n; small[o + 1] = g / n; small[o + 2] = b / n; small[o + 3] = 255;
+      }
+    }
+    floydSteinberg(small, sw, sh, st);
     for (let y = 0; y < displayHeight; y++) {
       for (let x = 0; x < displayWidth; x++) {
         const i = (y * displayWidth + x) * 4;
-        for (let c = 0; c < 3; c++) {
-          const old = data[i + c];
-          const nv = Math.round(old / st) * st;
-          data[i + c] = nv;
-          const e = old - nv;
-          if (x + 1 < displayWidth) data[i + 4 + c] += e * .44;
-          if (y + 1 < displayHeight) {
-            if (x > 0) data[i + displayWidth * 4 - 4 + c] += e * .19;
-            data[i + displayWidth * 4 + c] += e * .31;
-            if (x + 1 < displayWidth) data[i + displayWidth * 4 + 4 + c] += e * .06;
-          }
+        const o = ((Math.floor(y / scale)) * sw + Math.floor(x / scale)) * 4;
+        data[i] = small[o]; data[i + 1] = small[o + 1]; data[i + 2] = small[o + 2];
+      }
+    }
+  }
+}
+
+// Floyd-Steinberg error diffusion in place (RGB; alpha untouched).
+function floydSteinberg(data: Uint8ClampedArray, width: number, height: number, st: number): void {
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      for (let c = 0; c < 3; c++) {
+        const old = data[i + c];
+        const nv = Math.round(old / st) * st;
+        data[i + c] = nv;
+        const e = old - nv;
+        if (x + 1 < width) data[i + 4 + c] += e * .44;
+        if (y + 1 < height) {
+          if (x > 0) data[i + width * 4 - 4 + c] += e * .19;
+          data[i + width * 4 + c] += e * .31;
+          if (x + 1 < width) data[i + width * 4 + 4 + c] += e * .06;
         }
       }
     }

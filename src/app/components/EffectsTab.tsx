@@ -437,9 +437,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                     </div>
                   </div>
-                  {ditherType === 'bayer' && (
-                    <SliderRow label="Scale:" value={ditherScale} onChange={setDitherScale} min="1" max="8" step="1" />
-                  )}
+                  <SliderRow label="Levels:" title="How many shades each color channel is reduced to. Both dither types use it." value={ditherLevels} onChange={setDitherLevels} min="2" max="16" step="1" />
+                  <SliderRow label="Scale:" title="How big each dither dot is, in pixels. Both dither types use it." value={ditherScale} onChange={setDitherScale} min="1" max="8" step="1" />
                 </EffectSection>
               )}
               {activeEffects.includes('duotone') && (
