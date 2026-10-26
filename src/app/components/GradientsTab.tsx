@@ -9,6 +9,7 @@ import { SliderRow } from './SliderRow';
 import { PointPad } from './PointPad';
 import { AngleDial } from './AngleDial';
 import { ModCategoryCtx } from './LearnContext';
+import { REACTION_DIFFUSION_PATTERNS } from '../constants/reactionDiffusionPatterns';
 import { modCategoriesFor } from '../constants/gradientModCategories';
 import { Switch } from './Switch';
 import { choice } from './choice';
@@ -17,14 +18,6 @@ import { choice } from './choice';
 // Burst and Tiling move by turning (or, for Tiling, drifting) when Play is on, and the shared Speed sets that pace too.
 const ANIMATED_GRADIENTS: string[] = ['stack', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
 
-// Classic Gray-Scott feed/kill regimes.
-const REACTION_DIFFUSION_PATTERNS = [
-  { name: 'Spots', feed: 0.03, kill: 0.062 },
-  { name: 'Mitosis', feed: 0.0367, kill: 0.0649 },
-  { name: 'Maze', feed: 0.029, kill: 0.057 },
-  { name: 'Coral', feed: 0.0545, kill: 0.062 },
-  { name: 'Stripes', feed: 0.078, kill: 0.061 },
-];
 
 export interface GradientsTabProps {
   gradientType: GradientType;
