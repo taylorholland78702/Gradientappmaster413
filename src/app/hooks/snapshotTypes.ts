@@ -261,7 +261,16 @@ export interface SnapshotValues {
   shapesMode: "polygon" | "polar-grid";
   slitScanDirection: "radial" | "horizontal" | "vertical" | "circular";
   slitScanIntensity: number;
-  slitScanHistory: number; slitScanSpeed: number;
+  slitScanHistory: number;
+  slitScanSpeed: number;
+  crtSpeed: number;
+  ditherSpeed: number;
+  dadaSpeed: number;
+  asciiSpeed: number;
+  watercolorSpeed: number;
+  impastoSpeed: number;
+  gridEffectSpeed: number;
+  liquidSpeed: number;
   solarizeThreshold: number;
   windmillRotations: number;
   windmillThickness: number;

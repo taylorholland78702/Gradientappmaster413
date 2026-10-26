@@ -24,6 +24,16 @@ describe('share link settings table', () => {
   });
 });
 
+describe('effect speeds in share links', () => {
+  it('carries a speed set on an active effect, and leaves out the default or an inactive effect', () => {
+    const look = { gradientType: 'angle', activeEffects: ['crt', 'dither'], crtSpeed: 2.5, ditherSpeed: 1, liquidSpeed: 3, slitScanSpeed: 2 } as never;
+    const back = expandLook(readShareParam(shareParam(look)) as never) as Record<string, unknown>;
+    expect(back.crtSpeed).toBe(2.5);
+    expect(back.ditherSpeed ?? 1).toBe(1);
+    expect(back.liquidSpeed ?? 1).toBe(1);
+  });
+});
+
 const sample = sharedSnapshot as Record<string, unknown>;
 
 describe('share link format', () => {

@@ -154,6 +154,15 @@ export interface RandomizationParams {
   setSlitScanIntensity: (value: SetStateAction<number>) => void;
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
+  setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setCrtSpeed: (value: SetStateAction<number>) => void;
+  setDitherSpeed: (value: SetStateAction<number>) => void;
+  setDadaSpeed: (value: SetStateAction<number>) => void;
+  setAsciiSpeed: (value: SetStateAction<number>) => void;
+  setWatercolorSpeed: (value: SetStateAction<number>) => void;
+  setImpastoSpeed: (value: SetStateAction<number>) => void;
+  setGridEffectSpeed: (value: SetStateAction<number>) => void;
+  setLiquidSpeed: (value: SetStateAction<number>) => void;
   setOilPaintRadius: (value: SetStateAction<number>) => void;
   setOilPaintLevels: (value: SetStateAction<number>) => void;
   setImpastoStrength: (value: SetStateAction<number>) => void;
