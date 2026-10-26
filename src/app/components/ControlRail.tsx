@@ -124,7 +124,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
         isMobile
           // Docked flush to the bottom edge — square corners (it's the
           // screen edge, not a floating card).
-          ? 'wav-mobile flex-shrink-0 w-full pointer-events-auto bg-black'
+          ? 'wav-mobile flex-shrink-0 w-full pointer-events-auto bg-wav-surface backdrop-blur-md'
           // Docked flush to the left edge — full height, scrolls
           // internally if content ever exceeds the viewport height rather
           // than overflowing off-screen with no way to reach it.
@@ -139,7 +139,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
     <div
       className={
         isMobile
-          ? 'flex flex-row flex-wrap items-center justify-center gap-x-1.5 gap-y-1 px-2 py-1.5'
+          ? 'flex flex-row flex-wrap items-center justify-center gap-x-0.5 gap-y-0 px-1 py-1'
           : 'flex flex-col items-center gap-2 px-1 pt-0.5 pb-2 origin-top-left'
       }
       style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
@@ -157,10 +157,10 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
           runtime. */}
       <button
         onClick={onWordmarkClick}
-        className={`wav-wordmark rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-2' : 'w-[30px] mb-0.5'}`}
+        className={`wav-wordmark rounded-[8px] flex flex-col items-center justify-center flex-shrink-0 text-white font-black select-none leading-none ${isMobile ? 'h-[30px] px-1' : 'w-[30px] mb-0.5'}`}
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? 24 : 30,
+          fontSize: isMobile ? 21 : 30,
           height: isMobile ? undefined : WORDMARK_BOX_H,
           marginTop: isMobile ? -2 : undefined,
         } as React.CSSProperties}
