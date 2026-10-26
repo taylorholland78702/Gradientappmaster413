@@ -196,7 +196,8 @@ export function applyAscii(P: EffectCtx): void {
             // of dot size.
             if (!imageData) return;
             const aSize = Math.max(6, asciiSize);
-            const chars = asciiChars.length > 0 ? asciiChars : ' .:-=+*x#%@';
+            // Split by character (not UTF-16 unit) so emoji and accented letters count as one each.
+            const chars = Array.from(asciiChars.length > 0 ? asciiChars : ' .:-=+*x#%@');
             // Grid anchored so a cell boundary always sits at centerX/centerY
             // (instead of starting at raw (0,0)) — otherwise cells realign
             // away from the top-left corner as asciiSize changes rather than
@@ -214,6 +215,35 @@ export function applyAscii(P: EffectCtx): void {
             // adjacent ramp characters — like an unstable terminal readout —
             // rather than every cell sitting on a fixed character forever.
             asciiTime += 0.03;
+
+            // Pass 1: each cell's brightness. A gradient rarely spans black to white, so mapping brightness straight
+            // onto the character list left the first and last characters unused and the middle ones doing all the
+            // work. Instead each cell is ranked against the others (a histogram of this frame), so the characters
+            // are used evenly, first to last, whatever the picture's brightness.
+            const rowsA = rowEndA - rowStartA, colsA = colEndA - colStartA;
+            const cellBright = new Float32Array(rowsA * colsA);
+            const hist = new Uint32Array(256);
+            let lo = 1, hi = 0;
+            for (let r = rowStartA; r < rowEndA; r++) {
+              for (let c = colStartA; c < colEndA; c++) {
+                const px = Math.min(displayWidth - 1, Math.max(0, centerX + c * aSize + Math.floor(aSize / 2)));
+                const py = Math.min(displayHeight - 1, Math.max(0, centerY + r * aSize + Math.floor(aSize / 2)));
+                const pIdx = (py * displayWidth + px) * 4;
+                const v = (idatA[pIdx] + idatA[pIdx + 1] + idatA[pIdx + 2]) / 3 / 255;
+                cellBright[(r - rowStartA) * colsA + (c - colStartA)] = v;
+                hist[Math.min(255, Math.floor(v * 256))]++;
+                if (v < lo) lo = v;
+                if (v > hi) hi = v;
+              }
+            }
+            const total = cellBright.length;
+            // Fraction of cells strictly darker than each bucket, plus half of the bucket itself.
+            const rank = new Float32Array(256);
+            let below = 0;
+            for (let i = 0; i < 256; i++) { rank[i] = (below + hist[i] / 2) / total; below += hist[i]; }
+            // A nearly flat picture has no ranking worth spreading; keep its real brightness.
+            const flat = hi - lo < 0.02;
+
             for (let r = rowStartA; r < rowEndA; r++) {
               for (let c = colStartA; c < colEndA; c++) {
                 const cellX = centerX + c * aSize;
@@ -224,7 +254,9 @@ export function applyAscii(P: EffectCtx): void {
                 const pr = idatA[pIdx], pg = idatA[pIdx + 1], pb = idatA[pIdx + 2];
                 const cellPhase = (r * 12.9898 + c * 78.233) % TWO_PI;
                 const flicker = Math.sin(asciiTime + cellPhase) * 0.06;
-                const brightness = Math.max(0, Math.min(1, (pr + pg + pb) / 3 / 255 + flicker));
+                const v = cellBright[(r - rowStartA) * colsA + (c - colStartA)];
+                const level = flat ? v : rank[Math.min(255, Math.floor(v * 256))];
+                const brightness = Math.max(0, Math.min(1, level + flicker));
                 const charIdx = Math.min(chars.length - 1, Math.floor(brightness * chars.length));
                 const ch = chars[charIdx];
                 if (ch === ' ') continue;
