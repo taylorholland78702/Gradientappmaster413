@@ -41,10 +41,10 @@ export const BandMeter: React.FC<{
       <div className="absolute bottom-0 w-full transition-none" style={{ height: `${Math.min(100, level * 100)}%`, background: 'linear-gradient(to top, #eab308, #a855f7)' }} />
       {/* A faint tick at each whole step of gain, like a mixer scale. */}
       {[1, 2, 3, 4].map(t => (
-        <div key={t} aria-hidden="true" className="absolute left-0 w-1.5 h-px bg-white/40 pointer-events-none" style={{ bottom: `${(t / MAX) * 100}%` }} />
+        <div key={t} aria-hidden="true" className="absolute left-0 w-1.5 h-px bg-wav-line-strong pointer-events-none" style={{ bottom: `${(t / MAX) * 100}%` }} />
       ))}
       {/* The gain: a thin line across with a notch on each edge. Its value is shown above the bar. */}
-      <div className="absolute w-full h-px bg-white/55 pointer-events-none" style={{ bottom: `${(value / MAX) * 100}%` }} />
+      <div className="absolute w-full h-px bg-wav-line-strong pointer-events-none" style={{ bottom: `${(value / MAX) * 100}%` }} />
       <div aria-hidden="true" className={`absolute left-0 w-2 h-1.5 bg-white pointer-events-none transition-transform ${active ? 'scale-y-125' : ''}`} style={{ bottom: `calc(${(value / MAX) * 100}% - 3px)` }} />
       <div aria-hidden="true" className={`absolute right-0 w-2 h-1.5 bg-white pointer-events-none transition-transform ${active ? 'scale-y-125' : ''}`} style={{ bottom: `calc(${(value / MAX) * 100}% - 3px)` }} />
     </div>

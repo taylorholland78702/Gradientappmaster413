@@ -213,8 +213,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             title="Load Audio File"
             aria-label="Load Audio File"
           >
-            <Plus weight="regular" className="w-4 h-4 flex-shrink-0" />
             <span className="whitespace-nowrap">Upload</span>
+            <Plus weight="regular" className="w-4 h-4 flex-shrink-0" />
           </button>
         </div>
       </div>
