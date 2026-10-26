@@ -5,6 +5,7 @@ import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame, setGLExportMode } from './gradients/glShared';
 import { resolveModulationKey, MODULATION_GAIN } from '../constants/modulatableParams';
 import { publishLiveSpeeds } from '../constants/liveSpeeds';
+import { EFFECT_SPEED_KEYS, effectSpeedsLive } from '../constants/effectSpeeds';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
   DEG_TO_RAD, TWO_PI, NO_DRAG_TYPES,
@@ -557,6 +558,8 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // the Speed this frame actually drew with, so an audio binding on Speed steers it.
     if (typeof drawCtx.fieldSpeed === 'number') av.fieldSpeedLive = Math.max(0, drawCtx.fieldSpeed);
     publishLiveSpeeds(av.liveSpeeds, drawCtx);
+    // The effects that keep their own clock read their speed from here, with any audio binding already applied.
+    for (const key of EFFECT_SPEED_KEYS) effectSpeedsLive[key] = Math.max(0, (drawCtx as unknown as Record<string, number>)[`${key}Speed`] ?? 1);
     // The shared Speed also paces the effects that spin or drift inside the draw call.
     const playbackSpeed = av.liveSpeeds.playbackSpeed ?? 1;
     drawCtx.kaleidoscopeRotateSpeed *= playbackSpeed;
