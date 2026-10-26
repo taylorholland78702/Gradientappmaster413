@@ -47,6 +47,11 @@ describe('migrateIds (effect-only migrations)', () => {
     expect(migrateId('sheen')).toBe('drape');
   });
 
+  it('sends removed Hatch and Light Beam to Stack and Rays', () => {
+    expect(migrateId('hatch')).toBe('stack');
+    expect(migrateId('light-beam')).toBe('rays');
+  });
+
   it('rewrites zoom-blur to blur', () => {
     expect(migrateIds(['zoom-blur'])).toEqual(['blur']);
   });
