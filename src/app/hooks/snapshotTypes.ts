@@ -319,7 +319,8 @@ export type SnapshotParams = SnapshotValues & SnapshotSetters & {
 };
 
 // What buildSnapshot returns and applySnapshot accepts: any subset of the saved values (older presets lack newer fields).
-export type Snapshot = Partial<SnapshotValues>;
+// canvasAspect is the screen shape (width / height) a look was saved on; see utils/canvasScale.ts.
+export type Snapshot = Partial<SnapshotValues> & { canvasAspect?: number };
 
 // A snapshot saved with a rating, plus whether audio was driving it.
 export type RatedSnapshot = Snapshot & { audioWasActive?: boolean };

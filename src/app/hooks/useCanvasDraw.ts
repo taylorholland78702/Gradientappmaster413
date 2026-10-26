@@ -5,6 +5,7 @@ import { fillRadialGL } from './gradients/drawCanvasGradientGL';
 import { beginGLFrame, setGLExportMode } from './gradients/glShared';
 import { resolveModulationKey, MODULATION_GAIN } from '../constants/modulatableParams';
 import { publishLiveSpeeds } from '../constants/liveSpeeds';
+import { canvasSizeScale, PIXEL_SIZED_SETTINGS } from '../utils/canvasScale';
 import { EFFECT_SPEED_KEYS, effectSpeedsLive } from '../constants/effectSpeeds';
 import {
   ALL_EFFECTS, AUDIO_GRADIENTS, AUDIO_EFFECTS, FULL_GRADIENT_TYPES,
@@ -561,6 +562,12 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     // The effects that keep their own clock read their speed from here, with any audio binding already applied.
     for (const key of EFFECT_SPEED_KEYS) effectSpeedsLive[key] = Math.max(0, (drawCtx as unknown as Record<string, number>)[`${key}Speed`] ?? 1);
     // The shared Speed also paces the effects that spin or drift inside the draw call.
+    // Sizes in pixels shrink with the canvas, so a look made on a desktop keeps its proportions on a phone.
+    const sizeScale = canvasSizeScale(displayWidth, displayHeight);
+    if (sizeScale < 1) {
+      const ctxBag = drawCtx as unknown as Record<string, number>;
+      for (const key in PIXEL_SIZED_SETTINGS) if (typeof ctxBag[key] === 'number') ctxBag[key] = Math.max(PIXEL_SIZED_SETTINGS[key], Math.round(ctxBag[key] * sizeScale));
+    }
     const playbackSpeed = av.liveSpeeds.playbackSpeed ?? 1;
     drawCtx.kaleidoscopeRotateSpeed *= playbackSpeed;
     drawCtx.auraGlowSpeed *= playbackSpeed;
