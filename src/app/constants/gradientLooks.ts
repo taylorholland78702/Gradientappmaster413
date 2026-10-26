@@ -114,11 +114,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Magma', colors: ['#2b0a03', '#a3260b', '#ff6a1a', '#ffd27a'], speed: 1.3 },
     { name: 'Sakura', colors: ['#5b1a3a', '#c2477a', '#ff9ec4', '#ffe3ef'], speed: 0.7 },
   ],
-  'light-beam': [
-    { name: 'Ember Beam', colors: ['#0a0402', '#7a2a08', '#ff7a1a', '#ffe2b0'] },
-    { name: 'Cobalt Shaft', colors: ['#02060f', '#0a2a66', '#2f7bff', '#d6e8ff'] },
-    { name: 'Violet Dusk', colors: ['#07030f', '#3a1a73', '#9a5cff', '#ffd1f2'], speed: 0.7 },
-  ],
   'edge-glow': [
     { name: 'Night Rise', colors: ['#02040d', '#0a1f4d', '#2f6bff', '#cfe0ff'] },
     { name: 'Lagoon', colors: ['#020d10', '#06454f', '#17c3b2', '#e0fff8'] },
@@ -271,11 +266,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Ribbon Stack', colors: ['#0b3d91', '#1e88e5', '#4fc3f7', '#e1f5fe'], params: { stackCount: 20 } },
     { name: 'Sunset Stack', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { stackCount: 12, stackGap: 0.2 } },
     { name: 'Mono Stack', colors: ['#0a0a0a', '#4a4a4a', '#9a9a9a', '#f2f2f2'], params: { stackCount: 30 } },
-  ],
-  hatch: [
-    { name: 'Ink Hatch', colors: ['#f4f0e6', '#222222', '#c04a3a'], params: { hatchLayers: 3, hatchSpacing: 8 } },
-    { name: 'Blueprint Hatch', colors: ['#02244a', '#6fb3ff', '#e6f2ff'], params: { hatchLayers: 2, hatchSpacing: 12 } },
-    { name: 'Warm Pencil', colors: ['#fff6e0', '#c9a36b', '#7a4a2a'], params: { hatchLayers: 4, hatchSpacing: 6 } },
   ],
   truchet: [
     { name: 'Maze', colors: ['#05070f', '#e6f2ff'], params: { truchetSize: 40, truchetThickness: 4 } },

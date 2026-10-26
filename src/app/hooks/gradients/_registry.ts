@@ -3,7 +3,6 @@ import { drawAngle } from './drawAngle';
 import { drawWindmill } from './drawWindmill';
 import { drawShapes } from './drawShapes';
 import { drawStack } from './drawStack';
-import { drawHatch } from './drawHatch';
 import { drawNoise } from './drawNoise';
 import { drawStyleFieldCPU } from './drawStyleFieldCPU';
 import { drawTopographic } from './drawTopographic';
@@ -262,11 +261,9 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'flower': drawFlower,
   'glass': (P) => styleFieldAuto('glass', P),
   'grid': drawGrid,
-  'hatch': drawHatch,
   'holographic': (P) => styleFieldAuto('holographic', P),
   'julia': drawJuliaAuto,
   'lava-lamp': drawLavaLampAuto,
-  'light-beam': (P) => styleFieldAuto('light-beam', P),
   'lightning': drawLightningLazy,
   'marble': drawMarbleAuto,
   'mercury': (P) => styleFieldAuto('mercury', P),

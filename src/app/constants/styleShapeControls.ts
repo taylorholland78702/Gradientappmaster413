@@ -24,7 +24,6 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   raindrops: [{ label: 'Rate', hint: 'How fast new drops land' }, { label: 'Density', hint: 'How many drops at once' }],
   holographic: [{ label: 'Film', hint: 'How many times the foil cycles through the palette' }, { label: 'Sparkle', hint: 'Strength of the glitter' }],
   waves: [{ label: 'Amplitude', hint: 'Height of the swells' }, { label: 'Thickness', hint: 'Thickness of each ribbon' }],
-  'light-beam': [{ label: 'Width', hint: 'Width of the beam' }, { label: 'Angle', hint: 'Direction the beam points' }],
   'edge-glow': [{ label: 'Reach', hint: 'How far the glow climbs' }, { label: 'Ripple', hint: 'How wavy the glow’s crest is' }],
   curtains: [{ label: 'Folds', hint: 'Number of folds across the frame' }, { label: 'Height', hint: 'How high the light rises' }],
   eclipse: [{ label: 'Ring size', hint: 'Radius of the dark disc' }, { label: 'Corona', hint: 'Thickness of the glowing ring' }],

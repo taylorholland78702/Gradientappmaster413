@@ -19,6 +19,7 @@ export const SHARE_NEVER: ReadonlySet<string> = new Set([
   'waveInterferenceSourceCount', 'waveInterferenceFrequency', 'waveInterferenceSpeed',
   'turrellSpeed', 'turrellGlow', 'twistAmount', 'fadeMode', 'fadeDirection',
   'auroraBandCount', 'auroraBandHeight', 'auroraWaveSpeed',
+  'hatchLayers', 'hatchSpacing', 'hatchResponse', 'hatchSpeed', 'hatchAnimTime',
 ]);
 export const isClock = (key: string) => key.endsWith('AnimTime');
 
@@ -52,7 +53,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   watercolorSpeed: { effects: ['watercolor'] }, impastoSpeed: { effects: ['impasto'] },
   gridEffectSpeed: { effects: ['grid-effect'] }, liquidSpeed: { effects: ['liquid'] },
   halftoneCMYK: { effects: ['halftone'] }, halftoneMove: { effects: ['halftone'] }, halftoneMoveSpeed: { effects: ['halftone'] },
-  hatchResponse: { gradients: ['hatch'] },
   juliaReal: { gradients: ['julia'] }, juliaImaginary: { gradients: ['julia'] },
   lavaSpeed: { gradients: ['lava-lamp'] },
   mirrorMode: { effects: ['mirror'] },
