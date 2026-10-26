@@ -89,6 +89,7 @@ export const SNAPSHOT_LIMITS: Record<string, [number, number]> = {
   shapesSpeed: [0.1, 4.45],
   shapesSides: [1, 14.5],
   slitScanHistory: [12, 174],
+  slitScanSpeed: [0, 12],
   slitScanIntensity: [0.1, 14.95],
   triangleSize: [10, 295],
   triangulateVariation: [-0.5, 1.5],

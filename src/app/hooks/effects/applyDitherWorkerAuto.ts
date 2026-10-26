@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 // Web Worker-backed Auto wrapper for Dither — see workerAutoEffect.ts. No
 // OffscreenCanvas step here since ditherWorker.ts is pure array math; this
 // still calls the main-thread-only putScaledImageData (inside the shared
@@ -23,7 +24,7 @@ export const applyDitherWorkerAuto = createWorkerAutoEffect<DitherWorkerRequest,
     // Fresh snapshot each call (getDisplayImageData always returns a new
     // ImageData), so transferring its buffer to the worker is safe.
     const snapshot = getDisplayImageData();
-    ditherPhaseTime += 0.08;
+    ditherPhaseTime += 0.08 * effectSpeedsLive.dither;
     return {
       buffer: snapshot.data.buffer,
       extra: { displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherPhase: ditherPhaseTime },

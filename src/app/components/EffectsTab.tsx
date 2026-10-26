@@ -7,6 +7,7 @@ import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, isEmojiRenderable, pickRandomEmojiSet } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
 import { AngleDial } from './AngleDial';
+import type { EffectSpeedKey, EffectSpeeds } from '../constants/effectSpeeds';
 import { decayToPosition, positionToDecay } from '../utils/trailScale';
 import { StepperRow } from './StepperRow';
 import { HueStrip } from './HueStrip';
@@ -96,6 +97,7 @@ export interface EffectsTabProps {
   // Halftone
   halftoneSize: number; setHalftoneSize: (v: number) => void;
   halftoneCMYK: boolean; setHalftoneCMYK: (v: boolean) => void;
+  effectSpeeds: EffectSpeeds; setEffectSpeed: (key: EffectSpeedKey, v: number) => void;
   halftoneMove: boolean; setHalftoneMove: (v: boolean) => void;
   halftoneMoveSpeed: number; setHalftoneMoveSpeed: (v: number) => void;
   gridEffectSpeed: number; setGridEffectSpeed: (v: number) => void;
@@ -127,6 +129,7 @@ export interface EffectsTabProps {
   // Slit-Scan
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
+  slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
   slitScanDirection: 'horizontal' | 'vertical' | 'radial' | 'circular'; setSlitScanDirection: (v: 'horizontal' | 'vertical' | 'radial' | 'circular') => void;
   // Dither
   ditherLevels: number; setDitherLevels: (v: number) => void;
@@ -177,7 +180,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
-    halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, gridEffectSpeed, setGridEffectSpeed, liquidSpeed, setLiquidSpeed, halftoneVariation, setHalftoneVariation,
+    halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, effectSpeeds, setEffectSpeed, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, gridEffectSpeed, setGridEffectSpeed, liquidSpeed, setLiquidSpeed, halftoneVariation, setHalftoneVariation,
     duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
@@ -185,7 +188,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, setSlitScanSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -324,6 +327,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('ascii') && (
                 <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={!collapsedEffects.has('ascii')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Cell Size:" value={asciiSize} onChange={setAsciiSize} min="6" max="40" />
+                  <SliderRow label="Speed:" title="How fast the characters flicker. Zero holds them still." value={effectSpeeds.ascii} onChange={(v) => setEffectSpeed('ascii', v)} min="0" max="4" step="0.1" />
                   <div className="flex items-center gap-1">
                     <label className="text-[10px] text-white whitespace-nowrap" title="Darkest to brightest, left to right">Chars:</label>
                     <input
@@ -414,12 +418,14 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('crt') && (
                 <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Intensity:" value={crtIntensity} onChange={setCrtIntensity} min="0" max="1" step="0.05" />
+                  <SliderRow label="Speed:" title="How fast the rolling bar moves. Zero holds it still." value={effectSpeeds.crt} onChange={(v) => setEffectSpeed('crt', v)} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('dada') && (
                 <EffectSection id="dada" label="Dada" isMulti={isMulti} expanded={!collapsedEffects.has('dada')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Panels:" value={dadaPanels} onChange={setDadaPanels} min="2" max="8" step="1" />
                   <SliderRow label="Chaos:" value={dadaChaos} onChange={setDadaChaos} min="0" max="1" step="0.05" />
+                  <SliderRow label="Speed:" title="How fast the panels drift. Zero holds them still." value={effectSpeeds.dada} onChange={(v) => setEffectSpeed('dada', v)} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('dither') && (
@@ -445,6 +451,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <SliderRow label="Levels:" title="How many shades each color channel is reduced to. Both dither types use it." value={ditherLevels} onChange={setDitherLevels} min="2" max="16" step="1" />
+                  {ditherType === 'bayer' && (
+                    <SliderRow label="Speed:" title="How fast the Bayer pattern crawls. Zero holds it still." value={effectSpeeds.dither} onChange={(v) => setEffectSpeed('dither', v)} min="0" max="4" step="0.1" />
+                  )}
                   <SliderRow label="Scale:" title="How big each dither dot is, in pixels. Both dither types use it." value={ditherScale} onChange={setDitherScale} min="1" max="8" step="1" />
                 </EffectSection>
               )}
@@ -697,6 +706,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={impastoStrength} onChange={setImpastoStrength} min="1" max="7" step="0.1" />
                   <AngleDial label="Light Angle" value={impastoLightAngle} onChange={setImpastoLightAngle} max={359} />
+                  <SliderRow label="Speed:" title="How fast the light turns by itself. Zero keeps the Light Angle fixed." value={effectSpeeds.impasto} onChange={(v) => setEffectSpeed('impasto', v)} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('kaleidoscope') && (
@@ -811,6 +821,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <SliderRow label="Strength:" value={slitScanIntensity} onChange={setSlitScanIntensity} min="0.1" max="10" step="0.1" />
+                  <SliderRow label="Speed:" title="How fast the scan evolves. Zero freezes it." value={slitScanSpeed} onChange={setSlitScanSpeed} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
@@ -851,6 +862,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   <SliderRow label="Bleed:" value={watercolorBleed} onChange={setWatercolorBleed} min="0" max="10" step="0.5" />
                   <SliderRow label="Grain:" value={watercolorGrain} onChange={setWatercolorGrain} min="0" max="1" step="0.05" />
+                  <SliderRow label="Speed:" title="How fast the wash drifts. Zero holds it still." value={effectSpeeds.watercolor} onChange={(v) => setEffectSpeed('watercolor', v)} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (

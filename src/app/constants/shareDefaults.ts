@@ -225,6 +225,7 @@ export const SHARE_DEFAULTS_V1: Readonly<Record<string, string | number | boolea
   shapesSides: 4,
   slitScanDirection: "radial",
   slitScanHistory: 60,
+  slitScanSpeed: 1,
   slitScanIntensity: 7,
   solarizeThreshold: 128,
   stackCount: 16,

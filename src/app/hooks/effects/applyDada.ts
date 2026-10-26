@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2 } from '../../utils/valueNoise';
@@ -41,7 +42,7 @@ export function applyDada(P: EffectCtx): void {
   // ellipse (phase seeded per panel via hash2) — the montage keeps
   // resettling rather than sitting frozen once cut, on top of whatever
   // jitter dadaChaos already adds.
-  dadaTime += 0.02;
+  dadaTime += 0.02 * effectSpeedsLive.dada;
 
   for (let y = 0; y < h; y++) {
     const panelY = Math.min(rows - 1, Math.floor(y / cellH));

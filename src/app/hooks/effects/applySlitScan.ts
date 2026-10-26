@@ -10,6 +10,7 @@ const pixels32 = (img: ImageData): Uint32Array => {
   return v;
 };
 let slitScanMap: SlitScanMap | null = null;
+let slitScanAccum = 0;
 
 export function applySlitScan(P: EffectCtx): void {
   const {
@@ -153,7 +154,7 @@ export function applySlitScan(P: EffectCtx): void {
     slitScanBufferRef,
     slitScanDirection,
     slitScanIntensity,
-    slitScanHistory,
+    slitScanHistory, slitScanSpeed,
     windmillRotations,
     windmillThickness,
     windmillTightness,
@@ -209,13 +210,23 @@ export function applySlitScan(P: EffectCtx): void {
             const ssDownsample = 0.5;
             const ssBufW = Math.max(1, Math.round(displayWidth * ssDownsample));
             const ssBufH = Math.max(1, Math.round(displayHeight * ssDownsample));
-            const ssCapture = getScratchCanvas('slitScanCapture', ssBufW, ssBufH);
-            const ssCaptureCtx = ssCapture.getContext('2d')!;
-            ssCaptureCtx.drawImage(canvas, 0, 0, ssBufW, ssBufH);
-            const ssImg = ssCaptureCtx.getImageData(0, 0, ssBufW, ssBufH);
             const maxHistory = Math.max(12, Math.round(slitScanHistory ?? 60));
-            slitScanBufferRef.current.push(ssImg);
-            if (slitScanBufferRef.current.length > maxHistory) slitScanBufferRef.current.shift();
+            // Speed is how many frames enter the buffer per draw: 1 is one each time, 0.5 one every other draw, 2 two
+            // at once (the second a repeat of the first, which moves the pattern along twice as fast). The first
+            // frame is always taken so the buffer is never empty.
+            slitScanAccum += Math.max(0, slitScanSpeed ?? 1);
+            let ssPush = Math.min(8, Math.floor(slitScanAccum));
+            slitScanAccum -= Math.floor(slitScanAccum);
+            if (slitScanBufferRef.current.length === 0 && ssPush === 0) ssPush = 1;
+            let ssImg: ImageData | null = null;
+            if (ssPush > 0) {
+              const ssCapture = getScratchCanvas('slitScanCapture', ssBufW, ssBufH);
+              const ssCaptureCtx = ssCapture.getContext('2d')!;
+              ssCaptureCtx.drawImage(canvas, 0, 0, ssBufW, ssBufH);
+              ssImg = ssCaptureCtx.getImageData(0, 0, ssBufW, ssBufH);
+              for (let k = 0; k < ssPush; k++) slitScanBufferRef.current.push(ssImg);
+              while (slitScanBufferRef.current.length > maxHistory) slitScanBufferRef.current.shift();
+            }
 
             // With only 1-2 frames buffered (e.g. right after switching
             // direction, before playback has run long enough to fill the
@@ -235,7 +246,7 @@ export function applySlitScan(P: EffectCtx): void {
             const MIN_BUFFERED_FRAMES = 12;
             if (slitScanBufferRef.current.length === 1 && slitScanBufferRef.current.length < MIN_BUFFERED_FRAMES) {
               while (slitScanBufferRef.current.length < MIN_BUFFERED_FRAMES) {
-                slitScanBufferRef.current.push(ssImg);
+                slitScanBufferRef.current.push(slitScanBufferRef.current[0]);
               }
             }
 
