@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
+import { useLearn, ModCategoryCtx, BAND_COLORS, BAND_LABELS } from './LearnContext';
+import { resolveParam } from '../utils/modResolve';
 import { percentRange, toPercent, fromPercent } from '../utils/sliderScale';
 
 // One slider row for every panel: a fixed label column, a flexible track and a fixed value box, so
@@ -22,9 +24,30 @@ export function SliderRow({ label, title, value, onChange, onNumberChange, min, 
   const shown = pct ? toPercent(value, pct) : value;
   const bounds = pct ? { min: 0, max: 100, step: 1 } : { min, max, step };
   const fromShown = (n: number) => (pct ? fromPercent(n, pct) : n);
+  // Audio "learn" binding: while a band is being learned, touching this row binds its setting to the band.
+  const learn = useLearn();
+  const categories = useContext(ModCategoryCtx);
+  const param = learn ? resolveParam(label, categories) : null;
+  const bound = param && learn ? learn.bindings.filter(b => b.param === param) : [];
+  const learning = !!learn?.band;
+  const onLearnTap = (e: React.SyntheticEvent) => {
+    if (!learn || !learn.band) return;
+    e.preventDefault(); e.stopPropagation();
+    const name = typeof label === 'string' ? label.replace(/:$/, '') : 'This control';
+    if (!param) { learn.setNotice(`${name} can't follow audio`); return; }
+    const r = learn.toggle(param);
+    learn.setNotice(r === 'added' ? `${name} now follows ${BAND_LABELS[learn.band]}` : `${name} no longer follows ${BAND_LABELS[learn.band]}`);
+  };
   return (
-    <div className={`grid ${children ? 'grid-cols-[4.75rem_minmax(0,1fr)_3rem_auto]' : 'grid-cols-[4.75rem_minmax(0,1fr)_3rem]'} items-center gap-1`} title={title}>
-      <label className="text-[10px] text-white leading-[1.15]">{label}</label>
+    <div
+      onPointerDownCapture={learning ? onLearnTap : undefined}
+      onClickCapture={learning ? (e) => { e.preventDefault(); e.stopPropagation(); } : undefined}
+      data-param={learn ? param ?? '' : undefined}
+      className={`grid ${children ? 'grid-cols-[4.75rem_minmax(0,1fr)_3rem_auto]' : 'grid-cols-[4.75rem_minmax(0,1fr)_3rem]'} items-center gap-1 ${learning ? `cursor-pointer ${param ? 'outline outline-1 outline-[#a855f7]' : 'opacity-50'}` : ''}`} title={title}>
+      <label className="text-[10px] text-white leading-[1.15]">
+        {bound.map(b => <span key={b.id} aria-label={`Follows ${BAND_LABELS[b.band]}`} title={`Follows ${BAND_LABELS[b.band]}`} className="inline-block w-1.5 h-1.5 rounded-full mr-0.5 align-middle" style={{ background: BAND_COLORS[b.band] }} />)}
+        {label}
+      </label>
       <input
         type="range" min={bounds.min} max={bounds.max} step={bounds.step} value={shown}
         onChange={(e) => onChange(fromShown(Number(e.target.value)))}

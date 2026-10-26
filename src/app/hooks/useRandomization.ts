@@ -23,7 +23,7 @@ import { USE_LEARNED_TASTE } from '../constants/shuffleTaste';
 const learnedWeight = (kind: LearnedKind, id: string) => (USE_LEARNED_TASTE ? shuffleLearning.weight(kind, id) : 1);
 import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
-import type { AudioBinding } from './state/useAudioBindingsState';
+import { randomBindings } from '../utils/randomBindings';
 
 import { GRADIENT_MOD_CATEGORY, GLOBAL_CATEGORIES, modCategoriesFor } from '../constants/gradientModCategories';
 export { GRADIENT_MOD_CATEGORY };
@@ -75,10 +75,6 @@ const CONTENT_ERASERS: EffectType[] = ['oil-paint', 'impasto', 'duotone', 'pixel
 // they're the only sliders in a sparse pool), just weighted down so
 // shuffleAudiovisuals's picks are more likely to be ones you can actually
 // see moving.
-const LOW_VISIBILITY_MOD_KEYS = new Set([
-  'angleCenterX', 'angleCenterY', 'angleStartOffset',
-  'blurMotionDirection', 'fadeDirection', 'noiseDirection',
-]);
 export type { RandomizationParams };
 
 export function useRandomization(params: RandomizationParams) {
@@ -551,42 +547,7 @@ export function useRandomization(params: RandomizationParams) {
     setContrastBeatEnabled(Math.random() < 0.5);
     setPaletteBeatEnabled(Math.random() < 0.5);
 
-    const activeModCategories = modCategoriesFor(effectiveGradientType, effectiveActiveEffects as string[], EFFECT_MOD_CATEGORY);
-    const relevantParams = MODULATABLE_PARAMS.filter((p) => activeModCategories.has(p.category));
-    // Fall back to the full pool only if the current gradient/effects have no
-    // modulatable sliders at all, so Shuffle still does something useful.
-    const paramPool = relevantParams.length > 0 ? relevantParams : MODULATABLE_PARAMS;
-
-    const bandOptions: AudioBinding['band'][] = ['sub', 'mids', 'treble', 'energy'];
-    const bindingCount = Math.min(1 + Math.floor(Math.random() * 3), paramPool.length); // 1-3
-    // Weighted sampling without replacement — low-visibility params (see
-    // LOW_VISIBILITY_MOD_KEYS) are 4x less likely to be picked than a normal
-    // size/intensity/count slider, so a shuffle more reliably lands on
-    // bindings whose audio-reactivity is actually visible on screen, while
-    // still leaving them selectable when they're the only options in a
-    // sparse pool.
-    const candidates = paramPool.map((p) => ({ p, weight: LOW_VISIBILITY_MOD_KEYS.has(p.key) || (GLOBAL_CATEGORIES as readonly string[]).includes(p.category) ? 1 : 4 }));
-    const shuffledParams: typeof paramPool = [];
-    for (let i = 0; i < bindingCount && candidates.length > 0; i++) {
-      const totalWeight = candidates.reduce((sum, c) => sum + c.weight, 0);
-      let roll = Math.random() * totalWeight;
-      let pickIndex = 0;
-      for (; pickIndex < candidates.length; pickIndex++) {
-        roll -= candidates[pickIndex].weight;
-        if (roll < 0) break;
-      }
-      shuffledParams.push(candidates[pickIndex].p);
-      candidates.splice(pickIndex, 1);
-    }
-    setAudioBindings(shuffledParams.map((p): AudioBinding => ({
-      id: `${Date.now()}-${Math.random()}`,
-      param: p.key,
-      band: bandOptions[Math.floor(Math.random() * bandOptions.length)],
-      // Floor raised from 0.2 to 0.9 — a near-zero modulation depth binds
-      // technically but never swings far enough to visibly read as
-      // "reacting to the music".
-      amount: Number(((Math.random() < 0.15 ? -1 : 1) * (0.9 + Math.random() * 2.3)).toFixed(1)),
-    })));
+    setAudioBindings(randomBindings(effectiveGradientType, effectiveActiveEffects as string[]));
   }, [gradientType, activeEffects]);
   const feelingLucky = useCallback(() => {
     setShowRatingUI(false);

@@ -1,12 +1,16 @@
 import { CaretDown } from '@phosphor-icons/react';
+import { ModCategoryCtx } from './LearnContext';
+import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 
 export function EffectSection({ id, label, isMulti, expanded, onToggle, children }: {
   id: string; label: string; isMulti: boolean;
   expanded: boolean; onToggle: (id: string) => void;
   children: React.ReactNode;
 }) {
-  if (!isMulti) return <>{children}</>;
+  const categories = EFFECT_MOD_CATEGORY[id] ?? [];
+  if (!isMulti) return <ModCategoryCtx.Provider value={categories}>{children}</ModCategoryCtx.Provider>;
   return (
+    <ModCategoryCtx.Provider value={categories}>
     <div className="border-b border-wav-line-strong last:border-0">
       <button
         onClick={() => onToggle(id)}
@@ -17,5 +21,6 @@ export function EffectSection({ id, label, isMulti, expanded, onToggle, children
       </button>
       {expanded && <div className="flex flex-col gap-2 pb-3">{children}</div>}
     </div>
+    </ModCategoryCtx.Provider>
   );
 }
