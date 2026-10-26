@@ -11,8 +11,9 @@ import { AngleDial } from './AngleDial';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
-// Gradients (besides the styled-field ones) that move, so show the shared Speed slider.
-const ANIMATED_GRADIENTS: string[] = ['stack', 'hatch', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower'];
+// Gradients (besides the styled-field ones) that move, so show the shared Speed slider. Angle, Grid, Windmill, Radial
+// Burst and Tiling move by turning (or, for Tiling, drifting) when Play is on, and the shared Speed sets that pace too.
+const ANIMATED_GRADIENTS: string[] = ['stack', 'hatch', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
 
 // Classic Gray-Scott feed/kill regimes.
 const REACTION_DIFFUSION_PATTERNS = [
