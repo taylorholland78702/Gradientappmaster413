@@ -78,6 +78,8 @@ export function useMasterClock(p: UseMasterClockParams) {
       analyzeAudioRef.current?.();
 
       const spd = vcrPlaybackSpeedRef.current;
+      // Rotate Direction also steers the gradients that turn on a clock of their own (Flower, Tiling, Voronoi): -1 plays them backward.
+      const dirSign = rotationDirectionRef.current === 'clockwise' ? 1 : -1;
       // The active gradient's Speed as last drawn (slider plus any audio binding), else the saved slider.
       const activeGradientSpeed = () => liveSpeed(animValuesRef.current.liveSpeeds, `${gradientTypeRef.current}Speed`, gradientSpeedRef.current);
 
@@ -202,7 +204,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // that clock is pushed from the controller instead, so both windows
       // stay frame-locked rather than drifting apart over time.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'voronoi' && isPlayActive) {
-        animValuesRef.current.voronoiAnimTime += 0.01 * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * activeGradientSpeed() * dtScale;
+        animValuesRef.current.voronoiAnimTime += 0.01 * dirSign * (isAutoModeRef.current || isVCRPlayingRef.current ? spd : 1) * activeGradientSpeed() * dtScale;
       }
 
       // Auto-rotate the gradient angle — PLAY active. Ticks every frame (like the radar
@@ -239,14 +241,14 @@ export function useMasterClock(p: UseMasterClockParams) {
       // Flower rotation — only when PLAY is active. Skipped in Display
       // mode; see the Voronoi comment above.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'flower' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.flowerAnimTime += 0.5 * spd * activeGradientSpeed() * dtScale;
+        animValuesRef.current.flowerAnimTime += 0.5 * dirSign * spd * activeGradientSpeed() * dtScale;
       }
 
       // Tiling rotation — only while the playhead is engaged (PLAY or
       // Auto mode), same gating as Flower above. Adds on top of the
       // static tilingRotation slider rather than replacing it.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && gradientTypeRef.current === 'tiling' && (isAutoModeRef.current || isVCRPlayingRef.current)) {
-        animValuesRef.current.tilingAnimTime += 0.3 * spd * dtScale;
+        animValuesRef.current.tilingAnimTime += 0.3 * dirSign * spd * dtScale;
       }
 
       rafId = requestAnimationFrame(loop);
