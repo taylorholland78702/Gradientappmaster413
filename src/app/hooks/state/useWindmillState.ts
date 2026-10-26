@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 
 export function useWindmillState() {
-  const [windmillTightness, setWindmillTightness] = useState(11);
-  const [windmillRotations, setWindmillRotations] = useState(3);
-  const [windmillThickness, setWindmillThickness] = useState(49);
+  const [windmillTightness, setWindmillTightness] = useState(1);
+  const [windmillRotations, setWindmillRotations] = useState(1);
+  const [windmillThickness, setWindmillThickness] = useState(40);
   const [windmillZoom, setWindmillZoom] = useState(3.5);
   // How strongly the global (audio-reactive) zoom control affects the
   // spiral's rotation count — was a hardcoded 0.3 dampening factor;
