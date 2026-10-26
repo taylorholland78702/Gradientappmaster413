@@ -109,7 +109,8 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed,
+    setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
@@ -275,6 +276,7 @@ export function useRandomization(params: RandomizationParams) {
     setDitherLevels(Math.floor(Math.random() * 14) + 2);               // 2–15
     setDitherType(Math.random() < 0.5 ? 'bayer' : 'floyd-steinberg');
     setDitherScale(Math.floor(Math.random() * 8) + 1);                 // 1–8
+    setDitherSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
 
     // Feedback
     setFeedbackDecay(Math.random() * 0.47 + 0.5);                      // 0.5–0.97
@@ -287,6 +289,7 @@ export function useRandomization(params: RandomizationParams) {
 
     // ASCII
     setAsciiSize(Math.floor(Math.random() * 34) + 6);                  // 6–39
+    setAsciiSpeed(0.5 + Math.random() * 1.5);                                   // 0.5–2
     setAsciiColor(Math.random() < 0.5);
 
     // Duotone
@@ -344,6 +347,7 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanIntensity(Math.random());                                 // 0–1
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
+    setSlitScanSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
 
     // Oil Paint
     setOilPaintRadius(Math.floor(Math.random() * 6) + 1);                // 1–6
@@ -352,6 +356,7 @@ export function useRandomization(params: RandomizationParams) {
     // Impasto
     setImpastoStrength(Math.random() * 6 + 1);                           // 1–7
     setImpastoLightAngle(Math.floor(Math.random() * 360));               // 0–359
+    setImpastoSpeed(0.5 + Math.random() * 1.5);                                   // 0.5–2
 
     // Brush Strokes
 
@@ -359,10 +364,12 @@ export function useRandomization(params: RandomizationParams) {
     // not a continuous slider), just Bleed/Grain.
     setWatercolorBleed(Math.random() * 10);                              // 0–10
     setWatercolorGrain(Math.random());                                   // 0–1
+    setWatercolorSpeed(0.5 + Math.random() * 1.5);                                // 0.5–2
 
     // Dada
     setDadaPanels(Math.floor(Math.random() * 7) + 2);                    // 2–8
     setDadaChaos(Math.random());                                         // 0–1
+    setDadaSpeed(0.5 + Math.random() * 1.5);                                      // 0.5–2
 
     // Previously-uncovered secondary sub-controls (each sits alongside a
     // primary slider that was already randomized above/elsewhere).
@@ -370,6 +377,7 @@ export function useRandomization(params: RandomizationParams) {
     setKaleidoscopeRotateSpeed(Math.random() * 5);                       // 0–5
     setLiquidScale(Math.random() * 9.5 + 0.5);                           // 0.5–10
     setLiquidStrength(Math.floor(Math.random() * 101));                  // 0–100
+    setLiquidSpeed(0.5 + Math.random() * 1.5);                                    // 0.5–2
     setBlurType((['gaussian', 'motion', 'radial'] as const)[Math.floor(Math.random() * 3)]);
     setGrainType((['fine', 'medium', 'coarse', 'film'] as const)[Math.floor(Math.random() * 4)]);
     setNoiseType((['smooth', 'ridged'] as const)[Math.floor(Math.random() * 2)]);
@@ -396,7 +404,7 @@ export function useRandomization(params: RandomizationParams) {
     setPosterizeLevels(Math.floor(Math.random() * 10) + 4);           // 4–13
     setHalftoneSize(Math.floor(Math.random() * 25) + 5);              // 5–29
     setHalftoneVariation(Math.random() * 0.5);                        // 0–0.5
-    setHalftoneMoveSpeed(Math.random() * 5 + 1);                      // 1–6
+    setHalftoneMoveSpeed(0.5 + Math.random() * 1.5);                  // 0.5–2 (it drives the clock now, so 1–6 was far too fast)
     setVignetteStrength(randInRange(RANGES.vignetteStrength));
     setColorShiftHue(randIntInRange(RANGES.colorShiftHue));
     setDigitalNoiseIntensity(Math.random() * 0.4);                    // 0–0.4
@@ -415,6 +423,7 @@ export function useRandomization(params: RandomizationParams) {
     setVhsGlitchIntensity(Math.random() * 0.35 + 0.05);              // 0.05–0.4
     setVhsJitterAmount(Math.floor(Math.random() * 351) + 50);        // 50–400
     setGridRows(Math.floor(Math.random() * 12) + 4);                  // 4–15
+    setGridEffectSpeed(0.5 + Math.random() * 1.5);                             // 0.5–2
     setGridColumns(Math.floor(Math.random() * 12) + 4);               // 4–15
     setPolygon2Sides(Math.floor(Math.random() * 14) + 3);             // 3–16
     setWaveDistortionStrength(randIntInRange(RANGES.waveDistortionStrength));
@@ -461,6 +470,7 @@ export function useRandomization(params: RandomizationParams) {
     // last synced, so they sat frozen at their defaults through every
     // shuffle path exactly like the Modulation gap.
     setCrtIntensity(Math.random() * 0.6 + 0.1);                        // 0.1–0.7
+    setCrtSpeed(0.5 + Math.random() * 1.5);                                     // 0.5–2
     setCrtScanlineSpacing(Math.floor(Math.random() * 6) + 1);          // 1–6
     setDustCrackleLength(Math.random() * 2.7 + 0.3);                   // 0.3–3
     setDustCrackleColor(randomHexColor());
@@ -951,14 +961,19 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'triangulate') setTriangleSize(Math.round(rng(...RANGES.triangleSize)));
       else if (eff === 'bloom') { setBloomIntensity(rng(0, 2)); setBloomRadius(Math.round(rng(2, 40))); }
       else if (eff === 'chromatic-trails') { setChromaticTrailsDecay(rng(0.5, 0.99)); setChromaticTrailsOffset(Math.round(rng(1, 30))); }
-      else if (eff === 'dither') { setDitherLevels(Math.round(rng(2, 16))); setDitherScale(Math.round(rng(1, 8))); }
+      else if (eff === 'dither') { setDitherLevels(Math.round(rng(2, 16))); setDitherScale(Math.round(rng(1, 8))); setDitherSpeed(rng(0.5, 2)); }
       else if (eff === 'feedback') { setFeedbackDecay(rng(0.5, 0.97)); setFeedbackZoom(rng(0, 5)); }
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
-      else if (eff === 'ascii') setAsciiSize(Math.round(rng(6, 40)));
+      else if (eff === 'ascii') { setAsciiSize(Math.round(rng(6, 40))); setAsciiSpeed(rng(0.5, 2)); }
       else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }
       else if (eff === 'vhs') { setVhsGlitchIntensity(rng(0.05, 0.4)); setVhsJitterAmount(Math.round(rng(50, 400))); }
-      else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); }
-      else if (eff === 'slit-scan') { setSlitScanIntensity(rng(0, 1)); setSlitScanHistory(Math.round(rng(12, 120))); }
+      else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); setCrtSpeed(rng(0.5, 2)); }
+      else if (eff === 'liquid') setLiquidSpeed(rng(0.5, 2));
+      else if (eff === 'grid-effect') setGridEffectSpeed(rng(0.5, 2));
+      else if (eff === 'dada') setDadaSpeed(rng(0.5, 2));
+      else if (eff === 'watercolor') setWatercolorSpeed(rng(0.5, 2));
+      else if (eff === 'impasto') setImpastoSpeed(rng(0.5, 2));
+      else if (eff === 'slit-scan') { setSlitScanIntensity(rng(0, 1)); setSlitScanHistory(Math.round(rng(12, 120))); setSlitScanSpeed(rng(0.5, 2)); }
     }
 
     // Gradient-specific params — scale range with factor. Was always the

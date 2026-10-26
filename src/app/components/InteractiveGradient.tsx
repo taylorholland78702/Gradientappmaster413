@@ -293,7 +293,7 @@ export function InteractiveGradient() {
   const { shapesSides, setShapesSides, shapesCount, shapesSpeed, setShapesCount, setShapesSpeed, shapesMode, setShapesMode } = useShapesState();
   const { stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed } = useStackState();
   const { hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchAnimTime, setHatchAnimTime, hatchSpeed, setHatchSpeed } = useHatchState();
-  const { effectSpeeds, setEffectSpeed } = useEffectSpeedsState();
+  const { effectSpeeds, setEffectSpeed, crtSpeed, setCrtSpeed, ditherSpeed, setDitherSpeed, dadaSpeed, setDadaSpeed, asciiSpeed, setAsciiSpeed, watercolorSpeed, setWatercolorSpeed, impastoSpeed, setImpastoSpeed } = useEffectSpeedsState();
   const { slitScanIntensity, setSlitScanIntensity, slitScanDirection, setSlitScanDirection, slitScanHistory, setSlitScanHistory, slitScanSpeed, setSlitScanSpeed, slitScanBufferRef } = useSlitScanState();
   const { solarizeThreshold, setSolarizeThreshold } = useSolarizeState();
   const { structuralSeed, setStructuralSeed } = useStructuralSeedState();
@@ -623,6 +623,7 @@ export function InteractiveGradient() {
   // step 3). The single source of truth for undo/redo AND presets, so it
   // touches nearly every piece of state (~380 values/setters).
   const { buildSnapshot, applySnapshot } = useSnapshot({
+    crtSpeed, ditherSpeed, dadaSpeed, asciiSpeed, watercolorSpeed, impastoSpeed, gridEffectSpeed, liquidSpeed, setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     activeEffects, angleCenterX, angleCenterY, angleStartOffset, angleHardEdge, setAngleHardEdge, asciiChars, asciiColor,
     gridHardEdge, setGridHardEdge, radialHardEdge, setRadialHardEdge,
     radialAnimTime, setRadialAnimTime, radialSpeed, setRadialSpeed,
@@ -785,7 +786,7 @@ export function InteractiveGradient() {
     setWaveInterferenceSourceCount, setWaveInterferenceFrequency, setWaveInterferenceSpeed,
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed, setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
     setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
