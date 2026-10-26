@@ -57,10 +57,11 @@ export interface UseAnimClocksParams {
   turrellAnimTime: number;
   vcrPlaybackSpeed: number;
   vcrPlaybackSpeedRef: MutableRefObject<number>;
+  rotationDirectionRef: MutableRefObject<'clockwise' | 'counter'>;
 }
 
 export function useAnimClocks(p: UseAnimClocksParams) {
-  const { activeEffects, animValuesRef, causticsSpeed, marbleSpeed, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef } = p;
+  const { activeEffects, animValuesRef, causticsSpeed, marbleSpeed, attractorAnimTime, attractorSpeed, audioEnergy, audioMidsLevel, audioSubBassLevel, audioTrebleLevel, auroraAnimTime, causticsAnimTime, emojiAnimTime, emojiRotateSpeed, flowAnimTime, flowSpeed, gradientType, gradientTypeRef, hatchAnimTime, hatchSpeed, isAutoMode, isAutoModeRef, isMicActive, isMicActiveRef, isVCRPlaying, isVCRPlayingRef, lavaAnimTime, liquidAnimTime, marbleAnimTime, metaballAnimTime, metaballSpeed, noiseAnimTime, noiseSpeed, particlesMode, radialAnimTime, radialSpeed, setAttractorAnimTime, setCausticsAnimTime, setEmojiAnimTime, setFlowAnimTime, setHatchAnimTime, setLavaAnimTime, setLiquidAnimTime, setMarbleAnimTime, setMetaballAnimTime, setNoiseAnimTime, setRadialAnimTime, turrellAnimTime, vcrPlaybackSpeed, vcrPlaybackSpeedRef, rotationDirectionRef } = p;
   // Effects that animate inside the draw call (Aura Glow, Kaleido) have no clock of their own; publish the shared Speed for them.
   useEffect(() => { animValuesRef.current.liveSpeeds.playbackSpeed = vcrPlaybackSpeed; }, [animValuesRef, vcrPlaybackSpeed]);
   // Each of these local clocks is skipped entirely in Display mode — that
@@ -86,7 +87,7 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'radial' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setRadialAnimTime(t => t + 0.006 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'radialSpeed', radialSpeed)), 16);
+    const id = setInterval(() => setRadialAnimTime(t => t + 0.006 * (rotationDirectionRef.current === 'clockwise' ? 1 : -1) * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'radialSpeed', radialSpeed)), 16);
     return () => clearInterval(id);
   }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, radialSpeed]);
 
@@ -121,7 +122,7 @@ export function useAnimClocks(p: UseAnimClocksParams) {
       if (!STYLE_FIELD_GRADIENT_TYPES.includes(gradientTypeRef.current as GradientType)) return;
       if (!isAutoModeRef.current && !isVCRPlayingRef.current && !isMicActiveRef.current) return;
       const av = animValuesRef.current;
-      av.fieldAnimTime += dt * vcrPlaybackSpeedRef.current * av.fieldSpeedLive;
+      av.fieldAnimTime += dt * (rotationDirectionRef.current === 'clockwise' ? 1 : -1) * vcrPlaybackSpeedRef.current * av.fieldSpeedLive;
     }, 16);
     return () => clearInterval(id);
   }, []);
