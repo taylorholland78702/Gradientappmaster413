@@ -7,6 +7,7 @@ import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
 import { AngleDial } from './AngleDial';
+import { decayToPosition, positionToDecay } from '../utils/trailScale';
 import { StepperRow } from './StepperRow';
 import { HueStrip } from './HueStrip';
 import { PointPad } from './PointPad';
@@ -400,7 +401,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('chromatic-trails') && (
                 <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Decay:" value={chromaticTrailsDecay} onChange={setChromaticTrailsDecay} min="0.5" max="0.99" step="0.01" />
+                  <SliderRow label="Decay:" title="How long the trails linger. Each step lengthens them by the same amount, so the subtle end gets as much room as the long end." value={decayToPosition(chromaticTrailsDecay)} onChange={(t) => setChromaticTrailsDecay(positionToDecay(t))} min="0" max="1" step="0.01" />
                 </EffectSection>
               )}
               {activeEffects.includes('crt') && (
