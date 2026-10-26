@@ -302,13 +302,13 @@ const PresetsPanelInner: React.FC<PresetsPanelProps> = ({
               <div className="flex gap-1 text-[10px]">
                 <button
                   onClick={() => { setEmailMode('signin'); clearAuthError(); }}
-                  className={`px-2 py-0.5 transition-all ${emailMode === 'signin' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
+                  className={`wav-choice px-2 py-0.5 transition-all ${emailMode === 'signin' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
                 >
                   Sign in
                 </button>
                 <button
                   onClick={() => { setEmailMode('signup'); clearAuthError(); }}
-                  className={`px-2 py-0.5 transition-all ${emailMode === 'signup' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
+                  className={`wav-choice px-2 py-0.5 transition-all ${emailMode === 'signup' ? 'bg-white text-black font-bold' : 'text-wav-text-3 hover:text-white'}`}
                 >
                   Sign up
                 </button>

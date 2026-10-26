@@ -133,7 +133,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
     >
       <span className="text-white font-semibold" style={{ fontSize: isMobile ? 15 : 15 * DESKTOP_DRAWER_SCALE }}>{TAB_LABELS[activeTab]}</span>
     </div>
-    <div className="sticky z-10 bg-wav-surface" style={{ top: isMobile ? 30 : 30 * DESKTOP_DRAWER_SCALE }}><LearnBanner /></div>
+    <div className="sticky z-10 bg-black" style={{ top: isMobile ? 30 : 30 * DESKTOP_DRAWER_SCALE }}><LearnBanner /></div>
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
         above. Mobile renders this content directly at natural size. */}
     <div

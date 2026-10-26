@@ -418,7 +418,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   </select>
                   <button
                     onClick={() => setAudioBindings(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, param: modParam, band: modBand, amount: NEW_BINDING_AMOUNT }])}
-                    className="p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
+                    className="relative wav-hit p-1 bg-wav-field text-white hover:bg-wav-hover transition-all flex-shrink-0"
                     title="Add modulation binding"
                     aria-label="Add modulation binding"
                   >
