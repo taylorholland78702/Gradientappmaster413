@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { impastoPixels } from './impastoPixels';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import type { EffectCtx } from '../canvasDrawTypes';
@@ -20,7 +21,7 @@ export function applyImpasto(P: EffectCtx): void {
   // Slow orbit of the light source around the base angle — a fixed
   // painting can still read as lit by a moving light, rather than the
   // brushwork itself changing shape.
-  impastoTime += 0.15;
+  impastoTime += 0.15 * effectSpeedsLive.impasto;
   const litAngle = impastoLightAngle + impastoTime;
   impastoPixels(src.data, w, h, impastoStrength, litAngle);
   putLowResImageData(src);

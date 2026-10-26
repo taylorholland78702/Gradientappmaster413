@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import type { EffectCtx } from '../canvasDrawTypes';
 
@@ -27,7 +28,7 @@ export function applyCrt(P: EffectCtx): void {
   const spacing = Math.max(1, Math.round(crtScanlineSpacing ?? 2));
   // Slow downward roll, like a real tube's scan drifting out of vertical
   // sync — a fixed, non-reactive creep rather than anything audio-driven.
-  crtTime += 0.05;
+  crtTime += 0.05 * effectSpeedsLive.crt;
   const rollOffset = Math.floor(crtTime);
   const src = getDisplayImageData();
   const dst = getScratchImageData('crt', ctx, displayWidth, displayHeight);

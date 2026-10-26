@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { ditherPixels } from './ditherPixels';
 import type { EffectCtx } from '../canvasDrawTypes';
 
@@ -196,7 +197,7 @@ export function applyDither(P: EffectCtx): void {
   // Dither effect. Pixel math itself lives in ditherPixels.ts, shared with
   // ditherWorker.ts (see applyDitherWorkerAuto.ts) so the exact same code
   // runs whether this executes here on the main thread or inside a Worker.
-  ditherTime += 0.08;
+  ditherTime += 0.08 * effectSpeedsLive.dither;
   const ditherImageData = getDisplayImageData();
   ditherPixels(ditherImageData.data, displayWidth, displayHeight, ditherType, ditherLevels, ditherScale, ditherTime);
   putScaledImageData(ditherImageData);

@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { TWO_PI } from '../../constants/gradientEffects';
 import type { EffectCtx } from '../canvasDrawTypes';
 
@@ -214,7 +215,7 @@ export function applyAscii(P: EffectCtx): void {
             // Each cell flickers at its own slow, asynchronous rate between
             // adjacent ramp characters — like an unstable terminal readout —
             // rather than every cell sitting on a fixed character forever.
-            asciiTime += 0.03;
+            asciiTime += 0.03 * effectSpeedsLive.ascii;
 
             // Pass 1: each cell's brightness. A gradient rarely spans black to white, so mapping brightness straight
             // onto the character list left the first and last characters unused and the middle ones doing all the

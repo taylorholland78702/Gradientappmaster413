@@ -1,3 +1,4 @@
+import { effectSpeedsLive } from '../../constants/effectSpeeds';
 import { getScratchImageData } from '../../utils/scratchCanvas';
 import { getDownscaleWorkingSize, captureDownscaledSource } from '../../utils/downscaleCapture';
 import { hash2, valueNoise } from '../../utils/valueNoise';
@@ -55,7 +56,7 @@ export function applyWatercolor(P: EffectCtx): void {
   // A wash never fully dries in this render — the coherent warp field
   // keeps drifting through the noise space at a slow, fixed rate so the
   // bleed continues to creep even over an otherwise-static source.
-  watercolorTime += 0.003;
+  watercolorTime += 0.003 * effectSpeedsLive.watercolor;
   const wt = watercolorTime;
 
   for (let y = 0; y < h; y++) {

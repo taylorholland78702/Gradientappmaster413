@@ -217,6 +217,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'colorShiftHue', label: 'Color Shift Hue', category: 'Shift', min: 0.0, max: 255.0 },
   { key: 'slitScanIntensity', label: 'Slit Scan Intensity', category: 'Slit-Scan', min: 0.1, max: 10.0 },
   { key: 'slitScanHistory', label: 'Slit Scan History', category: 'Slit-Scan', min: 12.0, max: 120.0 },
+  { key: 'slitScanSpeed', label: 'Slit Scan Speed', category: 'Slit-Scan', min: 0.0, max: 4.0 },
   { key: 'tilingSize', label: 'Tiling Size', category: 'Tiling', min: 30.0, max: 300.0 },
   { key: 'tilingSymmetry', label: 'Tiling Symmetry', category: 'Tiling', min: 2.0, max: 12.0 },
   { key: 'tilingComplexity', label: 'Tiling Complexity', category: 'Tiling', min: 0.5, max: 10.0 },
