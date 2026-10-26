@@ -116,7 +116,7 @@ const PaletteStopsEditorInner: React.FC<PaletteStopsEditorProps> = ({
               onPointerMove={onPointerMove(i)}
               onPointerUp={onPointerUp(i)}
               onKeyDown={onKeyDown(i)}
-              className="absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-wav-line-strong shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="wav-hit absolute top-0.5 w-3.5 h-3.5 -ml-[7px] cursor-ew-resize border border-wav-line-strong shadow-[0_0_0_1px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               style={{ left: `${pos * 100}%`, background: rgbToHex(colors[i]) }}
               title={`Color ${i + 1} — tap to change the color, drag to reposition (arrow keys nudge)`}
             >

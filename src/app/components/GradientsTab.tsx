@@ -423,7 +423,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                 aria-pressed={rotationDirection === dir}
                 title={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
                 aria-label={dir === 'clockwise' ? 'Clockwise' : 'Counter-clockwise'}
-                className={choice(rotationDirection === dir, 'flex items-center justify-center')}
+                className={choice(rotationDirection === dir, 'wav-choice-sq flex items-center justify-center')}
               >
                 {dir === 'clockwise' ? <ArrowClockwise weight="bold" className="w-3.5 h-3.5" /> : <ArrowCounterClockwise weight="bold" className="w-3.5 h-3.5" />}
               </button>

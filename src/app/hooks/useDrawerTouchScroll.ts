@@ -40,13 +40,18 @@ export function useDrawerTouchScroll(p: UseDrawerTouchScrollParams) {
     let startY = 0;
     let startScrollTop = 0;
     let scrolling = false;
+    // A touch that starts on a control that is dragged itself (the 2D pads, the angle dial, the band meters: all marked
+    // touch-none) belongs to that control for the whole gesture and must never scroll the panel.
+    let ownedByControl = false;
     const onTouchStart = (e: TouchEvent) => {
       scrolling = false;
+      ownedByControl = e.target instanceof Element && !!e.target.closest('.touch-none');
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startScrollTop = el.scrollTop;
     };
     const onTouchMove = (e: TouchEvent) => {
+      if (ownedByControl) return;
       const touch = e.touches[0];
       const dx = touch.clientX - startX;
       const dy = touch.clientY - startY;
