@@ -64,22 +64,23 @@ export function buildSlitScanMap(s: SlitScanSettings): SlitScanMap {
       }
     }
   } else if (s.direction === 'radial') {
-    // Rings that expand/contract in radius AND twist tangentially.
+    // Concentric rings: each ring reads an older frame the further out it is, and is pulled in or out along the
+    // radius only. There is no sideways twist; that is what turned the centre into a pinwheel.
     const cx = W / 2, cy = H / 2;
     const md = Math.sqrt(cx * cx + cy * cy);
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        const d = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+        const dx = x - cx, dy = y - cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
         const t = d / md;
-        // Continuous (not bucketed) offset for the geometric shift/twist, so the innermost bucket has no hard edge.
-        const normOffset = Math.min((d / md) * frameSel, 1) * 2 - 1;
+        // Continuous (not bucketed) offset for the displacement, so the innermost bucket has no hard edge.
+        const normOffset = Math.min(t * frameSel, 1) * 2 - 1;
         const shift = normOffset * int * md * 0.35;
         // Wrap rather than reflect, so no ring of pixels collapses onto one source pixel.
         const sd = ((d + shift) % md + md) % md;
-        const angle = Math.atan2(y - cy, x - cx);
-        const sAngle = angle + normOffset * int * 1.4;
-        const sx = Math.max(0, Math.min(W - 1, Math.round(cx + Math.cos(sAngle) * sd)));
-        const sy = Math.max(0, Math.min(H - 1, Math.round(cy + Math.sin(sAngle) * sd)));
+        const k = d > 0 ? sd / d : 0;
+        const sx = Math.max(0, Math.min(W - 1, Math.round(cx + dx * k)));
+        const sy = Math.max(0, Math.min(H - 1, Math.round(cy + dy * k)));
         const i = y * W + x;
         position![i] = t; offset[i] = at(sx, sy);
       }

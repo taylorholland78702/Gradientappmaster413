@@ -30,8 +30,8 @@ function reference(direction: string, buf: { data: Uint8ClampedArray }[], W: num
       const d = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
       const fi = Math.min(Math.floor((d / md) * (buf.length - 1) * frameSel), buf.length - 1); const sf = buf[fi];
       const normOffset = Math.min((d / md) * frameSel, 1) * 2 - 1; const shift = normOffset * int * md * 0.35;
-      const sd = ((d + shift) % md + md) % md; const angle = Math.atan2(y - cy, x - cx); const sAngle = angle + normOffset * int * 1.4;
-      const sx = Math.max(0, Math.min(W - 1, Math.round(cx + Math.cos(sAngle) * sd))); const sy = Math.max(0, Math.min(H - 1, Math.round(cy + Math.sin(sAngle) * sd)));
+      const sd = ((d + shift) % md + md) % md; const k = d > 0 ? sd / d : 0;
+      const sx = Math.max(0, Math.min(W - 1, Math.round(cx + (x - cx) * k))); const sy = Math.max(0, Math.min(H - 1, Math.round(cy + (y - cy) * k)));
       put((y * W + x) * 4, sf, sampleBuf(sx, sy));
     }
   } else {
