@@ -11,6 +11,8 @@ import { GRADIENT_LOOKS } from '../constants/gradientLooks';
 import { PALETTE_PRESETS, DARK_GROUND_GRADIENTS, startsDark } from '../constants/palettePresets';
 import { paletteFamily, inFamily, generateFamilyPalette } from '../utils/colorFamily';
 import { STYLE_SHAPE_CONTROLS } from '../constants/styleShapeControls';
+import { STYLE_FIELD_GRADIENT_TYPES } from '../constants/gradientEffects';
+import { REACTION_DIFFUSION_PATTERNS as RD_PATTERNS } from '../constants/reactionDiffusionPatterns';
 import { MODULATABLE_PARAMS } from '../constants/modulatableParams';
 import { costOf, resolutionForEffectCost } from '../constants/effectCost';
 import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
@@ -311,8 +313,9 @@ export function useRandomization(params: RandomizationParams) {
     setJuliaSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Reaction-Diffusion
-    setReactionDiffusionFeed(Math.random() * 0.06 + 0.02);              // 0.02–0.08
-    setReactionDiffusionKill(Math.random() * 0.03 + 0.04);              // 0.04–0.07
+    // A named pattern rather than a random feed/kill pair: most random pairs fall outside the narrow band where the
+    // simulation makes any pattern at all, and the panel offers these five now.
+    { const rd = RD_PATTERNS[Math.floor(Math.random() * RD_PATTERNS.length)]; setReactionDiffusionFeed(rd.feed); setReactionDiffusionKill(rd.kill); }
     setReactionDiffusionSpeed(Math.random() * 2.8 + 0.2);               // 0.2–3
 
     // Attractor
@@ -930,6 +933,11 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'vhs') { setVhsGlitchIntensity(rng(0.05, 0.4)); setVhsJitterAmount(Math.round(rng(50, 400))); }
       else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); setCrtSpeed(rng(0.5, 2)); }
       else if (eff === 'liquid') setLiquidSpeed(rng(0.5, 2));
+      else if (eff === 'aura-glow') { setAuraGlowCount(Math.round(rng(1, 6))); setAuraGlowOpacity(rng(0.1, 1)); setAuraGlowSpeed(rng(0.5, 2)); }
+      else if (eff === 'duotone') setDuotoneIntensity(rng(0, 1));
+      else if (eff === 'halftone') setHalftoneSize(Math.round(rng(4, 60)));
+      else if (eff === 'oil-paint') { setOilPaintRadius(Math.round(rng(1, 6))); setOilPaintLevels(Math.round(rng(8, 40))); }
+      else if (eff === 'posterize') setPosterizeLevels(Math.round(rng(2, 16)));
       else if (eff === 'grid-effect') setGridEffectSpeed(rng(0.5, 2));
       else if (eff === 'dada') setDadaSpeed(rng(0.5, 2));
       else if (eff === 'watercolor') setWatercolorSpeed(rng(0.5, 2));
@@ -944,29 +952,38 @@ export function useRandomization(params: RandomizationParams) {
     // radial, julia, attractor, reaction-diffusion, topographic,
     // particles, tiling, wave-interference, mesh-wireframe, fireworks,
     // lightning).
-    if (gradientType === 'windmill') setWindmillTightness(Math.round(rng(1, 20)));
+    if (gradientType === 'windmill') { setWindmillTightness(Math.round(rng(1, 20))); setWindmillRotations(Math.round(rng(1, 10))); setWindmillThickness(Math.round(rng(5, 100))); }
     else if (gradientType === 'noise') setNoiseScale(Math.round(rng(10, 70)));
     else if (gradientType === 'shapes') { setConcentricRingWidth(Math.round(rng(20, 180))); setPolygon2Sides(Math.round(rng(1, 24))); }
-    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSize(Math.round(rng(10, 200))); }
-    else if (gradientType === 'grid') { setGridShapeSize(Math.round(rng(1, 100))); setGridVariation(rng(0, 1)); }
+    else if (gradientType === 'radial-burst') { setRadialBurstCount(Math.round(rng(4, 18))); setRadialBurstSpread(Math.round(rng(10, 100))); }
+    else if (gradientType === 'grid') { setGridRows(Math.round(rng(4, 30))); setGridColumns(Math.round(rng(4, 30))); }
     else if (gradientType === 'voronoi') setVoronoiCellCount(Math.round(rng(8, 38)));
     else if (gradientType === 'caustics') setCausticsScale(rng(1, 12));
     else if (gradientType === 'lava-lamp') { setLavaBlobCount(Math.round(rng(2, 12))); setLavaBlobSize(rng(0.05, 0.4)); }
     else if (gradientType === 'marble') setMarbleTurbulence(rng(0, 5));
-    else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSpeed(rng(0.1, 5)); }
+    else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSize(rng(0.05, 0.4)); }
     else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
-    else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); }
+    else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); setFlowerSymmetry(Math.round(rng(3, 12))); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
     else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
-    else if (gradientType === 'julia') setJuliaZoom(rng(0.3, 3));
-    else if (gradientType === 'attractor') setAttractorSpeed(rng(0.1, 5));
-    else if (gradientType === 'reaction-diffusion') setReactionDiffusionSpeed(rng(0.2, 3));
+    else if (gradientType === 'julia') { setJuliaZoom(rng(0.3, 3)); setJuliaReal(rng(-1, 1)); setJuliaImaginary(rng(-1, 1)); }
+    else if (gradientType === 'attractor') { setAttractorScale(rng(0.3, 3)); setAttractorSpeed(rng(0.1, 5)); }
+    else if (gradientType === 'reaction-diffusion') {
+      // A named pattern (spots, mitosis, maze, coral, stripes), the same set the panel offers.
+      const rd = RD_PATTERNS[Math.floor(Math.random() * RD_PATTERNS.length)];
+      setReactionDiffusionFeed(rd.feed); setReactionDiffusionKill(rd.kill);
+    }
     else if (gradientType === 'topographic') setTopographicScale(Math.round(rng(10, 99)));
-    else if (gradientType === 'particles') { setParticlesSpeed(rng(0.1, 5)); setFlowParticleCount(Math.round(rng(20, 800))); setFlowSpeed(rng(0.1, 5)); }
-    else if (gradientType === 'tiling') setTilingComplexity(rng(0.5, 10));
+    else if (gradientType === 'particles') { setParticlesSpeed(rng(0.1, 5)); setFlowParticleCount(Math.round(rng(20, 800))); setFlowScale(rng(0.5, 10)); }
+    else if (gradientType === 'tiling') { setTilingSize(Math.round(rng(30, 300))); setTilingSymmetry(Math.round(rng(2, 12))); }
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
-    else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));
+    else if (gradientType === 'stack') { setStackCount(Math.round(rng(2, 40))); setStackLength(rng(0.1, 2)); }
+    // The styled gradients (Bands through Waves): their shared Scale and their two own shape sliders.
+    else if (STYLE_FIELD_GRADIENT_TYPES.includes(gradientType)) {
+      setFieldScale(rng(0.6, 1.8));
+      setFieldShapes(prev => ({ ...prev, [gradientType]: [Math.round(rng(0.5, 1.6) * 20) / 20, Math.round(rng(0.5, 1.6) * 20) / 20] as [number, number] }));
+    }
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.
