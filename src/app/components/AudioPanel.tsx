@@ -14,6 +14,11 @@ const BAND_LABELS: Record<AudioBinding['band'], string> = {
 // New bindings start here; the drag on the binding's own row sets the real amount.
 const NEW_BINDING_AMOUNT = 1;
 
+// Beat controls: off is a quiet outline, on is filled with the same purple as the top of the level meters, so a lit
+// control stands out without a wall of white blocks.
+const toggle = (on: boolean, layout = '') =>
+  `wav-choice px-1.5 text-[10px] transition-all ${layout} ${on ? 'bg-[#a855f7] text-white font-bold' : 'border border-wav-line bg-transparent text-wav-text-2 hover:bg-wav-hover'}`.replace(/\s+/g, ' ').trim();
+
 // One-tap bindings for the active gradient's shared Scale / Speed.
 const QUICK_BINDS: { label: string; target: 'scale' | 'speed'; band: AudioBinding['band']; amount: number }[] = [
   { label: 'Scale ← Bass', target: 'scale', band: 'sub', amount: 0.6 },
@@ -133,6 +138,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     { key: 'mids', label: 'Mids', hint: '~250Hz-2kHz', level: liveMidsLevel, gain: midsMultiplier, setGain: setMidsMultiplier, beat: midsBeatSync, setBeat: setMidsBeatSync },
     { key: 'treble', label: 'Treble', hint: '~2-8kHz — hi-hats, snare crack, presence', level: liveTrebleLevel, gain: trebleMultiplier, setGain: setTrebleMultiplier, beat: trebleBeatSync, setBeat: setTrebleBeatSync },
   ];
+  const anyBeat = BANDS.some(b => b.beat);
   // The live level of whatever band a binding listens to, for the bar on its row.
   const bandLevel = (band: AudioBinding['band']) =>
     band === 'sub' ? liveSubBassLevel : band === 'mids' ? liveMidsLevel : band === 'treble' ? liveTrebleLevel
@@ -207,8 +213,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             title="Load Audio File"
             aria-label="Load Audio File"
           >
-            <Plus weight="regular" className="w-4 h-4 flex-shrink-0" />
             <span className="whitespace-nowrap">Upload</span>
+            <Plus weight="regular" className="w-4 h-4 flex-shrink-0" />
           </button>
         </div>
       </div>
@@ -245,9 +251,12 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
             <div className="flex gap-2.5 items-start overflow-hidden">
               {BANDS.map(b => (
                 <div key={b.key} className="flex flex-col items-center gap-2 w-0 flex-1 min-w-0 px-2 pt-2.5 pb-3 bg-wav-field">
-                  <div className="text-[10px] text-wav-text-2 font-medium" title={b.hint}>{b.label}</div>
+                  <div className="flex flex-col items-center leading-tight" title={b.hint}>
+                    <span className="text-[10px] text-wav-text-2 font-medium">{b.label}</span>
+                    <span className="text-[9px] text-wav-text-3 tabular-nums">{b.gain.toFixed(1)}×</span>
+                  </div>
                   <BandMeter label={b.label} level={b.level} value={b.gain} onChange={b.setGain} height={92} />
-                  <button onClick={() => b.setBeat(!b.beat)} aria-pressed={b.beat} className={choice(b.beat, 'w-full')}>BEAT</button>
+                  <button onClick={() => b.setBeat(!b.beat)} aria-pressed={b.beat} title={`Pulse the picture on ${b.label.toLowerCase()} beats`} className={toggle(b.beat, 'w-full text-[9px] tracking-wide')}>BEAT</button>
                 </div>
               ))}
             </div>
@@ -259,12 +268,15 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 splitting it with an inline label — "Contrast"/"Palette"
                 were getting squeezed to the point of near-illegibility. */}
             <div className="flex flex-col gap-2.5">
-              <label className="text-[10px] text-wav-text-2 font-medium">FX on Beat</label>
-              <div className="flex gap-2">
-                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={choice(zoomBeatEnabled, 'flex-1')}>Zoom</button>
-                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={choice(shakeBeatEnabled, 'flex-1')}>Shake</button>
-                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={choice(contrastBeatEnabled, 'flex-1')}>Contrast</button>
-                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" aria-pressed={paletteBeatEnabled} className={choice(paletteBeatEnabled, 'flex-1')}>Palette</button>
+              <div className="flex items-baseline justify-between gap-2">
+                <label className="text-[10px] text-wav-text-2 font-medium">FX on Beat</label>
+                {!anyBeat && <span className="text-[9px] text-wav-text-3">Turn on BEAT for a band to use these</span>}
+              </div>
+              <div className={`flex gap-2 transition-opacity ${anyBeat ? '' : 'opacity-50'}`}>
+                <button onClick={() => setZoomBeatEnabled(!zoomBeatEnabled)} title="Pulse zoom on beat" aria-pressed={zoomBeatEnabled} className={toggle(zoomBeatEnabled, 'flex-1')}>Zoom</button>
+                <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={toggle(shakeBeatEnabled, 'flex-1')}>Shake</button>
+                <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={toggle(contrastBeatEnabled, 'flex-1')}>Contrast</button>
+                <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" aria-pressed={paletteBeatEnabled} className={toggle(paletteBeatEnabled, 'flex-1')}>Palette</button>
               </div>
             </div>
 
