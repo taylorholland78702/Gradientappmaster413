@@ -349,6 +349,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   // Which member of a merged gradient (Mesh: Soft / Flow, ...) was on last, so clicking the entry again
   // returns to it rather than always to the first.
   const lastFamilyMember = React.useRef<Record<string, GradientType>>({});
+  // Choosing a gradient starts it from its own best-looking setup, whatever the last one left behind.
+  const pickGradient = (t: GradientType) => {
+    setGradientType(t);
+    if (t === 'waves') setFieldSwirl(0);
+    else if (t === 'shapes') setShapesMode('polar-grid');
+    else if (t === 'windmill') { setWindmillMode('blades'); setWindmillRotations(1); setWindmillTightness(1); setWindmillThickness(40); }
+  };
   const currentFamily = familyOf(gradientType);
   if (currentFamily) lastFamilyMember.current[currentFamily.id] = gradientType;
 
@@ -387,7 +394,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   return (
                     <button
                       key={entry.key}
-                      onClick={() => setGradientType(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
+                      onClick={() => pickGradient(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
                       aria-pressed={active}
                       className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-wav-line-strong ${!isLastColumn ? 'border-r border-wav-line-strong' : ''} ${
                         active
@@ -435,7 +442,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               {currentFamily.members.map(m => (
                 <button
                   key={m.type}
-                  onClick={() => setGradientType(m.type)}
+                  onClick={() => pickGradient(m.type)}
                   aria-pressed={gradientType === m.type}
                   className={choice(gradientType === m.type, 'flex-1')}
                 >{m.label}</button>

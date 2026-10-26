@@ -101,7 +101,9 @@ export function useGestureActions(p: UseGestureActionsParams) {
 
   // Reset everything to defaults — shared by the Reset button and the Shift+R hotkey
   const resetToDefaults = useCallback(() => {
-    applySnapshot({});
+    // The share-link table (SHARE_DEFAULTS_V1) must keep describing old links, so the starting looks of Shapes and
+    // Windmill are stated here instead.
+    applySnapshot({ shapesMode: 'polar-grid', windmillMode: 'blades', windmillRotations: 1, windmillTightness: 1, windmillThickness: 40 });
     setIsMultiFxMode(false);
     setIsAutoColor(true);
     setActiveTab(null);
