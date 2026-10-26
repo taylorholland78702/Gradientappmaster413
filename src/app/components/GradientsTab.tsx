@@ -8,6 +8,8 @@ import { STYLE_SHAPE_CONTROLS, SHAPE_MIN, SHAPE_MAX } from '../constants/styleSh
 import { SliderRow } from './SliderRow';
 import { PointPad } from './PointPad';
 import { AngleDial } from './AngleDial';
+import { ModCategoryCtx } from './LearnContext';
+import { modCategoriesFor } from '../constants/gradientModCategories';
 import { Switch } from './Switch';
 import { choice } from './choice';
 
@@ -360,8 +362,10 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
   const currentFamily = familyOf(gradientType);
   if (currentFamily) lastFamilyMember.current[currentFamily.id] = gradientType;
 
+  // The audio settings this gradient's sliders belong to, so "learn" binding can tell what a slider is.
+  const modCategories = React.useMemo(() => [...modCategoriesFor(gradientType, [], {})], [gradientType]);
   return (
-    <>
+    <ModCategoryCtx.Provider value={modCategories}>
 
         {/* Gradient Type Buttons - one rounded rectangle, 2 columns, thin dividing lines */}
         <div className="w-full">
@@ -891,7 +895,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
 
-    </>
+    </ModCategoryCtx.Provider>
   );
 };
 

@@ -4,6 +4,7 @@ import { GradientsTab, type GradientsTabProps } from './GradientsTab';
 import { EffectsTab, type EffectsTabProps } from './EffectsTab';
 import type { PresetsPanelProps } from './PresetsPanel';
 import type { AudioPanelState, AudioPanelActions } from './AudioPanel';
+import { LearnProvider, useLearn, BAND_LABELS, BAND_COLORS } from './LearnContext';
 
 const AudioPanel = lazy(() => import('./AudioPanel').then((m) => ({ default: m.AudioPanel })));
 const PresetsPanel = lazy(() => import('./PresetsPanel').then((m) => ({ default: m.PresetsPanel })));
@@ -45,6 +46,19 @@ export interface ControlDrawerProps {
   // AudioPanel takes pre-grouped state/actions objects rather than flat props.
   audioState: AudioPanelState;
   audioActions: AudioPanelActions;
+}
+
+// Shown under the title on every tab while a band is being learned: say what a tap will do, report what just
+// happened, and offer a way out.
+function LearnBanner() {
+  const learn = useLearn();
+  if (!learn?.band) return null;
+  return (
+    <div className="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[10px] text-white" role="status" style={{ borderTop: `2px solid ${BAND_COLORS[learn.band]}` }}>
+      <span className="min-w-0 truncate">{learn.notice ?? `Touch any slider to bind it to ${BAND_LABELS[learn.band]}`}</span>
+      <button onClick={() => learn.setBand(null)} className="shrink-0 px-2 py-0.5 bg-white text-black font-bold">Done</button>
+    </div>
+  );
 }
 
 /**
@@ -97,6 +111,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
   // the edge touching the rail stays square so the two read as one
   // continuous docked unit, not two stacked cards.
   return (
+    <LearnProvider bindings={audioState.audioBindings} setBindings={audioActions.setAudioBindings}>
     <div
       ref={drawerRef}
       role="dialog"
@@ -118,6 +133,7 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
     >
       <span className="text-white font-semibold" style={{ fontSize: isMobile ? 15 : 15 * DESKTOP_DRAWER_SCALE }}>{TAB_LABELS[activeTab]}</span>
     </div>
+    <div className="sticky z-10 bg-wav-surface" style={{ top: isMobile ? 30 : 30 * DESKTOP_DRAWER_SCALE }}><LearnBanner /></div>
     {/* Desktop-only 1.3x scale wrapper — see DESKTOP_DRAWER_SCALE comment
         above. Mobile renders this content directly at natural size. */}
     <div
@@ -148,5 +164,6 @@ export const ControlDrawer = forwardRef<HTMLDivElement, ControlDrawerProps>(func
       </div>
     </div>
     </div>
+    </LearnProvider>
   );
 });

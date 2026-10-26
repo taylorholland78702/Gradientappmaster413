@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { CaretDown, Plus, Microphone, MicrophoneSlash, X } from '@phosphor-icons/react';
+import { CaretDown, Plus, Microphone, MicrophoneSlash, Shuffle, X } from '@phosphor-icons/react';
 import { findSource, sourcesOf, paramGroups, bindingLabel } from '../constants/modulationTree';
 import { AudioParamPicker } from './AudioParamPicker';
 import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { BandMeter } from './BandMeter';
 import { AmountScrub } from './AmountScrub';
 import { choice } from './choice';
+import { useLearn, BAND_LABELS as LEARN_LABELS, BAND_COLORS, NEW_BINDING_AMOUNT } from './LearnContext';
+import { randomBindings } from '../utils/randomBindings';
 
 const BAND_LABELS: Record<AudioBinding['band'], string> = {
   sub: 'Sub', mids: 'Mids', treble: 'Treble', energy: 'Energy',
 };
-
-// New bindings start here; the drag on the binding's own row sets the real amount.
-const NEW_BINDING_AMOUNT = 1;
 
 // Beat controls: off is a quiet outline, on is filled with the same purple as the top of the level meters, so a lit
 // control stands out without a wall of white blocks.
@@ -94,6 +93,35 @@ export interface AudioPanelActions {
 interface AudioPanelProps {
   state: AudioPanelState;
   actions: AudioPanelActions;
+}
+
+// "Bind a slider": choosing a band starts learning; every slider in the app then binds to it with a touch (see
+// LearnContext.tsx). Chips use the band's colour while learning, the same colour a bound slider's dot shows.
+function LearnRow() {
+  const learn = useLearn();
+  if (!learn) return null;
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <label className="text-[10px] text-wav-text-2 font-medium">Bind a slider</label>
+        <span className="text-[9px] text-wav-text-3">{learn.band ? 'Now touch any slider' : 'Pick a band, then touch a slider'}</span>
+      </div>
+      <div className="flex gap-2" role="group" aria-label="Band to learn">
+        {(Object.keys(LEARN_LABELS) as AudioBinding['band'][]).map(band => {
+          const on = learn.band === band;
+          return (
+            <button
+              key={band}
+              onClick={() => learn.setBand(on ? null : band)}
+              aria-pressed={on}
+              className={`wav-choice flex-1 px-1.5 text-[10px] transition-all ${on ? 'text-black font-bold' : 'border border-wav-line bg-transparent text-wav-text-2 hover:bg-wav-hover'}`}
+              style={on ? { background: BAND_COLORS[band] } : { boxShadow: `inset 0 -2px 0 ${BAND_COLORS[band]}` }}
+            >{LEARN_LABELS[band]}</button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
@@ -280,6 +308,9 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               </div>
             </div>
 
+            {/* Learn: pick a band, then touch any slider in the app to bind it. */}
+            <LearnRow />
+
             {/* Advanced — Modulation (bind any slider to an audio band) is
                 the most powerful and least-needed-by-default section, so
                 it's opt-in rather than always taking up space. */}
@@ -297,6 +328,19 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                  every entry in MODULATABLE_PARAMS works without a bind-icon
                  on each individual slider row. */
               <div className="flex flex-col gap-3">
+                {/* Shuffle: a fresh random set of bindings, drawn only from the gradient and effects that are on. */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-wav-text-2">Bindings</span>
+                  <button
+                    onClick={() => setAudioBindings(randomBindings(gradientType, activeEffects))}
+                    title="Replace the bindings with a random set for the gradient and effects that are on"
+                    aria-label="Shuffle bindings"
+                    className={`${toggle(false)} gap-1 shrink-0`}
+                  >
+                    <Shuffle weight="regular" className="w-3.5 h-3.5" />
+                    <span>Shuffle</span>
+                  </button>
+                </div>
                 {quickBindKeys && (
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] text-wav-text-2">Quick bind for this gradient</span>
