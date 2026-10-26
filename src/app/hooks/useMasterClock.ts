@@ -174,7 +174,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // the anim-sync receiver below instead, so both windows show the same
       // dot phase instead of two independently-advancing clocks.
       if (activeEffectsRef.current.includes('halftone') && halftoneMoveRef.current) {
-        if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) halftoneTimeRef.current += 0.5 * spd * dtScale;
+        if (!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) halftoneTimeRef.current += 0.5 * spd * dtScale * liveSpeed(animValuesRef.current.liveSpeeds, 'halftoneMoveSpeed', 1);
         // Was setHalftoneAnimTrigger(prev => prev + 1) — a setState-every-
         // frame redraw nudge. drawParamsDirtyRef is the same nudge without
         // the re-render cost; the main loop already checks it below.
@@ -184,7 +184,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // Grid rotation animation. Skipped in Display mode; see the Voronoi
       // comment above — that value is pushed from the controller instead.
       if ((!IS_DISPLAY_MODE || IS_STANDALONE_DISPLAY) && activeEffectsRef.current.includes('grid-effect') && gridRotationDirectionRef.current !== 'none') {
-        const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale;
+        const increment = (gridRotationDirectionRef.current === 'clockwise' ? 2 : -2) * dtScale * liveSpeed(animValuesRef.current.liveSpeeds, 'gridEffectSpeed', 1);
         animValuesRef.current.gridRotation = (animValuesRef.current.gridRotation + increment) % 360;
       }
 

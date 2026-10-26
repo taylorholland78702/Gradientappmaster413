@@ -205,7 +205,7 @@ export function InteractiveGradient() {
   const { auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity } = useAuraGlowState();
   const { grainIntensity, setGrainIntensity, grainType, setGrainType, grainSize, setGrainSize } = useGrainState();
   const { gessoWhiteness, setGessoWhiteness, gessoTexture, setGessoTexture, gessoResponse, setGessoResponse } = useGessoState();
-  const { gridSides, setGridSides, gridRows, setGridRows, gridColumns, setGridColumns, gridRotation, setGridRotation, gridVariation, setGridVariation, gridShapeSize, setGridShapeSize, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge } = useGridState();
+  const { gridEffectSpeed, setGridEffectSpeed, gridSides, setGridSides, gridRows, setGridRows, gridColumns, setGridColumns, gridRotation, setGridRotation, gridVariation, setGridVariation, gridShapeSize, setGridShapeSize, gridCellAngleStep, setGridCellAngleStep, gridHardEdge, setGridHardEdge } = useGridState();
   const { gridRotationDirection, setGridRotationDirection, gridRotationDirectionRef } = useGridRotationDirectionState();
   const { halftoneSize, setHalftoneSize, halftoneVariation, setHalftoneVariation, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, halftoneCMYK, setHalftoneCMYK, halftoneTimeRef, halftoneMoveRef } = useHalftoneState();
   const { helixTurns, setHelixTurns, helixTightness, setHelixTightness } = useHelixState();
@@ -216,7 +216,7 @@ export function InteractiveGradient() {
   const { lavaAnimTime, setLavaAnimTime, lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed } = useLavaState();
   const { lightLeakIntensity, setLightLeakIntensity } = useLightLeakState();
   const { linesCount, setLinesCount, linesAngle, setLinesAngle, linesThickness, setLinesThickness } = useLinesState();
-  const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale } = useLiquidState();
+  const { liquidAnimTime, setLiquidAnimTime, liquidStrength, setLiquidStrength, liquidScale, setLiquidScale, liquidSpeed, setLiquidSpeed } = useLiquidState();
   const { crtIntensity, setCrtIntensity, crtScanlineSpacing, setCrtScanlineSpacing } = useCrtState();
   const { liquifyStrength, setLiquifyStrength } = useLiquifyState();
   const { marbleAnimTime, setMarbleAnimTime, marbleVeinFreq, setMarbleVeinFreq, marbleTurbulence, setMarbleTurbulence, marbleOctaves, marbleSpeed, setMarbleOctaves, setMarbleSpeed } = useMarbleState();
@@ -564,6 +564,11 @@ export function InteractiveGradient() {
   // Refs so the consolidated master RAF loop can read latest gating state without restarting
   activeEffectsRef.current = activeEffects;
   halftoneMoveRef.current = halftoneMove;
+  // Speeds the animation clocks read straight off the shared live-speed table .
+  const liveTable = animValuesRef.current.liveSpeeds as Record<string, number>;
+  liveTable.gridEffectSpeed = gridEffectSpeed;
+  liveTable.liquidSpeed = liquidSpeed;
+  liveTable.halftoneMoveSpeed = halftoneMoveSpeed;
   gridRotationDirectionRef.current = gridRotationDirection;
   gradientTypeRef.current = gradientType;
   const isMicActiveRef = useRef(isMicActive);
@@ -1127,6 +1132,7 @@ export function InteractiveGradient() {
   // gridRows, used by both Gradients and Effects) are always the same
   // value, never a collision.
   const controlDrawerTabProps = {
+    gridEffectSpeed, setGridEffectSpeed, liquidSpeed, setLiquidSpeed, halftoneMoveSpeed, setHalftoneMoveSpeed,
     // Color
     isAutoColor, setIsAutoColor, saveCurrentState, setTargetColors, gradientColors, randomColor, applyGradientLook, applyPalette, shuffleColors, keepFamily, setKeepFamily, structuralSeed, setStructuralSeed,
     submittedAIPrompt, setSubmittedAIPrompt, setBaseAIColors, setGradientColors, setColorsInstant, aiPrompt, setAIPrompt,

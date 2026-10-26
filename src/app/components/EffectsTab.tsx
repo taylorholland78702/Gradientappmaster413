@@ -97,6 +97,9 @@ export interface EffectsTabProps {
   halftoneSize: number; setHalftoneSize: (v: number) => void;
   halftoneCMYK: boolean; setHalftoneCMYK: (v: boolean) => void;
   halftoneMove: boolean; setHalftoneMove: (v: boolean) => void;
+  halftoneMoveSpeed: number; setHalftoneMoveSpeed: (v: number) => void;
+  gridEffectSpeed: number; setGridEffectSpeed: (v: number) => void;
+  liquidSpeed: number; setLiquidSpeed: (v: number) => void;
   halftoneVariation: number; setHalftoneVariation: (v: number) => void;
   // Invert
   // Duotone
@@ -174,7 +177,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     blurType, setBlurType, blurGaussianAmount, setBlurGaussianAmount, blurMotionAmount, setBlurMotionAmount,
     blurMotionDirection, setBlurMotionDirection, blurRadialAmount, setBlurRadialAmount,
     posterizeLevels, setPosterizeLevels,
-    halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneVariation, setHalftoneVariation,
+    halftoneSize, setHalftoneSize, halftoneCMYK, setHalftoneCMYK, halftoneMove, setHalftoneMove, halftoneMoveSpeed, setHalftoneMoveSpeed, gridEffectSpeed, setGridEffectSpeed, liquidSpeed, setLiquidSpeed, halftoneVariation, setHalftoneVariation,
     duotoneColor1, setDuotoneColor1, duotoneColor2, setDuotoneColor2, duotoneColor3, setDuotoneColor3,
     duotoneThreeColor, setDuotoneThreeColor, duotoneIntensity, setDuotoneIntensity,
     gridRows, setGridRows, gridColumns, setGridColumns, gridSides, setGridSides,
@@ -657,6 +660,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       </button>
                     </div>
                   </div>
+                  {gridRotationDirection !== 'none' && (
+                    <SliderRow label="Speed:" title="How fast the grid spins" value={gridEffectSpeed} onChange={setGridEffectSpeed} min="0.1" max="4" step="0.1" />
+                  )}
                   <StepperRow label="Sides" value={gridSides} onChange={setGridSides} min={1} max={10} />
                   <SliderRow label="Rows:" value={gridRows} onChange={setGridRows} min="2" max="50" />
                   <SliderRow label="Columns:" value={gridColumns} onChange={setGridColumns} min="2" max="50" />
@@ -672,6 +678,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('halftone') && (
                 <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={!collapsedEffects.has('halftone')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Dot Size:" value={halftoneSize} onChange={setHalftoneSize} min="2" max="200" />
+                  {halftoneMove && (
+                    <SliderRow label="Move Speed:" title="How fast the dots drift while Move is on" value={halftoneMoveSpeed} onChange={setHalftoneMoveSpeed} min="0.1" max="4" step="0.1" />
+                  )}
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <label className="text-[10px] text-white whitespace-nowrap">Move:</label>
@@ -699,6 +708,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="liquid" label="Liquid" isMulti={isMulti} expanded={!collapsedEffects.has('liquid')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={liquidStrength} onChange={setLiquidStrength} min="0" max="100" />
                   <SliderRow label="Scale:" value={liquidScale} onChange={setLiquidScale} min="0.5" max="10" step="0.5" />
+                  <SliderRow label="Speed:" title="How fast the liquid flows" value={liquidSpeed} onChange={setLiquidSpeed} min="0.1" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('mirror') && (
