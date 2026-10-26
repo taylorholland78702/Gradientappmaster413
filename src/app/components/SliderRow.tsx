@@ -7,9 +7,11 @@ import { percentRange, toPercent, fromPercent } from '../utils/sliderScale';
 // tracks start at the same x and end at the same x whichever tab the row is in.
 // A slider that moves in fractions shows 0-100 (see utils/sliderScale.ts); the value it reads and writes keeps its real units.
 // Sizes: label 4.75rem (a long label wraps to two lines), value 3rem. Mobile sizing comes from .wav-mobile rules in index.css.
-export function SliderRow({ label, title, value, onChange, onNumberChange, min, max, step, children }: {
+export function SliderRow({ label, title, param: paramProp, value, onChange, onNumberChange, min, max, step, children }: {
   label: ReactNode;
   title?: string;
+  // The audio setting this slider drives, when its label cannot say so (the styled gradients' two shape sliders).
+  param?: string;
   value: number;
   onChange: (value: number) => void;
   // For rows whose typed value is handled differently from a drag (clamped, or falling back to a default).
@@ -27,7 +29,7 @@ export function SliderRow({ label, title, value, onChange, onNumberChange, min, 
   // Audio "learn" binding: while a band is being learned, touching this row binds its setting to the band.
   const learn = useLearn();
   const categories = useContext(ModCategoryCtx);
-  const param = learn ? resolveParam(label, categories) : null;
+  const param = learn ? (paramProp ?? resolveParam(label, categories)) : null;
   const bound = param && learn ? learn.bindings.filter(b => b.param === param) : [];
   const learning = !!learn?.band;
   const onLearnTap = (e: React.SyntheticEvent) => {

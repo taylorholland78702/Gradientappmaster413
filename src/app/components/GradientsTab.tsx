@@ -547,10 +547,11 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
               ...((STYLE_SHAPE_CONTROLS[gradientType] ?? []).map((c, i) => ({
                 label: c.label, hint: c.hint,
                 value: i === 0 ? fieldShapeA : fieldShapeB, set: i === 0 ? setFieldShapeA : setFieldShapeB,
+                param: i === 0 ? 'fieldShapeA' : 'fieldShapeB',
                 min: SHAPE_MIN, max: SHAPE_MAX, step: 0.05,
               }))),
-            ].map(({ label, value, set, min, max, step, hint }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string }, i) => (
-              <SliderRow key={`${label}-${i}`} label={`${label}:`} title={hint} value={value} onChange={set} min={min} max={max} step={step} />
+            ].map(({ label, value, set, min, max, step, hint, param }: { label: string; value: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string; param?: string }, i) => (
+              <SliderRow key={`${label}-${i}`} label={`${label}:`} title={hint} param={param} value={value} onChange={set} min={min} max={max} step={step} />
             ))}
           </div>
         )}
