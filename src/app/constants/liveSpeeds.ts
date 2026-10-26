@@ -3,7 +3,7 @@
 // it, so useCanvasDraw publishes the value each frame actually drew with (saved value plus any binding) and the
 // clocks read it from there. (The styled gradients' shared Speed has its own, fieldSpeedLive.)
 export const LIVE_SPEED_KEYS = [
-  'noiseSpeed', 'attractorSpeed', 'metaballSpeed', 'hatchSpeed', 'radialSpeed', 'flowSpeed', 'causticsSpeed', 'marbleSpeed',
+  'noiseSpeed', 'attractorSpeed', 'metaballSpeed', 'radialSpeed', 'flowSpeed', 'causticsSpeed', 'marbleSpeed',
   'emojiRotateSpeed', 'voronoiSpeed', 'flowerSpeed', 'stackSpeed', 'truchetSpeed', 'shapesSpeed', 'juliaSpeed', 'halftoneMoveSpeed', 'gridEffectSpeed', 'liquidSpeed',
 ] as const;
 

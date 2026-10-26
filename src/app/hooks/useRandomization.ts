@@ -45,7 +45,7 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 // all, which is what actually reproduced the flat-color result.
 // The dark-ground styled gradients (a thin ring / beam / bokeh discs on near-black)
 // are sparse in the same way: posterising or smearing them leaves a flat field.
-const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'light-beam', 'edge-glow', 'bokeh', 'embers'];
+const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'edge-glow', 'bokeh', 'embers'];
 const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
 // Oil Paint/Brush Strokes/Impasto average a neighborhood of pixels — on a
 // frame that's 95%+ black to start with, that average is just black,
@@ -1006,7 +1006,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
     else if (gradientType === 'stack') setStackResponse(rng(0.2, 1.0));
-    else if (gradientType === 'hatch') setHatchResponse(rng(0.2, 1.0));
     // kaleidoscope's own segment count isn't tied to a gradient type — it's
     // effect-driven above — but was always nudged here too regardless of
     // whether the effect is active; kept as-is (harmless) for continuity.

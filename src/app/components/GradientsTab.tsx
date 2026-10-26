@@ -13,7 +13,7 @@ import { choice } from './choice';
 
 // Gradients (besides the styled-field ones) that move, so show the shared Speed slider. Angle, Grid, Windmill, Radial
 // Burst and Tiling move by turning (or, for Tiling, drifting) when Play is on, and the shared Speed sets that pace too.
-const ANIMATED_GRADIENTS: string[] = ['stack', 'hatch', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
+const ANIMATED_GRADIENTS: string[] = ['stack', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
 
 // Classic Gray-Scott feed/kill regimes.
 const REACTION_DIFFUSION_PATTERNS = [
@@ -506,20 +506,7 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Hatch Controls — 1-4 layers of straight parallel lines, one
-            direction per layer, evenly spread around the shared Angle
-            control below. */}
-        {gradientType === 'hatch' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Layers', value: hatchLayers, set: setHatchLayers, min: 1, max: 4, step: 1 },
-              { label: 'Spacing', value: hatchSpacing, set: setHatchSpacing, min: 3, max: 40, step: 1 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
-            ))}
-          </div>
-        )}
-
+        
         {/* Caustics Controls */}
         {gradientType === 'caustics' && (
           <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">

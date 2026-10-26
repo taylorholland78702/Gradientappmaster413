@@ -72,13 +72,6 @@ export function useAnimClocks(p: UseAnimClocksParams) {
 
   useEffect(() => {
     if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
-    if (gradientType !== 'hatch' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
-    const id = setInterval(() => setHatchAnimTime(t => t + 0.05 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'hatchSpeed', hatchSpeed)), 16);
-    return () => clearInterval(id);
-  }, [gradientType, vcrPlaybackSpeed, isAutoMode, isVCRPlaying, isMicActive, hatchSpeed]);
-
-  useEffect(() => {
-    if (IS_DISPLAY_MODE && !IS_STANDALONE_DISPLAY) return;
     if (gradientType !== 'noise' || (!isAutoMode && !isVCRPlaying && !isMicActive)) return;
     const id = setInterval(() => setNoiseAnimTime(t => t + 0.01 * vcrPlaybackSpeed * liveSpeed(animValuesRef.current.liveSpeeds, 'noiseSpeed', noiseSpeed)), 16);
     return () => clearInterval(id);

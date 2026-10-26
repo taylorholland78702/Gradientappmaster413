@@ -29,7 +29,7 @@ const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 type Family = 'glow' | 'bands' | 'field';
 const FAMILY: Record<StyleFieldId, Family> = {
-  'light-beam': 'glow', 'edge-glow': 'glow', curtains: 'glow', eclipse: 'glow', rays: 'glow',
+  'edge-glow': 'glow', curtains: 'glow', eclipse: 'glow', rays: 'glow',
   bokeh: 'glow', vortex: 'glow', spectral: 'glow', embers: 'glow',
   waves: 'bands', ribbon: 'bands', bands: 'bands',
   smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field',
@@ -58,14 +58,6 @@ function glowIntensity(id: StyleFieldId, x: number, y: number, u: number, v: num
       const spokes = 0.5 + 0.5 * Math.sin(a * 14 + t * 0.28);
       const reach = clamp01((r - 0.15) / 1.65);
       return (0.1 + 0.55 * reach) * (0.55 + 0.75 * spokes * spokes) + 0.28 * v;
-    }
-    case 'light-beam': {
-      const ang = 0.78 + 0.1 * Math.sin(t * 0.14);
-      const dx = x + 2.4, dy = y + 2.2;
-      const along = dx * Math.cos(ang) + dy * Math.sin(ang);
-      const perp = dx * Math.sin(ang) - dy * Math.cos(ang);
-      const w = 0.3 + 0.2 * Math.max(along, 0);
-      return Math.exp(-((perp / w) ** 2)) * clamp01(along / 1.2) * Math.exp(-Math.max(along - 1.5, 0) * 0.16) * 1.15;
     }
     case 'edge-glow': {
       const wob = (vnoise(x * 0.9, t * 0.1) - 0.45) * 0.3;

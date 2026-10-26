@@ -10,7 +10,7 @@ import { costOf } from '../constants/effectCost';
 const seeded = (seed: number) => () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
 
 const SHAPE_CHANGERS: EffectType[] = ['kaleidoscope', 'pixelate', 'triangulate', 'slit-scan', 'halftone', 'posterize', 'dither'];
-const SPARSE = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'light-beam', 'edge-glow', 'bokeh', 'embers'];
+const SPARSE = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'edge-glow', 'bokeh', 'embers'];
 const ERASERS: EffectType[] = ['oil-paint', 'impasto', 'duotone', 'pixelate', 'slit-scan'];
 const options = (budget = 12): RollOptions => ({
   gradientPool: FEELING_LUCKY_GRADIENT_TYPES,

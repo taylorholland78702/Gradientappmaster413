@@ -22,7 +22,7 @@ import type { DrawCtx } from '../canvasDrawTypes';
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
   | 'prism' | 'raindrops' | 'holographic' | 'waves'
-  | 'light-beam' | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
+  | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
   | 'ribbon' | 'iridescent' | 'embers' | 'bands';
 
@@ -373,27 +373,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
 
 
 
-// A shaft of light from an off-screen source: a cone whose width grows with
-// distance, streaked by drifting noise across its width and fading with
-// distance, over a faint ambient wash.
-const LIGHT_BEAM = `
-vec3 shade(vec2 p, vec2 uv, float t) {
-  vec2 c = cpos();
-  float ang = 0.78 + (uB - 1.0) * 0.6 + 0.10 * sin(t * 0.14);
-  vec2 dir = vec2(cos(ang), sin(ang));
-  vec2 src = vec2(-2.4, -2.2);
-  vec2 d = c - src;
-  float along = dot(d, dir);
-  float perp = d.x * dir.y - d.y * dir.x;
-  float width = (0.30 + 0.20 * max(along, 0.0)) * uA;
-  float core = exp(-pow(perp / width, 2.0)) * smoothstep(0.0, 1.2, along);
-  float streak = 0.72 + 0.28 * vnoise(vec2(perp * 5.0 / width, along * 0.5 - t * 0.18));
-  float fall = exp(-max(along - 1.5, 0.0) * 0.16);
-  float I = core * streak * fall * 1.15 * (1.0 + uBass * 0.45);
-  float halo = 0.10 * exp(-max(along, 0.0) * 0.12) * exp(-pow(perp / (width * 3.0), 2.0));
-  return lightRamp(I + halo);
-}`;
-
 // A glow welling up from the bottom edge, its crest rippled by slow noise.
 const EDGE_GLOW = `
 vec3 shade(vec2 p, vec2 uv, float t) {
@@ -687,7 +666,6 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   raindrops: RAINDROPS,
   holographic: HOLOGRAPHIC,
   waves: WAVES,
-  'light-beam': LIGHT_BEAM,
   'edge-glow': EDGE_GLOW,
   curtains: CURTAINS,
   eclipse: ECLIPSE,

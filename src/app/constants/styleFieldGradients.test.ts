@@ -118,7 +118,7 @@ describe('per-gradient looks', () => {
       const n = parseInt(hex.slice(1), 16);
       return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
     };
-    for (const id of ['light-beam', 'edge-glow', 'curtains', 'eclipse', 'rays', 'vortex'] as const) {
+    for (const id of ['edge-glow', 'curtains', 'eclipse', 'rays', 'vortex'] as const) {
       for (const l of GRADIENT_LOOKS[id] ?? []) expect(lum(l.colors[0]), `${id}/${l.name}`).toBeLessThan(0.1);
     }
   });
