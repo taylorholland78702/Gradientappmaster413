@@ -2,7 +2,6 @@ import { drawRadial } from './drawRadial';
 import { drawAngle } from './drawAngle';
 import { drawWindmill } from './drawWindmill';
 import { drawShapes } from './drawShapes';
-import { drawConstellation } from './drawConstellation';
 import { drawStack } from './drawStack';
 import { drawNoise } from './drawNoise';
 import { drawStyleFieldCPU } from './drawStyleFieldCPU';
@@ -286,7 +285,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'smoke': (P) => styleFieldAuto('smoke', P),
   'spectral': (P) => styleFieldAuto('spectral', P),
   'stack': drawStack,
-  'constellation': drawConstellation,
   'tiling': drawTilingAuto,
   'topographic': drawTopographicAuto,
   'truchet': drawTruchet,

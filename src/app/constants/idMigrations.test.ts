@@ -47,6 +47,10 @@ describe('migrateIds (effect-only migrations)', () => {
     expect(migrateId('sheen')).toBe('drape');
   });
 
+  it('sends a removed Constellation to Attractor', () => {
+    expect(migrateId('constellation')).toBe('attractor');
+  });
+
   it('sends removed Hatch and Light Beam to Stack and Rays', () => {
     expect(migrateId('hatch')).toBe('stack');
     expect(migrateId('light-beam')).toBe('rays');
