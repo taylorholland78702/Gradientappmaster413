@@ -120,7 +120,7 @@ export const PALETTE_PRESETS: PalettePreset[] = PALETTE_GROUPS.flatMap(g => g.pa
 
 // The dark-ground gradients (Eclipse, Vortex, Light Beam...) treat a palette's first
 // color as the near-black backdrop, so only palettes that start dark suit them.
-export const DARK_GROUND_GRADIENTS = ['eclipse', 'vortex', 'constellation', 'edge-glow', 'curtains', 'rays', 'bokeh', 'embers'];
+export const DARK_GROUND_GRADIENTS = ['eclipse', 'vortex', 'edge-glow', 'curtains', 'rays', 'bokeh', 'embers'];
 
 export function startsDark(p: PalettePreset): boolean {
   const n = parseInt(p.colors[0].slice(1), 16);

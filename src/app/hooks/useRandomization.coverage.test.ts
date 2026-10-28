@@ -11,9 +11,6 @@ const NO_EFFECT_NUDGE: Record<string, string> = {
   photo: 'needs an uploaded picture; shuffling it does nothing',
 };
 
-// Gradients with nothing of their own to nudge.
-const NO_GRADIENT_NUDGE: Record<string, string> = { constellation: 'no settings: it is built from the palette and the beat' };
-
 describe('Shuffle nudge covers every gradient and effect', () => {
   it('has a branch for each effect that has controls', () => {
     const branches = new Set([...source.matchAll(/eff === '([a-z-]+)'/g)].map(m => m[1]));
@@ -24,7 +21,7 @@ describe('Shuffle nudge covers every gradient and effect', () => {
   it('has a branch for each gradient, or handles it as a styled gradient', () => {
     const branches = new Set([...source.matchAll(/gradientType === '([a-z-]+)'/g)].map(m => m[1]));
     const styled = new Set<string>(STYLE_FIELD_GRADIENT_TYPES);
-    const missing = FULL_GRADIENT_TYPES.filter(g => !branches.has(g) && !styled.has(g) && !(g in NO_GRADIENT_NUDGE));
+    const missing = FULL_GRADIENT_TYPES.filter(g => !branches.has(g) && !styled.has(g));
     expect(missing).toEqual([]);
     expect(source).toContain('STYLE_FIELD_GRADIENT_TYPES.includes(gradientType)');
   });

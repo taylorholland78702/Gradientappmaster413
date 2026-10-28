@@ -47,7 +47,7 @@ const ASCII_CHARSET_POOL = [' .:-=+*x#%@', ' .oO0@', ' ░▒▓█', ' -~=+^*#&
 // all, which is what actually reproduced the flat-color result.
 // The dark-ground styled gradients (a thin ring / beam / bokeh discs on near-black)
 // are sparse in the same way: posterising or smearing them leaves a flat field.
-const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'edge-glow', 'bokeh', 'embers', 'constellation'];
+const SPARSE_CONTENT_GRADIENTS: GradientType[] = ['particles', 'attractor', 'fireworks', 'lightning', 'eclipse', 'edge-glow', 'bokeh', 'embers'];
 const isSparseContentGradient = (t: GradientType | null) => !!t && SPARSE_CONTENT_GRADIENTS.includes(t);
 // Oil Paint/Brush Strokes/Impasto average a neighborhood of pixels — on a
 // frame that's 95%+ black to start with, that average is just black,
