@@ -1,4 +1,5 @@
 import { FlashWarning } from './FlashWarning';
+import React from 'react';
 import { VideoResultDialog, type VideoResult } from './VideoResultDialog';
 import type { ChangeEvent, ComponentProps, MouseEvent as ReactMouseEvent, MutableRefObject, SetStateAction, TouchEvent, WheelEvent } from 'react';
 import { ControlDrawer } from './ControlDrawer';
@@ -63,6 +64,7 @@ export interface GradientAppViewParams {
   videoResult: VideoResult | null;
   reduceFlash: boolean;
   setReduceFlash: (on: boolean) => void;
+  loadAudioFile: (file: File) => void;
   clearVideoResult: () => void;
   setAutoShuffleIntervalSec: (sec: number) => void;
   setAutoShufflePopoverAnchor: (value: SetStateAction<{ top?: number; bottom?: number; left: number; width: number; height?: number; }>) => void;
@@ -81,7 +83,24 @@ export interface GradientAppViewParams {
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, loadAudioFile, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
+  // Dropping an audio file anywhere on the page loads it and starts the music.
+  const [isDraggingAudio, setIsDraggingAudio] = React.useState(false);
+  const dragDepth = React.useRef(0);
+  const hasAudioFile = (e: React.DragEvent) => [...e.dataTransfer.items].some(i => i.kind === 'file' && (i.type === '' || i.type.startsWith('audio/')));
+  const dropHandlers = {
+    onDragEnter: (e: React.DragEvent) => { if (!hasAudioFile(e)) return; e.preventDefault(); dragDepth.current += 1; setIsDraggingAudio(true); },
+    onDragOver: (e: React.DragEvent) => { if (hasAudioFile(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } },
+    onDragLeave: () => { dragDepth.current = Math.max(0, dragDepth.current - 1); if (dragDepth.current === 0) setIsDraggingAudio(false); },
+    onDrop: (e: React.DragEvent) => {
+      dragDepth.current = 0; setIsDraggingAudio(false);
+      const file = [...e.dataTransfer.files].find(f => f.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|oga|flac|opus|aif|aiff)$/i.test(f.name));
+      if (!file) return;
+      e.preventDefault();
+      loadAudioFile(file);
+    },
+  };
+
   const dock = (
     <div
       data-role="dock"
@@ -110,6 +129,7 @@ export function GradientAppView(p: GradientAppViewParams) {
   return (
     <div
       className="fixed inset-0 overflow-hidden bg-black flex"
+      {...dropHandlers}
       style={{ flexDirection: isMobile ? 'column' : 'row' }}
       ref={containerRef}
     >
@@ -168,6 +188,11 @@ export function GradientAppView(p: GradientAppViewParams) {
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
       <FlashWarning reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} />
+      {isDraggingAudio && (
+        <div className="fixed inset-0 z-[65] flex items-center justify-center pointer-events-none" style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)' }} aria-hidden="true">
+          <div className="px-5 py-3 text-[15px] font-semibold text-white border border-wav-line-strong bg-wav-surface">Drop to play</div>
+        </div>
+      )}
       {videoResult && <VideoResultDialog result={videoResult} onClose={clearVideoResult} />}
 
       {savePreview && (

@@ -461,6 +461,7 @@ export function InteractiveGradient() {
     audioContextRef,
     streamRef,
     handleFileUpload,
+    loadAudioFile,
     startMicVisualization,
     stopMicVisualization,
   } = audio;
@@ -1328,7 +1329,7 @@ export function InteractiveGradient() {
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
     isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
-    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} loadAudioFile={loadAudioFile} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
     setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
     shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}

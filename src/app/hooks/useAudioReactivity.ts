@@ -241,9 +241,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     }
   }, []);
 
-  const handleFileUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  // Loads and plays an audio file, whether it came from the Upload button or was dropped on the page.
+  const loadAudioFile = useCallback((file: File) => {
+    {
       const url = URL.createObjectURL(file);
       setAudioFile(url);
       setAudioFileName(file.name);
@@ -296,6 +296,11 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
       }, 100);
     }
   }, [initAudioContext]);
+
+  const handleFileUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadAudioFile(file);
+  }, [loadAudioFile]);
 
   // Acquires the NEW stream/context before tearing down any previous one
   // (rather than stop-then-start), so switching devices while already
@@ -922,6 +927,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
     // Functions
     initAudioContext,
     handleFileUpload,
+    loadAudioFile,
     startMicVisualization,
     stopMicVisualization,
     toggleAudio,
