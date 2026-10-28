@@ -1,3 +1,4 @@
+import { TAB_AUDIO_ID } from '../constants/audioInput';
 import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
 
 // Standalone/mirror Display windows (?display=1) have no UI to show a mic
@@ -307,7 +308,54 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
   // listening never has a window where isMicActive is false — and if the
   // new device fails to open, the old stream is left running instead of
   // the mic silently ending up off. Also used for the initial mic-on.
+  // Listens to a live stream (a microphone, or a shared tab's audio): the new stream and context are connected first,
+  // then whatever was running before is torn down.
+  const attachLiveStream = (stream: MediaStream) => {
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0;
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    const prevStream = streamRef.current;
+    const prevContext = audioContextRef.current;
+    streamRef.current = stream;
+    audioContextRef.current = audioContext;
+    analyserRef.current = analyser;
+    setAnalyserVersion(v => v + 1);
+    if (prevStream) prevStream.getTracks().forEach(track => track.stop());
+    if (prevContext) prevContext.close();
+
+    setIsMicActive(true);
+    setIsAudioEnabled(true);
+    setIsAudioReactive(true);
+  };
+
+  // Audio from a browser tab, a window or the whole screen, chosen in the browser's own share picker (desktop
+  // browsers only). The picture is dropped at once; only the sound is used. If the user ends the share, listening stops.
+  const startTabAudio = async () => {
+    setMicError(null);
+    try {
+      const shared = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      const tracks = shared.getAudioTracks();
+      shared.getVideoTracks().forEach(t => t.stop());
+      if (tracks.length === 0) {
+        setMicError('No audio was shared. Pick a browser tab (or the whole screen) and tick the option to share its audio.');
+        return;
+      }
+      attachLiveStream(new MediaStream(tracks));
+      setSelectedAudioDeviceId(TAB_AUDIO_ID);
+      tracks[0].addEventListener('ended', () => stopMicVisualization());
+    } catch (error) {
+      if (error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'AbortError')) return; // the picker was closed
+      console.error('Tab audio failed:', error);
+      setMicError('Could not capture tab audio in this browser. Try Chrome or Edge on a computer.');
+    }
+  };
+
   const startMicVisualization = async (deviceId?: string) => {
+    if (deviceId === TAB_AUDIO_ID) return startTabAudio();
     setMicError(null);
     try {
       const constraints: MediaStreamConstraints = {
@@ -331,27 +379,7 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         return startMicVisualization(blackhole.deviceId);
       }
 
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0;
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      // New stream/context is live and connected — now safe to tear down
-      // whatever was running before.
-      const prevStream = streamRef.current;
-      const prevContext = audioContextRef.current;
-      streamRef.current = stream;
-      audioContextRef.current = audioContext;
-      analyserRef.current = analyser;
-      setAnalyserVersion(v => v + 1);
-      if (prevStream) prevStream.getTracks().forEach(track => track.stop());
-      if (prevContext) prevContext.close();
-
-      setIsMicActive(true);
-      setIsAudioEnabled(true);
-      setIsAudioReactive(true);
+      attachLiveStream(stream);
     } catch (error) {
       console.error('Mic access failed:', error);
       if (error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {

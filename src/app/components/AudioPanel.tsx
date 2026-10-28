@@ -7,6 +7,7 @@ import { BandMeter } from './BandMeter';
 import { AmountScrub } from './AmountScrub';
 import { choice } from './choice';
 import { Switch } from './Switch';
+import { TAB_AUDIO_ID } from '../constants/audioInput';
 import { useLearn, BAND_LABELS as LEARN_LABELS, BAND_COLORS, NEW_BINDING_AMOUNT } from './LearnContext';
 import { randomBindings } from '../utils/randomBindings';
 
@@ -170,6 +171,8 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     { key: 'treble', label: 'Treble', hint: '~2-8kHz — hi-hats, snare crack, presence', level: liveTrebleLevel, gain: trebleMultiplier, setGain: setTrebleMultiplier, beat: trebleBeatSync, setBeat: setTrebleBeatSync },
   ];
   const anyBeat = BANDS.some(b => b.beat);
+  // Sharing a tab's or the screen's sound needs a desktop browser (phones have no screen-share API).
+  const canShareTabAudio = typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getDisplayMedia === 'function';
   // The live level of whatever band a binding listens to, for the bar on its row.
   const bandLevel = (band: AudioBinding['band']) =>
     band === 'sub' ? liveSubBassLevel : band === 'mids' ? liveMidsLevel : band === 'treble' ? liveTrebleLevel
@@ -208,7 +211,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
               just an unlabeled caret, easy to miss that it's an input-
               device picker rather than some other menu). */}
           <div className={`relative flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-white transition-all ${isMicActive ? 'hover:bg-wav-hover' : 'opacity-40'}`}>
-            {isMicActive && (
+            {(isMicActive || canShareTabAudio) && (
               <select
                 aria-label="Audio input device"
                 value={selectedAudioDeviceId}
@@ -220,14 +223,16 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                   // isMicActive off with no guarantee the restart landed.
                   startMicVisualization(e.target.value);
                 }}
-                title="Select microphone input"
+                title={selectedAudioDeviceId === TAB_AUDIO_ID ? 'Listening to a tab or screen. Pick an input.' : 'Select audio input'}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full"
               >
+                {audioInputDevices.length === 0 && selectedAudioDeviceId !== TAB_AUDIO_ID && <option value="default">Default microphone</option>}
                 {audioInputDevices.map(d => (
                   <option key={d.deviceId} value={d.deviceId}>
                     {d.label || `Microphone ${d.deviceId.slice(0, 6)}`}
                   </option>
                 ))}
+                {canShareTabAudio && <option value={TAB_AUDIO_ID}>Tab or screen audio…</option>}
               </select>
             )}
             <span className="text-xs font-semibold whitespace-nowrap pointer-events-none">Input</span>
