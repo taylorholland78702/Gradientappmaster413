@@ -1,3 +1,4 @@
+import { FlashWarning } from './FlashWarning';
 import { VideoResultDialog, type VideoResult } from './VideoResultDialog';
 import type { ChangeEvent, ComponentProps, MouseEvent as ReactMouseEvent, MutableRefObject, SetStateAction, TouchEvent, WheelEvent } from 'react';
 import { ControlDrawer } from './ControlDrawer';
@@ -60,6 +61,8 @@ export interface GradientAppViewParams {
   railRect: { top: number; left: number; right: number; bottom: number; width: number; height: number; };
   savePreview: { url: string; blob: Blob; name: string; };
   videoResult: VideoResult | null;
+  reduceFlash: boolean;
+  setReduceFlash: (on: boolean) => void;
   clearVideoResult: () => void;
   setAutoShuffleIntervalSec: (sec: number) => void;
   setAutoShufflePopoverAnchor: (value: SetStateAction<{ top?: number; bottom?: number; left: number; width: number; height?: number; }>) => void;
@@ -78,7 +81,7 @@ export interface GradientAppViewParams {
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
   const dock = (
     <div
       data-role="dock"
@@ -164,6 +167,7 @@ export function GradientAppView(p: GradientAppViewParams) {
           repositioned now that it can't sit inline under the wordmark
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
+      <FlashWarning reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} />
       {videoResult && <VideoResultDialog result={videoResult} onClose={clearVideoResult} />}
 
       {savePreview && (

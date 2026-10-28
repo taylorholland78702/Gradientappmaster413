@@ -33,10 +33,14 @@ export interface UseAudioReactivityParams {
   setGradientColors: (updater: (prev: ColorRGB[]) => ColorRGB[]) => void;
   setTargetZoom: (updater: (prev: number) => number) => void;
   zoomBeatEnabled: boolean;
+  // Softens the zoom pulse when flashing is reduced.
+  reduceFlash?: boolean;
 }
 
 export function useAudioReactivity(params: UseAudioReactivityParams) {
   const { zoomBeatEnabled } = params;
+  const reduceFlashRef = useRef(params.reduceFlash ?? false);
+  reduceFlashRef.current = params.reduceFlash ?? false;
   const { onBassFlash, onMidsFlash, onTrebleFlash, setTargetColors, setGradientColors, setTargetZoom } = params;
   // setTargetZoom (and the flash callbacks) arrive as fresh inline closures
   // on every parent render (InteractiveGradient.tsx wraps them inline, no
@@ -632,8 +636,9 @@ export function useAudioReactivity(params: UseAudioReactivityParams) {
         const decayRate = Math.min(1, (bassBeatSync ? 0.35 : 0.15) * analyzeDtScale);
         const decayed = prev + (1 - prev) * decayRate;
         if (zoomBeatEnabled && bassRawForZoom > 0.05) {
-          const spike = bassRawForZoom * (bassBeatSync ? 0.22 : 0.11);
-          return Math.max(decayed - spike, 1 - (bassBeatSync ? 0.22 : 0.11));
+          const depth = (bassBeatSync ? 0.22 : 0.11) * (reduceFlashRef.current ? 0.3 : 1);
+          const spike = bassRawForZoom * depth;
+          return Math.max(decayed - spike, 1 - depth);
         }
         return decayed;
       });

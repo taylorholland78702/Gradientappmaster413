@@ -6,6 +6,7 @@ import type { AudioBinding } from '../hooks/state/useAudioBindingsState';
 import { BandMeter } from './BandMeter';
 import { AmountScrub } from './AmountScrub';
 import { choice } from './choice';
+import { Switch } from './Switch';
 import { useLearn, BAND_LABELS as LEARN_LABELS, BAND_COLORS, NEW_BINDING_AMOUNT } from './LearnContext';
 import { randomBindings } from '../utils/randomBindings';
 
@@ -53,6 +54,7 @@ export interface AudioPanelState {
   subBassBeatSync: boolean;
   liveSubBassLevel: number;
   zoomBeatEnabled: boolean;
+  reduceFlash: boolean;
   shakeBeatEnabled: boolean;
   contrastBeatEnabled: boolean;
   paletteBeatEnabled: boolean;
@@ -84,6 +86,7 @@ export interface AudioPanelActions {
   stopMicVisualization: () => void;
   onAudioFileClick: () => void;
   setZoomBeatEnabled: (v: boolean) => void;
+  setReduceFlash: (v: boolean) => void;
   setShakeBeatEnabled: (v: boolean) => void;
   setContrastBeatEnabled: (v: boolean) => void;
   setPaletteBeatEnabled: (v: boolean) => void;
@@ -133,7 +136,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     audioFileName, waveformData, audioFileMetadata,
     subBassMultiplier, subBassBeatSync, liveSubBassLevel,
     audioBindings, quickBindKeys, gradientType, activeEffects,
-    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled,
+    zoomBeatEnabled, shakeBeatEnabled, contrastBeatEnabled, paletteBeatEnabled, reduceFlash,
   } = state;
 
   // The setting the next binding will drive (see AudioParamPicker); opens on the first setting of the gradient on screen.
@@ -157,7 +160,7 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
     setSubBassMultiplier, setSubBassBeatSync, setAudioBindings,
     setBassBeatSync, setMidsBeatSync, setTrebleBeatSync,
     startMicVisualization, stopMicVisualization, onAudioFileClick,
-    setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled,
+    setZoomBeatEnabled, setShakeBeatEnabled, setContrastBeatEnabled, setPaletteBeatEnabled, setReduceFlash,
   } = actions;
 
   const BANDS = [
@@ -305,6 +308,10 @@ const AudioPanelInner: React.FC<AudioPanelProps> = ({ state, actions }) => {
                 <button onClick={() => setShakeBeatEnabled(!shakeBeatEnabled)} title="Shake on beat" aria-pressed={shakeBeatEnabled} className={toggle(shakeBeatEnabled, 'flex-1')}>Shake</button>
                 <button onClick={() => setContrastBeatEnabled(!contrastBeatEnabled)} title="Pulse contrast on beat" aria-pressed={contrastBeatEnabled} className={toggle(contrastBeatEnabled, 'flex-1')}>Contrast</button>
                 <button onClick={() => setPaletteBeatEnabled(!paletteBeatEnabled)} title="Shift palette on beat" aria-pressed={paletteBeatEnabled} className={toggle(paletteBeatEnabled, 'flex-1')}>Palette</button>
+              </div>
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <label className="text-[10px] text-wav-text-2" title="Mutes shake, palette snaps, treble colour flips, and softens and slows the contrast and zoom pulses">Reduce flashing</label>
+                <Switch on={reduceFlash} onChange={setReduceFlash} label="Reduce flashing" />
               </div>
             </div>
 

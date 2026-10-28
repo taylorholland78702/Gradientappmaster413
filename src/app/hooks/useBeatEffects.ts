@@ -1,5 +1,6 @@
 import type { MutableRefObject, SetStateAction } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { REDUCED_FLASH_MIN_INTERVAL_MS } from './useReduceFlash';
 import type { ColorRGB } from '../constants/gradientEffects';
 
 // Audio beat reactions: contrast/saturation pulse, canvas shake, palette snap and structural reseed. Moved out of InteractiveGradient unchanged.
@@ -24,6 +25,8 @@ export interface UseBeatEffectsParams {
   musicIntensityRef: MutableRefObject<number>;
   lastReseedTimeRef: MutableRefObject<number>;
   setStructuralSeed: (value: SetStateAction<number>) => void;
+  // Mutes the reactions that can strobe: no shake or palette snap, and the contrast pulse is softer and rate-limited.
+  reduceFlash: boolean;
 }
 
 // How far to scale the shaken wrapper so the canvas still covers its own area: a nudge of `dx`,`dy` px would otherwise
@@ -37,6 +40,8 @@ export function shakeCoverScale(dx: number, dy: number, canvas: HTMLElement | nu
 }
 
 export function useBeatEffects(p: UseBeatEffectsParams) {
+  const { reduceFlash } = p;
+  const lastPulseAtRef = useRef(0);
   const { isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed } = p;
   // Contrast + saturation pulse — bass hits spike both, decay via RAF
   useEffect(() => {
@@ -53,18 +58,20 @@ export function useBeatEffects(p: UseBeatEffectsParams) {
       canvas.style.filter = active ? `contrast(${contrast.toFixed(2)}) saturate(${saturate.toFixed(2)})` : '';
       if (active) rafId = requestAnimationFrame(animate);
     };
-    if (audioSubBassLevel > 0.3) {
-      const strength = Math.min(1, audioSubBassLevel / 5);
+    const nowMs = performance.now();
+    if (audioSubBassLevel > 0.3 && !(reduceFlash && nowMs - lastPulseAtRef.current < REDUCED_FLASH_MIN_INTERVAL_MS)) {
+      lastPulseAtRef.current = nowMs;
+      const strength = Math.min(1, audioSubBassLevel / 5) * (reduceFlash ? 0.25 : 1);
       contrastPulseRef.current = strength;
       saturationPulseRef.current = strength;
       rafId = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(rafId);
-  }, [audioSubBassLevel, isAudioEnabled, isAudioReactive, contrastBeatEnabled]);
+  }, [audioSubBassLevel, isAudioEnabled, isAudioReactive, contrastBeatEnabled, reduceFlash]);
 
   // Canvas shake — sub-bass onset triggers a quick x/y rumble
   useEffect(() => {
-    if (!isAudioEnabled || !isAudioReactive || !shakeBeatEnabled || subBassOnsetTick === 0) return;
+    if (reduceFlash || !isAudioEnabled || !isAudioReactive || !shakeBeatEnabled || subBassOnsetTick === 0) return;
     const wrapper = shakeWrapperRef.current;
     if (!wrapper) return;
     let rafId: number;
@@ -82,11 +89,11 @@ export function useBeatEffects(p: UseBeatEffectsParams) {
     };
     rafId = requestAnimationFrame(animate);
     return () => { cancelAnimationFrame(rafId); wrapper.style.transform = ''; };
-  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive, shakeBeatEnabled]);
+  }, [subBassOnsetTick, isAudioEnabled, isAudioReactive, shakeBeatEnabled, reduceFlash]);
 
   // Palette snap — on bass beat, jump to a vivid complementary palette instantly
   useEffect(() => {
-    if (!paletteBeatEnabled || !isAudioEnabled || !isAudioReactive || bassOnsetTick === 0) return;
+    if (reduceFlash || !paletteBeatEnabled || !isAudioEnabled || !isAudioReactive || bassOnsetTick === 0) return;
     const hslToRgb = (h: number, s: number, l: number) => {
       s /= 100; l /= 100;
       const k = (n: number) => (n + h / 30) % 12;
@@ -102,7 +109,7 @@ export function useBeatEffects(p: UseBeatEffectsParams) {
     });
     setGradientColors(() => newColors);
     setTargetColors(() => newColors);
-  }, [bassOnsetTick, paletteBeatEnabled, isAudioEnabled, isAudioReactive, gradientColors.length]);
+  }, [bassOnsetTick, paletteBeatEnabled, isAudioEnabled, isAudioReactive, gradientColors.length, reduceFlash]);
 
   // Structural reseed — a big, energetic hit (not just any beat) rerolls
   // structuralSeed, which Caustics/Voronoi/Marble/Metaballs/
