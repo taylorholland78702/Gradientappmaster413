@@ -109,6 +109,11 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Oil Slick', colors: ['#1a0f2e', '#00a88f', '#d94fff', '#ffd86b'], speed: 0.8 },
     { name: 'Pearl', colors: ['#f4e9ff', '#d7f3ff', '#ffeedd', '#e6ffe9'], scale: 0.8 },
   ],
+  constellation: [
+    { name: 'Midnight Atlas', colors: ['#05060f', '#1b2a6b', '#6fa8ff', '#f4f7ff'] },
+    { name: 'Ember Sky', colors: ['#0b0403', '#5a1a0a', '#ff7a2e', '#ffe2b8'] },
+    { name: 'Aurora Chart', colors: ['#020b0a', '#0c5a52', '#3de0b5', '#e6fff6'] },
+  ],
   waves: [
     { name: 'Ripple', colors: ['#0b3d91', '#1e88e5', '#4fc3f7', '#e1f5fe'] },
     { name: 'Magma', colors: ['#2b0a03', '#a3260b', '#ff6a1a', '#ffd27a'], speed: 1.3 },
