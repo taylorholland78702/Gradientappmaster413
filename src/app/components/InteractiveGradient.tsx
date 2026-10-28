@@ -133,6 +133,7 @@ import { GradientAppView } from './GradientAppView';
 import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
+import { useReduceFlash } from '../hooks/useReduceFlash';
 import { useBeatEffects } from '../hooks/useBeatEffects';
 import { usePhotoUpload } from '../hooks/usePhotoUpload';
 import { generateAIColors as generateAIColorsFor } from '../utils/aiColors';
@@ -381,16 +382,20 @@ export function InteractiveGradient() {
 
   // ─── Custom Hooks ────────────────────────────────────────────────────────────
 
+  // Per-device accessibility setting: mutes the beat reactions that can strobe.
+  const [reduceFlash, setReduceFlash] = useReduceFlash();
+
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
-    onBassFlash: () => { if (gradientType !== 'windmill' && gradientType !== 'angle') setTargetZoom(prev => Math.min(prev * 1.06, prev + 0.08)); },
+    reduceFlash,
+    onBassFlash: () => { if (gradientType !== 'windmill' && gradientType !== 'angle') setTargetZoom(prev => reduceFlash ? Math.min(prev * 1.02, prev + 0.03) : Math.min(prev * 1.06, prev + 0.08)); },
     // Previously flipped rotationDirection on every mids flash, which made the
     // direction toggle button in the VCR controls silently fight the user's
     // manual choice once audio was engaged. Rotation direction is now only
     // ever changed by the user (or by feelingLucky's randomizer).
     onMidsFlash: () => {},
     onTrebleFlash: () => {
-      if (IS_DISPLAY_MODE) return;
+      if (IS_DISPLAY_MODE || reduceFlash) return;
       if (!isAutoColorRef.current) return;
       if (gradientType === 'windmill' || gradientType === 'angle') return;
       const randomC = () => ({ r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256), b: Math.floor(Math.random() * 256) });
@@ -925,7 +930,7 @@ export function InteractiveGradient() {
     addGradientStopsTo(gradient, colors, hardEdge, isAudioEnabled && isAudioReactive ? audioTrebleLevel : 0);
   }, [isAudioEnabled, isAudioReactive, audioTrebleLevel]);
 
-  useBeatEffects({ isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed });
+  useBeatEffects({ reduceFlash, isAudioEnabled, isAudioReactive, contrastBeatEnabled, canvasRef, contrastPulseRef, saturationPulseRef, audioSubBassLevel, shakeBeatEnabled, subBassOnsetTick, shakeWrapperRef, shakeRef, paletteBeatEnabled, bassOnsetTick, gradientColors, setGradientColors, setTargetColors, audioEnergy, musicIntensityRef, lastReseedTimeRef, setStructuralSeed });
 
   // Generate colors from AI prompt
   const generateAIColors = useCallback((prompt: string) => generateAIColorsFor(prompt, gradientColors.length, adjustColorArrayLength, randomColor), [gradientColors, adjustColorArrayLength, randomColor]);
@@ -1239,6 +1244,7 @@ export function InteractiveGradient() {
   };
 
   const audioPanelState = {
+    reduceFlash,
     isMicActive, micError, audioInputDevices, selectedAudioDeviceId, isAudioControlsOpen,
     masterSensitivity, autoGainEnabled, depthLayerEnabled, depthLayerStrength, bassMultiplier, midsMultiplier, trebleMultiplier,
     reactionSmoothing: bassSmoothing,
@@ -1255,6 +1261,7 @@ export function InteractiveGradient() {
     })(),
   };
   const audioPanelActions = {
+    setReduceFlash,
     setSelectedAudioDeviceId, setIsAudioControlsOpen, setMicError,
     setMasterSensitivity, setAutoGainEnabled, setDepthLayerEnabled, setDepthLayerStrength, setBassMultiplier, setMidsMultiplier, setTrebleMultiplier,
     setReactionSmoothing,
@@ -1321,7 +1328,7 @@ export function InteractiveGradient() {
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
     isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
-    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
     setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
     shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
