@@ -129,7 +129,7 @@ export function useMasterClock(p: UseMasterClockParams) {
       // for colors/angle/zoom to converge and then freeze solid — the sim being alive
       // under the hood is meaningless if this loop stops calling draw() at all.
       const isAnimating = isAutoModeRef.current || isVCRPlayingRef.current || isAudioActiveRef.current
-        || gradientTypeRef.current === 'reaction-diffusion' || gradientTypeRef.current === 'fireworks' || gradientTypeRef.current === 'lightning';
+        || gradientTypeRef.current === 'reaction-diffusion' || gradientTypeRef.current === 'fireworks' || gradientTypeRef.current === 'lightning' || gradientTypeRef.current === 'constellation';
       const hasConverged = maxColorDiff < 0.5 && angleDiff < 0.05 && zoomDiff < 0.001;
 
       if (isAnimating || !hasConverged || drawParamsDirtyRef.current) {

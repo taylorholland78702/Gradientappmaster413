@@ -18,7 +18,9 @@ describe('audio modulation picker tree', () => {
 
   it('lists every gradient', () => {
     const ids = new Set(sourcesOf('gradient').map(s => s.id));
-    expect(FULL_GRADIENT_TYPES.filter(g => !ids.has(g))).toEqual([]);
+    // A gradient with no settings of its own has nothing for the audio picker to bind.
+    const NO_SETTINGS = new Set(['constellation']);
+    expect(FULL_GRADIENT_TYPES.filter(g => !ids.has(g) && !NO_SETTINGS.has(g))).toEqual([]);
   });
 
   it('groups merged gradients under their family', () => {
