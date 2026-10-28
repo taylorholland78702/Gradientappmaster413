@@ -9,6 +9,7 @@ import { SliderRow } from './SliderRow';
 import { PointPad } from './PointPad';
 import { AngleDial } from './AngleDial';
 import { ModCategoryCtx } from './LearnContext';
+import { GRADIENT_THUMBS } from '../constants/gradientThumbs';
 import { REACTION_DIFFUSION_PATTERNS } from '../constants/reactionDiffusionPatterns';
 import { modCategoriesFor } from '../constants/gradientModCategories';
 import { Switch } from './Switch';
@@ -394,13 +395,25 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       key={entry.key}
                       onClick={() => pickGradient(fam ? (lastFamilyMember.current[fam.id] ?? fam.members[0].type) : entry.types[0])}
                       aria-pressed={active}
-                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] capitalize transition-all whitespace-nowrap border-b border-wav-line-strong ${!isLastColumn ? 'border-r border-wav-line-strong' : ''} ${
+                      className={`wav-choice gap-1.5 px-1 py-1 text-[10px] capitalize transition-all border-b border-wav-line-strong ${!isLastColumn ? 'border-r border-wav-line-strong' : ''} ${
                         active
                           ? 'bg-white text-black font-bold'
                           : 'text-white hover:bg-wav-hover'
                       }`}
+                      style={{ justifyContent: 'flex-start' }}
                     >
-                      {entry.label}
+                      {GRADIENT_THUMBS[entry.types[0]] && (
+                        <img
+                          src={GRADIENT_THUMBS[entry.types[0]]}
+                          alt=""
+                          width={48}
+                          height={27}
+                          loading="lazy"
+                          draggable={false}
+                          className="w-12 h-[27px] shrink-0 object-cover pointer-events-none"
+                        />
+                      )}
+                      <span className="min-w-0 break-words text-left leading-tight">{entry.label}</span>
                     </button>
                   );
                 })}
