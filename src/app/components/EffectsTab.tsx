@@ -132,6 +132,10 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  glitchBlocksCount: number; setGlitchBlocksCount: (v: number) => void;
+  glitchBlocksShift: number; setGlitchBlocksShift: (v: number) => void;
+  glitchBlocksSplit: number; setGlitchBlocksSplit: (v: number) => void;
+  glitchBlocksSpeed: number; setGlitchBlocksSpeed: (v: number) => void;
   tilePuzzleEmpty: "off" | "on"; setTilePuzzleEmpty: (v: "off" | "on") => void;
   tilePuzzleCount: number; setTilePuzzleCount: (v: number) => void;
   tilePuzzleShuffle: number; setTilePuzzleShuffle: (v: number) => void;
@@ -233,7 +237,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -1043,6 +1047,14 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Turn:" title="How many tiles turn as they move." value={tilePuzzleRotate} onChange={setTilePuzzleRotate} min="0" max="1" step="0.05" />
                   <SliderRow label="Gap:" title="The seam between tiles." value={tilePuzzleGap} onChange={setTilePuzzleGap} min="0" max="12" step="1" />
                   <SliderRow label="Speed:" title="How often the tiles shuffle. Zero freezes them." value={tilePuzzleSpeed} onChange={setTilePuzzleSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('glitch-blocks') && (
+                <EffectSection id="glitch-blocks" label="Glitch Blocks" isMulti={isMulti} expanded={!collapsedEffects.has('glitch-blocks')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Blocks:" title="How many blocks jump at once." value={glitchBlocksCount} onChange={setGlitchBlocksCount} min="1" max="40" step="1" />
+                  <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
+                  <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
+                  <SliderRow label="Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (

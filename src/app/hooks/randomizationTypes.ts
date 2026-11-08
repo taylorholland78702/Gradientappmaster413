@@ -155,6 +155,10 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setGlitchBlocksCount: (value: SetStateAction<number>) => void;
+  setGlitchBlocksShift: (value: SetStateAction<number>) => void;
+  setGlitchBlocksSplit: (value: SetStateAction<number>) => void;
+  setGlitchBlocksSpeed: (value: SetStateAction<number>) => void;
   setTilePuzzleEmpty: (value: SetStateAction<"off" | "on">) => void;
   setTilePuzzleCount: (value: SetStateAction<number>) => void;
   setTilePuzzleShuffle: (value: SetStateAction<number>) => void;
