@@ -69,4 +69,8 @@ describe('migrateIds (effect-only migrations)', () => {
     expect(migrateIds(['liquid', 'blur'])).toEqual(['liquid', 'blur']);
     expect(migrateIds(['liquid', 'fisheye', 'brush-strokes'])).toEqual(['liquid']);
   });
+
+  it('drops a removed Lens from saved looks', () => {
+    expect(migrateIds(['lens', 'blur'])).toEqual(['blur']);
+  });
 });

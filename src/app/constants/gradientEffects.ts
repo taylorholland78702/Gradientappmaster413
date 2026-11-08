@@ -104,7 +104,7 @@ const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
   'zoom-blur': 'blur',
 };
 // Effects that were deleted outright; presets that still list them just lose them.
-const REMOVED_EFFECTS = new Set(['fisheye', 'brush-strokes']);
+const REMOVED_EFFECTS = new Set(['fisheye', 'brush-strokes', 'lens']);
 export const migrateIds = (ids: string[] | undefined | null): string[] =>
   (ids || []).filter(id => !REMOVED_EFFECTS.has(id)).map(id => EFFECT_ONLY_MIGRATIONS[id] || migrateId(id));
 

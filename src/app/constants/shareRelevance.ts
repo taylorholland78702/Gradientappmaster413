@@ -65,7 +65,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   filmStockLook: { effects: ['film-stock'] },
   tilePuzzleEmpty: { effects: ['tile-puzzle'] },
   polarMode: { effects: ['polar-warp'] },
-  lensMode: { effects: ['lens'] },
   rowSmearDirection: { effects: ['row-smear'] },
   triangulateVariation: { effects: ['triangulate'] },
   watercolorStyle: { effects: ['watercolor'] },

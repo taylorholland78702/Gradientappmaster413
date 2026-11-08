@@ -189,12 +189,6 @@ export interface RandomizationParams {
   setPolarX: (value: SetStateAction<number>) => void;
   setPolarY: (value: SetStateAction<number>) => void;
   setPolarSpeed: (value: SetStateAction<number>) => void;
-  setLensMode: (value: SetStateAction<"bulge" | "pinch" | "twirl" | "sphere">) => void;
-  setLensStrength: (value: SetStateAction<number>) => void;
-  setLensRadius: (value: SetStateAction<number>) => void;
-  setLensX: (value: SetStateAction<number>) => void;
-  setLensY: (value: SetStateAction<number>) => void;
-  setLensSpeed: (value: SetStateAction<number>) => void;
   setCrtGlass: (value: SetStateAction<number>) => void;
   setCrtMoire: (value: SetStateAction<number>) => void;
   setCrtDrift: (value: SetStateAction<number>) => void;
