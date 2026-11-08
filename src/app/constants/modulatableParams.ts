@@ -221,6 +221,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'liquidSpeed', label: 'Liquid Speed', category: 'Liquid', min: 0.0, max: 4.0 },
   { key: 'halftoneMoveSpeed', label: 'Halftone Move Speed', category: 'Halftone', min: 0.0, max: 4.0 },
   { key: 'slitScanSpeed', label: 'Slit Scan Speed', category: 'Slit-Scan', min: 0.0, max: 4.0 },
+  { key: 'hardBandsSteps', label: 'Hard Bands Steps', category: 'Hard Bands', min: 2.0, max: 12.0 },
+  { key: 'hardBandsBlend', label: 'Hard Bands Blend', category: 'Hard Bands', min: 0.0, max: 1.0 },
   { key: 'rowSmearLength', label: 'Row Smear Length', category: 'Row Smear', min: 5.0, max: 100.0 },
   { key: 'rowSmearAmount', label: 'Row Smear Amount', category: 'Row Smear', min: 0.1, max: 1.0 },
   { key: 'rowSmearSpeed', label: 'Row Smear Speed', category: 'Row Smear', min: 0.0, max: 3.0 },

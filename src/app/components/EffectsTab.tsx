@@ -130,6 +130,8 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  hardBandsSteps: number; setHardBandsSteps: (v: number) => void;
+  hardBandsBlend: number; setHardBandsBlend: (v: number) => void;
   rowSmearLength: number; setRowSmearLength: (v: number) => void;
   rowSmearAmount: number; setRowSmearAmount: (v: number) => void;
   rowSmearDirection: "horizontal" | "vertical"; setRowSmearDirection: (v: "horizontal" | "vertical") => void;
@@ -197,7 +199,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -865,6 +867,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                     </div>
                   </div>
                   <SliderRow label="Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('hard-bands') && (
+                <EffectSection id="hard-bands" label="Hard Bands" isMulti={isMulti} expanded={!collapsedEffects.has('hard-bands')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
+                  <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (

@@ -90,6 +90,8 @@ export const SNAPSHOT_LIMITS: Record<string, [number, number]> = {
   shapesSides: [1, 14.5],
   slitScanHistory: [12, 174],
   slitScanSpeed: [0, 12],
+  hardBandsSteps: [2, 17.0],
+  hardBandsBlend: [0, 1.5],
   rowSmearLength: [5, 147.5],
   rowSmearAmount: [0.1, 1.45],
   rowSmearSpeed: [0, 4.5],
