@@ -24,7 +24,7 @@ export type StyleFieldId =
   | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe' | 'wormhole';
+  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe' | 'wormhole' | 'horizon';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -344,6 +344,38 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   float core = exp(-r * 6.0);
   col += core * mix(getMappedColor(0.95), vec3(1.0), 0.6) * (1.0 + uBass * 0.6);
   col *= smoothstep(0.0, 0.05, r) * 0.4 + 0.6;
+  return col;
+}`;
+
+// The retro scene: a banded sun on the horizon over a perspective grid that streams toward the viewer.
+const HORIZON = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
+  float hy = -0.1;
+  vec3 col;
+  if (q.y > hy) {
+    float dy = q.y - hy;
+    float z = 1.0 / (dy * uScale * 0.9);
+    float x = q.x * z;
+    float lx = 0.5 - abs(fract(x * 0.6 * uA) - 0.5);
+    float lz = 0.5 - abs(fract(z * 0.6 - t * 0.9) - 0.5);
+    float wid = 0.03 + z * 0.004;
+    float line = 1.0 - smoothstep(0.0, wid, min(lx, lz));
+    float fog = smoothstep(0.0, 0.3, dy);
+    col = mix(getMappedColor(0.05 + 0.12 * fog), getMappedColor(0.85), line * fog);
+    col += getMappedColor(0.7) * exp(-dy * 7.0) * 0.45;
+  } else {
+    float h = hy - q.y;
+    col = getMappedColor(clamp(0.55 - h * 0.55, 0.0, 0.9)) * (0.55 + 0.4 * (1.0 - clamp(h, 0.0, 1.0)));
+    float sunY = hy - 0.3 * uB;
+    float sd = length(q - vec2(0.0, sunY)) / (0.34 * uB);
+    float sy = q.y - sunY;
+    float cut = sy > 0.0 ? smoothstep(0.0, 0.08, fract(sy * 9.0 / uB - t * 0.15) - sy * 0.9 / uB) : 1.0;
+    float sun = (1.0 - smoothstep(0.95, 1.0, sd)) * cut;
+    col = mix(col, mix(getMappedColor(0.95), vec3(1.0), 0.25), sun);
+    col += getMappedColor(0.8) * exp(-max(sd - 1.0, 0.0) * 3.0) * 0.18;
+  }
+  col *= 1.0 + uBass * 0.2;
   return col;
 }`;
 
@@ -751,6 +783,7 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   embers: EMBERS,
   bands: BANDS,
   corridor: CORRIDOR,
+  horizon: HORIZON,
   wormhole: WORMHOLE,
   globe: GLOBE,
 };
