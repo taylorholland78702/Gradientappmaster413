@@ -1,7 +1,7 @@
 import type { RatedSnapshot } from '../snapshotTypes';
 import { useState, useRef } from 'react';
 import type { ColorRGB, GradientType, EffectType } from '../../constants/gradientEffects';
-import { DEFAULT_COLORS, migrateId, migrateIds } from '../../constants/gradientEffects';
+import { DEFAULT_COLORS, migrateId, migrateIds, effectModeFields } from '../../constants/gradientEffects';
 
 const IS_DISPLAY_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('display') === '1';
 
@@ -110,6 +110,7 @@ export function useMiscState() {
         data: {
           ...r.data,
           gradientType: r.data?.gradientType ? migrateId(r.data.gradientType) : r.data?.gradientType,
+          ...Object.fromEntries(Object.entries(effectModeFields(r.data?.activeEffects)).filter(([k]) => !(k in (r.data ?? {})))),
           activeEffects: migrateIds(r.data?.activeEffects),
         },
       }));

@@ -196,6 +196,9 @@ export function useMasterClock(p: UseMasterClockParams) {
       if (activeEffectsRef.current.includes('slit-scan')) {
         drawParamsDirtyRef.current = true;
       }
+      if (activeEffectsRef.current.includes('glitch')) {
+        drawParamsDirtyRef.current = true;
+      }
       if (activeEffectsRef.current.includes('film-burn')) {
         drawParamsDirtyRef.current = true;
       }
@@ -203,9 +206,6 @@ export function useMasterClock(p: UseMasterClockParams) {
         drawParamsDirtyRef.current = true;
       }
       if (activeEffectsRef.current.includes('film-stock')) {
-        drawParamsDirtyRef.current = true;
-      }
-      if (activeEffectsRef.current.includes('glitch-blocks')) {
         drawParamsDirtyRef.current = true;
       }
       if (activeEffectsRef.current.includes('tile-puzzle')) {
@@ -218,9 +218,6 @@ export function useMasterClock(p: UseMasterClockParams) {
         drawParamsDirtyRef.current = true;
       }
       if (activeEffectsRef.current.includes('hard-bands')) {
-        drawParamsDirtyRef.current = true;
-      }
-      if (activeEffectsRef.current.includes('row-smear')) {
         drawParamsDirtyRef.current = true;
       }
       if (activeEffectsRef.current.includes('nested-frames')) {
