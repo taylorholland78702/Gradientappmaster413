@@ -215,7 +215,7 @@ export interface RandomizationParams {
   setDitherSpeed: (value: SetStateAction<number>) => void;
   setDadaSpeed: (value: SetStateAction<number>) => void;
   setAsciiSpeed: (value: SetStateAction<number>) => void;
-  setWatercolorSpeed: (value: SetStateAction<number>) => void;
+  
   setImpastoSpeed: (value: SetStateAction<number>) => void;
   setGridEffectSpeed: (value: SetStateAction<number>) => void;
   setLiquidSpeed: (value: SetStateAction<number>) => void;
@@ -223,8 +223,8 @@ export interface RandomizationParams {
   setOilPaintLevels: (value: SetStateAction<number>) => void;
   setImpastoStrength: (value: SetStateAction<number>) => void;
   setImpastoLightAngle: (value: SetStateAction<number>) => void;
-  setWatercolorBleed: (value: SetStateAction<number>) => void;
-  setWatercolorGrain: (value: SetStateAction<number>) => void;
+  
+  
   setDadaPanels: (value: SetStateAction<number>) => void;
   setDadaChaos: (value: SetStateAction<number>) => void;
   

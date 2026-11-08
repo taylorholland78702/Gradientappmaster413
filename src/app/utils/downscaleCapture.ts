@@ -1,7 +1,7 @@
 import { getScratchCanvas } from './scratchCanvas';
 
 // Shared "render small, upscale" cap used by every per-pixel effect whose
-// cost scales with canvas area (Oil Paint, Impasto, Watercolor, Dada,
+// cost scales with canvas area (Oil Paint, Impasto, Dada,
 // Surrealism, Brush Strokes) — at the real display resolution of an actual
 // browser window (often 1500-3000px+ wide) their per-pixel loops could take
 // multiple seconds per frame otherwise. Capping the working resolution

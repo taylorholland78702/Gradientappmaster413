@@ -54,7 +54,6 @@ import { applySlitScan } from '../hooks/effects/applySlitScan';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
 import { applyVhs } from '../hooks/effects/applyVhs';
 import { applyVignette } from '../hooks/effects/applyVignette';
-import { applyWatercolor } from '../hooks/effects/applyWatercolor';
 import { applyWave } from '../hooks/effects/applyWave';
 import { applyWaveGL, detectWaveGLSupport } from '../hooks/effects/applyWaveGL';
 
@@ -164,7 +163,6 @@ const EFFECT_REGISTRY = {
   // Photomontage cut-up — slices the canvas into a panel grid, each panel
   // reading from a different (flipped/rotated) part of the same image with
   // a torn-paper seam between them. Capped working resolution like
-  // Watercolor, same cost tier.
   dada: { drawFn: applyDada, label: 'Dada', cost: 3, category: ['Dada'], audio: false },
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
@@ -238,7 +236,6 @@ const EFFECT_REGISTRY = {
   // 4-tap directional smear plus 3 valueNoise calls and a hash2 call per
   // pixel for the warp field, paper blotch, and fiber grain — comparable to
   // or more than Dada, already priced at cost 3.
-  watercolor: { drawFn: applyWatercolor, label: 'Watercolor', cost: 3, category: ['Watercolor'], audio: false },
   wave: { drawFn: applyWaveAuto, label: 'Wave', cost: 2, category: ['Wave'], audio: true },
 } satisfies Record<string, EffectRegistryEntry>;
 

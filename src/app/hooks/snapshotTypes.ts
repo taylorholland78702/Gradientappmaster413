@@ -1,7 +1,6 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { ColorRGB, EffectType, GradientType } from '../constants/gradientEffects';
 import type { AudioBinding } from './state/useAudioBindingsState';
-import type { WatercolorStyle } from './state/useWatercolorState';
 
 // Every live value that is saved in a snapshot (undo/redo, presets, display sync), plus its setter.
 // Generated from InteractiveGradient's call to useSnapshot, then checked against it by tsc.
@@ -123,9 +122,9 @@ export interface SnapshotValues {
   oilPaintLevels: number;
   impastoStrength: number;
   impastoLightAngle: number;
-  watercolorBleed: number;
-  watercolorGrain: number;
-  watercolorStyle: "watercolor" | "gouache" | "ink-wash";
+  
+  
+  
   dadaPanels: number;
   dadaChaos: number;
   duotoneColor1: string;
@@ -267,7 +266,7 @@ export interface SnapshotValues {
   ditherSpeed: number;
   dadaSpeed: number;
   asciiSpeed: number;
-  watercolorSpeed: number;
+  
   impastoSpeed: number;
   gridEffectSpeed: number;
   liquidSpeed: number;

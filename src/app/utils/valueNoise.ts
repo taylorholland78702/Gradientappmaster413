@@ -1,6 +1,6 @@
 // Deterministic pseudo-random in [0,1) from two integers — shared by every
 // effect that needs a stable (non-time-animated) hash field: applyPhoto.ts's
-// shatter tiles, applyWatercolor.ts's warp/paper texture, applyDada.ts's
+// shatter tiles, applyDada.ts's
 // panel assignment.
 export function hash2(a: number, b: number): number {
   let h = a * 374761393 + b * 668265263;
