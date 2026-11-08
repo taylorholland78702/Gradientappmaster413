@@ -155,6 +155,9 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setNeonStrength: (value: SetStateAction<number>) => void;
+  setNeonGlow: (value: SetStateAction<number>) => void;
+  setNeonDim: (value: SetStateAction<number>) => void;
   setPolarMode: (value: SetStateAction<"tunnel" | "unwrap">) => void;
   setPolarRepeat: (value: SetStateAction<number>) => void;
   setPolarTwist: (value: SetStateAction<number>) => void;

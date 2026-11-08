@@ -197,6 +197,9 @@ export function useMasterClock(p: UseMasterClockParams) {
       if (activeEffectsRef.current.includes('slit-scan')) {
         drawParamsDirtyRef.current = true;
       }
+      if (activeEffectsRef.current.includes('neon-edges')) {
+        drawParamsDirtyRef.current = true;
+      }
       if (activeEffectsRef.current.includes('polar-warp')) {
         drawParamsDirtyRef.current = true;
       }
