@@ -4,7 +4,7 @@
 // clocks read it from there. (The styled gradients' shared Speed has its own, fieldSpeedLive.)
 export const LIVE_SPEED_KEYS = [
   'noiseSpeed', 'attractorSpeed', 'metaballSpeed', 'radialSpeed', 'flowSpeed', 'causticsSpeed', 'marbleSpeed',
-  'emojiRotateSpeed', 'voronoiSpeed', 'flowerSpeed', 'stackSpeed', 'truchetSpeed', 'shapesSpeed', 'juliaSpeed', 'halftoneMoveSpeed', 'gridEffectSpeed', 'liquidSpeed',
+  'emojiRotateSpeed', 'voronoiSpeed', 'stackSpeed', 'truchetSpeed', 'shapesSpeed', 'juliaSpeed', 'halftoneMoveSpeed', 'gridEffectSpeed', 'liquidSpeed',
 ] as const;
 
 export type LiveSpeeds = Partial<Record<string, number>>;

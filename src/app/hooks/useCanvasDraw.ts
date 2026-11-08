@@ -211,8 +211,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     duotoneThreeColor, dustCrackleIntensity, emojiChars, emojiOffsetX, emojiSize,
     emojiSizeVariation, fadeDirection, feedbackBufferRef, feedbackDecay, feedbackRotation, feedbackZoom,
     flowBufferRef, flowParticleCount,
-    flowParticlesRef, flowScale, flowThickness, flowerCircles, flowerRotation,
-    flowerScale, flowerSpread,
+    flowParticlesRef, flowScale, flowThickness,
     gradientAngle, gradientAngleRef, gradientColors, gradientColorsRef,
     gradientType, grainIntensity, grainType, gridColumns, gridRotation, gridRows,
     gridShapeSize, gridSides, gridVariation, halftoneCMYK, halftoneMove, halftoneSize,
@@ -302,7 +301,6 @@ export function useCanvasDraw(params: CanvasDrawParams) {
     const noiseAnimTime = av.noiseAnimTime;
     const radialAnimTime = av.radialAnimTime;
     const voronoiAnimTime = av.voronoiAnimTime;
-    const flowerAnimTime = av.flowerAnimTime;
     // tilingAnimTime was already in animValuesRef's shape but never actually
     // read through it here — still fell back to the params-destructured
     // (state-derived) value above, i.e. never got the redraw/re-render win
@@ -543,7 +541,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       ...params, ctx, canvas, gradientColors: renderColors, gradientAngle, zoom,
       fieldAnimTime, auroraAnimTime, turrellAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
       flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime, hatchAnimTime, noiseAnimTime, radialAnimTime,
-      voronoiAnimTime, flowerAnimTime,
+      voronoiAnimTime,
       audioSubBassLevel, audioMidsLevel, audioTrebleLevel, audioEnergy,
       centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
       displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
@@ -623,7 +621,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
         // into a Uint8ClampedArray clamps to 0).
         auroraAnimTime, causticsAnimTime, lavaAnimTime, marbleAnimTime, metaballAnimTime,
         flowAnimTime, attractorAnimTime, liquidAnimTime, emojiAnimTime,
-        voronoiAnimTime, flowerAnimTime,
+        voronoiAnimTime,
         centerX, centerY, maxRadius, fitRadius, angleRad, cosAngle, sinAngle,
         displayWidth, displayHeight, putScaledImageData, getDisplayImageData, putLowResImageData,
         effectType, index, isFirstEffect, audioModulation, imageData,
@@ -726,7 +724,7 @@ export function useCanvasDraw(params: CanvasDrawParams) {
       }
 
       // For gradients that use the gradient variable (not direct pixel manipulation)
-      const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform', 'flower'];
+      const directRenderTypes = ['mesh', 'voronoi', 'iridescent', 'noise', 'waves', 'zigzag', 'tunnel', 'radial-burst', 'freeform'];
       if (!directRenderTypes.includes(gradientType)) {
         if (gradient) {
           // Only Radial ever returns a real (unstopped) CanvasGradient

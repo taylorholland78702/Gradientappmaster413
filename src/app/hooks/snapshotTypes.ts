@@ -47,7 +47,7 @@ export interface SnapshotValues {
   paletteBands: number;
   invertAmount: number;
   voronoiAnimTime: number;
-  flowerAnimTime: number;
+  
   auroraAnimTime: number;
   fadeMode: "angle" | "light";
   turrellAnimTime: number;
@@ -175,13 +175,13 @@ export interface SnapshotValues {
   topographicScale: number;
   topographicBands: number;
   topographicLineWidth: number;
-  flowerCircles: number;
-  flowerRotation: number;
-  flowerSymmetry: number;
-  flowerOpacity: number;
-  flowerSpeed: number;
-  flowerScale: number;
-  flowerSpread: number;
+  
+  
+  
+  
+  
+  
+  
   gradientAngle: number;
   gradientColors: ColorRGB[];
   gradientType: GradientType;

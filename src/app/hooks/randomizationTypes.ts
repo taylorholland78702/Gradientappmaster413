@@ -81,7 +81,7 @@ export interface RandomizationParams {
   setFlowScale: (value: SetStateAction<number>) => void;
   setFlowSpeed: (value: SetStateAction<number>) => void;
   setFlowThickness: (value: SetStateAction<number>) => void;
-  setFlowerCircles: (value: SetStateAction<number>) => void;
+  
   setAsciiChars: (value: SetStateAction<string>) => void;
   setGrainType: (value: SetStateAction<"fine" | "medium" | "coarse" | "film">) => void;
   setGridRotationDirection: (value: SetStateAction<"clockwise" | "none" | "counterclockwise">) => void;
@@ -227,8 +227,8 @@ export interface RandomizationParams {
   setWatercolorGrain: (value: SetStateAction<number>) => void;
   setDadaPanels: (value: SetStateAction<number>) => void;
   setDadaChaos: (value: SetStateAction<number>) => void;
-  setFlowerScale: (value: SetStateAction<number>) => void;
-  setFlowerSpread: (value: SetStateAction<number>) => void;
+  
+  
   setGradientColors: (value: SetStateAction<ColorRGB[]>) => void;
   setGradientType: (value: SetStateAction<GradientType>) => void;
   setGrainIntensity: (value: SetStateAction<number>) => void;
@@ -347,10 +347,10 @@ export interface RandomizationParams {
   setRadialHardEdge: (value: SetStateAction<boolean>) => void;
   setStructuralSeed: (value: SetStateAction<number>) => void;
   setLavaSpeed: (value: SetStateAction<number>) => void;
-  setFlowerRotation: (value: SetStateAction<number>) => void;
-  setFlowerSymmetry: (value: SetStateAction<number>) => void;
-  setFlowerOpacity: (value: SetStateAction<number>) => void;
-  setFlowerSpeed: (value: SetStateAction<number>) => void;
+  
+  
+  
+  
   setTriangulateVariation: (value: SetStateAction<number>) => void;
   setEmojiOffsetX: (value: SetStateAction<number>) => void;
 }

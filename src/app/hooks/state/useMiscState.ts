@@ -10,7 +10,7 @@ export function useMiscState() {
   const syncChannelRef = useRef<BroadcastChannel | null>(null);
   const animSyncChannelRef = useRef<BroadcastChannel | null>(null);
   const animValuesRef = useRef({
-    voronoiAnimTime: 0, flowerAnimTime: 0, auroraAnimTime: 0, turrellAnimTime: 0, causticsAnimTime: 0,
+    voronoiAnimTime: 0, auroraAnimTime: 0, turrellAnimTime: 0, causticsAnimTime: 0,
     lavaAnimTime: 0, marbleAnimTime: 0, metaballAnimTime: 0,
     flowAnimTime: 0, liquidAnimTime: 0, emojiAnimTime: 0, attractorAnimTime: 0, tilingAnimTime: 0, hatchAnimTime: 0,
     noiseAnimTime: 0, radialAnimTime: 0,

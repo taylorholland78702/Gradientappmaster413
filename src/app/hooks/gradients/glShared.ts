@@ -258,7 +258,7 @@ export const HEAVY_FIELD_PIXEL_BUDGET = 2_600_000;
 const HEAVY_GRADIENTS = new Set(['julia', 'caustics', 'noise', 'marble', 'metaballs', 'voronoi', 'lava-lamp', 'embers', 'bokeh', 'waves', 'spectral', 'prism']);
 // The slowest gradients overall (ranked in the performance audit). They may also drop below the display's native size
 // when frames are still slow after every normal step (see EMERGENCY_FLOORS in adaptiveQuality.ts).
-const SLOW_GRADIENTS = new Set([...HEAVY_GRADIENTS, 'raindrops', 'iridescent', 'glass', 'contour', 'ring']);
+const SLOW_GRADIENTS = new Set([...HEAVY_GRADIENTS, 'iridescent', 'glass', 'contour', 'ring']);
 
 // The render-target size for a frame: the main canvas's backing size, scaled
 // down uniformly if it exceeds `budget` pixels, but never below the display

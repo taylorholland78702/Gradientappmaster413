@@ -7,7 +7,7 @@ export function useTilingState() {
   const [tilingRotation, setTilingRotation] = useState(0);
   // Auto-incrementing accumulator added on top of the user's static
   // tilingRotation slider value when PLAY is active — same split as
-  // Flower's flowerRotation (base) + flowerAnimTime (auto-spin).
+  // Tiling's own rotation (base) + auto-spin.
   const [tilingAnimTime, setTilingAnimTime] = useState(0);
   const [tilingRowOffset, setTilingRowOffset] = useState(0);
   return {

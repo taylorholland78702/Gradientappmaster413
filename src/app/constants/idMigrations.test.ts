@@ -47,6 +47,11 @@ describe('migrateIds (effect-only migrations)', () => {
     expect(migrateId('sheen')).toBe('drape');
   });
 
+  it('sends the removed Flower to Shapes and Raindrops to Caustics', () => {
+    expect(migrateId('flower')).toBe('shapes');
+    expect(migrateId('raindrops')).toBe('caustics');
+  });
+
   it('sends a removed Constellation to Attractor', () => {
     expect(migrateId('constellation')).toBe('attractor');
   });

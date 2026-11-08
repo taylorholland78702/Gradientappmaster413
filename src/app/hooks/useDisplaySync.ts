@@ -90,7 +90,6 @@ export function useDisplaySync({
       if (!v) return;
       const av = animValuesRef.current;
       if (typeof v.voronoiAnimTime === 'number') av.voronoiAnimTime = v.voronoiAnimTime;
-      if (typeof v.flowerAnimTime === 'number') av.flowerAnimTime = v.flowerAnimTime;
       if (typeof v.tilingAnimTime === 'number') av.tilingAnimTime = v.tilingAnimTime;
       if (typeof v.auroraAnimTime === 'number') av.auroraAnimTime = v.auroraAnimTime;
       if (typeof v.turrellAnimTime === 'number') av.turrellAnimTime = v.turrellAnimTime;

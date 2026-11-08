@@ -26,7 +26,6 @@ import { drawTilingGL, detectTilingGLSupport } from './drawTilingGL';
 import { drawTopographicGL, detectTopographicGLSupport } from './drawTopographicGL';
 import { drawVoronoiGL, detectVoronoiGLSupport } from './drawVoronoiGL';
 import { drawWindmillHelixGL, detectWindmillGLSupport } from './drawWindmillGL';
-import { drawFlower } from './drawFlower';
 import { drawTiling } from './drawTiling';
 import { drawStyleFieldGL, detectStyleFieldGLSupport, hasStyleFieldFailed, type StyleFieldId } from './drawStyleFieldGL';
 import type { DrawCtx } from '../canvasDrawTypes';
@@ -258,7 +257,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'edge-glow': (P) => styleFieldAuto('edge-glow', P),
   'fireworks': drawFireworksLazy,
   'flow-mesh': (P) => styleFieldAuto('flow-mesh', P),
-  'flower': drawFlower,
   'glass': (P) => styleFieldAuto('glass', P),
   'grid': drawGrid,
   'holographic': (P) => styleFieldAuto('holographic', P),
@@ -278,7 +276,6 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'prism': (P) => styleFieldAuto('prism', P),
   'radial': drawRadial,
   'radial-burst': drawRadialBurst,
-  'raindrops': (P) => styleFieldAuto('raindrops', P),
   'rays': (P) => styleFieldAuto('rays', P),
   'reaction-diffusion': drawReactionDiffusionLazy,
   'shapes': drawShapes,

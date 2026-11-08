@@ -13,7 +13,7 @@ export type GradientKind = 'dark-ground' | 'smooth' | 'pattern' | 'particles';
 // How a gradient looks, for choosing effects: a few bright shapes on black, a soft full-frame field, a repeating
 // pattern or geometry, or scattered points. Anything not listed is a smooth field.
 const KIND_MEMBERS: Record<Exclude<GradientKind, 'smooth'>, GradientType[]> = {
-  'dark-ground': ['bokeh', 'eclipse', 'edge-glow', 'embers', 'rays', 'vortex', 'curtains', 'lava-lamp', 'metaballs', 'flower', 'tunnel', 'corridor', 'globe', 'wormhole', 'horizon', 'spectral'],
+  'dark-ground': ['bokeh', 'eclipse', 'edge-glow', 'embers', 'rays', 'vortex', 'curtains', 'lava-lamp', 'metaballs', 'tunnel', 'corridor', 'globe', 'wormhole', 'horizon', 'spectral'],
   pattern: ['grid', 'shapes', 'tiling', 'truchet', 'voronoi', 'topographic', 'windmill', 'julia', 'reaction-diffusion', 'stack', 'radial-burst'],
   particles: ['particles', 'attractor', 'fireworks', 'lightning'],
 };

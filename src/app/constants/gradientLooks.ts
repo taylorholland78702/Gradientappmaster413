@@ -29,7 +29,6 @@ export const LOOK_PARAM_KEYS = [
   'radialBurstCount', 'radialBurstSize', 'radialBurstSpread',
   'windmillMode', 'helixTurns', 'helixTightness',
   'fadeDirection', 'angleStartOffset',
-  'flowerCircles', 'flowerScale', 'flowerSpread',
   'gridRows', 'gridColumns', 'shapesCount', 'shapesSpeed', 'shapesSides',
   'stackCount', 'stackGap', 'stackWidth', 'stackLength', 'stackResponse', 'stackSpeed',
   'hatchLayers', 'hatchSpacing', 'hatchResponse', 'hatchSpeed',
@@ -118,11 +117,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },
     { name: 'Pastel Facets', colors: ['#ffd6e8', '#d6f0ff', '#fff3c9', '#d9ffd6'], scale: 0.9 },
-  ],
-  raindrops: [
-    { name: 'Rain', colors: ['#0a1b2a', '#1f4f73', '#4b91b8', '#bfe3f2'] },
-    { name: 'Midnight Pond', colors: ['#05070f', '#1a2650', '#3b52a8', '#9fb0ff'], speed: 0.7 },
-    { name: 'Spring Puddle', colors: ['#133b2b', '#2f8f63', '#8fd9a8', '#e9fff0'], scale: 1.2 },
   ],
   holographic: [
     { name: 'Foil', colors: ['#ff8bd8', '#8bd8ff', '#b8ff8b', '#ffe58b'] },
@@ -291,11 +285,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Maze', colors: ['#05070f', '#e6f2ff'], params: { truchetSize: 40, truchetThickness: 4 } },
     { name: 'Candy Weave', colors: ['#ff9ecb', '#9ed8ff', '#fff09e', '#b6f2b0'], params: { truchetSize: 60, truchetThickness: 8 } },
     { name: 'Gold Lattice', colors: ['#1a1000', '#e0a200', '#fff4c2'], params: { truchetSize: 30, truchetThickness: 3 } },
-  ],
-  flower: [
-    { name: 'Daisy', colors: ['#fff6a8', '#ffd23b', '#ffffff', '#ff9ecb'], params: { flowerCircles: 6 } },
-    { name: 'Lotus', colors: ['#2b0a3d', '#a33a8f', '#ff9ecb', '#ffe3ef'], params: { flowerCircles: 8, flowerSpread: 1.2 } },
-    { name: 'Sun Bloom', colors: ['#2a0a00', '#a1220b', '#ff7a1a', '#ffe9a8'], params: { flowerCircles: 10 } },
   ],
   attractor: [
     { name: 'Neon Orbit', colors: ['#05000f', '#4b00a8', '#ff2bd6', '#2bffe4'], params: { attractorPointCount: 8 } },
