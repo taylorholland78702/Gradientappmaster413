@@ -40,10 +40,9 @@ import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
 import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
 import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
-import { applyFilmStock } from '../hooks/effects/applyFilmStock';
 import { applyDatamosh } from '../hooks/effects/applyDatamosh';
-import { applyFilmBurn } from '../hooks/effects/applyFilmBurn';
 import { applyGlitch } from '../hooks/effects/applyGlitch';
+import { applyFilm } from '../hooks/effects/applyFilm';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -179,8 +178,7 @@ const EFFECT_REGISTRY = {
   // Robert Ryman: the ground itself as subject — desaturates and lifts
   // toward near-white, then a fine brushed-texture noise pass. Audio only
   // ever deepens texture, never reintroduces color.
-  'film-stock': { drawFn: applyFilmStock, label: 'Film Stock', cost: 3, category: ['Film Stock'], audio: false },
-  'film-burn': { drawFn: applyFilmBurn, label: 'Film Burn', cost: 2, category: ['Film Burn'], audio: false },
+  'film': { drawFn: applyFilm, label: 'Film', cost: 3, category: ['Film Stock', 'Film Burn'], audio: false },
   gesso: { drawFn: applyGesso, label: 'Gesso', cost: 1, category: ['Gesso'], audio: true },
   'glitch': { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch Blocks', 'Row Smear'], audio: false },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
