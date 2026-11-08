@@ -155,6 +155,12 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setFilmBurnAmount: (value: SetStateAction<number>) => void;
+  setFilmBurnDust: (value: SetStateAction<number>) => void;
+  setFilmBurnScratches: (value: SetStateAction<number>) => void;
+  setFilmBurnFlicker: (value: SetStateAction<number>) => void;
+  setFilmBurnFlash: (value: SetStateAction<number>) => void;
+  setFilmBurnSpeed: (value: SetStateAction<number>) => void;
   setMoshBlock: (value: SetStateAction<number>) => void;
   setMoshSmear: (value: SetStateAction<number>) => void;
   setMoshDrift: (value: SetStateAction<number>) => void;
