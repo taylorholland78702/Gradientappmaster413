@@ -214,9 +214,6 @@ export function useMasterClock(p: UseMasterClockParams) {
       if (activeEffectsRef.current.includes('polar-warp')) {
         drawParamsDirtyRef.current = true;
       }
-      if (activeEffectsRef.current.includes('hard-bands')) {
-        drawParamsDirtyRef.current = true;
-      }
       if (activeEffectsRef.current.includes('nested-frames')) {
         drawParamsDirtyRef.current = true;
       }
