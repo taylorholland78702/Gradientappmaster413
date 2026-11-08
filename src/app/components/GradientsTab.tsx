@@ -390,6 +390,8 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                   const isLastColumn = columnIndex === COLS - 1;
                   const active = entry.types.includes(gradientType);
                   const fam = GRADIENT_FAMILIES.find(f => f.id === entry.key);
+                  // A family shows the picture of the member that is on, or was last on, so each member's picture is seen.
+                  const thumbType = fam ? (active ? gradientType : (lastFamilyMember.current[fam.id] ?? entry.types[0])) : entry.types[0];
                   return (
                     <button
                       key={entry.key}
@@ -402,9 +404,9 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
                       }`}
                       style={{ justifyContent: 'flex-start' }}
                     >
-                      {GRADIENT_THUMBS[entry.types[0]] && (
+                      {GRADIENT_THUMBS[thumbType] && (
                         <img
-                          src={GRADIENT_THUMBS[entry.types[0]]}
+                          src={GRADIENT_THUMBS[thumbType]}
                           alt=""
                           width={48}
                           height={27}
