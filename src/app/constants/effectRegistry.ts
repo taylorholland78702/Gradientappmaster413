@@ -40,6 +40,7 @@ import { applyRowSmear } from '../hooks/effects/applyRowSmear';
 import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyLens } from '../hooks/effects/applyLens';
 import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
+import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -211,6 +212,7 @@ const EFFECT_REGISTRY = {
   // worker's response could arrive after the loop had already stopped
   // calling draw() for good, leaving the finished result computed but
   // never painted — reads as the canvas freezing and refusing to update.
+  'neon-edges': { drawFn: applyNeonEdges, label: 'Neon Edges', cost: 3, category: ['Neon Edges'], audio: false },
   'nested-frames': { drawFn: applyNestedFrames, label: 'Nested Frames', cost: 2, category: ['Nested Frames'], audio: false },
   'oil-paint': { drawFn: applyOilPaint, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
