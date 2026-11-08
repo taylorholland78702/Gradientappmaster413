@@ -165,12 +165,6 @@ export interface EffectsTabProps {
   polarX: number; setPolarX: (v: number) => void;
   polarY: number; setPolarY: (v: number) => void;
   polarSpeed: number; setPolarSpeed: (v: number) => void;
-  lensMode: "bulge" | "pinch" | "twirl" | "sphere"; setLensMode: (v: "bulge" | "pinch" | "twirl" | "sphere") => void;
-  lensStrength: number; setLensStrength: (v: number) => void;
-  lensRadius: number; setLensRadius: (v: number) => void;
-  lensX: number; setLensX: (v: number) => void;
-  lensY: number; setLensY: (v: number) => void;
-  lensSpeed: number; setLensSpeed: (v: number) => void;
   crtGlass: number; setCrtGlass: (v: number) => void;
   crtMoire: number; setCrtMoire: (v: number) => void;
   crtDrift: number; setCrtDrift: (v: number) => void;
@@ -251,7 +245,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -948,47 +942,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 <EffectSection id="hard-bands" label="Hard Bands" isMulti={isMulti} expanded={!collapsedEffects.has('hard-bands')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
                   <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('lens') && (
-                <EffectSection id="lens" label="Lens" isMulti={isMulti} expanded={!collapsedEffects.has('lens')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1 flex-1 min-w-0">
-                      <button
-                        onClick={() => setLensMode('bulge')}
-                        aria-pressed={lensMode === 'bulge'}
-                        className={choice(lensMode === 'bulge', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Bulge
-                      </button>
-                      <button
-                        onClick={() => setLensMode('pinch')}
-                        aria-pressed={lensMode === 'pinch'}
-                        className={choice(lensMode === 'pinch', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Pinch
-                      </button>
-                      <button
-                        onClick={() => setLensMode('twirl')}
-                        aria-pressed={lensMode === 'twirl'}
-                        className={choice(lensMode === 'twirl', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Twirl
-                      </button>
-                      <button
-                        onClick={() => setLensMode('sphere')}
-                        aria-pressed={lensMode === 'sphere'}
-                        className={choice(lensMode === 'sphere', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Sphere
-                      </button>
-                    </div>
-                  </div>
-                  <SliderRow label="Strength:" title="How hard the lens bends the picture." value={lensStrength} onChange={setLensStrength} min="0" max="1" step="0.05" />
-                  <SliderRow label="Radius:" title="How big the lens is." value={lensRadius} onChange={setLensRadius} min="10" max="100" step="1" />
-                  <SliderRow label="Point X:" title="Where the lens sits, left to right." value={lensX} onChange={setLensX} min="0" max="100" step="1" />
-                  <SliderRow label="Point Y:" title="Where the lens sits, top to bottom." value={lensY} onChange={setLensY} min="0" max="100" step="1" />
-                  <SliderRow label="Speed:" title="How fast the twirl breathes or the sphere rolls. Zero freezes it." value={lensSpeed} onChange={setLensSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('polar-warp') && (
