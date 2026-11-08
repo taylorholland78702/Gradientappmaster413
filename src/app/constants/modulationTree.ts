@@ -23,6 +23,7 @@ export interface ModSource {
 // Categories that are really a mode of another gradient, shown as a sub-group of it.
 const MODE_TITLES: Record<string, string> = {
   'Flow Field': 'Flow Field mode', Marks: 'Marks mode', 'Polar Grid': 'Polar Grid mode', Helix: 'Helix mode',
+  'Hard Bands': 'Palette mode',
   'Film Burn': 'Burn mode',
   'Row Smear': 'Rows mode',
   'Grid Effect': 'Grid effect', [STYLED_GRADIENTS_CATEGORY]: 'All styled gradients',

@@ -36,7 +36,6 @@ import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiqu
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
-import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
 import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
 import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
@@ -46,7 +45,7 @@ import { applyFilm } from '../hooks/effects/applyFilm';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
-import { applyPosterize } from '../hooks/effects/applyPosterize';
+import { applyPosterizeBands } from '../hooks/effects/applyPosterizeBands';
 import { applyShift } from '../hooks/effects/applyShift';
 import { applySlitScan } from '../hooks/effects/applySlitScan';
 import { applyTriangulateWorkerAuto } from '../hooks/effects/applyTriangulateWorkerAuto';
@@ -194,7 +193,6 @@ const EFFECT_REGISTRY = {
   // synchronously like Oil Paint (see its comment above on why a Worker's
   // one-frame-stale handoff can race the idle-skip optimization) — its
   // working resolution is capped the same way for the same reason.
-  'hard-bands': { drawFn: applyHardBands, label: 'Hard Bands', cost: 1, category: ['Hard Bands'], audio: false },
   impasto: { drawFn: applyImpasto, label: 'Impasto', cost: 4, category: ['Impasto'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
@@ -220,7 +218,7 @@ const EFFECT_REGISTRY = {
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   'polar-warp': { drawFn: applyPolarWarp, label: 'Polar Warp', cost: 2, category: ['Polar Warp'], audio: false },
-  posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
+  posterize: { drawFn: applyPosterizeBands, label: 'Posterize', cost: 1, category: ['Posterize', 'Hard Bands'], audio: true },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
   'tile-puzzle': { drawFn: applyTilePuzzle, label: 'Tile Puzzle', cost: 2, category: ['Tile Puzzle'], audio: false },

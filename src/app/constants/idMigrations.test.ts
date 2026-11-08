@@ -101,3 +101,11 @@ describe('effects that became modes of another: film', () => {
     expect(effectModeFields(['film-stock'])).toEqual({});
   });
 });
+
+describe('effects that became modes of another: posterize', () => {
+  it('Hard Bands loads as Posterize in Palette mode', () => {
+    expect(migrateIds(['hard-bands'])).toEqual(['posterize']);
+    expect(effectModeFields(['hard-bands'])).toEqual({ posterizeMode: 'palette' });
+    expect(effectModeFields(['posterize'])).toEqual({});
+  });
+});

@@ -131,6 +131,7 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  posterizeMode: "levels" | "palette"; setPosterizeMode: (v: "levels" | "palette") => void;
   filmMode: "stock" | "burn"; setFilmMode: (v: "stock" | "burn") => void;
   glitchMode: "blocks" | "rows"; setGlitchMode: (v: "blocks" | "rows") => void;
   nestedFramesTwist: number; setNestedFramesTwist: (v: number) => void;
@@ -246,7 +247,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, filmMode, glitchMode, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setFilmMode, setGlitchMode, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, posterizeMode, filmMode, glitchMode, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setPosterizeMode, setFilmMode, setGlitchMode, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -910,12 +911,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                 </EffectSection>
               )}
-              {activeEffects.includes('hard-bands') && (
-                <EffectSection id="hard-bands" label="Hard Bands" isMulti={isMulti} expanded={!collapsedEffects.has('hard-bands')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
-                  <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
               {activeEffects.includes('impasto') && (
                 <EffectSection id="impasto" label="Impasto" isMulti={isMulti} expanded={!collapsedEffects.has('impasto')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Strength:" value={impastoStrength} onChange={setImpastoStrength} min="1" max="7" step="0.1" />
@@ -1036,7 +1031,35 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
-                  <StepperRow label="Levels" value={posterizeLevels} onChange={setPosterizeLevels} min={2} max={16} />
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setPosterizeMode('levels')}
+                        aria-pressed={posterizeMode === 'levels'}
+                        className={choice(posterizeMode === 'levels', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Levels
+                      </button>
+                      <button
+                        onClick={() => setPosterizeMode('palette')}
+                        aria-pressed={posterizeMode === 'palette'}
+                        className={choice(posterizeMode === 'palette', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Palette
+                      </button>
+                    </div>
+                  </div>
+                  {posterizeMode === 'levels' && (
+                    <>
+                      <StepperRow label="Levels" value={posterizeLevels} onChange={setPosterizeLevels} min={2} max={16} />
+                    </>
+                  )}
+                  {posterizeMode === 'palette' && (
+                    <>
+                      <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
+                      <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
+                    </>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (

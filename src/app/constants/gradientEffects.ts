@@ -98,6 +98,7 @@ export const migrateId = (id: string): string => ID_MIGRATIONS[id] || id;
 // only ever runs on activeEffects arrays (via migrateIds below).
 const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
   'grid': 'grid-effect',
+  'hard-bands': 'posterize',
   'film-stock': 'film',
   'film-burn': 'film',
   'glitch-blocks': 'glitch',
@@ -115,6 +116,7 @@ const REMOVED_EFFECTS = new Set(['fisheye', 'brush-strokes', 'watercolor', 'lens
 // Old effects that became a mode of another one. The id itself is renamed by EFFECT_ONLY_MIGRATIONS; this says which
 // mode setting keeps the look the same, for a saved look that does not carry the setting yet.
 export const EFFECT_MODE_MIGRATIONS: Record<string, Record<string, string>> = {
+  'hard-bands': { posterizeMode: 'palette' },
   'film-burn': { filmMode: 'burn' },
   'row-smear': { glitchMode: 'rows' },
 };
