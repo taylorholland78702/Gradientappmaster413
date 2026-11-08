@@ -22,4 +22,16 @@ describe('resolveParam', () => {
     expect(resolveParam('Nonsense:', ['Noise'])).toBeNull();
     expect(resolveParam('Scale:', [])).toBeNull();
   });
+  it('finds the settings of the newer effects from their slider labels', () => {
+    expect(resolveParam('Frames:', ['Nested Frames'])).toBe('nestedFramesCount');
+    expect(resolveParam('Twist:', ['Nested Frames'])).toBe('nestedFramesTwist');
+    expect(resolveParam('Blocks:', ['Glitch Blocks', 'Row Smear'])).toBe('glitchBlocksCount');
+    expect(resolveParam('Blocks Speed:', ['Glitch Blocks', 'Row Smear'])).toBe('glitchBlocksSpeed');
+    expect(resolveParam('Smear Speed:', ['Glitch Blocks', 'Row Smear'])).toBe('rowSmearSpeed');
+    expect(resolveParam('Burn:', ['Film Stock', 'Film Burn'])).toBe('filmBurnAmount');
+    expect(resolveParam('Grain:', ['Film Stock', 'Film Burn'])).toBe('filmStockGrain');
+    expect(resolveParam('Tiles:', ['Tile Puzzle'])).toBe('tilePuzzleCount');
+    expect(resolveParam('Strength:', ['Neon Edges'])).toBe('neonStrength');
+    expect(resolveParam('Block:', ['Datamosh'])).toBe('moshBlock');
+  });
 });
