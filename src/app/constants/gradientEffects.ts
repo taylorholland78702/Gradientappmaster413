@@ -214,7 +214,7 @@ export const GRADIENT_FAMILIES: GradientFamily[] = [
   { id: 'contour', label: 'Contour', members: [{ type: 'contour', label: 'Shaded' }, { type: 'topographic', label: 'Lines' }] },
   { id: 'iridescent', label: 'Iridescent', members: [{ type: 'iridescent', label: 'Oil' }, { type: 'holographic', label: 'Foil' }] },
   { id: 'ring', label: 'Ring', members: [{ type: 'eclipse', label: 'Eclipse' }, { type: 'vortex', label: 'Vortex' }, { type: 'globe', label: 'Globe' }] },
-  { id: 'mesh', label: 'Mesh', members: [{ type: 'mesh', label: 'Soft' }, { type: 'flow-mesh', label: 'Flow' }] },
+  { id: 'mesh', label: 'Mesh', members: [{ type: 'mesh', label: 'Soft' }, { type: 'flow-mesh', label: 'Flow' }, { type: 'drape', label: 'Silk' }] },
   { id: 'waves', label: 'Waves', members: [{ type: 'waves', label: 'Waves' }, { type: 'ribbon', label: 'Ribbon' }, { type: 'bands', label: 'Bands' }] },
   { id: 'curtains', label: 'Curtains', members: [{ type: 'curtains', label: 'Curtains' }, { type: 'edge-glow', label: 'Edge Glow' }] },
   { id: 'prism', label: 'Prism', members: [{ type: 'prism', label: 'Facets' }, { type: 'spectral', label: 'Spectral' }] },
