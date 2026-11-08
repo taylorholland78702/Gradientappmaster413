@@ -1,5 +1,6 @@
 import { effectSpeedsLive } from '../../constants/effectSpeeds';
-import { getScratchImageData } from '../../utils/scratchCanvas';
+import { getScratchImageData, getScratchPixelBuffer } from '../../utils/scratchCanvas';
+import { smearChroma } from './analogSignal';
 import type { EffectCtx } from '../canvasDrawTypes';
 
 // Module-level clock — a plain time accumulator rather than a dedicated
@@ -18,6 +19,10 @@ export function applyCrt(P: EffectCtx): void {
     getDisplayImageData,
     crtIntensity,
     crtScanlineSpacing,
+    crtCurve,
+    crtGlow,
+    crtBleed,
+    crtFlicker,
   } = P;
   // RGB-subpixel/scanline mask only — no barrel curvature, corner vignette,
   // or black bezel, so the effect reads as a cathode-ray pixel grid over
@@ -32,6 +37,38 @@ export function applyCrt(P: EffectCtx): void {
   const rollOffset = Math.floor(crtTime);
   const src = getDisplayImageData();
   const dst = getScratchImageData('crt', ctx, displayWidth, displayHeight);
+  const clamp01 = (v: number | undefined) => Math.max(0, Math.min(1, v ?? 0));
+  const curve = clamp01(crtCurve), glow = clamp01(crtGlow), bleed = clamp01(crtBleed), flicker = clamp01(crtFlicker);
+
+  // Signal first, then glass: colour bleeds sideways off its edges, then the picture is bent onto a bulging tube face
+  // (sampled from further out toward the edges, with the corners falling into shadow and past the edge to black).
+  let pix: Uint8ClampedArray = src.data;
+  if (bleed > 0) {
+    const pre = getScratchPixelBuffer('crt-pre', src.data.length);
+    pre.set(src.data);
+    smearChroma(pre, displayWidth, displayHeight, Math.max(1, Math.round(bleed * 10)));
+    pix = pre;
+  }
+  if (curve > 0) {
+    const bent = getScratchPixelBuffer('crt-bent', src.data.length);
+    const w = displayWidth, h = displayHeight;
+    for (let y = 0; y < h; y++) {
+      const ny = (y / (h - 1)) * 2 - 1;
+      for (let x = 0; x < w; x++) {
+        const nx = (x / (w - 1)) * 2 - 1;
+        const r2 = nx * nx + ny * ny;
+        const f = 1 + curve * 0.16 * r2;
+        const sx = Math.round(((nx * f + 1) / 2) * (w - 1)), sy = Math.round(((ny * f + 1) / 2) * (h - 1));
+        const o = (y * w + x) * 4;
+        if (sx < 0 || sx >= w || sy < 0 || sy >= h) { bent[o] = 0; bent[o + 1] = 0; bent[o + 2] = 0; bent[o + 3] = 255; continue; }
+        const si = (sy * w + sx) * 4;
+        const shade = 1 - curve * 0.4 * r2 * r2;
+        bent[o] = pix[si] * shade; bent[o + 1] = pix[si + 1] * shade; bent[o + 2] = pix[si + 2] * shade; bent[o + 3] = 255;
+      }
+    }
+    pix = bent;
+  }
+  const flick = 1 - flicker * 0.25 * Math.random();
   for (let y = 0; y < displayHeight; y++) {
     for (let x = 0; x < displayWidth; x++) {
       const i = (y * displayWidth + x) * 4;
@@ -44,11 +81,20 @@ export function applyCrt(P: EffectCtx): void {
       const subG = col === 1 ? 1 : (1 - 0.5 * amt);
       const subB = col === 2 ? 1 : (1 - 0.5 * amt);
 
-      dst.data[i]     = src.data[i]     * rowDark * subR;
-      dst.data[i + 1] = src.data[i + 1] * rowDark * subG;
-      dst.data[i + 2] = src.data[i + 2] * rowDark * subB;
+      dst.data[i]     = pix[i]     * flick * rowDark * subR;
+      dst.data[i + 1] = pix[i + 1] * flick * rowDark * subG;
+      dst.data[i + 2] = pix[i + 2] * flick * rowDark * subB;
       dst.data[i + 3] = 255;
     }
   }
   putScaledImageData(dst);
+  // Phosphor glow: a blurred copy of the lit picture added back over itself.
+  if (glow > 0) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = glow * 0.7;
+    ctx.filter = `blur(${Math.round(4 + glow * 8)}px)`;
+    ctx.drawImage(canvas, 0, 0, displayWidth, displayHeight);
+    ctx.restore();
+  }
 }

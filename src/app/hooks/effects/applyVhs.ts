@@ -1,5 +1,6 @@
 import { getScratchPixelBuffer } from '../../utils/scratchCanvas';
 import type { EffectCtx } from '../canvasDrawTypes';
+import { applyVhsSignal } from './applyVhsSignal';
 
 export function applyVhs(P: EffectCtx): void {
   const {
@@ -283,4 +284,5 @@ export function applyVhs(P: EffectCtx): void {
               }
               putScaledImageData(vhsShiftImg);
             }
+            applyVhsSignal(P);
 }

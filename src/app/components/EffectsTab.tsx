@@ -15,6 +15,7 @@ import { HueStrip } from './HueStrip';
 import { PointPad } from './PointPad';
 import { Switch } from './Switch';
 import { choice } from './choice';
+import { VHS_LOOKS, CRT_LOOKS } from '../constants/effectLooks';
 
 export interface EffectsTabProps {
   isMobile: boolean;
@@ -131,6 +132,14 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  crtCurve: number; setCrtCurve: (v: number) => void;
+  crtGlow: number; setCrtGlow: (v: number) => void;
+  crtBleed: number; setCrtBleed: (v: number) => void;
+  crtFlicker: number; setCrtFlicker: (v: number) => void;
+  vhsBleed: number; setVhsBleed: (v: number) => void;
+  vhsNoise: number; setVhsNoise: (v: number) => void;
+  vhsTracking: number; setVhsTracking: (v: number) => void;
+  vhsDropouts: number; setVhsDropouts: (v: number) => void;
   hardBandsSteps: number; setHardBandsSteps: (v: number) => void;
   hardBandsBlend: number; setHardBandsBlend: (v: number) => void;
   rowSmearLength: number; setRowSmearLength: (v: number) => void;
@@ -200,7 +209,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -220,6 +229,15 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
       .map(cat => ({ ...cat, emojis: cat.emojis.filter(em => (!q || em.name.includes(q)) && isEmojiRenderable(em.char)) }))
       .filter(cat => cat.emojis.length > 0);
   }, [emojiPickerSearch, isEmojiPickerOpen]);
+
+  // A look sets several sliders at once; every key is a slider's own name, so it goes through that slider's setter.
+  const applyLook = (values: Record<string, number>) => {
+    const setters: Record<string, (v: number) => void> = {
+      vhsGlitchIntensity: setVhsGlitchIntensity, vhsBleed: setVhsBleed, vhsNoise: setVhsNoise, vhsTracking: setVhsTracking, vhsDropouts: setVhsDropouts,
+      crtIntensity: setCrtIntensity, crtScanlineSpacing: setCrtScanlineSpacing, crtCurve: setCrtCurve, crtGlow: setCrtGlow, crtBleed: setCrtBleed, crtFlicker: setCrtFlicker,
+    };
+    for (const key of Object.keys(values)) setters[key]?.(values[key]);
+  };
 
   return (
     <>
@@ -441,8 +459,18 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('crt') && (
                 <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex flex-wrap gap-1">
+                    {CRT_LOOKS.map((look) => (
+                      <button key={look.name} onClick={() => applyLook(look.values)} className={choice(false, 'px-1.5 py-0.5 text-[10px]')}>{look.name}</button>
+                    ))}
+                  </div>
                   <SliderRow label="Intensity:" value={crtIntensity} onChange={setCrtIntensity} min="0" max="1" step="0.05" />
                   <SliderRow label="Speed:" title="How fast the rolling bar moves. Zero holds it still." value={effectSpeeds.crt} onChange={(v) => setEffectSpeed('crt', v)} min="0" max="4" step="0.1" />
+                  <SliderRow label="Scanlines:" title="Gap between scanlines, in pixels." value={crtScanlineSpacing} onChange={setCrtScanlineSpacing} min="1" max="6" step="1" />
+                  <SliderRow label="Curve:" title="How much the picture bulges like a tube face, with the corners falling into shadow." value={crtCurve} onChange={setCrtCurve} min="0" max="1" step="0.05" />
+                  <SliderRow label="Glow:" title="Phosphor glow around bright areas." value={crtGlow} onChange={setCrtGlow} min="0" max="1" step="0.05" />
+                  <SliderRow label="Bleed:" title="How far colour smears sideways, like a composite signal." value={crtBleed} onChange={setCrtBleed} min="0" max="1" step="0.05" />
+                  <SliderRow label="Flicker:" title="How much the brightness jitters from frame to frame." value={crtFlicker} onChange={setCrtFlicker} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('dada') && (
@@ -895,7 +923,16 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               )}
               {activeEffects.includes('vhs') && (
                 <EffectSection id="vhs" label="VHS" isMulti={isMulti} expanded={!collapsedEffects.has('vhs')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex flex-wrap gap-1">
+                    {VHS_LOOKS.map((look) => (
+                      <button key={look.name} onClick={() => applyLook(look.values)} className={choice(false, 'px-1.5 py-0.5 text-[10px]')}>{look.name}</button>
+                    ))}
+                  </div>
                   <SliderRow label="Intensity:" value={vhsGlitchIntensity} onChange={setVhsGlitchIntensity} min="0" max="1" step="0.05" />
+                  <SliderRow label="Bleed:" title="How far colour smears sideways off its edges." value={vhsBleed} onChange={setVhsBleed} min="0" max="1" step="0.05" />
+                  <SliderRow label="Noise:" title="Tape snow over the whole picture." value={vhsNoise} onChange={setVhsNoise} min="0" max="1" step="0.05" />
+                  <SliderRow label="Tracking:" title="The skewed, static-filled band along the bottom." value={vhsTracking} onChange={setVhsTracking} min="0" max="1" step="0.05" />
+                  <SliderRow label="Dropouts:" title="Short white streaks where the tape lost the signal." value={vhsDropouts} onChange={setVhsDropouts} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('vignette') && (
