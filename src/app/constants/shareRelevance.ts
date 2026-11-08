@@ -62,6 +62,7 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   radialHardEdge: { gradients: ['radial'] },
   shapesMode: { gradients: ['shapes'] },
   slitScanDirection: { effects: ['slit-scan'] },
+  lensMode: { effects: ['lens'] },
   rowSmearDirection: { effects: ['row-smear'] },
   triangulateVariation: { effects: ['triangulate'] },
   watercolorStyle: { effects: ['watercolor'] },
