@@ -132,6 +132,12 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  filmBurnAmount: number; setFilmBurnAmount: (v: number) => void;
+  filmBurnDust: number; setFilmBurnDust: (v: number) => void;
+  filmBurnScratches: number; setFilmBurnScratches: (v: number) => void;
+  filmBurnFlicker: number; setFilmBurnFlicker: (v: number) => void;
+  filmBurnFlash: number; setFilmBurnFlash: (v: number) => void;
+  filmBurnSpeed: number; setFilmBurnSpeed: (v: number) => void;
   moshBlock: number; setMoshBlock: (v: number) => void;
   moshSmear: number; setMoshSmear: (v: number) => void;
   moshDrift: number; setMoshDrift: (v: number) => void;
@@ -245,7 +251,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -1110,6 +1116,16 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Smear:" title="How many blocks keep their old picture instead of updating." value={moshSmear} onChange={setMoshSmear} min="0.1" max="1" step="0.05" />
                   <SliderRow label="Drift:" title="How far the kept blocks slide." value={moshDrift} onChange={setMoshDrift} min="0" max="1" step="0.05" />
                   <SliderRow label="Refresh:" title="Seconds between full refreshes of the frame." value={moshRefresh} onChange={setMoshRefresh} min="0.5" max="8" step="0.5" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('film-burn') && (
+                <EffectSection id="film-burn" label="Film Burn" isMulti={isMulti} expanded={!collapsedEffects.has('film-burn')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Burn:" title="Orange-red burn glows drifting in from the edges." value={filmBurnAmount} onChange={setFilmBurnAmount} min="0" max="1" step="0.05" />
+                  <SliderRow label="Dust:" title="Specks and hairs." value={filmBurnDust} onChange={setFilmBurnDust} min="0" max="1" step="0.05" />
+                  <SliderRow label="Scratches:" title="Vertical scratches." value={filmBurnScratches} onChange={setFilmBurnScratches} min="0" max="1" step="0.05" />
+                  <SliderRow label="Flicker:" title="Exposure flicker. Held to a faint wobble when Reduce flashing is on." value={filmBurnFlicker} onChange={setFilmBurnFlicker} min="0" max="1" step="0.05" />
+                  <SliderRow label="Flash:" title="Occasional hot frames. Off when Reduce flashing is on. Shuffle never turns it on." value={filmBurnFlash} onChange={setFilmBurnFlash} min="0" max="1" step="0.05" />
+                  <SliderRow label="Speed:" title="How fast the burns drift. Zero freezes them." value={filmBurnSpeed} onChange={setFilmBurnSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (

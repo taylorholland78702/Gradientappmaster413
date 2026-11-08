@@ -45,6 +45,7 @@ import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
 import { applyGlitchBlocks } from '../hooks/effects/applyGlitchBlocks';
 import { applyFilmStock } from '../hooks/effects/applyFilmStock';
 import { applyDatamosh } from '../hooks/effects/applyDatamosh';
+import { applyFilmBurn } from '../hooks/effects/applyFilmBurn';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -183,6 +184,7 @@ const EFFECT_REGISTRY = {
   // toward near-white, then a fine brushed-texture noise pass. Audio only
   // ever deepens texture, never reintroduces color.
   'film-stock': { drawFn: applyFilmStock, label: 'Film Stock', cost: 3, category: ['Film Stock'], audio: false },
+  'film-burn': { drawFn: applyFilmBurn, label: 'Film Burn', cost: 2, category: ['Film Burn'], audio: false },
   gesso: { drawFn: applyGesso, label: 'Gesso', cost: 1, category: ['Gesso'], audio: true },
   'glitch-blocks': { drawFn: applyGlitchBlocks, label: 'Glitch Blocks', cost: 2, category: ['Glitch Blocks'], audio: false },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
