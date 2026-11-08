@@ -37,6 +37,7 @@ import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
 import { applyRowSmear } from '../hooks/effects/applyRowSmear';
+import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -187,6 +188,7 @@ const EFFECT_REGISTRY = {
   // synchronously like Oil Paint (see its comment above on why a Worker's
   // one-frame-stale handoff can race the idle-skip optimization) — its
   // working resolution is capped the same way for the same reason.
+  'hard-bands': { drawFn: applyHardBands, label: 'Hard Bands', cost: 1, category: ['Hard Bands'], audio: false },
   impasto: { drawFn: applyImpasto, label: 'Impasto', cost: 4, category: ['Impasto'], audio: false },
   invert: { drawFn: applyInvert, label: 'Invert', cost: 1, category: ['Invert'], audio: false },
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },

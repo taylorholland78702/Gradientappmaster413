@@ -155,6 +155,8 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setHardBandsSteps: (value: SetStateAction<number>) => void;
+  setHardBandsBlend: (value: SetStateAction<number>) => void;
   setRowSmearLength: (value: SetStateAction<number>) => void;
   setRowSmearAmount: (value: SetStateAction<number>) => void;
   setRowSmearDirection: (value: SetStateAction<"horizontal" | "vertical">) => void;
