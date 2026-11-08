@@ -155,6 +155,10 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setFilmStockLook: (value: SetStateAction<"warm" | "cool" | "faded" | "punchy">) => void;
+  setFilmStockHalation: (value: SetStateAction<number>) => void;
+  setFilmStockGrain: (value: SetStateAction<number>) => void;
+  setFilmStockRoll: (value: SetStateAction<number>) => void;
   setGlitchBlocksCount: (value: SetStateAction<number>) => void;
   setGlitchBlocksShift: (value: SetStateAction<number>) => void;
   setGlitchBlocksSplit: (value: SetStateAction<number>) => void;

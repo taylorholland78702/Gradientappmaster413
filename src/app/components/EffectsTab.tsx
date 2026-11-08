@@ -132,6 +132,10 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  filmStockLook: "warm" | "cool" | "faded" | "punchy"; setFilmStockLook: (v: "warm" | "cool" | "faded" | "punchy") => void;
+  filmStockHalation: number; setFilmStockHalation: (v: number) => void;
+  filmStockGrain: number; setFilmStockGrain: (v: number) => void;
+  filmStockRoll: number; setFilmStockRoll: (v: number) => void;
   glitchBlocksCount: number; setGlitchBlocksCount: (v: number) => void;
   glitchBlocksShift: number; setGlitchBlocksShift: (v: number) => void;
   glitchBlocksSplit: number; setGlitchBlocksSplit: (v: number) => void;
@@ -237,7 +241,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -1055,6 +1059,45 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
                   <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
                   <SliderRow label="Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('film-stock') && (
+                <EffectSection id="film-stock" label="Film Stock" isMulti={isMulti} expanded={!collapsedEffects.has('film-stock')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setFilmStockLook('warm')}
+                        aria-pressed={filmStockLook === 'warm'}
+                        className={choice(filmStockLook === 'warm', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Warm
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('cool')}
+                        aria-pressed={filmStockLook === 'cool'}
+                        className={choice(filmStockLook === 'cool', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Cool
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('faded')}
+                        aria-pressed={filmStockLook === 'faded'}
+                        className={choice(filmStockLook === 'faded', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Faded
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('punchy')}
+                        aria-pressed={filmStockLook === 'punchy'}
+                        className={choice(filmStockLook === 'punchy', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Punchy
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Halation:" title="The red-orange glow around bright edges." value={filmStockHalation} onChange={setFilmStockHalation} min="0" max="1" step="0.05" />
+                  <SliderRow label="Grain:" title="Film grain, strongest in the midtones." value={filmStockGrain} onChange={setFilmStockGrain} min="0" max="1" step="0.05" />
+                  <SliderRow label="Roll-off:" title="How softly highlights compress instead of clipping." value={filmStockRoll} onChange={setFilmStockRoll} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
