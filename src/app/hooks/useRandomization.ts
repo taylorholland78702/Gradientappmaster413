@@ -107,7 +107,7 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
     setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -347,6 +347,13 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
     setSlitScanSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
+
+    // Nested Frames effect
+    setNestedFramesCount(Math.floor(Math.random() * 8) + 4);
+    setNestedFramesShrink(0.7 + Math.random() * 0.2);
+    setNestedFramesX(30 + Math.random() * 40);
+    setNestedFramesY(30 + Math.random() * 40);
+    setNestedFramesSpeed(0.2 + Math.random());
 
     // Oil Paint
     setOilPaintRadius(Math.floor(Math.random() * 6) + 1);                // 1–6
@@ -942,6 +949,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'dada') setDadaSpeed(rng(0.5, 2));
       else if (eff === 'watercolor') setWatercolorSpeed(rng(0.5, 2));
       else if (eff === 'impasto') setImpastoSpeed(rng(0.5, 2));
+      else if (eff === 'nested-frames') { setNestedFramesCount(Math.round(rng(4, 12))); setNestedFramesShrink(rng(0.7, 0.9)); setNestedFramesX(rng(30, 70)); setNestedFramesY(rng(30, 70)); setNestedFramesSpeed(rng(0.2, 1.2)); }
       else if (eff === 'slit-scan') { setSlitScanIntensity(rng(0, 1)); setSlitScanHistory(Math.round(rng(12, 120))); setSlitScanSpeed(rng(0.5, 2)); }
     }
 

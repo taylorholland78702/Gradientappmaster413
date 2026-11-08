@@ -155,6 +155,11 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setNestedFramesCount: (value: SetStateAction<number>) => void;
+  setNestedFramesShrink: (value: SetStateAction<number>) => void;
+  setNestedFramesX: (value: SetStateAction<number>) => void;
+  setNestedFramesY: (value: SetStateAction<number>) => void;
+  setNestedFramesSpeed: (value: SetStateAction<number>) => void;
   setCrtSpeed: (value: SetStateAction<number>) => void;
   setDitherSpeed: (value: SetStateAction<number>) => void;
   setDadaSpeed: (value: SetStateAction<number>) => void;
