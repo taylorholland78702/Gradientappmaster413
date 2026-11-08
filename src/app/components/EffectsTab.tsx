@@ -132,6 +132,12 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  tilePuzzleEmpty: "off" | "on"; setTilePuzzleEmpty: (v: "off" | "on") => void;
+  tilePuzzleCount: number; setTilePuzzleCount: (v: number) => void;
+  tilePuzzleShuffle: number; setTilePuzzleShuffle: (v: number) => void;
+  tilePuzzleRotate: number; setTilePuzzleRotate: (v: number) => void;
+  tilePuzzleGap: number; setTilePuzzleGap: (v: number) => void;
+  tilePuzzleSpeed: number; setTilePuzzleSpeed: (v: number) => void;
   neonStrength: number; setNeonStrength: (v: number) => void;
   neonGlow: number; setNeonGlow: (v: number) => void;
   neonDim: number; setNeonDim: (v: number) => void;
@@ -227,7 +233,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -1010,6 +1016,33 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Strength:" title="How easily an edge lights up." value={neonStrength} onChange={setNeonStrength} min="0.5" max="4" step="0.1" />
                   <SliderRow label="Glow:" title="How far the lines glow." value={neonGlow} onChange={setNeonGlow} min="0" max="20" step="1" />
                   <SliderRow label="Dim:" title="How dark the rest of the frame goes." value={neonDim} onChange={setNeonDim} min="0" max="1" step="0.05" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('tile-puzzle') && (
+                <EffectSection id="tile-puzzle" label="Tile Puzzle" isMulti={isMulti} expanded={!collapsedEffects.has('tile-puzzle')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setTilePuzzleEmpty('off')}
+                        aria-pressed={tilePuzzleEmpty === 'off'}
+                        className={choice(tilePuzzleEmpty === 'off', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Full
+                      </button>
+                      <button
+                        onClick={() => setTilePuzzleEmpty('on')}
+                        aria-pressed={tilePuzzleEmpty === 'on'}
+                        className={choice(tilePuzzleEmpty === 'on', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Empty slot
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Tiles:" title="How many tiles across and down." value={tilePuzzleCount} onChange={setTilePuzzleCount} min="2" max="10" step="1" />
+                  <SliderRow label="Shuffle:" title="How many tiles move each time." value={tilePuzzleShuffle} onChange={setTilePuzzleShuffle} min="0.1" max="1" step="0.05" />
+                  <SliderRow label="Turn:" title="How many tiles turn as they move." value={tilePuzzleRotate} onChange={setTilePuzzleRotate} min="0" max="1" step="0.05" />
+                  <SliderRow label="Gap:" title="The seam between tiles." value={tilePuzzleGap} onChange={setTilePuzzleGap} min="0" max="12" step="1" />
+                  <SliderRow label="Speed:" title="How often the tiles shuffle. Zero freezes them." value={tilePuzzleSpeed} onChange={setTilePuzzleSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (

@@ -41,6 +41,7 @@ import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyLens } from '../hooks/effects/applyLens';
 import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
 import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
+import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -222,6 +223,7 @@ const EFFECT_REGISTRY = {
   'row-smear': { drawFn: applyRowSmear, label: 'Row Smear', cost: 2, category: ['Row Smear'], audio: false },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
+  'tile-puzzle': { drawFn: applyTilePuzzle, label: 'Tile Puzzle', cost: 2, category: ['Tile Puzzle'], audio: false },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },
   vhs: { drawFn: applyVhs, label: 'VHS', cost: 2, category: ['VHS'], audio: true },
   vignette: { drawFn: applyVignette, label: 'Vignette', cost: 1, category: ['Vignette'], audio: true },
