@@ -19,5 +19,6 @@ export const CRT_LOOKS: EffectLook[] = [
   { name: 'Monitor', values: { crtIntensity: 0.5, crtScanlineSpacing: 2, crtCurve: 0.1, crtGlow: 0.2, crtBleed: 0.15, crtFlicker: 0 } },
   { name: 'Plasma', values: { crtIntensity: 0.45, crtScanlineSpacing: 1, crtCurve: 0, crtGlow: 0.3, crtBleed: 0.1, crtFlicker: 0 } },
   { name: 'LED Wall', values: { crtIntensity: 0.9, crtScanlineSpacing: 3, crtCurve: 0, crtGlow: 0.5, crtBleed: 0, crtFlicker: 0 } },
+  { name: 'Rephoto', values: { crtIntensity: 0.55, crtScanlineSpacing: 2, crtCurve: 0.2, crtGlow: 0.35, crtBleed: 0.2, crtFlicker: 0.05, crtGlass: 0.6, crtMoire: 0.5, crtDrift: 0.4 } },
   { name: 'Broken Set', values: { crtIntensity: 0.7, crtScanlineSpacing: 2, crtCurve: 0.5, crtGlow: 0.8, crtBleed: 0.8, crtFlicker: 0.6 } },
 ];

@@ -132,6 +132,9 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  crtGlass: number; setCrtGlass: (v: number) => void;
+  crtMoire: number; setCrtMoire: (v: number) => void;
+  crtDrift: number; setCrtDrift: (v: number) => void;
   crtCurve: number; setCrtCurve: (v: number) => void;
   crtGlow: number; setCrtGlow: (v: number) => void;
   crtBleed: number; setCrtBleed: (v: number) => void;
@@ -209,7 +212,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -234,7 +237,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
   const applyLook = (values: Record<string, number>) => {
     const setters: Record<string, (v: number) => void> = {
       vhsGlitchIntensity: setVhsGlitchIntensity, vhsBleed: setVhsBleed, vhsNoise: setVhsNoise, vhsTracking: setVhsTracking, vhsDropouts: setVhsDropouts,
-      crtIntensity: setCrtIntensity, crtScanlineSpacing: setCrtScanlineSpacing, crtCurve: setCrtCurve, crtGlow: setCrtGlow, crtBleed: setCrtBleed, crtFlicker: setCrtFlicker,
+      crtIntensity: setCrtIntensity, crtScanlineSpacing: setCrtScanlineSpacing, crtCurve: setCrtCurve, crtGlow: setCrtGlow, crtBleed: setCrtBleed, crtFlicker: setCrtFlicker, crtGlass: setCrtGlass, crtMoire: setCrtMoire, crtDrift: setCrtDrift,
     };
     for (const key of Object.keys(values)) setters[key]?.(values[key]);
   };
@@ -467,6 +470,9 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Intensity:" value={crtIntensity} onChange={setCrtIntensity} min="0" max="1" step="0.05" />
                   <SliderRow label="Speed:" title="How fast the rolling bar moves. Zero holds it still." value={effectSpeeds.crt} onChange={(v) => setEffectSpeed('crt', v)} min="0" max="4" step="0.1" />
                   <SliderRow label="Scanlines:" title="Gap between scanlines, in pixels." value={crtScanlineSpacing} onChange={setCrtScanlineSpacing} min="1" max="6" step="1" />
+                  <SliderRow label="Glass:" title="A soft reflection across the face of the screen." value={crtGlass} onChange={setCrtGlass} min="0" max="1" step="0.05" />
+                  <SliderRow label="Moire:" title="A slow interference pattern, like a screen seen through a camera." value={crtMoire} onChange={setCrtMoire} min="0" max="1" step="0.05" />
+                  <SliderRow label="Drift:" title="A hand-held sway of the whole frame." value={crtDrift} onChange={setCrtDrift} min="0" max="1" step="0.05" />
                   <SliderRow label="Curve:" title="How much the picture bulges like a tube face, with the corners falling into shadow." value={crtCurve} onChange={setCrtCurve} min="0" max="1" step="0.05" />
                   <SliderRow label="Glow:" title="Phosphor glow around bright areas." value={crtGlow} onChange={setCrtGlow} min="0" max="1" step="0.05" />
                   <SliderRow label="Bleed:" title="How far colour smears sideways, like a composite signal." value={crtBleed} onChange={setCrtBleed} min="0" max="1" step="0.05" />

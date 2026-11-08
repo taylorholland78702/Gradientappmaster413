@@ -11,6 +11,10 @@ export function useCrtState() {
   const [crtBleed, setCrtBleed] = useState(0);
   const [crtFlicker, setCrtFlicker] = useState(0);
 
+  const [crtGlass, setCrtGlass] = useState(0);
+  const [crtMoire, setCrtMoire] = useState(0);
+  const [crtDrift, setCrtDrift] = useState(0);
+
   return {
     crtIntensity,
     setCrtIntensity,
@@ -24,5 +28,11 @@ export function useCrtState() {
     setCrtBleed,
     crtFlicker,
     setCrtFlicker,
+    crtGlass,
+    setCrtGlass,
+    crtMoire,
+    setCrtMoire,
+    crtDrift,
+    setCrtDrift,
   };
 }
