@@ -107,7 +107,7 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
     setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -347,6 +347,9 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
     setSlitScanSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
+
+    // Nested Frames effect
+    setNestedFramesTwist(Math.random() * 30);
 
     // Film Burn effect
     setFilmBurnAmount(0.2 + Math.random() * 0.6);
@@ -1031,7 +1034,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'dada') setDadaSpeed(rng(0.5, 2));
       else if (eff === 'watercolor') setWatercolorSpeed(rng(0.5, 2));
       else if (eff === 'impasto') setImpastoSpeed(rng(0.5, 2));
-      else if (eff === 'nested-frames') { setNestedFramesCount(Math.round(rng(4, 12))); setNestedFramesShrink(rng(0.7, 0.9)); setNestedFramesX(rng(30, 70)); setNestedFramesY(rng(30, 70)); setNestedFramesSpeed(rng(0.2, 1.2)); }
+      else if (eff === 'nested-frames') { setNestedFramesCount(Math.round(rng(4, 12))); setNestedFramesShrink(rng(0.7, 0.9)); setNestedFramesX(rng(30, 70)); setNestedFramesY(rng(30, 70)); setNestedFramesSpeed(rng(0.2, 1.2)); setNestedFramesTwist(Math.round(rng(0, 30))); }
       else if (eff === 'row-smear') { setRowSmearLength(Math.round(rng(15, 70))); setRowSmearAmount(rng(0.3, 0.8)); setRowSmearDirection(Math.random() < 0.7 ? 'horizontal' : 'vertical'); setRowSmearSpeed(rng(0.5, 2)); }
       else if (eff === 'hard-bands') { setHardBandsSteps(Math.round(rng(3, 8))); setHardBandsBlend(rng(0, 0.3)); }
       else if (eff === 'lens') { setLensMode((['bulge', 'pinch', 'twirl', 'sphere'] as const)[Math.floor(Math.random() * 4)]); setLensStrength(rng(0.3, 1)); setLensRadius(Math.round(rng(35, 85))); setLensX(rng(25, 75)); setLensY(rng(25, 75)); setLensSpeed(rng(0, 1.2)); }

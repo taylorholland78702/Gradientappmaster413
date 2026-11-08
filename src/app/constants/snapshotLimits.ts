@@ -90,6 +90,7 @@ export const SNAPSHOT_LIMITS: Record<string, [number, number]> = {
   shapesSides: [1, 14.5],
   slitScanHistory: [12, 174],
   slitScanSpeed: [0, 12],
+  nestedFramesTwist: [0, 67.5],
   filmBurnAmount: [0, 1.5],
   filmBurnDust: [0, 1.5],
   filmBurnScratches: [0, 1.5],

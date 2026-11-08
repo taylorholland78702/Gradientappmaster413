@@ -221,6 +221,7 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'liquidSpeed', label: 'Liquid Speed', category: 'Liquid', min: 0.0, max: 4.0 },
   { key: 'halftoneMoveSpeed', label: 'Halftone Move Speed', category: 'Halftone', min: 0.0, max: 4.0 },
   { key: 'slitScanSpeed', label: 'Slit Scan Speed', category: 'Slit-Scan', min: 0.0, max: 4.0 },
+  { key: 'nestedFramesTwist', label: 'Nested Frames Twist', category: 'Nested Frames', min: 0.0, max: 45.0 },
   { key: 'filmBurnAmount', label: 'Film Burn Amount', category: 'Film Burn', min: 0.0, max: 1.0 },
   { key: 'filmBurnDust', label: 'Film Burn Dust', category: 'Film Burn', min: 0.0, max: 1.0 },
   { key: 'filmBurnScratches', label: 'Film Burn Scratches', category: 'Film Burn', min: 0.0, max: 1.0 },
