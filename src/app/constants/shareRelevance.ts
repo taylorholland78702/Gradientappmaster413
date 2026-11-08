@@ -62,6 +62,7 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   radialHardEdge: { gradients: ['radial'] },
   shapesMode: { gradients: ['shapes'] },
   slitScanDirection: { effects: ['slit-scan'] },
+  filmStockLook: { effects: ['film-stock'] },
   tilePuzzleEmpty: { effects: ['tile-puzzle'] },
   polarMode: { effects: ['polar-warp'] },
   lensMode: { effects: ['lens'] },
