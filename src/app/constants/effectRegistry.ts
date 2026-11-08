@@ -36,6 +36,7 @@ import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiqu
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
+import { applyRowSmear } from '../hooks/effects/applyRowSmear';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -210,6 +211,7 @@ const EFFECT_REGISTRY = {
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
+  'row-smear': { drawFn: applyRowSmear, label: 'Row Smear', cost: 2, category: ['Row Smear'], audio: false },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
   triangulate: { drawFn: applyTriangulateWorkerAuto, label: 'Triangulate', cost: 3, category: ['Triangulate'], audio: false },

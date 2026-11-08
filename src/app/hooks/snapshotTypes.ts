@@ -262,7 +262,7 @@ export interface SnapshotValues {
   slitScanDirection: "radial" | "horizontal" | "vertical" | "circular";
   slitScanIntensity: number;
   slitScanHistory: number;
-  slitScanSpeed: number; nestedFramesCount: number; nestedFramesShrink: number; nestedFramesX: number; nestedFramesY: number; nestedFramesSpeed: number;
+  slitScanSpeed: number; rowSmearLength: number; rowSmearAmount: number; rowSmearDirection: "horizontal" | "vertical"; rowSmearSpeed: number; nestedFramesCount: number; nestedFramesShrink: number; nestedFramesX: number; nestedFramesY: number; nestedFramesSpeed: number;
   crtSpeed: number;
   ditherSpeed: number;
   dadaSpeed: number;

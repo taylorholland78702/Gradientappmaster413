@@ -130,6 +130,10 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  rowSmearLength: number; setRowSmearLength: (v: number) => void;
+  rowSmearAmount: number; setRowSmearAmount: (v: number) => void;
+  rowSmearDirection: "horizontal" | "vertical"; setRowSmearDirection: (v: "horizontal" | "vertical") => void;
+  rowSmearSpeed: number; setRowSmearSpeed: (v: number) => void;
   nestedFramesCount: number; setNestedFramesCount: (v: number) => void;
   nestedFramesShrink: number; setNestedFramesShrink: (v: number) => void;
   nestedFramesX: number; setNestedFramesX: (v: number) => void;
@@ -193,7 +197,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -836,6 +840,31 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Point X:" title="Where the copies converge, left to right." value={nestedFramesX} onChange={setNestedFramesX} min="0" max="100" step="1" />
                   <SliderRow label="Point Y:" title="Where the copies converge, top to bottom." value={nestedFramesY} onChange={setNestedFramesY} min="0" max="100" step="1" />
                   <SliderRow label="Speed:" title="How fast the copies stream toward the point. Zero freezes them." value={nestedFramesSpeed} onChange={setNestedFramesSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('row-smear') && (
+                <EffectSection id="row-smear" label="Row Smear" isMulti={isMulti} expanded={!collapsedEffects.has('row-smear')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Length:" title="How far each streak runs, as a share of the frame." value={rowSmearLength} onChange={setRowSmearLength} min="5" max="100" step="1" />
+                  <SliderRow label="Amount:" title="How many of the bands get smeared." value={rowSmearAmount} onChange={setRowSmearAmount} min="0.1" max="1" step="0.05" />
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setRowSmearDirection('horizontal')}
+                        aria-pressed={rowSmearDirection === 'horizontal'}
+                        className={choice(rowSmearDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Horz
+                      </button>
+                      <button
+                        onClick={() => setRowSmearDirection('vertical')}
+                        aria-pressed={rowSmearDirection === 'vertical'}
+                        className={choice(rowSmearDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Vert
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
