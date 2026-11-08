@@ -24,7 +24,7 @@ export type StyleFieldId =
   | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'ribbon' | 'iridescent' | 'embers' | 'bands';
+  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -273,6 +273,31 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   col = mix(col, getMappedColor(fract(v + 0.5)), rings * 0.55);
   col *= 0.65 + 0.5 * (1.0 - rings) * (1.0 - spokes * 0.6);
   col *= smoothstep(0.0, 0.22, r) * (1.0 + uBass * 0.25);
+  return col;
+}`;
+
+// The same flight as Tunnel, down a square corridor: the cross-section is a
+// box (Chebyshev distance), so the walls, floor and ceiling each recede in
+// perspective and the frames read as stepped rectangles. A lane of dashes
+// runs along the floor to give the depth a rhythm.
+const CORRIDOR = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
+  float d = max(max(abs(q.x), abs(q.y)), 0.02);
+  float depth = 1.0 / (d * uScale * 0.45);
+  float z = depth * 1.15 * uB + t * 0.9;
+  bool wall = abs(q.x) > abs(q.y);
+  float lat = wall ? q.y / abs(q.x) : q.x / abs(q.y);
+  float frame = smoothstep(0.38, 0.5, abs(fract(z) - 0.5));
+  float v = fract(floor(z) * 0.11 + (wall ? 0.0 : 0.37) + lat * 0.06);
+  vec3 col = getMappedColor(v);
+  col = mix(col, getMappedColor(fract(v + 0.5)), frame * 0.6);
+  float floorLane = (!wall && q.y > 0.0) ? 1.0 : 0.0;
+  float dash = step(fract(z * 0.5 * uA), 0.5);
+  float pill = floorLane * smoothstep(0.17, 0.13, abs(lat)) * dash;
+  col = mix(col, mix(getMappedColor(0.98), vec3(1.0), 0.55), pill * 0.9);
+  col *= 0.62 + 0.45 * (1.0 - frame);
+  col *= smoothstep(0.0, 0.2, d) * (1.0 + uBass * 0.25);
   return col;
 }`;
 
@@ -679,6 +704,7 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   iridescent: IRIDESCENT,
   embers: EMBERS,
   bands: BANDS,
+  corridor: CORRIDOR,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];
