@@ -3,6 +3,7 @@ import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
+import { EFFECT_THUMBS } from '../constants/effectThumbs';
 import { EffectSection } from './EffectSection';
 import { EMOJI_PICKER_CATEGORIES, isEmojiRenderable, pickRandomEmojiSet } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
@@ -312,7 +313,8 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                           }
                         }
                       }}
-                      className={`wav-choice px-1 py-1.5 lg:py-1 text-[10px] transition-all whitespace-nowrap border-b border-wav-line-strong ${isLeftColumn ? 'border-r border-wav-line-strong' : ''} ${
+                      style={{ justifyContent: 'flex-start' }}
+                      className={`wav-choice gap-1.5 px-1 py-1 text-[10px] transition-all border-b border-wav-line-strong ${isLeftColumn ? 'border-r border-wav-line-strong' : ''} ${
                         isActive
                           ? 'bg-white text-black font-bold'
                           : wouldExceedBudget
@@ -320,7 +322,18 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                             : 'text-white hover:bg-wav-hover'
                       }`}
                     >
-                      {effect.label}
+                      {EFFECT_THUMBS[effect.value] && (
+                        <img
+                          src={EFFECT_THUMBS[effect.value]}
+                          alt=""
+                          width={48}
+                          height={27}
+                          loading="lazy"
+                          draggable={false}
+                          className="w-12 h-[27px] shrink-0 object-cover pointer-events-none"
+                        />
+                      )}
+                      <span className="min-w-0 break-words text-left leading-tight">{effect.label}</span>
                     </button>
                   );
                 })}
