@@ -22,6 +22,7 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   tunnel: [{ label: 'Twist', hint: 'How much the tunnel corkscrews' }, { label: 'Depth', hint: 'Ring spacing — more rings, deeper tunnel' }],
   corridor: [{ label: 'Markers', hint: 'How many dashes run along the floor' }, { label: 'Depth', hint: 'Frame spacing — more frames, a longer corridor' }],
   globe: [{ label: 'Bands', hint: 'How many stripes wrap around the ball' }, { label: 'Size', hint: 'How big the ball is' }],
+  wormhole: [{ label: 'Arms', hint: 'How many spiral arms' }, { label: 'Twist', hint: 'How tightly the arms wind' }],
   prism: [{ label: 'Facets', hint: 'Number of crystal facets' }, { label: 'Dispersion', hint: 'How far the colors split at the edges' }],
   raindrops: [{ label: 'Rate', hint: 'How fast new drops land' }, { label: 'Density', hint: 'How many drops at once' }],
   holographic: [{ label: 'Film', hint: 'How many times the foil cycles through the palette' }, { label: 'Sparkle', hint: 'Strength of the glitter' }],

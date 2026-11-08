@@ -24,7 +24,7 @@ export type StyleFieldId =
   | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe';
+  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe' | 'wormhole';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -324,6 +324,26 @@ vec3 shade(vec2 p, vec2 uv, float t) {
     col = getMappedColor(0.02) * (0.55 - 0.3 * min(length(q), 1.0)) + getMappedColor(0.8) * halo * 0.32;
   }
   col *= 1.0 + uBass * 0.18;
+  return col;
+}`;
+
+// A spiral funnel: arms twist down into the distance while rings stream toward the viewer, ending in a bright core.
+const WORMHOLE = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
+  float r = max(length(q), 0.015);
+  float a = atan(q.y, q.x);
+  float depth = 1.0 / (r * uScale * 0.5);
+  float arms = max(1.0, floor(3.0 * uA + 0.5));
+  float spiral = a / TAU * arms + depth * 0.35 * uB - t * 0.5;
+  float v = fract(spiral + (depth * 0.5 - t * 0.8) * 0.15);
+  vec3 col = getMappedColor(v);
+  float edge = smoothstep(0.35, 0.5, abs(fract(spiral + 0.5) - 0.5));
+  col = mix(col, getMappedColor(fract(v + 0.5)), edge * 0.5);
+  col *= 0.5 + 0.7 * (1.0 - edge * 0.5);
+  float core = exp(-r * 6.0);
+  col += core * mix(getMappedColor(0.95), vec3(1.0), 0.6) * (1.0 + uBass * 0.6);
+  col *= smoothstep(0.0, 0.05, r) * 0.4 + 0.6;
   return col;
 }`;
 
@@ -731,6 +751,7 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   embers: EMBERS,
   bands: BANDS,
   corridor: CORRIDOR,
+  wormhole: WORMHOLE,
   globe: GLOBE,
 };
 
