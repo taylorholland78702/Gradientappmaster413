@@ -132,6 +132,12 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  polarMode: "tunnel" | "unwrap"; setPolarMode: (v: "tunnel" | "unwrap") => void;
+  polarRepeat: number; setPolarRepeat: (v: number) => void;
+  polarTwist: number; setPolarTwist: (v: number) => void;
+  polarX: number; setPolarX: (v: number) => void;
+  polarY: number; setPolarY: (v: number) => void;
+  polarSpeed: number; setPolarSpeed: (v: number) => void;
   lensMode: "bulge" | "pinch" | "twirl" | "sphere"; setLensMode: (v: "bulge" | "pinch" | "twirl" | "sphere") => void;
   lensStrength: number; setLensStrength: (v: number) => void;
   lensRadius: number; setLensRadius: (v: number) => void;
@@ -218,7 +224,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, lensMode, lensStrength, lensRadius, lensX, lensY, lensSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -967,6 +973,33 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Point X:" title="Where the lens sits, left to right." value={lensX} onChange={setLensX} min="0" max="100" step="1" />
                   <SliderRow label="Point Y:" title="Where the lens sits, top to bottom." value={lensY} onChange={setLensY} min="0" max="100" step="1" />
                   <SliderRow label="Speed:" title="How fast the twirl breathes or the sphere rolls. Zero freezes it." value={lensSpeed} onChange={setLensSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('polar-warp') && (
+                <EffectSection id="polar-warp" label="Polar Warp" isMulti={isMulti} expanded={!collapsedEffects.has('polar-warp')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setPolarMode('tunnel')}
+                        aria-pressed={polarMode === 'tunnel'}
+                        className={choice(polarMode === 'tunnel', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Tunnel
+                      </button>
+                      <button
+                        onClick={() => setPolarMode('unwrap')}
+                        aria-pressed={polarMode === 'unwrap'}
+                        className={choice(polarMode === 'unwrap', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Unwrap
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Repeat:" title="How many times the picture is tiled around the point." value={polarRepeat} onChange={setPolarRepeat} min="1" max="6" step="1" />
+                  <SliderRow label="Twist:" title="How much the tiling spirals." value={polarTwist} onChange={setPolarTwist} min="0" max="1" step="0.05" />
+                  <SliderRow label="Point X:" title="The centre of the warp, left to right." value={polarX} onChange={setPolarX} min="0" max="100" step="1" />
+                  <SliderRow label="Point Y:" title="The centre of the warp, top to bottom." value={polarY} onChange={setPolarY} min="0" max="100" step="1" />
+                  <SliderRow label="Speed:" title="How fast the picture flows. Zero freezes it." value={polarSpeed} onChange={setPolarSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
