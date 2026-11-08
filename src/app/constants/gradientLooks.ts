@@ -104,6 +104,11 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Gas Giant', colors: ['#1a0a05', '#8a3d12', '#e8a15a', '#fff0d0'], speed: 0.8 },
     { name: 'Disco Ball', colors: ['#0a0014', '#7a1cff', '#ff3fd0', '#3fe8ff', '#ffffff'], speed: 1.4 },
   ],
+  wormhole: [
+    { name: 'Event Horizon', colors: ['#000000', '#2a0a5e', '#8a3dff', '#ffd9ff'] },
+    { name: 'Gold Rush', colors: ['#0a0500', '#7a3a00', '#ffb300', '#fff6c9'], speed: 1.3 },
+    { name: 'Deep Teal', colors: ['#00080a', '#006d77', '#3ad6c5', '#e6fff8'] },
+  ],
   prism: [
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },

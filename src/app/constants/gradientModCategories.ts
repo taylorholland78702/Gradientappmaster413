@@ -23,7 +23,7 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   // is disambiguated from the Halftone effect's category).
   contour: ['Contour'], glass: ['Glass'], holographic: ['Holographic'],
   mercury: ['Mercury'], mesh: ['Mesh'], prism: ['Prism'], raindrops: ['Raindrops'], smoke: ['Smoke'],
-  tunnel: ['Tunnel'], corridor: ['Corridor'], globe: ['Globe'], waves: ['Waves'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
+  tunnel: ['Tunnel'], corridor: ['Corridor'], wormhole: ['Wormhole'], globe: ['Globe'], waves: ['Waves'], 'edge-glow': ['Edge Glow'], curtains: ['Curtains'],
   eclipse: ['Eclipse'], rays: ['Rays'], bokeh: ['Bokeh'], vortex: ['Vortex'], spectral: ['Spectral'], drape: ['Drape'],
   'flow-mesh': ['Flow Mesh'], ribbon: ['Ribbon'], iridescent: ['Iridescent'],
   embers: ['Embers'], bands: ['Bands'],
