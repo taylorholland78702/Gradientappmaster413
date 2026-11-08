@@ -131,6 +131,7 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  filmMode: "stock" | "burn"; setFilmMode: (v: "stock" | "burn") => void;
   glitchMode: "blocks" | "rows"; setGlitchMode: (v: "blocks" | "rows") => void;
   nestedFramesTwist: number; setNestedFramesTwist: (v: number) => void;
   filmBurnAmount: number; setFilmBurnAmount: (v: number) => void;
@@ -245,7 +246,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, glitchMode, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setGlitchMode, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, filmMode, glitchMode, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setFilmMode, setGlitchMode, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -665,53 +666,75 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <PointPad label="Zoom and spin" x={((feedbackRotation + 10) / 20) * 100} y={(feedbackZoom / 5) * 100} onChange={(x, y) => { setFeedbackRotation(Math.round(((x / 100) * 20 - 10) * 2) / 2); setFeedbackZoom(Math.round((y / 100) * 50) / 10); }} />
                 </EffectSection>
               )}
-              {activeEffects.includes('film-burn') && (
-                <EffectSection id="film-burn" label="Film Burn" isMulti={isMulti} expanded={!collapsedEffects.has('film-burn')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Burn:" title="Orange-red burn glows drifting in from the edges." value={filmBurnAmount} onChange={setFilmBurnAmount} min="0" max="1" step="0.05" />
-                  <SliderRow label="Dust:" title="Specks and hairs." value={filmBurnDust} onChange={setFilmBurnDust} min="0" max="1" step="0.05" />
-                  <SliderRow label="Scratches:" title="Vertical scratches." value={filmBurnScratches} onChange={setFilmBurnScratches} min="0" max="1" step="0.05" />
-                  <SliderRow label="Flicker:" title="Exposure flicker. Held to a faint wobble when Reduce flashing is on." value={filmBurnFlicker} onChange={setFilmBurnFlicker} min="0" max="1" step="0.05" />
-                  <SliderRow label="Flash:" title="Occasional hot frames. Off when Reduce flashing is on. Shuffle never turns it on." value={filmBurnFlash} onChange={setFilmBurnFlash} min="0" max="1" step="0.05" />
-                  <SliderRow label="Speed:" title="How fast the burns drift. Zero freezes them." value={filmBurnSpeed} onChange={setFilmBurnSpeed} min="0" max="3" step="0.1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('film-stock') && (
-                <EffectSection id="film-stock" label="Film Stock" isMulti={isMulti} expanded={!collapsedEffects.has('film-stock')} onToggle={toggleEffectCollapsed}>
+              {activeEffects.includes('film') && (
+                <EffectSection id="film" label="Film" isMulti={isMulti} expanded={!collapsedEffects.has('film')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
                     <div className="flex gap-1 flex-1 min-w-0">
                       <button
-                        onClick={() => setFilmStockLook('warm')}
-                        aria-pressed={filmStockLook === 'warm'}
-                        className={choice(filmStockLook === 'warm', 'flex-1 min-w-0 whitespace-nowrap')}
+                        onClick={() => setFilmMode('stock')}
+                        aria-pressed={filmMode === 'stock'}
+                        className={choice(filmMode === 'stock', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
-                        Warm
+                        Stock
                       </button>
                       <button
-                        onClick={() => setFilmStockLook('cool')}
-                        aria-pressed={filmStockLook === 'cool'}
-                        className={choice(filmStockLook === 'cool', 'flex-1 min-w-0 whitespace-nowrap')}
+                        onClick={() => setFilmMode('burn')}
+                        aria-pressed={filmMode === 'burn'}
+                        className={choice(filmMode === 'burn', 'flex-1 min-w-0 whitespace-nowrap')}
                       >
-                        Cool
-                      </button>
-                      <button
-                        onClick={() => setFilmStockLook('faded')}
-                        aria-pressed={filmStockLook === 'faded'}
-                        className={choice(filmStockLook === 'faded', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Faded
-                      </button>
-                      <button
-                        onClick={() => setFilmStockLook('punchy')}
-                        aria-pressed={filmStockLook === 'punchy'}
-                        className={choice(filmStockLook === 'punchy', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Punchy
+                        Burn
                       </button>
                     </div>
                   </div>
-                  <SliderRow label="Halation:" title="The red-orange glow around bright edges." value={filmStockHalation} onChange={setFilmStockHalation} min="0" max="1" step="0.05" />
-                  <SliderRow label="Grain:" title="Film grain, strongest in the midtones." value={filmStockGrain} onChange={setFilmStockGrain} min="0" max="1" step="0.05" />
-                  <SliderRow label="Roll-off:" title="How softly highlights compress instead of clipping." value={filmStockRoll} onChange={setFilmStockRoll} min="0" max="1" step="0.05" />
+                  {filmMode === 'stock' && (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <div className="flex gap-1 flex-1 min-w-0">
+                          <button
+                            onClick={() => setFilmStockLook('warm')}
+                            aria-pressed={filmStockLook === 'warm'}
+                            className={choice(filmStockLook === 'warm', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Warm
+                          </button>
+                          <button
+                            onClick={() => setFilmStockLook('cool')}
+                            aria-pressed={filmStockLook === 'cool'}
+                            className={choice(filmStockLook === 'cool', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Cool
+                          </button>
+                          <button
+                            onClick={() => setFilmStockLook('faded')}
+                            aria-pressed={filmStockLook === 'faded'}
+                            className={choice(filmStockLook === 'faded', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Faded
+                          </button>
+                          <button
+                            onClick={() => setFilmStockLook('punchy')}
+                            aria-pressed={filmStockLook === 'punchy'}
+                            className={choice(filmStockLook === 'punchy', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Punchy
+                          </button>
+                        </div>
+                      </div>
+                      <SliderRow label="Halation:" title="The red-orange glow around bright edges." value={filmStockHalation} onChange={setFilmStockHalation} min="0" max="1" step="0.05" />
+                      <SliderRow label="Grain:" title="Film grain, strongest in the midtones." value={filmStockGrain} onChange={setFilmStockGrain} min="0" max="1" step="0.05" />
+                      <SliderRow label="Roll-off:" title="How softly highlights compress instead of clipping." value={filmStockRoll} onChange={setFilmStockRoll} min="0" max="1" step="0.05" />
+                    </>
+                  )}
+                  {filmMode === 'burn' && (
+                    <>
+                      <SliderRow label="Burn:" title="Orange-red burn glows drifting in from the edges." value={filmBurnAmount} onChange={setFilmBurnAmount} min="0" max="1" step="0.05" />
+                      <SliderRow label="Dust:" title="Specks and hairs." value={filmBurnDust} onChange={setFilmBurnDust} min="0" max="1" step="0.05" />
+                      <SliderRow label="Scratches:" title="Vertical scratches." value={filmBurnScratches} onChange={setFilmBurnScratches} min="0" max="1" step="0.05" />
+                      <SliderRow label="Flicker:" title="Exposure flicker. Held to a faint wobble when Reduce flashing is on." value={filmBurnFlicker} onChange={setFilmBurnFlicker} min="0" max="1" step="0.05" />
+                      <SliderRow label="Flash:" title="Occasional hot frames. Off when Reduce flashing is on. Shuffle never turns it on." value={filmBurnFlash} onChange={setFilmBurnFlash} min="0" max="1" step="0.05" />
+                      <SliderRow label="Speed:" title="How fast the burns drift. Zero freezes them." value={filmBurnSpeed} onChange={setFilmBurnSpeed} min="0" max="3" step="0.1" />
+                    </>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('gesso') && (

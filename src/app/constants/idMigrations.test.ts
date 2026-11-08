@@ -92,3 +92,12 @@ describe('effects that became modes of another: glitch', () => {
     expect(effectModeFields(['glitch-blocks'])).toEqual({});
   });
 });
+
+describe('effects that became modes of another: film', () => {
+  it('Film Stock and Film Burn load as Film, with Film Burn in Burn mode', () => {
+    expect(migrateIds(['film-stock'])).toEqual(['film']);
+    expect(migrateIds(['film-burn'])).toEqual(['film']);
+    expect(effectModeFields(['film-burn'])).toEqual({ filmMode: 'burn' });
+    expect(effectModeFields(['film-stock'])).toEqual({});
+  });
+});
