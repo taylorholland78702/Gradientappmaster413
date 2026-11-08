@@ -108,8 +108,8 @@ export function useRandomization(params: RandomizationParams) {
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
     setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
-    setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
-    setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
+    setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
+    setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle,
     setDadaPanels, setDadaChaos,
     setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
@@ -434,12 +434,6 @@ export function useRandomization(params: RandomizationParams) {
     setImpastoSpeed(0.5 + Math.random() * 1.5);                                   // 0.5–2
 
     // Brush Strokes
-
-    // Watercolor — style itself is left alone here (it's a curated preset,
-    // not a continuous slider), just Bleed/Grain.
-    setWatercolorBleed(Math.random() * 10);                              // 0–10
-    setWatercolorGrain(Math.random());                                   // 0–1
-    setWatercolorSpeed(0.5 + Math.random() * 1.5);                                // 0.5–2
 
     // Dada
     setDadaPanels(Math.floor(Math.random() * 7) + 2);                    // 2–8
@@ -1016,7 +1010,6 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'posterize') setPosterizeLevels(Math.round(rng(2, 16)));
       else if (eff === 'grid-effect') setGridEffectSpeed(rng(0.5, 2));
       else if (eff === 'dada') setDadaSpeed(rng(0.5, 2));
-      else if (eff === 'watercolor') setWatercolorSpeed(rng(0.5, 2));
       else if (eff === 'impasto') setImpastoSpeed(rng(0.5, 2));
       else if (eff === 'nested-frames') { setNestedFramesCount(Math.round(rng(4, 12))); setNestedFramesShrink(rng(0.7, 0.9)); setNestedFramesX(rng(30, 70)); setNestedFramesY(rng(30, 70)); setNestedFramesSpeed(rng(0.2, 1.2)); setNestedFramesTwist(Math.round(rng(0, 30))); }
       else if (eff === 'row-smear') { setRowSmearLength(Math.round(rng(15, 70))); setRowSmearAmount(rng(0.3, 0.8)); setRowSmearDirection(Math.random() < 0.7 ? 'horizontal' : 'vertical'); setRowSmearSpeed(rng(0.5, 2)); }

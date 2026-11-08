@@ -199,10 +199,9 @@ export interface EffectsTabProps {
   impastoStrength: number; setImpastoStrength: (v: number) => void;
   impastoLightAngle: number; setImpastoLightAngle: (v: number) => void;
   // Brush Strokes
-  // Watercolor
-  watercolorBleed: number; setWatercolorBleed: (v: number) => void;
-  watercolorGrain: number; setWatercolorGrain: (v: number) => void;
-  watercolorStyle: 'watercolor' | 'gouache' | 'ink-wash'; setWatercolorStyle: (v: 'watercolor' | 'gouache' | 'ink-wash') => void;
+  
+  
+  
   // Dada
   dadaPanels: number; setDadaPanels: (v: number) => void;
   dadaChaos: number; setDadaChaos: (v: number) => void;
@@ -249,7 +248,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
-    watercolorBleed, setWatercolorBleed, watercolorGrain, setWatercolorGrain, watercolorStyle, setWatercolorStyle,
     dadaPanels, setDadaPanels, dadaChaos, setDadaChaos,
     auraGlowCount, setAuraGlowCount, auraGlowSpeed, setAuraGlowSpeed, auraGlowOpacity, setAuraGlowOpacity,
   } = props;
@@ -1087,32 +1085,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('vignette') && (
                 <EffectSection id="vignette" label="Vignette" isMulti={isMulti} expanded={!collapsedEffects.has('vignette')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Intensity:" value={vignetteStrength} onChange={setVignetteStrength} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('watercolor') && (
-                <EffectSection id="watercolor" label="Watercolor" isMulti={isMulti} expanded={!collapsedEffects.has('watercolor')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <label className="text-[10px] text-white whitespace-nowrap">Style:</label>
-                    <div className="flex gap-1 flex-1">
-                      {([
-                        { id: 'watercolor', label: 'Watercolor', bleed: 3, grain: 0.4 },
-                        { id: 'gouache', label: 'Gouache', bleed: 1.5, grain: 0.25 },
-                        { id: 'ink-wash', label: 'Ink Wash', bleed: 6, grain: 0.3 },
-                      ] as const).map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => { setWatercolorStyle(s.id); setWatercolorBleed(s.bleed); setWatercolorGrain(s.grain); }}
-                          aria-pressed={watercolorStyle === s.id}
-                          className={choice(watercolorStyle === s.id, 'flex-1')}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <SliderRow label="Bleed:" value={watercolorBleed} onChange={setWatercolorBleed} min="0" max="10" step="0.5" />
-                  <SliderRow label="Grain:" value={watercolorGrain} onChange={setWatercolorGrain} min="0" max="1" step="0.05" />
-                  <SliderRow label="Speed:" title="How fast the wash drifts. Zero holds it still." value={effectSpeeds.watercolor} onChange={(v) => setEffectSpeed('watercolor', v)} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('wave') && (

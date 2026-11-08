@@ -49,7 +49,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   gridCellAngleStep: { gradients: ['grid'] }, gridHardEdge: { gradients: ['grid'] },
   gridRotation: { gradients: ['grid'], effects: ['grid-effect'] },
   crtSpeed: { effects: ['crt'] }, ditherSpeed: { effects: ['dither'] }, dadaSpeed: { effects: ['dada'] }, asciiSpeed: { effects: ['ascii'] },
-  watercolorSpeed: { effects: ['watercolor'] }, impastoSpeed: { effects: ['impasto'] },
   gridEffectSpeed: { effects: ['grid-effect'] }, liquidSpeed: { effects: ['liquid'] },
   halftoneCMYK: { effects: ['halftone'] }, halftoneMove: { effects: ['halftone'] }, halftoneMoveSpeed: { effects: ['halftone'] },
   juliaReal: { gradients: ['julia'] }, juliaImaginary: { gradients: ['julia'] },
@@ -66,7 +65,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   polarMode: { effects: ['polar-warp'] },
   rowSmearDirection: { effects: ['row-smear'] },
   triangulateVariation: { effects: ['triangulate'] },
-  watercolorStyle: { effects: ['watercolor'] },
   // Per-gradient Speed sliders that are not audio-modulatable.
   truchetSpeed: { gradients: ['truchet'] }, causticsSpeed: { gradients: ['caustics'] }, shapesSpeed: { gradients: ['shapes'] },
   juliaSpeed: { gradients: ['julia'] },
