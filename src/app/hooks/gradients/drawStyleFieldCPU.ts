@@ -32,7 +32,7 @@ const FAMILY: Record<StyleFieldId, Family> = {
   'edge-glow': 'glow', curtains: 'glow', eclipse: 'glow', rays: 'glow',
   bokeh: 'glow', vortex: 'glow', spectral: 'glow', embers: 'glow',
   waves: 'bands', ribbon: 'bands', bands: 'bands',
-  smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field', corridor: 'field',
+  smoke: 'field', glass: 'field', mesh: 'field', mercury: 'field', contour: 'field', tunnel: 'field', corridor: 'field', globe: 'field',
   prism: 'field', raindrops: 'field', holographic: 'field',
   drape: 'field', 'flow-mesh': 'field', iridescent: 'field',
 };
@@ -114,6 +114,12 @@ function fieldValue(id: StyleFieldId, x: number, y: number, u: number, v: number
     case 'corridor': {
       const d = Math.max(Math.max(Math.abs(u - 0.5), Math.abs(v - 0.5)) * 2, 0.02);
       return (1 / d * 0.5 + t * 0.35) % 1;
+    }
+    case 'globe': {
+      const r = Math.hypot(u - 0.5, v - 0.5) * 2 / 0.74;
+      if (r >= 1) return 0.04;
+      const lon = Math.atan2((u - 0.5) * 2 / 0.74, Math.sqrt(1 - r * r)) + t * 0.25;
+      return ((lon / (Math.PI * 2)) * 6 % 1 + 1) % 1;
     }
     case 'contour': {
       const f = fbm(x * 0.45 + t * 0.02, y * 0.45);

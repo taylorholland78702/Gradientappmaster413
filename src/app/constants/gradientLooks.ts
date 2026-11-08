@@ -99,6 +99,11 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Night Shift', colors: ['#05060f', '#1b2a6b', '#4c7dff', '#d9ecff'], speed: 1.3 },
     { name: 'Terminal', colors: ['#001a0f', '#0b6b3a', '#37d98a', '#eafff3'], scale: 0.9 },
   ],
+  globe: [
+    { name: 'Blue Marble', colors: ['#02050f', '#0b3d91', '#2fa4ff', '#7bdc9a', '#f4f1ff'] },
+    { name: 'Gas Giant', colors: ['#1a0a05', '#8a3d12', '#e8a15a', '#fff0d0'], speed: 0.8 },
+    { name: 'Disco Ball', colors: ['#0a0014', '#7a1cff', '#ff3fd0', '#3fe8ff', '#ffffff'], speed: 1.4 },
+  ],
   prism: [
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },
