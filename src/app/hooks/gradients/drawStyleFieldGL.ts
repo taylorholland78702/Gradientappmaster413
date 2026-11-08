@@ -24,7 +24,7 @@ export type StyleFieldId =
   | 'prism' | 'raindrops' | 'holographic' | 'waves'
   | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
-  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor';
+  | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe';
 
 // Shared noise toolkit + the per-pixel entry point. Each style supplies
 // `vec3 shade(vec2 p, vec2 uv, float t)`:
@@ -298,6 +298,32 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   col = mix(col, mix(getMappedColor(0.98), vec3(1.0), 0.55), pill * 0.9);
   col *= 0.62 + 0.45 * (1.0 - frame);
   col *= smoothstep(0.0, 0.2, d) * (1.0 + uBass * 0.25);
+  return col;
+}`;
+
+// A lit sphere with palette bands wrapping around it, turning slowly. The bands follow the sphere's longitude, so they bend
+// toward the edge like stripes on a ball; the dark side and a rim light give it volume against a faint halo.
+const GLOBE = `
+vec3 shade(vec2 p, vec2 uv, float t) {
+  vec2 q = (uv - 0.5) * vec2(uSize.x / uSize.y, 1.0) * 2.0;
+  float R = 0.74 * uB;
+  float r = length(q) / R;
+  vec3 col;
+  if (r < 1.0) {
+    float z = sqrt(1.0 - r * r);
+    vec3 n = vec3(q / R, z);
+    float lon = atan(n.x, z) + t * 0.25;
+    float lat = asin(clamp(n.y, -1.0, 1.0));
+    float v = fract(lon / TAU * 6.0 * uA * uScale + 0.12 * sin(lat * 3.0 + t * 0.3) + lat * 0.12);
+    col = getMappedColor(v);
+    float lit = max(dot(n, normalize(vec3(-0.5, -0.55, 0.7))), 0.0);
+    col *= 0.22 + 0.95 * lit;
+    col += getMappedColor(0.9) * pow(1.0 - z, 3.0) * 0.3;
+  } else {
+    float halo = exp(-(r - 1.0) * 5.0);
+    col = getMappedColor(0.02) * (0.55 - 0.3 * min(length(q), 1.0)) + getMappedColor(0.8) * halo * 0.32;
+  }
+  col *= 1.0 + uBass * 0.18;
   return col;
 }`;
 
@@ -705,6 +731,7 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   embers: EMBERS,
   bands: BANDS,
   corridor: CORRIDOR,
+  globe: GLOBE,
 };
 
 export const STYLE_FIELD_IDS = Object.keys(STYLE_BODIES) as StyleFieldId[];
