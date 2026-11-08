@@ -126,7 +126,6 @@ export function useRandomization(params: RandomizationParams) {
     setRadialBurstSize, setRadialBurstSpread, setRotationDirection,
     setSepiaIntensity, setShakeBeatEnabled, setShapesCount, setShapesSpeed, setShapesMode,
     setTurrellSpeed, setTurrellGlow,
-    setStackCount, setStackGap, setStackWidth, setStackLength, setStackResponse, setStackSpeed,
     setHatchLayers, setHatchSpacing, setHatchResponse, setHatchSpeed,
     setShapesSides, setShowRatingUI, setSolarizeThreshold, setWindmillRotations, setWindmillThickness, setWindmillTightness,
     setWindmillZoom, setSubBassBeatSync, setSubBassMultiplier, setSubmittedAIPrompt, setTargetAngle, setTargetColors, setTargetZoom, setTriangleSize,
@@ -239,13 +238,6 @@ export function useRandomization(params: RandomizationParams) {
     setTurrellSpeed(Math.random() * 1.4 + 0.4);                        // 0.4–1.8
     setTurrellGlow(Math.random() * 0.5 + 0.2);                         // 0.2–0.7
 
-    // Stack
-    setStackCount(Math.floor(Math.random() * 24) + 8);                 // 8–31
-    setStackGap(Math.random() * 0.5 + 0.15);                           // 0.15–0.65
-    setStackWidth(Math.random() * 1.3 + 0.4);                          // 0.4–1.7
-    setStackLength(Math.random() * 1.3 + 0.4);                         // 0.4–1.7
-    setStackResponse(Math.random() * 0.8 + 0.2);                       // 0.2–1.0
-    setStackSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
     // Hatch
     setHatchLayers(Math.floor(Math.random() * 4) + 1);                  // 1–4
@@ -1062,7 +1054,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'tiling') { setTilingSize(Math.round(rng(30, 300))); setTilingSymmetry(Math.round(rng(2, 12))); }
     else if (gradientType === 'fireworks') setFireworksTrailFade(rng(0.05, 0.25));
     else if (gradientType === 'lightning') setLightningJitter(rng(0.25, 0.95));
-    else if (gradientType === 'stack') { setStackCount(Math.round(rng(2, 40))); setStackLength(rng(0.1, 2)); }
     // The styled gradients (Bands through Waves): their shared Scale and their two own shape sliders.
     else if (STYLE_FIELD_GRADIENT_TYPES.includes(gradientType)) {
       setFieldScale(rng(0.6, 1.8));

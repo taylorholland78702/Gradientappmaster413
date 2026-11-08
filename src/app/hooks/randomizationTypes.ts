@@ -292,12 +292,12 @@ export interface RandomizationParams {
   setShapesMode: (value: SetStateAction<"polygon" | "polar-grid">) => void;
   setTurrellSpeed: (value: SetStateAction<number>) => void;
   setTurrellGlow: (value: SetStateAction<number>) => void;
-  setStackCount: (value: SetStateAction<number>) => void;
-  setStackGap: (value: SetStateAction<number>) => void;
-  setStackWidth: (value: SetStateAction<number>) => void;
-  setStackLength: (value: SetStateAction<number>) => void;
-  setStackResponse: (value: SetStateAction<number>) => void;
-  setStackSpeed: (value: SetStateAction<number>) => void;
+  
+  
+  
+  
+  
+  
   setHatchLayers: (value: SetStateAction<number>) => void;
   setHatchSpacing: (value: SetStateAction<number>) => void;
   setHatchResponse: (value: SetStateAction<number>) => void;

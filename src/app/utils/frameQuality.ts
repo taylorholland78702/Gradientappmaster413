@@ -11,7 +11,7 @@ export interface FrameStats { mean: number; sd: number }
 // Gradients that are mostly dark ground with a few bright shapes: low average brightness is how they look.
 const DARK_GROUND: ReadonlySet<string> = new Set([
   'eclipse', 'vortex', 'edge-glow', 'curtains', 'rays', 'bokeh', 'embers',
-  'radial-burst', 'lava-lamp', 'metaballs', 'truchet', 'stack',
+  'radial-burst', 'lava-lamp', 'metaballs', 'truchet', 
 ]);
 // A handful of dots on black: contrast is naturally tiny, so there is nothing to judge.
 const SPARSE: ReadonlySet<string> = new Set(['particles', 'attractor', 'fireworks', 'lightning']);
