@@ -11,6 +11,7 @@ const ALIASES: Record<string, string[]> = {
   'strength': ['amount', 'intensity'], 'intensity': ['opacity', 'strength'], 'lights': ['count'], 'crackle': ['crackle intensity'],
   'points': ['point count'], 'tile size': ['size'], 'offset': ['offset'], 'rotate': ['rotate speed', 'rotation'], 'light angle': ['light angle'],
   'move speed': ['move speed'], 'texture': ['texture'],
+  'frames': ['count'], 'blocks': ['count'], 'burn': ['amount'], 'tiles': ['tile count'],
 };
 
 export function resolveParam(label: unknown, categories: readonly string[]): string | null {
