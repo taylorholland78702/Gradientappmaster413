@@ -262,7 +262,7 @@ export interface SnapshotValues {
   slitScanDirection: "radial" | "horizontal" | "vertical" | "circular";
   slitScanIntensity: number;
   slitScanHistory: number;
-  slitScanSpeed: number; hardBandsSteps: number; hardBandsBlend: number; rowSmearLength: number; rowSmearAmount: number; rowSmearDirection: "horizontal" | "vertical"; rowSmearSpeed: number; nestedFramesCount: number; nestedFramesShrink: number; nestedFramesX: number; nestedFramesY: number; nestedFramesSpeed: number;
+  slitScanSpeed: number; crtGlass: number; crtMoire: number; crtDrift: number; crtCurve: number; crtGlow: number; crtBleed: number; crtFlicker: number; vhsBleed: number; vhsNoise: number; vhsTracking: number; vhsDropouts: number; hardBandsSteps: number; hardBandsBlend: number; rowSmearLength: number; rowSmearAmount: number; rowSmearDirection: "horizontal" | "vertical"; rowSmearSpeed: number; nestedFramesCount: number; nestedFramesShrink: number; nestedFramesX: number; nestedFramesY: number; nestedFramesSpeed: number;
   crtSpeed: number;
   ditherSpeed: number;
   dadaSpeed: number;

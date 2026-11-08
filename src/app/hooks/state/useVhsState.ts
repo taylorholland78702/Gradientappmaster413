@@ -8,10 +8,23 @@ export function useVhsState() {
   // reproduces that exact prior default.
   const [vhsJitterAmount, setVhsJitterAmount] = useState(300);
 
+  const [vhsBleed, setVhsBleed] = useState(0);
+  const [vhsNoise, setVhsNoise] = useState(0);
+  const [vhsTracking, setVhsTracking] = useState(0);
+  const [vhsDropouts, setVhsDropouts] = useState(0);
+
   return {
     vhsGlitchIntensity,
     setVhsGlitchIntensity,
     vhsJitterAmount,
     setVhsJitterAmount,
+    vhsBleed,
+    setVhsBleed,
+    vhsNoise,
+    setVhsNoise,
+    vhsTracking,
+    setVhsTracking,
+    vhsDropouts,
+    setVhsDropouts,
   };
 }

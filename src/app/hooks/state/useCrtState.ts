@@ -6,10 +6,33 @@ export function useCrtState() {
   // `y % 2`); 2 here reproduces that exact default.
   const [crtScanlineSpacing, setCrtScanlineSpacing] = useState(2);
 
+  const [crtCurve, setCrtCurve] = useState(0);
+  const [crtGlow, setCrtGlow] = useState(0);
+  const [crtBleed, setCrtBleed] = useState(0);
+  const [crtFlicker, setCrtFlicker] = useState(0);
+
+  const [crtGlass, setCrtGlass] = useState(0);
+  const [crtMoire, setCrtMoire] = useState(0);
+  const [crtDrift, setCrtDrift] = useState(0);
+
   return {
     crtIntensity,
     setCrtIntensity,
     crtScanlineSpacing,
     setCrtScanlineSpacing,
+    crtCurve,
+    setCrtCurve,
+    crtGlow,
+    setCrtGlow,
+    crtBleed,
+    setCrtBleed,
+    crtFlicker,
+    setCrtFlicker,
+    crtGlass,
+    setCrtGlass,
+    crtMoire,
+    setCrtMoire,
+    crtDrift,
+    setCrtDrift,
   };
 }

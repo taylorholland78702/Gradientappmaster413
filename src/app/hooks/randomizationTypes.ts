@@ -155,6 +155,17 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setCrtGlass: (value: SetStateAction<number>) => void;
+  setCrtMoire: (value: SetStateAction<number>) => void;
+  setCrtDrift: (value: SetStateAction<number>) => void;
+  setCrtCurve: (value: SetStateAction<number>) => void;
+  setCrtGlow: (value: SetStateAction<number>) => void;
+  setCrtBleed: (value: SetStateAction<number>) => void;
+  setCrtFlicker: (value: SetStateAction<number>) => void;
+  setVhsBleed: (value: SetStateAction<number>) => void;
+  setVhsNoise: (value: SetStateAction<number>) => void;
+  setVhsTracking: (value: SetStateAction<number>) => void;
+  setVhsDropouts: (value: SetStateAction<number>) => void;
   setHardBandsSteps: (value: SetStateAction<number>) => void;
   setHardBandsBlend: (value: SetStateAction<number>) => void;
   setRowSmearLength: (value: SetStateAction<number>) => void;

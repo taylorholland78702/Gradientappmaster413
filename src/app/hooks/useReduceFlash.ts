@@ -25,3 +25,13 @@ export function useReduceFlash(): [boolean, (on: boolean) => void] {
 
 // A beat reaction may run at most this often when flashing is reduced (about three a second, the usual safe limit).
 export const REDUCED_FLASH_MIN_INTERVAL_MS = 340;
+
+// The saved setting read straight from storage, for drawing code that has no access to the app's state. Read at most
+// twice a second, so it can be called every frame.
+let lastRead = 0;
+let lastValue = false;
+export function isFlashReduced(): boolean {
+  const now = performance.now();
+  if (now - lastRead > 500) { lastRead = now; lastValue = initial(); }
+  return lastValue;
+}

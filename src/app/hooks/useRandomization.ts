@@ -107,7 +107,7 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
     setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -347,6 +347,23 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
     setSlitScanSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
+
+    // Cathode effect
+    setCrtGlass(Math.random() * 0.5);
+    setCrtMoire(Math.random() * 0.5);
+    setCrtDrift(Math.random() * 0.4);
+
+    // Cathode effect
+    setCrtCurve(Math.random() * 0.5);
+    setCrtGlow(Math.random() * 0.6);
+    setCrtBleed(Math.random() * 0.6);
+    setCrtFlicker(Math.random() * 0.3);
+
+    // VHS effect
+    setVhsBleed(Math.random() * 0.8);
+    setVhsNoise(Math.random() * 0.5);
+    setVhsTracking(Math.random() * 0.6);
+    setVhsDropouts(Math.random() * 0.5);
 
     // Hard Bands effect
     setHardBandsSteps(Math.floor(Math.random() * 6) + 3);
@@ -947,8 +964,8 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'mirror') setMirrorTileCount(Math.round(rng(2, 16)));
       else if (eff === 'ascii') { setAsciiSize(Math.round(rng(6, 40))); setAsciiSpeed(rng(0.5, 2)); }
       else if (eff === 'emoji') { setEmojiSize(Math.round(rng(10, 60))); setEmojiRotateSpeed(Math.round(rng(0, 180))); }
-      else if (eff === 'vhs') { setVhsGlitchIntensity(rng(0.05, 0.4)); setVhsJitterAmount(Math.round(rng(50, 400))); }
-      else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); setCrtSpeed(rng(0.5, 2)); }
+      else if (eff === 'vhs') { setVhsGlitchIntensity(rng(0.05, 0.4)); setVhsJitterAmount(Math.round(rng(50, 400))); setVhsBleed(rng(0, 0.8)); setVhsNoise(rng(0, 0.5)); setVhsTracking(rng(0, 0.6)); setVhsDropouts(rng(0, 0.5)); }
+      else if (eff === 'crt') { setCrtIntensity(rng(0.1, 0.7)); setCrtScanlineSpacing(Math.round(rng(1, 6))); setCrtSpeed(rng(0.5, 2)); setCrtCurve(rng(0, 0.5)); setCrtGlow(rng(0, 0.6)); setCrtBleed(rng(0, 0.6)); setCrtFlicker(rng(0, 0.3)); setCrtGlass(rng(0, 0.5)); setCrtMoire(rng(0, 0.5)); setCrtDrift(rng(0, 0.4)); }
       else if (eff === 'liquid') setLiquidSpeed(rng(0.5, 2));
       else if (eff === 'aura-glow') { setAuraGlowCount(Math.round(rng(1, 6))); setAuraGlowOpacity(rng(0.1, 1)); setAuraGlowSpeed(rng(0.5, 2)); }
       else if (eff === 'duotone') setDuotoneIntensity(rng(0, 1));
