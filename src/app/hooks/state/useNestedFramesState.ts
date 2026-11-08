@@ -1,11 +1,13 @@
 import { useState } from 'react';
 
 export function useNestedFramesState() {
-  const [nestedFramesCount, setNestedFramesCount] = useState(7);
-  const [nestedFramesShrink, setNestedFramesShrink] = useState(0.82);
+  const [nestedFramesCount, setNestedFramesCount] = useState(10);
+  const [nestedFramesShrink, setNestedFramesShrink] = useState(0.8);
   const [nestedFramesX, setNestedFramesX] = useState(50);
   const [nestedFramesY, setNestedFramesY] = useState(50);
-  const [nestedFramesSpeed, setNestedFramesSpeed] = useState(0.5);
+  const [nestedFramesSpeed, setNestedFramesSpeed] = useState(1);
+
+  const [nestedFramesTwist, setNestedFramesTwist] = useState(8);
 
   return {
     nestedFramesCount,
@@ -18,5 +20,7 @@ export function useNestedFramesState() {
     setNestedFramesY,
     nestedFramesSpeed,
     setNestedFramesSpeed,
+    nestedFramesTwist,
+    setNestedFramesTwist,
   };
 }
