@@ -20,6 +20,7 @@ export const STYLE_SHAPE_CONTROLS: Partial<Record<GradientType, [ShapeControl, S
   mercury: [{ label: 'Relief', hint: 'How steep the liquid surface is' }, { label: 'Shine', hint: 'Strength of the specular glint' }],
   contour: [{ label: 'Levels', hint: 'Number of contour lines' }, { label: 'Line', hint: 'Thickness of the lines' }],
   tunnel: [{ label: 'Twist', hint: 'How much the tunnel corkscrews' }, { label: 'Depth', hint: 'Ring spacing — more rings, deeper tunnel' }],
+  corridor: [{ label: 'Markers', hint: 'How many dashes run along the floor' }, { label: 'Depth', hint: 'Frame spacing — more frames, a longer corridor' }],
   prism: [{ label: 'Facets', hint: 'Number of crystal facets' }, { label: 'Dispersion', hint: 'How far the colors split at the edges' }],
   raindrops: [{ label: 'Rate', hint: 'How fast new drops land' }, { label: 'Density', hint: 'How many drops at once' }],
   holographic: [{ label: 'Film', hint: 'How many times the foil cycles through the palette' }, { label: 'Sparkle', hint: 'Strength of the glitter' }],

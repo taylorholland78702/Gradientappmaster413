@@ -235,6 +235,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'truchetThickness', label: 'Truchet Thickness', category: 'Truchet', min: 1.0, max: 15.0 },
   { key: 'truchetSpeed', label: 'Truchet Speed', category: 'Truchet', min: 0.1, max: 3.0 },
   { key: 'truchetVariation', label: 'Truchet Variation', category: 'Truchet', min: 0.0, max: 1.0 },
+  { key: 'corridorScale', label: 'Corridor Scale', category: 'Corridor', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'corridorSpeed', label: 'Corridor Speed', category: 'Corridor', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'tunnelScale', label: 'Tunnel Scale', category: 'Tunnel', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'tunnelSpeed', label: 'Tunnel Speed', category: 'Tunnel', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'vhsGlitchIntensity', label: 'VHS Glitch Intensity', category: 'VHS', min: 0.0, max: 1.0 },

@@ -94,6 +94,11 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Warp', colors: ['#1a0200', '#a1220b', '#ff7a1a', '#fff3c4'], speed: 1.8 },
     { name: 'Emerald Bore', colors: ['#001a12', '#0b6b4a', '#38d996', '#eafff5'], scale: 0.9 },
   ],
+  corridor: [
+    { name: 'Signal Hall', colors: ['#ff3a1a', '#ff9a4d', '#ffd23b', '#f4f1ff', '#1f3dff'] },
+    { name: 'Night Shift', colors: ['#05060f', '#1b2a6b', '#4c7dff', '#d9ecff'], speed: 1.3 },
+    { name: 'Terminal', colors: ['#001a0f', '#0b6b3a', '#37d98a', '#eafff3'], scale: 0.9 },
+  ],
   prism: [
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },

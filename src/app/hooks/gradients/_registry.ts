@@ -289,6 +289,7 @@ export const GRADIENT_DRAW_FNS: Record<string, (P: DrawCtx) => CanvasGradient | 
   'topographic': drawTopographicAuto,
   'truchet': drawTruchet,
   'tunnel': (P) => styleFieldAuto('tunnel', P),
+  'corridor': (P) => styleFieldAuto('corridor', P),
   'voronoi': drawVoronoiAuto,
   'vortex': (P) => styleFieldAuto('vortex', P),
   'waves': (P) => styleFieldAuto('waves', P),
