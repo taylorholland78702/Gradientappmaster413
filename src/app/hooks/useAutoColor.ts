@@ -41,7 +41,7 @@ export function useAutoColor(p: UseAutoColorParams) {
     };
 
     const interval = setInterval(() => {
-      if (gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'flower' || gradientType === 'noise') {
+      if (gradientType === 'voronoi' || gradientType === 'radial-burst' || gradientType === 'noise') {
         setTargetColors(prev => prev.map((color, index) => applyColorShift(color, baseAIColors?.[index] || null, 60)));
       } else {
         // Capped at the palette size: with 2 colors, asking for 3 distinct indices never

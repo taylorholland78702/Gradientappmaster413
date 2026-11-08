@@ -8,7 +8,7 @@ import type { EffectType, GradientType } from '../constants/gradientEffects';
 // The per-gradient animation clocks (one interval each) and the mirror that copies their values into animValuesRef for the render loop. Moved out of InteractiveGradient unchanged.
 export interface UseAnimClocksParams {
   activeEffects: EffectType[];
-  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; flowerAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; liveSpeeds: Record<string, number>; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
+  animValuesRef: MutableRefObject<{ voronoiAnimTime: number; auroraAnimTime: number; turrellAnimTime: number; causticsAnimTime: number; lavaAnimTime: number; marbleAnimTime: number; metaballAnimTime: number; flowAnimTime: number; liquidAnimTime: number; emojiAnimTime: number; attractorAnimTime: number; tilingAnimTime: number; hatchAnimTime: number; noiseAnimTime: number; radialAnimTime: number; waveInterferenceAnimTime: number; meshWireframeAnimTime: number; fieldAnimTime: number; fieldSpeedLive: number; liveSpeeds: Record<string, number>; audioSubBassLevel: number; audioMidsLevel: number; audioTrebleLevel: number; audioEnergy: number; gridRotation: number; }>;
   attractorAnimTime: number;
   attractorSpeed: number;
   audioEnergy: number;
@@ -168,7 +168,7 @@ export function useAnimClocks(p: UseAnimClocksParams) {
   // torn down and recreated on every tick (which a dependency array would
   // force, since these change ~60x/sec while playing).
   //
-  // voronoiAnimTime/flowerAnimTime/tilingAnimTime are intentionally NOT
+  // voronoiAnimTime/tilingAnimTime are intentionally NOT
   // included here anymore — the main loop now writes those directly into
   // animValuesRef every frame (see the loop below), so mirroring them from
   // state here as well would race with that direct write and periodically

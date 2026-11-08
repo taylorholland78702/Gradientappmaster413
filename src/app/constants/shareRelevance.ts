@@ -46,7 +46,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   dustCrackleColor: { effects: ['grain'] }, dustCrackleLength: { effects: ['grain'] }, grainType: { effects: ['grain'] },
   emojiChars: { effects: ['emoji'] }, emojiOffsetX: { effects: ['emoji'] },
   feedbackRotation: { effects: ['feedback'] },
-  flowerOpacity: { gradients: ['flower'] }, flowerRotation: { gradients: ['flower'] }, flowerSymmetry: { gradients: ['flower'] },
   gridCellAngleStep: { gradients: ['grid'] }, gridHardEdge: { gradients: ['grid'] },
   gridRotation: { gradients: ['grid'], effects: ['grid-effect'] },
   crtSpeed: { effects: ['crt'] }, ditherSpeed: { effects: ['dither'] }, dadaSpeed: { effects: ['dada'] }, asciiSpeed: { effects: ['ascii'] },
@@ -69,7 +68,6 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   triangulateVariation: { effects: ['triangulate'] },
   watercolorStyle: { effects: ['watercolor'] },
   // Per-gradient Speed sliders that are not audio-modulatable.
-  flowerSpeed: { gradients: ['flower'] }, stackSpeed: { gradients: ['stack'] }, marbleSpeed: { gradients: ['marble'] },
   truchetSpeed: { gradients: ['truchet'] }, causticsSpeed: { gradients: ['caustics'] }, shapesSpeed: { gradients: ['shapes'] },
   juliaSpeed: { gradients: ['julia'] },
   windmillMode: { gradients: ['windmill'] }, windmillZoom: { gradients: ['windmill'] }, windmillZoomResponse: { gradients: ['windmill'] },

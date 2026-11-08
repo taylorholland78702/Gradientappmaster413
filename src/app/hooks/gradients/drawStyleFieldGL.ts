@@ -1,5 +1,5 @@
 // A family of WebGL2 "styled field" gradients — Smoke, Glass, Mesh, Mercury,
-// Contour, Tunnel, Prism, Raindrops, Holographic, Waves, Halftone, and
+// Contour, Tunnel, Prism, Holographic, Waves, Halftone, and
 // the dark single-light looks (Light Beam, Edge Glow, Curtains, Eclipse, Rays,
 // Bokeh), plus Vortex, Spectral, Drape and Flow Mesh.
 // Each is a pure function of (position, time) rendered in one fragment pass
@@ -21,7 +21,7 @@ import type { DrawCtx } from '../canvasDrawTypes';
 
 export type StyleFieldId =
   | 'smoke' | 'glass' | 'mesh' | 'mercury' | 'contour' | 'tunnel'
-  | 'prism' | 'raindrops' | 'holographic' | 'waves'
+  | 'prism' | 'holographic' | 'waves'
   | 'edge-glow' | 'curtains' | 'eclipse' | 'rays' | 'bokeh'
   | 'vortex' | 'spectral' | 'drape' | 'flow-mesh'
   | 'ribbon' | 'iridescent' | 'embers' | 'bands' | 'corridor' | 'globe' | 'wormhole' | 'horizon';
@@ -400,41 +400,6 @@ vec3 shade(vec2 p, vec2 uv, float t) {
   return col;
 }`;
 
-// Rain on still water: expanding rings spawned from a jittered grid, summed
-// into a height field whose slope refracts the palette beneath.
-const RAINDROPS = `
-float ripples(vec2 p, float t) {
-  vec2 sp = p * 2.6 * uB;
-  vec2 id = floor(sp);
-  float h = 0.0;
-  for (int j = -1; j <= 1; j++) {
-    for (int i = -1; i <= 1; i++) {
-      vec2 cell = id + vec2(float(i), float(j));
-      vec2 rnd = hash22(cell);
-      vec2 c = cell + 0.15 + 0.7 * rnd;
-      float ph = fract(t * 0.26 * uA * (0.6 + rnd.x * 0.8) + rnd.y);
-      float d = length(sp - c);
-      float r = ph * 1.0;
-      float env = exp(-pow((d - r) * 4.5, 2.0)) * (1.0 - ph) * (1.0 - ph);
-      h += sin((d - r) * 26.0) * env;
-    }
-  }
-  return h;
-}
-vec3 shade(vec2 p, vec2 uv, float t) {
-  float e = 0.012;
-  float h = ripples(p, t);
-  vec2 g = vec2(ripples(p + vec2(e, 0.0), t) - h, ripples(p + vec2(0.0, e), t) - h) / e;
-  vec2 bent = p + g * 0.028;
-  float bgv = fbm(bent * 0.6 + vec2(t * 0.02, 0.0));
-  vec3 col = getMappedColor(clamp(bgv * 1.2 - 0.05, 0.0, 1.0));
-  vec3 n = normalize(vec3(-g * 0.05, 1.0));
-  vec3 Hh = normalize(normalize(vec3(-0.4, 0.6, 0.7)) + vec3(0.0, 0.0, 1.0));
-  float spec = pow(max(dot(n, Hh), 0.0), 40.0);
-  col *= 0.82 + 0.22 * h;
-  return col + spec * 0.55;
-}`;
-
 // Holographic foil: thin-film interference approximated by sampling the
 // palette at per-channel phase offsets along a warped surface coordinate, with
 // a sparkle where the film flips.
@@ -766,7 +731,6 @@ const STYLE_BODIES: Record<StyleFieldId, string> = {
   contour: CONTOUR,
   tunnel: TUNNEL,
   prism: PRISM,
-  raindrops: RAINDROPS,
   holographic: HOLOGRAPHIC,
   waves: WAVES,
   'edge-glow': EDGE_GLOW,

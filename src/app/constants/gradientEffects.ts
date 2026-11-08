@@ -10,7 +10,7 @@ export interface ColorRGB {
   b: number;
 }
 
-export type GradientType = 'angle' | 'attractor' | 'bands' | 'bokeh' | 'caustics' | 'contour' | 'corridor' | 'horizon' | 'wormhole' | 'globe' | 'curtains' | 'drape' | 'eclipse' | 'edge-glow' | 'embers' | 'fireworks' | 'flow-mesh' | 'flower' | 'glass' | 'grid' | 'holographic' | 'iridescent' | 'julia' | 'lava-lamp' | 'lightning' | 'marble' | 'mercury' | 'mesh' | 'metaballs' | 'noise' | 'particles' | 'prism' | 'radial' | 'radial-burst' | 'raindrops' | 'rays' | 'reaction-diffusion' | 'ribbon' | 'shapes' | 'smoke' | 'spectral' | 'stack' | 'tiling' | 'topographic' | 'truchet' | 'tunnel' | 'voronoi' | 'vortex' | 'waves' | 'windmill';
+export type GradientType = 'angle' | 'attractor' | 'bands' | 'bokeh' | 'caustics' | 'contour' | 'corridor' | 'horizon' | 'wormhole' | 'globe' | 'curtains' | 'drape' | 'eclipse' | 'edge-glow' | 'embers' | 'fireworks' | 'flow-mesh' | 'glass' | 'grid' | 'holographic' | 'iridescent' | 'julia' | 'lava-lamp' | 'lightning' | 'marble' | 'mercury' | 'mesh' | 'metaballs' | 'noise' | 'particles' | 'prism' | 'radial' | 'radial-burst' | 'rays' | 'reaction-diffusion' | 'ribbon' | 'shapes' | 'smoke' | 'spectral' | 'stack' | 'tiling' | 'topographic' | 'truchet' | 'tunnel' | 'voronoi' | 'vortex' | 'waves' | 'windmill';
 
 // 'grid-effect' (not 'grid') deliberately — GradientType already uses 'grid'
 // for an unrelated gradient pattern, and sharing the same id string between
@@ -63,12 +63,15 @@ export const ID_MIGRATIONS: Record<string, string> = {
   'fade': 'mesh',
   // Aurora and Mesh Wireframe were removed; old presets land on the closest remaining look.
   'plasma': 'noise',
-  'wave-interference': 'raindrops',
+  'wave-interference': 'caustics',
   'halftone-screen': 'smoke',
   'soft': 'smoke',
   'aurora': 'curtains',
   // Constellation was removed again soon after it was added; anything saved with it opens as Attractor.
   'constellation': 'attractor',
+  // Flower and Raindrops were removed; saved looks open as the closest remaining gradient.
+  'flower': 'shapes',
+  'raindrops': 'caustics',
   // Hatch and Light Beam were removed; old presets land on the closest remaining look.
   'hatch': 'stack',
   'light-beam': 'rays',
@@ -143,7 +146,6 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   embers: 'Embers',
   fireworks: 'Fireworks',
   'flow-mesh': 'Flow Mesh',
-  flower: 'Flower',
   glass: 'Glass',
   grid: 'Grid',
   holographic: 'Holographic',
@@ -160,7 +162,6 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
   prism: 'Prism',
   radial: 'Radial',
   'radial-burst': 'Radial Burst',
-  raindrops: 'Raindrops',
   rays: 'Rays',
   ribbon: 'Ribbon',
   'reaction-diffusion': 'Reaction-Diffusion',
@@ -180,25 +181,25 @@ export const GRADIENT_DISPLAY_NAMES: Record<string, string> = {
 
 // Full gradient type list for UI — alphabetical by id (matches display-name
 // order, since none of these ids and their labels disagree on sort position).
-export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'flower', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'raindrops', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'tiling', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
+export const FULL_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'tiling', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
 
 // The styled-field gradients (drawStyleFieldGL.ts) — they share one Scale and
 // one Speed control instead of per-gradient sliders, so the Gradient tab keys
 // that shared panel off this list.
-export const STYLE_FIELD_GRADIENT_TYPES: GradientType[] = ['bands', 'bokeh', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'glass', 'globe', 'holographic', 'horizon', 'iridescent', 'mercury', 'mesh', 'prism', 'raindrops', 'rays', 'ribbon', 'smoke', 'spectral', 'tunnel', 'vortex', 'waves', 'wormhole'];
+export const STYLE_FIELD_GRADIENT_TYPES: GradientType[] = ['bands', 'bokeh', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'glass', 'globe', 'holographic', 'horizon', 'iridescent', 'mercury', 'mesh', 'prism', 'rays', 'ribbon', 'smoke', 'spectral', 'tunnel', 'vortex', 'waves', 'wormhole'];
 
 // Gradient types for Randomize (excludes freeform and mesh)
-export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'flower', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'raindrops', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'tiling', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
+export const FEELING_LUCKY_GRADIENT_TYPES: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'tiling', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
 
 // Gradients that pulse/react visibly with audio
-export const AUDIO_GRADIENTS: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'flower', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'raindrops', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
+export const AUDIO_GRADIENTS: GradientType[] = ['angle', 'attractor', 'bands', 'bokeh', 'caustics', 'contour', 'corridor', 'curtains', 'drape', 'eclipse', 'edge-glow', 'embers', 'flow-mesh', 'glass', 'globe', 'grid', 'holographic', 'horizon', 'iridescent', 'julia', 'lava-lamp', 'marble', 'mercury', 'mesh', 'metaballs', 'noise', 'particles', 'prism', 'radial', 'radial-burst', 'rays', 'reaction-diffusion', 'ribbon', 'shapes', 'smoke', 'spectral', 'stack', 'topographic', 'truchet', 'tunnel', 'voronoi', 'vortex', 'waves', 'windmill', 'wormhole'];
 
 // Gradient types where click-drag should not move the gradient's center.
 // Doesn't cover Particles' 'flow-field' mode (formerly the standalone Flow
 // Field gradient, which was in this list) since that's now mode-dependent
 // rather than type-dependent — see the NO_DRAG_TYPES.includes(...) call
 // site, which adds that check inline.
-export const NO_DRAG_TYPES = ['windmill', 'flower', 'tiling'];
+export const NO_DRAG_TYPES = ['windmill', 'tiling'];
 
 // Gradients shown as ONE entry in the list, with a Mode switch between the members. Each member is
 // still its own gradient underneath, with its own settings and Looks, so saved presets keep loading

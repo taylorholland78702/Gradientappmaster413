@@ -98,7 +98,7 @@ export function useRandomization(params: RandomizationParams) {
     setHelixTightness, setHelixTurns, setContrastBeatEnabled, setDigitalNoiseIntensity, setDitherLevels, setDitherType, setDitherScale,
     setDuotoneColor1, setDuotoneColor2, setDuotoneColor3, setDuotoneIntensity, setDuotoneThreeColor, setDustCrackleIntensity, setEmojiChars,
     setEmojiRotateSpeed, setEmojiSize, setEmojiSizeVariation, setFadeDirection, setFeedbackDecay, setFeedbackRotation, setFeedbackZoom,
-    setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness, setFlowerCircles,
+    setFlowParticleCount, setFlowScale, setFlowSpeed, setFlowThickness,
     setAsciiChars, setGrainType, setGridRotationDirection, setKaleidoscopeRotateSpeed, setLiquidScale, setLiquidStrength,
     setNoiseType, setNoiseWarp, setNoiseSpeed, setRadialSizeScale, setRadialSpeed, setVignetteSoftness, setWaveDistortionRotation,
     setJuliaReal, setJuliaImaginary, setJuliaZoom, setJuliaIterations, setJuliaSpeed,
@@ -111,7 +111,7 @@ export function useRandomization(params: RandomizationParams) {
     setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
-    setFlowerScale, setFlowerSpread, setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
+    setGradientColors, setGradientType, setGrainIntensity, setGrainSize,
     setGessoWhiteness, setGessoTexture, setGessoResponse,
     setGridColumns,
     setGridRotation, setGridRows, setGridShapeSize, setGridSides, setGridVariation, setHalftoneMove, setHalftoneCMYK,
@@ -148,7 +148,7 @@ export function useRandomization(params: RandomizationParams) {
     // all or (structuralSeed) only ever got rerolled by a big audio hit.
     setWindmillMode, setWindmillZoomResponse, setFadeMode, setParticlesMode, 
     setAngleHardEdge, setGridHardEdge, setRadialHardEdge,
-    setStructuralSeed, setLavaSpeed, setFlowerRotation, setFlowerSymmetry, setFlowerOpacity, setFlowerSpeed,
+    setStructuralSeed, setLavaSpeed,
     setTriangulateVariation, setEmojiOffsetX,
   } = params;
 
@@ -232,15 +232,6 @@ export function useRandomization(params: RandomizationParams) {
     setFlowSpeed(Math.random() * 4.9 + 0.1);                           // 0.1–5
     setFlowScale(Math.random() * 9.5 + 0.5);                           // 0.5–10
     setFlowThickness(Math.random() * 5.5 + 0.5);                       // 0.5–6
-
-    // Flower
-    setFlowerCircles(Math.floor(Math.random() * 11) + 1);              // 1–11
-    setFlowerScale(Math.random() * 2.9 + 0.1);                         // 0.1–3
-    setFlowerSpread(Math.random() * 2.2 + 0.3);                        // 0.3–2.5
-    setFlowerRotation(Math.floor(Math.random() * 360));                // 0–359
-    setFlowerSymmetry(Math.floor(Math.random() * 10) + 3);             // 3–12
-    setFlowerOpacity(Math.random() * 1.3 + 0.2);                       // 0.2–1.5
-    setFlowerSpeed(Math.random() * 1.4 + 0.4);                       // 0.4–1.8
 
 
     // Light (Fade's slow-crossfade mode) — kept in its own slow, calm
@@ -1058,7 +1049,6 @@ export function useRandomization(params: RandomizationParams) {
     else if (gradientType === 'marble') setMarbleTurbulence(rng(0, 5));
     else if (gradientType === 'metaballs') { setMetaballCount(Math.round(rng(2, 14))); setMetaballSize(rng(0.05, 0.4)); }
     else if (gradientType === 'truchet') { setTruchetSize(Math.round(rng(15, 100))); setTruchetVariation(rng(0, 1)); }
-    else if (gradientType === 'flower') { setFlowerCircles(Math.round(rng(1, 12))); setFlowerScale(rng(0.1, 3)); setFlowerSymmetry(Math.round(rng(3, 12))); }
     else if (gradientType === 'angle') setAngleStartOffset(Math.round(rng(0, 360)));
     else if (gradientType === 'radial') setRadialSizeScale(rng(0.25, 4));
     else if (gradientType === 'julia') { setJuliaZoom(rng(0.3, 3)); setJuliaReal(rng(-1, 1)); setJuliaImaginary(rng(-1, 1)); }

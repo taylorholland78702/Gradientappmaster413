@@ -4,7 +4,6 @@
 // (Generated from the `snapshot.x ?? default` lines of hooks/useSnapshot.ts.)
 export const SHARE_DEFAULTS_V1: Readonly<Record<string, string | number | boolean | unknown[]>> = {
   causticsSpeed: 1,
-  flowerSpeed: 1,
   juliaSpeed: 1,
   marbleSpeed: 1,
   shapesSpeed: 1,
@@ -94,13 +93,6 @@ export const SHARE_DEFAULTS_V1: Readonly<Record<string, string | number | boolea
   flowScale: 3,
   flowSpeed: 1,
   flowThickness: 1.5,
-  flowerAnimTime: 0,
-  flowerCircles: 3,
-  flowerOpacity: 1,
-  flowerRotation: 0,
-  flowerScale: 0.8,
-  flowerSpread: 0.6,
-  flowerSymmetry: 6,
   gessoResponse: 0.5,
   gessoTexture: 0.4,
   gessoWhiteness: 0.85,

@@ -161,7 +161,7 @@ describe('merged gradient families', () => {
   it('sends the removed gradients to a close surviving one', () => {
     expect(migrateId('aurora')).toBe('curtains');
     expect(migrateId('plasma')).toBe('noise');
-    expect(migrateId('wave-interference')).toBe('raindrops');
+    expect(migrateId('wave-interference')).toBe('caustics');
     expect(migrateId('halftone-screen')).toBe('smoke');
     expect(migrateId('soft')).toBe('smoke');
     expect(migrateId('fade')).toBe('mesh');

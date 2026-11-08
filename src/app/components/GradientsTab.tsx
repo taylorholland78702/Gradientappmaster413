@@ -16,7 +16,7 @@ import { choice } from './choice';
 
 // Gradients (besides the styled-field ones) that move, so show the shared Speed slider. Angle, Grid, Windmill, Radial
 // Burst and Tiling move by turning (or, for Tiling, drifting) when Play is on, and the shared Speed sets that pace too.
-const ANIMATED_GRADIENTS: string[] = ['stack', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'flower', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
+const ANIMATED_GRADIENTS: string[] = ['stack', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
 
 
 export interface GradientsTabProps {
@@ -234,13 +234,12 @@ export interface GradientsTabProps {
 
   // Radar
 
-  // Flower
-  flowerCircles: number; setFlowerCircles: (v: number) => void;
-  flowerScale: number; setFlowerScale: (v: number) => void;
-  flowerSpread: number; setFlowerSpread: (v: number) => void;
-  flowerSymmetry: number; setFlowerSymmetry: (v: number) => void;
-  flowerOpacity: number; setFlowerOpacity: (v: number) => void;
-  flowerSpeed: number; setFlowerSpeed: (v: number) => void;
+  
+  
+  
+  
+  
+  
 
   // Helix (conical spiral)
   helixTurns: number; setHelixTurns: (v: number) => void;
@@ -289,8 +288,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     voronoiCellCount, setVoronoiCellCount, voronoiDistortion, voronoiSpeed, setVoronoiDistortion, setVoronoiSpeed,
     fadeDirection, setFadeDirection,
     
-    flowerCircles, setFlowerCircles, flowerScale, setFlowerScale, flowerSpread, setFlowerSpread,
-    flowerSymmetry, setFlowerSymmetry, flowerOpacity, flowerSpeed, setFlowerOpacity, setFlowerSpeed,
     helixTurns, setHelixTurns, helixTightness, setHelixTightness,
   } = props;
 
@@ -879,14 +876,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
           </div>
         )}
 
-        {/* Flower Controls */}
-        {gradientType === 'flower' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            <SliderRow label="Circles:" value={flowerCircles} onChange={setFlowerCircles} min="1" max="12" />
-            <SliderRow label="Scale:" value={flowerScale} onChange={setFlowerScale} min="0.1" max="3" step="0.1" />
-            <SliderRow label="Symmetry:" title="Circles per layer — 6 gives the default hexagonal pattern, 4/8/12 give square/octagonal/dodecagonal lattices" value={flowerSymmetry} onChange={setFlowerSymmetry} min="3" max="12" step="1" />
-          </div>
-        )}
 
 
     </ModCategoryCtx.Provider>
