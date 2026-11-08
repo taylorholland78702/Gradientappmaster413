@@ -76,6 +76,7 @@
   "posterize": "Posterize",
   "shift": "Shift",
   "slit-scan": "Slit-Scan",
+  "lens": "Lens",
   "hard-bands": "Hard Bands",
   "row-smear": "Row Smear",
   "nested-frames": "Nested Frames",

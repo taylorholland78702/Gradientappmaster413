@@ -38,6 +38,7 @@ import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirr
 import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
 import { applyRowSmear } from '../hooks/effects/applyRowSmear';
 import { applyHardBands } from '../hooks/effects/applyHardBands';
+import { applyLens } from '../hooks/effects/applyLens';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -194,6 +195,7 @@ const EFFECT_REGISTRY = {
   kaleidoscope: { drawFn: applyKaleidoscope, label: 'Kaleido', cost: 1, category: ['Kaleidoscope'], audio: true },
   // Same under-pricing issue as Liquid above — full-res per-pixel
   // coordinate-distortion math, priced like a cheap single-pass op.
+  'lens': { drawFn: applyLens, label: 'Lens', cost: 2, category: ['Lens'], audio: false },
   liquid: { drawFn: applyLiquidAuto, label: 'Liquid', cost: 2, category: ['Liquid'], audio: false },
   mirror: { drawFn: applyMirrorAuto, label: 'Mirror', cost: 2, category: ['Mirror'], audio: true },
   // Neighborhood mode-filter (each pixel replaced by the average color of
