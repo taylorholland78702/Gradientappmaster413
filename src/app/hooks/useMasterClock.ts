@@ -46,7 +46,7 @@ export interface UseMasterClockParams {
   zoomRef: MutableRefObject<number>;
 }
 
-const ROTATION_SPEED_TYPES: GradientType[] = ['stack', 'truchet', 'shapes', 'julia'];
+const ROTATION_SPEED_TYPES: GradientType[] = ['truchet', 'shapes', 'julia'];
 
 export function useMasterClock(p: UseMasterClockParams) {
   const { activeEffectsRef, analyzeAudioRef, animValuesRef, audioMidsLevelRef, audioSubBassLevelRef, drawParamsDirtyRef, drawRef, gradientAngleRef, gradientColorsRef, gradientTypeRef, gridRotationDirectionRef, halftoneMoveRef, halftoneTimeRef, isAudioActiveRef, isAutoModeRef, getIsAutoShuffleOn, isMicActiveRef, isVCRPlayingRef, lerpSyncFrameRef, rotationDirectionRef, setGradientAngle, setGradientColors, setGridRotation, setMeshWireframeAnimTime, setTargetAngle, setTilingAnimTime, setVoronoiAnimTime, setWaveInterferenceAnimTime, setZoom, targetAngleRef, targetColorsRef, targetZoomRef, vcrPlaybackSpeedRef, gradientSpeedRef, windmillModeRef, zoomRef } = p;
@@ -253,7 +253,7 @@ export function useMasterClock(p: UseMasterClockParams) {
         const doubleSpeedTypes = ['angle', 'fade', 'radial-burst'];
         const isWindmillHelixMode = gradientTypeRef.current === 'windmill' && windmillModeRef.current === 'helix';
         const angleSpeedBoost = (doubleSpeedTypes.includes(gradientTypeRef.current) || isWindmillHelixMode) ? 2 : 1;
-        // Stack, Truchet, Shapes and Julia move only by this rotation, so their Speed slider scales it.
+        // Truchet, Shapes and Julia move only by this rotation, so their Speed slider scales it.
         const rotateSpeed = ROTATION_SPEED_TYPES.includes(gradientTypeRef.current) ? activeGradientSpeed() : 1;
         targetAngleRef.current += rotationAmountPerFrame * spd * angleSpeedBoost * midsBoost * rotateSpeed * dtScale;
       }

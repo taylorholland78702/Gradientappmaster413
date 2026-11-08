@@ -17,7 +17,6 @@ export const GRADIENT_MOD_CATEGORY: Record<string, string[]> = {
   noise: ['Noise'], particles: ['Particles', 'Flow Field', 'Marks'], radial: ['Radial'], 'radial-burst': ['Radial Burst'],
   'reaction-diffusion': ['Reaction-Diffusion'], shapes: ['Shapes', 'Polar Grid'], tiling: ['Tiling'], topographic: ['Topographic'], truchet: ['Truchet'],
   voronoi: ['Voronoi'], windmill: ['Windmill', 'Helix'],
-  stack: ['Stack'],
   // Styled-field gradients (drawStyleFieldGL.ts): each has its own Scale/Speed
   // entries in MODULATABLE_PARAMS under its display name ('Halftone (Gradient)'
   // is disambiguated from the Halftone effect's category).

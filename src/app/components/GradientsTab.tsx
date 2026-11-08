@@ -16,7 +16,7 @@ import { choice } from './choice';
 
 // Gradients (besides the styled-field ones) that move, so show the shared Speed slider. Angle, Grid, Windmill, Radial
 // Burst and Tiling move by turning (or, for Tiling, drifting) when Play is on, and the shared Speed sets that pace too.
-const ANIMATED_GRADIENTS: string[] = ['stack', 'caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
+const ANIMATED_GRADIENTS: string[] = ['caustics', 'lava-lamp', 'marble', 'metaballs', 'truchet', 'attractor', 'particles', 'reaction-diffusion', 'julia', 'shapes', 'noise', 'radial', 'voronoi', 'angle', 'grid', 'windmill', 'radial-burst', 'tiling'];
 
 
 export interface GradientsTabProps {
@@ -53,13 +53,12 @@ export interface GradientsTabProps {
   turrellSpeed: number; setTurrellSpeed: (v: number) => void;
   turrellGlow: number; setTurrellGlow: (v: number) => void;
 
-  // Stack
-  stackCount: number; setStackCount: (v: number) => void;
-  stackGap: number; setStackGap: (v: number) => void;
-  stackWidth: number; setStackWidth: (v: number) => void;
-  stackLength: number; setStackLength: (v: number) => void;
-  stackResponse: number; setStackResponse: (v: number) => void;
-  stackSpeed: number; setStackSpeed: (v: number) => void;
+  
+  
+  
+  
+  
+  
 
   // Hatch
   hatchLayers: number; setHatchLayers: (v: number) => void;
@@ -254,7 +253,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
     polygon2Sides, setPolygon2Sides, concentricRingCount, setConcentricRingCount,
     auroraBandCount, setAuroraBandCount, auroraBandHeight, setAuroraBandHeight, auroraWaveSpeed, setAuroraWaveSpeed,
     fadeMode, setFadeMode, turrellSpeed, setTurrellSpeed, turrellGlow, setTurrellGlow,
-    stackCount, setStackCount, stackGap, setStackGap, stackWidth, setStackWidth, stackLength, setStackLength, stackResponse, stackSpeed, setStackResponse, setStackSpeed,
     hatchLayers, setHatchLayers, hatchSpacing, setHatchSpacing, hatchResponse, setHatchResponse, hatchSpeed, setHatchSpeed,
     causticsBrightness, setCausticsBrightness, causticsScale, causticsSpeed, setCausticsScale, setCausticsSpeed,
     lavaBlobCount, setLavaBlobCount, lavaBlobSize, setLavaBlobSize, lavaSpeed, setLavaSpeed,
@@ -484,21 +482,6 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         )}
 
         {/* Iridescent Controls */}
-
-        {/* Stack Controls — identical hard-edged bars at regular intervals;
-            orientation reuses the shared Angle control below. */}
-        {gradientType === 'stack' && (
-          <div className="w-full flex flex-col gap-2 px-1.5 py-1 [&>*:last-child]:mb-0">
-            {[
-              { label: 'Count', value: stackCount, set: setStackCount, min: 2, max: 40, step: 1 },
-              { label: 'Gap', value: stackGap, set: setStackGap, min: 0, max: 0.8, step: 0.05 },
-              { label: 'Width', value: stackWidth, set: setStackWidth, min: 0.1, max: 2, step: 0.05 },
-              { label: 'Length', value: stackLength, set: setStackLength, min: 0.1, max: 2, step: 0.05 },
-            ].map(({ label, value, set, min, max, step }, i, arr) => (
-              <SliderRow key={label} label={`${label}:`} value={value} onChange={set} min={min} max={max} step={step} />
-            ))}
-          </div>
-        )}
 
         
         {/* Caustics Controls */}

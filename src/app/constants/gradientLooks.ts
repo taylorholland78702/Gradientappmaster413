@@ -30,7 +30,6 @@ export const LOOK_PARAM_KEYS = [
   'windmillMode', 'helixTurns', 'helixTightness',
   'fadeDirection', 'angleStartOffset',
   'gridRows', 'gridColumns', 'shapesCount', 'shapesSpeed', 'shapesSides',
-  'stackCount', 'stackGap', 'stackWidth', 'stackLength', 'stackResponse', 'stackSpeed',
   'hatchLayers', 'hatchSpacing', 'hatchResponse', 'hatchSpeed',
   'truchetSize', 'truchetVariation', 'truchetThickness', 'truchetSpeed',
   'particlesCount', 'particlesSize', 'particlesSpeed', 'particlesTrail', 'particlesGravity',
@@ -275,11 +274,6 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Confetti', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], params: { shapesCount: 30, shapesSides: 3 } },
     { name: 'Midnight Rings', colors: ['#05070f', '#1a2650', '#3b52a8', '#9fb0ff'], params: { shapesCount: 12, shapesSides: 8 } },
     { name: 'Sorbet Blocks', colors: ['#ffd6e8', '#d6f0ff', '#fff3c9', '#d9ffd6'], params: { shapesCount: 18, shapesSides: 4 } },
-  ],
-  stack: [
-    { name: 'Ribbon Stack', colors: ['#0b3d91', '#1e88e5', '#4fc3f7', '#e1f5fe'], params: { stackCount: 20 } },
-    { name: 'Sunset Stack', colors: ['#2b0a3d', '#a3260b', '#ff9a3d', '#ffe3b0'], params: { stackCount: 12, stackGap: 0.2 } },
-    { name: 'Mono Stack', colors: ['#0a0a0a', '#4a4a4a', '#9a9a9a', '#f2f2f2'], params: { stackCount: 30 } },
   ],
   truchet: [
     { name: 'Maze', colors: ['#05070f', '#e6f2ff'], params: { truchetSize: 40, truchetThickness: 4 } },

@@ -81,12 +81,12 @@ export interface UseLooksParams {
   setShapesCount: (value: SetStateAction<number>) => void;
   setShapesSpeed: (value: SetStateAction<number>) => void;
   setShapesSides: (value: SetStateAction<number>) => void;
-  setStackCount: (value: SetStateAction<number>) => void;
-  setStackGap: (value: SetStateAction<number>) => void;
-  setStackLength: (value: SetStateAction<number>) => void;
-  setStackResponse: (value: SetStateAction<number>) => void;
-  setStackSpeed: (value: SetStateAction<number>) => void;
-  setStackWidth: (value: SetStateAction<number>) => void;
+  
+  
+  
+  
+  
+  
   setTargetColors: (value: SetStateAction<ColorRGB[]>) => void;
   setTilingComplexity: (value: SetStateAction<number>) => void;
   setTilingRotation: (value: SetStateAction<number>) => void;
@@ -106,7 +106,7 @@ export interface UseLooksParams {
 }
 
 export function useLooks(p: UseLooksParams) {
-  const { gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setStackCount, setStackGap, setStackLength, setStackResponse, setStackSpeed, setStackWidth, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
+  const { gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode } = p;
   // Applies a named Look (constants/gradientLooks.ts): the palette plus whichever
   // of Scale/Speed/Bias/Sharpness/Contrast it specifies, resetting the ones it
   // doesn't to their defaults so a look always lands the same way. A palette the
@@ -143,7 +143,6 @@ export function useLooks(p: UseLooksParams) {
         windmillMode: setWindmillMode, helixTurns: setHelixTurns, helixTightness: setHelixTightness,
         fadeDirection: setFadeDirection, angleStartOffset: setAngleStartOffset,
         gridRows: setGridRows, gridColumns: setGridColumns, shapesCount: setShapesCount, shapesSpeed: setShapesSpeed, shapesSides: setShapesSides,
-        stackCount: setStackCount, stackGap: setStackGap, stackWidth: setStackWidth, stackLength: setStackLength, stackResponse: setStackResponse, stackSpeed: setStackSpeed,
         hatchLayers: setHatchLayers, hatchSpacing: setHatchSpacing, hatchResponse: setHatchResponse, hatchSpeed: setHatchSpeed,
         truchetSize: setTruchetSize, truchetVariation: setTruchetVariation, truchetThickness: setTruchetThickness, truchetSpeed: setTruchetSpeed,
         particlesCount: setParticlesCount, particlesSize: setParticlesSize, particlesSpeed: setParticlesSpeed, particlesTrail: setParticlesTrail, particlesGravity: setParticlesGravity,

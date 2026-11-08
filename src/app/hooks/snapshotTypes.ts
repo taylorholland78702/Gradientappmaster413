@@ -52,12 +52,12 @@ export interface SnapshotValues {
   turrellAnimTime: number;
   turrellSpeed: number;
   turrellGlow: number;
-  stackCount: number;
-  stackGap: number;
-  stackWidth: number;
-  stackLength: number;
-  stackResponse: number;
-  stackSpeed: number;
+  
+  
+  
+  
+  
+  
   hatchLayers: number;
   hatchSpacing: number;
   hatchResponse: number;
