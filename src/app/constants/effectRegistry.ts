@@ -39,6 +39,7 @@ import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
 import { applyRowSmear } from '../hooks/effects/applyRowSmear';
 import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyLens } from '../hooks/effects/applyLens';
+import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -214,6 +215,7 @@ const EFFECT_REGISTRY = {
   'oil-paint': { drawFn: applyOilPaint, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
+  'polar-warp': { drawFn: applyPolarWarp, label: 'Polar Warp', cost: 2, category: ['Polar Warp'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
   'row-smear': { drawFn: applyRowSmear, label: 'Row Smear', cost: 2, category: ['Row Smear'], audio: false },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
