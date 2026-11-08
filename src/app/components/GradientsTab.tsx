@@ -436,13 +436,13 @@ const GradientsTabInner: React.FC<GradientsTabProps> = (props) => {
         {currentFamily && (
           <div className="w-full flex items-center justify-between gap-2 px-1.5 py-1">
             <label className="text-[10px] text-white">Mode:</label>
-            <div className="flex flex-1 gap-1" role="group" aria-label={`${currentFamily.label} mode`}>
-              {currentFamily.members.map(m => (
+            <div className="flex flex-1 flex-wrap gap-1" role="group" aria-label={`${currentFamily.label} mode`}>
+              {[...currentFamily.members].sort((a, b) => a.label.localeCompare(b.label)).map(m => (
                 <button
                   key={m.type}
                   onClick={() => pickGradient(m.type)}
                   aria-pressed={gradientType === m.type}
-                  className={choice(gradientType === m.type, 'flex-1')}
+                  className={choice(gradientType === m.type, 'flex-1 min-w-[4.5rem]')}
                 >{m.label}</button>
               ))}
             </div>

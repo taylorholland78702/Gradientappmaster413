@@ -323,7 +323,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
             // instead of a hand-maintained list — adding/removing an effect no longer
             // requires touching this array too.
             const effectsList: { value: EffectType; label: string }[] =
-              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] }));
+              EFFECTS_UI_LIST.map((value) => ({ value, label: EFFECT_LABELS[value] })).sort((a, b) => a.label.localeCompare(b.label));
             const rows = Math.ceil(effectsList.length / 2);
             return (
               <div className="grid grid-cols-2 gap-0" style={{ gridAutoFlow: 'column', gridTemplateRows: `repeat(${rows}, auto)` }}>
@@ -470,17 +470,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   )}
                 </EffectSection>
               )}
-              {activeEffects.includes('chromatic') && (
-                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Offset:" value={chromaticOffset} onChange={setChromaticOffset} min="1" max="200" />
-                  <AngleDial label="Angle" value={chromaticAngle} onChange={setChromaticAngle} />
-                </EffectSection>
-              )}
-              {activeEffects.includes('chromatic-trails') && (
-                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Decay:" title="How long the trails linger. Each step lengthens them by the same amount, so the subtle end gets as much room as the long end." value={decayToPosition(chromaticTrailsDecay)} onChange={(t) => setChromaticTrailsDecay(positionToDecay(t))} min="0" max="1" step="0.01" />
-                </EffectSection>
-              )}
               {activeEffects.includes('crt') && (
                 <EffectSection id="crt" label="Cathode" isMulti={isMulti} expanded={!collapsedEffects.has('crt')} onToggle={toggleEffectCollapsed}>
                   <div className="flex flex-wrap gap-1">
@@ -500,11 +489,30 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Flicker:" title="How much the brightness jitters from frame to frame." value={crtFlicker} onChange={setCrtFlicker} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
+              {activeEffects.includes('chromatic-trails') && (
+                <EffectSection id="chromatic-trails" label="Chroma Trails" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic-trails')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Decay:" title="How long the trails linger. Each step lengthens them by the same amount, so the subtle end gets as much room as the long end." value={decayToPosition(chromaticTrailsDecay)} onChange={(t) => setChromaticTrailsDecay(positionToDecay(t))} min="0" max="1" step="0.01" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('chromatic') && (
+                <EffectSection id="chromatic" label="Chromatic" isMulti={isMulti} expanded={!collapsedEffects.has('chromatic')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Offset:" value={chromaticOffset} onChange={setChromaticOffset} min="1" max="200" />
+                  <AngleDial label="Angle" value={chromaticAngle} onChange={setChromaticAngle} />
+                </EffectSection>
+              )}
               {activeEffects.includes('dada') && (
                 <EffectSection id="dada" label="Dada" isMulti={isMulti} expanded={!collapsedEffects.has('dada')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Panels:" value={dadaPanels} onChange={setDadaPanels} min="2" max="8" step="1" />
                   <SliderRow label="Chaos:" value={dadaChaos} onChange={setDadaChaos} min="0" max="1" step="0.05" />
                   <SliderRow label="Speed:" title="How fast the panels drift. Zero holds them still." value={effectSpeeds.dada} onChange={(v) => setEffectSpeed('dada', v)} min="0" max="4" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('datamosh') && (
+                <EffectSection id="datamosh" label="Datamosh" isMulti={isMulti} expanded={!collapsedEffects.has('datamosh')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Block:" title="Size of the blocks that smear." value={moshBlock} onChange={setMoshBlock} min="8" max="64" step="1" />
+                  <SliderRow label="Smear:" title="How many blocks keep their old picture instead of updating." value={moshSmear} onChange={setMoshSmear} min="0.1" max="1" step="0.05" />
+                  <SliderRow label="Drift:" title="How far the kept blocks slide." value={moshDrift} onChange={setMoshDrift} min="0" max="1" step="0.05" />
+                  <SliderRow label="Refresh:" title="Seconds between full refreshes of the frame." value={moshRefresh} onChange={setMoshRefresh} min="0.5" max="8" step="0.5" />
                 </EffectSection>
               )}
               {activeEffects.includes('dither') && (
@@ -658,9 +666,66 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <PointPad label="Zoom and spin" x={((feedbackRotation + 10) / 20) * 100} y={(feedbackZoom / 5) * 100} onChange={(x, y) => { setFeedbackRotation(Math.round(((x / 100) * 20 - 10) * 2) / 2); setFeedbackZoom(Math.round((y / 100) * 50) / 10); }} />
                 </EffectSection>
               )}
+              {activeEffects.includes('film-burn') && (
+                <EffectSection id="film-burn" label="Film Burn" isMulti={isMulti} expanded={!collapsedEffects.has('film-burn')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Burn:" title="Orange-red burn glows drifting in from the edges." value={filmBurnAmount} onChange={setFilmBurnAmount} min="0" max="1" step="0.05" />
+                  <SliderRow label="Dust:" title="Specks and hairs." value={filmBurnDust} onChange={setFilmBurnDust} min="0" max="1" step="0.05" />
+                  <SliderRow label="Scratches:" title="Vertical scratches." value={filmBurnScratches} onChange={setFilmBurnScratches} min="0" max="1" step="0.05" />
+                  <SliderRow label="Flicker:" title="Exposure flicker. Held to a faint wobble when Reduce flashing is on." value={filmBurnFlicker} onChange={setFilmBurnFlicker} min="0" max="1" step="0.05" />
+                  <SliderRow label="Flash:" title="Occasional hot frames. Off when Reduce flashing is on. Shuffle never turns it on." value={filmBurnFlash} onChange={setFilmBurnFlash} min="0" max="1" step="0.05" />
+                  <SliderRow label="Speed:" title="How fast the burns drift. Zero freezes them." value={filmBurnSpeed} onChange={setFilmBurnSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('film-stock') && (
+                <EffectSection id="film-stock" label="Film Stock" isMulti={isMulti} expanded={!collapsedEffects.has('film-stock')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setFilmStockLook('warm')}
+                        aria-pressed={filmStockLook === 'warm'}
+                        className={choice(filmStockLook === 'warm', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Warm
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('cool')}
+                        aria-pressed={filmStockLook === 'cool'}
+                        className={choice(filmStockLook === 'cool', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Cool
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('faded')}
+                        aria-pressed={filmStockLook === 'faded'}
+                        className={choice(filmStockLook === 'faded', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Faded
+                      </button>
+                      <button
+                        onClick={() => setFilmStockLook('punchy')}
+                        aria-pressed={filmStockLook === 'punchy'}
+                        className={choice(filmStockLook === 'punchy', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Punchy
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Halation:" title="The red-orange glow around bright edges." value={filmStockHalation} onChange={setFilmStockHalation} min="0" max="1" step="0.05" />
+                  <SliderRow label="Grain:" title="Film grain, strongest in the midtones." value={filmStockGrain} onChange={setFilmStockGrain} min="0" max="1" step="0.05" />
+                  <SliderRow label="Roll-off:" title="How softly highlights compress instead of clipping." value={filmStockRoll} onChange={setFilmStockRoll} min="0" max="1" step="0.05" />
+                </EffectSection>
+              )}
               {activeEffects.includes('gesso') && (
                 <EffectSection id="gesso" label="Gesso" isMulti={isMulti} expanded={!collapsedEffects.has('gesso')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Whiteness:" value={gessoWhiteness} onChange={setGessoWhiteness} min="0" max="0.94" step="0.01" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('glitch-blocks') && (
+                <EffectSection id="glitch-blocks" label="Glitch Blocks" isMulti={isMulti} expanded={!collapsedEffects.has('glitch-blocks')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Blocks:" title="How many blocks jump at once." value={glitchBlocksCount} onChange={setGlitchBlocksCount} min="1" max="40" step="1" />
+                  <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
+                  <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
+                  <SliderRow label="Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
@@ -758,11 +823,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Size:" value={gridShapeSize} onChange={setGridShapeSize} min={1} max={100} step={1} />
                 </EffectSection>
               )}
-
-              
-              
-              
-              
               {activeEffects.includes('halftone') && (
                 <EffectSection id="halftone" label="Halftone" isMulti={isMulti} expanded={!collapsedEffects.has('halftone')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Dot Size:" value={halftoneSize} onChange={setHalftoneSize} min="2" max="200" />
@@ -779,6 +839,12 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                       <Switch on={halftoneCMYK} onChange={setHalftoneCMYK} label="Halftone CMYK" />
                     </div>
                   </div>
+                </EffectSection>
+              )}
+              {activeEffects.includes('hard-bands') && (
+                <EffectSection id="hard-bands" label="Hard Bands" isMulti={isMulti} expanded={!collapsedEffects.has('hard-bands')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
+                  <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
                 </EffectSection>
               )}
               {activeEffects.includes('impasto') && (
@@ -819,6 +885,23 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   )}
                 </EffectSection>
               )}
+              {activeEffects.includes('neon-edges') && (
+                <EffectSection id="neon-edges" label="Neon Edges" isMulti={isMulti} expanded={!collapsedEffects.has('neon-edges')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Strength:" title="How easily an edge lights up." value={neonStrength} onChange={setNeonStrength} min="0.5" max="4" step="0.1" />
+                  <SliderRow label="Glow:" title="How far the lines glow." value={neonGlow} onChange={setNeonGlow} min="0" max="20" step="1" />
+                  <SliderRow label="Dim:" title="How dark the rest of the frame goes." value={neonDim} onChange={setNeonDim} min="0" max="1" step="0.05" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('nested-frames') && (
+                <EffectSection id="nested-frames" label="Nested Frames" isMulti={isMulti} expanded={!collapsedEffects.has('nested-frames')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Frames:" title="How many inset copies are stacked." value={nestedFramesCount} onChange={setNestedFramesCount} min="1" max="14" step="1" />
+                  <SliderRow label="Shrink:" title="How much smaller each copy is than the one around it." value={nestedFramesShrink} onChange={setNestedFramesShrink} min="0.5" max="0.95" step="0.01" />
+                  <SliderRow label="Point X:" title="Where the copies converge, left to right." value={nestedFramesX} onChange={setNestedFramesX} min="0" max="100" step="1" />
+                  <SliderRow label="Point Y:" title="Where the copies converge, top to bottom." value={nestedFramesY} onChange={setNestedFramesY} min="0" max="100" step="1" />
+                  <SliderRow label="Speed:" title="How fast the copies stream toward the point. Zero freezes them." value={nestedFramesSpeed} onChange={setNestedFramesSpeed} min="0" max="3" step="0.1" />
+                  <SliderRow label="Twist:" title="How much each copy is turned more than the one around it." value={nestedFramesTwist} onChange={setNestedFramesTwist} min="0" max="45" step="1" />
+                </EffectSection>
+              )}
               {activeEffects.includes('oil-paint') && (
                 <EffectSection id="oil-paint" label="Oil Paint" isMulti={isMulti} expanded={!collapsedEffects.has('oil-paint')} onToggle={toggleEffectCollapsed}>
                   <SliderRow label="Brush Size:" value={oilPaintRadius} onChange={setOilPaintRadius} min="1" max="6" step="1" />
@@ -855,9 +938,61 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Size:" value={pixelSize} onChange={setPixelSize} min="5" max="200" />
                 </EffectSection>
               )}
+              {activeEffects.includes('polar-warp') && (
+                <EffectSection id="polar-warp" label="Polar Warp" isMulti={isMulti} expanded={!collapsedEffects.has('polar-warp')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setPolarMode('tunnel')}
+                        aria-pressed={polarMode === 'tunnel'}
+                        className={choice(polarMode === 'tunnel', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Tunnel
+                      </button>
+                      <button
+                        onClick={() => setPolarMode('unwrap')}
+                        aria-pressed={polarMode === 'unwrap'}
+                        className={choice(polarMode === 'unwrap', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Unwrap
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Repeat:" title="How many times the picture is tiled around the point." value={polarRepeat} onChange={setPolarRepeat} min="1" max="6" step="1" />
+                  <SliderRow label="Twist:" title="How much the tiling spirals." value={polarTwist} onChange={setPolarTwist} min="0" max="1" step="0.05" />
+                  <SliderRow label="Point X:" title="The centre of the warp, left to right." value={polarX} onChange={setPolarX} min="0" max="100" step="1" />
+                  <SliderRow label="Point Y:" title="The centre of the warp, top to bottom." value={polarY} onChange={setPolarY} min="0" max="100" step="1" />
+                  <SliderRow label="Speed:" title="How fast the picture flows. Zero freezes it." value={polarSpeed} onChange={setPolarSpeed} min="0" max="3" step="0.1" />
+                </EffectSection>
+              )}
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
                   <StepperRow label="Levels" value={posterizeLevels} onChange={setPosterizeLevels} min={2} max={16} />
+                </EffectSection>
+              )}
+              {activeEffects.includes('row-smear') && (
+                <EffectSection id="row-smear" label="Row Smear" isMulti={isMulti} expanded={!collapsedEffects.has('row-smear')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Length:" title="How far each streak runs, as a share of the frame." value={rowSmearLength} onChange={setRowSmearLength} min="5" max="100" step="1" />
+                  <SliderRow label="Amount:" title="How many of the bands get smeared." value={rowSmearAmount} onChange={setRowSmearAmount} min="0.1" max="1" step="0.05" />
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setRowSmearDirection('horizontal')}
+                        aria-pressed={rowSmearDirection === 'horizontal'}
+                        className={choice(rowSmearDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Horz
+                      </button>
+                      <button
+                        onClick={() => setRowSmearDirection('vertical')}
+                        aria-pressed={rowSmearDirection === 'vertical'}
+                        className={choice(rowSmearDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Vert
+                      </button>
+                    </div>
+                  </div>
+                  <SliderRow label="Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (
@@ -903,81 +1038,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Speed:" title="How fast the scan evolves. Zero freezes it." value={slitScanSpeed} onChange={setSlitScanSpeed} min="0" max="4" step="0.1" />
                 </EffectSection>
               )}
-              {activeEffects.includes('nested-frames') && (
-                <EffectSection id="nested-frames" label="Nested Frames" isMulti={isMulti} expanded={!collapsedEffects.has('nested-frames')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Frames:" title="How many inset copies are stacked." value={nestedFramesCount} onChange={setNestedFramesCount} min="1" max="14" step="1" />
-                  <SliderRow label="Shrink:" title="How much smaller each copy is than the one around it." value={nestedFramesShrink} onChange={setNestedFramesShrink} min="0.5" max="0.95" step="0.01" />
-                  <SliderRow label="Point X:" title="Where the copies converge, left to right." value={nestedFramesX} onChange={setNestedFramesX} min="0" max="100" step="1" />
-                  <SliderRow label="Point Y:" title="Where the copies converge, top to bottom." value={nestedFramesY} onChange={setNestedFramesY} min="0" max="100" step="1" />
-                  <SliderRow label="Speed:" title="How fast the copies stream toward the point. Zero freezes them." value={nestedFramesSpeed} onChange={setNestedFramesSpeed} min="0" max="3" step="0.1" />
-                  <SliderRow label="Twist:" title="How much each copy is turned more than the one around it." value={nestedFramesTwist} onChange={setNestedFramesTwist} min="0" max="45" step="1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('row-smear') && (
-                <EffectSection id="row-smear" label="Row Smear" isMulti={isMulti} expanded={!collapsedEffects.has('row-smear')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Length:" title="How far each streak runs, as a share of the frame." value={rowSmearLength} onChange={setRowSmearLength} min="5" max="100" step="1" />
-                  <SliderRow label="Amount:" title="How many of the bands get smeared." value={rowSmearAmount} onChange={setRowSmearAmount} min="0.1" max="1" step="0.05" />
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1 flex-1 min-w-0">
-                      <button
-                        onClick={() => setRowSmearDirection('horizontal')}
-                        aria-pressed={rowSmearDirection === 'horizontal'}
-                        className={choice(rowSmearDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Horz
-                      </button>
-                      <button
-                        onClick={() => setRowSmearDirection('vertical')}
-                        aria-pressed={rowSmearDirection === 'vertical'}
-                        className={choice(rowSmearDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Vert
-                      </button>
-                    </div>
-                  </div>
-                  <SliderRow label="Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('hard-bands') && (
-                <EffectSection id="hard-bands" label="Hard Bands" isMulti={isMulti} expanded={!collapsedEffects.has('hard-bands')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Steps:" title="How many flat bands the brightness is split into." value={hardBandsSteps} onChange={setHardBandsSteps} min="2" max="12" step="1" />
-                  <SliderRow label="Blend:" title="How much of the smooth palette mixes back in. Zero is fully flat bands." value={hardBandsBlend} onChange={setHardBandsBlend} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('polar-warp') && (
-                <EffectSection id="polar-warp" label="Polar Warp" isMulti={isMulti} expanded={!collapsedEffects.has('polar-warp')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1 flex-1 min-w-0">
-                      <button
-                        onClick={() => setPolarMode('tunnel')}
-                        aria-pressed={polarMode === 'tunnel'}
-                        className={choice(polarMode === 'tunnel', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Tunnel
-                      </button>
-                      <button
-                        onClick={() => setPolarMode('unwrap')}
-                        aria-pressed={polarMode === 'unwrap'}
-                        className={choice(polarMode === 'unwrap', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Unwrap
-                      </button>
-                    </div>
-                  </div>
-                  <SliderRow label="Repeat:" title="How many times the picture is tiled around the point." value={polarRepeat} onChange={setPolarRepeat} min="1" max="6" step="1" />
-                  <SliderRow label="Twist:" title="How much the tiling spirals." value={polarTwist} onChange={setPolarTwist} min="0" max="1" step="0.05" />
-                  <SliderRow label="Point X:" title="The centre of the warp, left to right." value={polarX} onChange={setPolarX} min="0" max="100" step="1" />
-                  <SliderRow label="Point Y:" title="The centre of the warp, top to bottom." value={polarY} onChange={setPolarY} min="0" max="100" step="1" />
-                  <SliderRow label="Speed:" title="How fast the picture flows. Zero freezes it." value={polarSpeed} onChange={setPolarSpeed} min="0" max="3" step="0.1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('neon-edges') && (
-                <EffectSection id="neon-edges" label="Neon Edges" isMulti={isMulti} expanded={!collapsedEffects.has('neon-edges')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Strength:" title="How easily an edge lights up." value={neonStrength} onChange={setNeonStrength} min="0.5" max="4" step="0.1" />
-                  <SliderRow label="Glow:" title="How far the lines glow." value={neonGlow} onChange={setNeonGlow} min="0" max="20" step="1" />
-                  <SliderRow label="Dim:" title="How dark the rest of the frame goes." value={neonDim} onChange={setNeonDim} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
               {activeEffects.includes('tile-puzzle') && (
                 <EffectSection id="tile-puzzle" label="Tile Puzzle" isMulti={isMulti} expanded={!collapsedEffects.has('tile-puzzle')} onToggle={toggleEffectCollapsed}>
                   <div className="flex items-center gap-1">
@@ -1003,71 +1063,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Turn:" title="How many tiles turn as they move." value={tilePuzzleRotate} onChange={setTilePuzzleRotate} min="0" max="1" step="0.05" />
                   <SliderRow label="Gap:" title="The seam between tiles." value={tilePuzzleGap} onChange={setTilePuzzleGap} min="0" max="12" step="1" />
                   <SliderRow label="Speed:" title="How often the tiles shuffle. Zero freezes them." value={tilePuzzleSpeed} onChange={setTilePuzzleSpeed} min="0" max="3" step="0.1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('glitch-blocks') && (
-                <EffectSection id="glitch-blocks" label="Glitch Blocks" isMulti={isMulti} expanded={!collapsedEffects.has('glitch-blocks')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Blocks:" title="How many blocks jump at once." value={glitchBlocksCount} onChange={setGlitchBlocksCount} min="1" max="40" step="1" />
-                  <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
-                  <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
-                  <SliderRow label="Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('film-stock') && (
-                <EffectSection id="film-stock" label="Film Stock" isMulti={isMulti} expanded={!collapsedEffects.has('film-stock')} onToggle={toggleEffectCollapsed}>
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1 flex-1 min-w-0">
-                      <button
-                        onClick={() => setFilmStockLook('warm')}
-                        aria-pressed={filmStockLook === 'warm'}
-                        className={choice(filmStockLook === 'warm', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Warm
-                      </button>
-                      <button
-                        onClick={() => setFilmStockLook('cool')}
-                        aria-pressed={filmStockLook === 'cool'}
-                        className={choice(filmStockLook === 'cool', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Cool
-                      </button>
-                      <button
-                        onClick={() => setFilmStockLook('faded')}
-                        aria-pressed={filmStockLook === 'faded'}
-                        className={choice(filmStockLook === 'faded', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Faded
-                      </button>
-                      <button
-                        onClick={() => setFilmStockLook('punchy')}
-                        aria-pressed={filmStockLook === 'punchy'}
-                        className={choice(filmStockLook === 'punchy', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Punchy
-                      </button>
-                    </div>
-                  </div>
-                  <SliderRow label="Halation:" title="The red-orange glow around bright edges." value={filmStockHalation} onChange={setFilmStockHalation} min="0" max="1" step="0.05" />
-                  <SliderRow label="Grain:" title="Film grain, strongest in the midtones." value={filmStockGrain} onChange={setFilmStockGrain} min="0" max="1" step="0.05" />
-                  <SliderRow label="Roll-off:" title="How softly highlights compress instead of clipping." value={filmStockRoll} onChange={setFilmStockRoll} min="0" max="1" step="0.05" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('datamosh') && (
-                <EffectSection id="datamosh" label="Datamosh" isMulti={isMulti} expanded={!collapsedEffects.has('datamosh')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Block:" title="Size of the blocks that smear." value={moshBlock} onChange={setMoshBlock} min="8" max="64" step="1" />
-                  <SliderRow label="Smear:" title="How many blocks keep their old picture instead of updating." value={moshSmear} onChange={setMoshSmear} min="0.1" max="1" step="0.05" />
-                  <SliderRow label="Drift:" title="How far the kept blocks slide." value={moshDrift} onChange={setMoshDrift} min="0" max="1" step="0.05" />
-                  <SliderRow label="Refresh:" title="Seconds between full refreshes of the frame." value={moshRefresh} onChange={setMoshRefresh} min="0.5" max="8" step="0.5" />
-                </EffectSection>
-              )}
-              {activeEffects.includes('film-burn') && (
-                <EffectSection id="film-burn" label="Film Burn" isMulti={isMulti} expanded={!collapsedEffects.has('film-burn')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Burn:" title="Orange-red burn glows drifting in from the edges." value={filmBurnAmount} onChange={setFilmBurnAmount} min="0" max="1" step="0.05" />
-                  <SliderRow label="Dust:" title="Specks and hairs." value={filmBurnDust} onChange={setFilmBurnDust} min="0" max="1" step="0.05" />
-                  <SliderRow label="Scratches:" title="Vertical scratches." value={filmBurnScratches} onChange={setFilmBurnScratches} min="0" max="1" step="0.05" />
-                  <SliderRow label="Flicker:" title="Exposure flicker. Held to a faint wobble when Reduce flashing is on." value={filmBurnFlicker} onChange={setFilmBurnFlicker} min="0" max="1" step="0.05" />
-                  <SliderRow label="Flash:" title="Occasional hot frames. Off when Reduce flashing is on. Shuffle never turns it on." value={filmBurnFlash} onChange={setFilmBurnFlash} min="0" max="1" step="0.05" />
-                  <SliderRow label="Speed:" title="How fast the burns drift. Zero freezes them." value={filmBurnSpeed} onChange={setFilmBurnSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
