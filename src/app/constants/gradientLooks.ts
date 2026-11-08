@@ -109,6 +109,11 @@ export const GRADIENT_LOOKS: Partial<Record<GradientType, GradientLook[]>> = {
     { name: 'Gold Rush', colors: ['#0a0500', '#7a3a00', '#ffb300', '#fff6c9'], speed: 1.3 },
     { name: 'Deep Teal', colors: ['#00080a', '#006d77', '#3ad6c5', '#e6fff8'] },
   ],
+  horizon: [
+    { name: 'Synthwave', colors: ['#12002b', '#6a0dad', '#ff2e93', '#ff9a3c', '#ffe45e'] },
+    { name: 'Miami', colors: ['#001a33', '#0087b3', '#33e0ff', '#ff77c8', '#fff0fa'], speed: 1.2 },
+    { name: 'Dusk Grid', colors: ['#0a0a1f', '#2b2b6b', '#6a6aff', '#ffd1a1'] },
+  ],
   prism: [
     { name: 'Light Shaft', colors: ['#0b0f1a', '#4f7cff', '#ff5fa8', '#ffe66d'] },
     { name: 'Spectrum', colors: ['#ff3b3b', '#ffd23b', '#3bff8a', '#3b8aff', '#b03bff'], sharp: 0.35 },

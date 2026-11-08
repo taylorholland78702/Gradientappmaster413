@@ -280,6 +280,8 @@ export const MODULATABLE_PARAMS: ModulatableParam[] = [
   { key: 'truchetVariation', label: 'Truchet Variation', category: 'Truchet', min: 0.0, max: 1.0 },
   { key: 'corridorScale', label: 'Corridor Scale', category: 'Corridor', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'corridorSpeed', label: 'Corridor Speed', category: 'Corridor', min: 0.0, max: 3.0, target: 'fieldSpeed' },
+  { key: 'horizonScale', label: 'Horizon Scale', category: 'Horizon', min: 0.3, max: 3.0, target: 'fieldScale' },
+  { key: 'horizonSpeed', label: 'Horizon Speed', category: 'Horizon', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'wormholeScale', label: 'Wormhole Scale', category: 'Wormhole', min: 0.3, max: 3.0, target: 'fieldScale' },
   { key: 'wormholeSpeed', label: 'Wormhole Speed', category: 'Wormhole', min: 0.0, max: 3.0, target: 'fieldSpeed' },
   { key: 'globeScale', label: 'Globe Scale', category: 'Globe', min: 0.3, max: 3.0, target: 'fieldScale' },
