@@ -44,6 +44,7 @@ import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
 import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
 import { applyGlitchBlocks } from '../hooks/effects/applyGlitchBlocks';
 import { applyFilmStock } from '../hooks/effects/applyFilmStock';
+import { applyDatamosh } from '../hooks/effects/applyDatamosh';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -168,6 +169,7 @@ const EFFECT_REGISTRY = {
   // Organic noise-driven pixel warp, distinct from Liquid's periodic
   // sine-wave ripple — full-resolution per-pixel remap, same cost tier as
   // Liquid.
+  'datamosh': { drawFn: applyDatamosh, label: 'Datamosh', cost: 3, category: ['Datamosh'], audio: false },
   dither: { drawFn: applyDitherWorkerAuto, label: 'Dither', cost: 3, category: ['Dither'], audio: false },
   duotone: { drawFn: applyDuotone, label: 'Duotone', cost: 2, category: ['Duotone'], audio: true },
   emoji: { drawFn: applyEmoji, label: 'Emoji', cost: 2, category: ['Emoji'], audio: false },
