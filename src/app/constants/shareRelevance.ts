@@ -60,10 +60,11 @@ export const SHARE_OWNED_BY: Readonly<Record<string, { gradients?: string[]; eff
   radialHardEdge: { gradients: ['radial'] },
   shapesMode: { gradients: ['shapes'] },
   slitScanDirection: { effects: ['slit-scan'] },
+  glitchMode: { effects: ['glitch'] },
   filmStockLook: { effects: ['film-stock'] },
   tilePuzzleEmpty: { effects: ['tile-puzzle'] },
   polarMode: { effects: ['polar-warp'] },
-  rowSmearDirection: { effects: ['row-smear'] },
+  rowSmearDirection: { effects: ['glitch'] },
   triangulateVariation: { effects: ['triangulate'] },
   // Per-gradient Speed sliders that are not audio-modulatable.
   truchetSpeed: { gradients: ['truchet'] }, causticsSpeed: { gradients: ['caustics'] }, shapesSpeed: { gradients: ['shapes'] },

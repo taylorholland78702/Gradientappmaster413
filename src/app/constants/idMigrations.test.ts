@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ID_MIGRATIONS, migrateId, migrateIds } from './gradientEffects';
+import { ID_MIGRATIONS, effectModeFields, migrateId, migrateIds } from './gradientEffects';
 import { GRADIENT_DRAW_FNS } from '../hooks/gradients/_registry';
 import { EFFECT_DRAW_FNS } from './effectRegistry';
 
@@ -81,5 +81,14 @@ describe('migrateIds (effect-only migrations)', () => {
 
   it('drops a removed Lens from saved looks', () => {
     expect(migrateIds(['lens', 'blur'])).toEqual(['blur']);
+  });
+});
+
+describe('effects that became modes of another: glitch', () => {
+  it('Glitch Blocks and Row Smear load as Glitch, with Row Smear in Rows mode', () => {
+    expect(migrateIds(['glitch-blocks'])).toEqual(['glitch']);
+    expect(migrateIds(['row-smear'])).toEqual(['glitch']);
+    expect(effectModeFields(['row-smear'])).toEqual({ glitchMode: 'rows' });
+    expect(effectModeFields(['glitch-blocks'])).toEqual({});
   });
 });

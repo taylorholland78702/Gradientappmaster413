@@ -131,6 +131,7 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  glitchMode: "blocks" | "rows"; setGlitchMode: (v: "blocks" | "rows") => void;
   nestedFramesTwist: number; setNestedFramesTwist: (v: number) => void;
   filmBurnAmount: number; setFilmBurnAmount: (v: number) => void;
   filmBurnDust: number; setFilmBurnDust: (v: number) => void;
@@ -244,7 +245,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, glitchMode, nestedFramesTwist, filmBurnAmount, filmBurnDust, filmBurnScratches, filmBurnFlicker, filmBurnFlash, filmBurnSpeed, moshBlock, moshSmear, moshDrift, moshRefresh, filmStockLook, filmStockHalation, filmStockGrain, filmStockRoll, glitchBlocksCount, glitchBlocksShift, glitchBlocksSplit, glitchBlocksSpeed, tilePuzzleEmpty, tilePuzzleCount, tilePuzzleShuffle, tilePuzzleRotate, tilePuzzleGap, tilePuzzleSpeed, neonStrength, neonGlow, neonDim, polarMode, polarRepeat, polarTwist, polarX, polarY, polarSpeed, crtGlass, crtMoire, crtDrift, crtCurve, crtGlow, crtBleed, crtFlicker, vhsBleed, vhsNoise, vhsTracking, vhsDropouts, hardBandsSteps, hardBandsBlend, rowSmearLength, rowSmearAmount, rowSmearDirection, rowSmearSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setGlitchMode, setNestedFramesTwist, setFilmBurnAmount, setFilmBurnDust, setFilmBurnScratches, setFilmBurnFlicker, setFilmBurnFlash, setFilmBurnSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -718,12 +719,59 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   <SliderRow label="Whiteness:" value={gessoWhiteness} onChange={setGessoWhiteness} min="0" max="0.94" step="0.01" />
                 </EffectSection>
               )}
-              {activeEffects.includes('glitch-blocks') && (
-                <EffectSection id="glitch-blocks" label="Glitch Blocks" isMulti={isMulti} expanded={!collapsedEffects.has('glitch-blocks')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Blocks:" title="How many blocks jump at once." value={glitchBlocksCount} onChange={setGlitchBlocksCount} min="1" max="40" step="1" />
-                  <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
-                  <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
-                  <SliderRow label="Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
+              {activeEffects.includes('glitch') && (
+                <EffectSection id="glitch" label="Glitch" isMulti={isMulti} expanded={!collapsedEffects.has('glitch')} onToggle={toggleEffectCollapsed}>
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1 flex-1 min-w-0">
+                      <button
+                        onClick={() => setGlitchMode('blocks')}
+                        aria-pressed={glitchMode === 'blocks'}
+                        className={choice(glitchMode === 'blocks', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Blocks
+                      </button>
+                      <button
+                        onClick={() => setGlitchMode('rows')}
+                        aria-pressed={glitchMode === 'rows'}
+                        className={choice(glitchMode === 'rows', 'flex-1 min-w-0 whitespace-nowrap')}
+                      >
+                        Rows
+                      </button>
+                    </div>
+                  </div>
+                  {glitchMode === 'blocks' && (
+                    <>
+                      <SliderRow label="Blocks:" title="How many blocks jump at once." value={glitchBlocksCount} onChange={setGlitchBlocksCount} min="1" max="40" step="1" />
+                      <SliderRow label="Shift:" title="How far a block can jump, as a share of the width." value={glitchBlocksShift} onChange={setGlitchBlocksShift} min="0" max="50" step="1" />
+                      <SliderRow label="Split:" title="How far the colour channels are pulled apart." value={glitchBlocksSplit} onChange={setGlitchBlocksSplit} min="0" max="30" step="1" />
+                      <SliderRow label="Blocks Speed:" title="How often the blocks change. Zero freezes them." value={glitchBlocksSpeed} onChange={setGlitchBlocksSpeed} min="0" max="3" step="0.1" />
+                    </>
+                  )}
+                  {glitchMode === 'rows' && (
+                    <>
+                      <SliderRow label="Length:" title="How far each streak runs, as a share of the frame." value={rowSmearLength} onChange={setRowSmearLength} min="5" max="100" step="1" />
+                      <SliderRow label="Amount:" title="How many of the bands get smeared." value={rowSmearAmount} onChange={setRowSmearAmount} min="0.1" max="1" step="0.05" />
+                      <div className="flex items-center gap-1">
+                        <div className="flex gap-1 flex-1 min-w-0">
+                          <button
+                            onClick={() => setRowSmearDirection('horizontal')}
+                            aria-pressed={rowSmearDirection === 'horizontal'}
+                            className={choice(rowSmearDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Horz
+                          </button>
+                          <button
+                            onClick={() => setRowSmearDirection('vertical')}
+                            aria-pressed={rowSmearDirection === 'vertical'}
+                            className={choice(rowSmearDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
+                          >
+                            Vert
+                          </button>
+                        </div>
+                      </div>
+                      <SliderRow label="Smear Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
+                    </>
+                  )}
                 </EffectSection>
               )}
               {activeEffects.includes('grain') && (
@@ -966,31 +1014,6 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
               {activeEffects.includes('posterize') && (
                 <EffectSection id="posterize" label="Posterize" isMulti={isMulti} expanded={!collapsedEffects.has('posterize')} onToggle={toggleEffectCollapsed}>
                   <StepperRow label="Levels" value={posterizeLevels} onChange={setPosterizeLevels} min={2} max={16} />
-                </EffectSection>
-              )}
-              {activeEffects.includes('row-smear') && (
-                <EffectSection id="row-smear" label="Row Smear" isMulti={isMulti} expanded={!collapsedEffects.has('row-smear')} onToggle={toggleEffectCollapsed}>
-                  <SliderRow label="Length:" title="How far each streak runs, as a share of the frame." value={rowSmearLength} onChange={setRowSmearLength} min="5" max="100" step="1" />
-                  <SliderRow label="Amount:" title="How many of the bands get smeared." value={rowSmearAmount} onChange={setRowSmearAmount} min="0.1" max="1" step="0.05" />
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1 flex-1 min-w-0">
-                      <button
-                        onClick={() => setRowSmearDirection('horizontal')}
-                        aria-pressed={rowSmearDirection === 'horizontal'}
-                        className={choice(rowSmearDirection === 'horizontal', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Horz
-                      </button>
-                      <button
-                        onClick={() => setRowSmearDirection('vertical')}
-                        aria-pressed={rowSmearDirection === 'vertical'}
-                        className={choice(rowSmearDirection === 'vertical', 'flex-1 min-w-0 whitespace-nowrap')}
-                      >
-                        Vert
-                      </button>
-                    </div>
-                  </div>
-                  <SliderRow label="Speed:" title="How fast the streaks shift. Zero freezes them." value={rowSmearSpeed} onChange={setRowSmearSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('shift') && (

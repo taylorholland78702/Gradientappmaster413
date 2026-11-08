@@ -98,6 +98,8 @@ export const migrateId = (id: string): string => ID_MIGRATIONS[id] || id;
 // only ever runs on activeEffects arrays (via migrateIds below).
 const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
   'grid': 'grid-effect',
+  'glitch-blocks': 'glitch',
+  'row-smear': 'glitch',
   // Zoom Blur was folded into Blur as a 4th mode (blurType: 'zoom') rather
   // than staying a separate effect — old presets/snapshots that reference
   // it by its old id still activate the (now-merged) Blur effect instead of
@@ -108,6 +110,16 @@ const EFFECT_ONLY_MIGRATIONS: Record<string, string> = {
 };
 // Effects that were deleted outright; presets that still list them just lose them.
 const REMOVED_EFFECTS = new Set(['fisheye', 'brush-strokes', 'watercolor', 'lens']);
+// Old effects that became a mode of another one. The id itself is renamed by EFFECT_ONLY_MIGRATIONS; this says which
+// mode setting keeps the look the same, for a saved look that does not carry the setting yet.
+export const EFFECT_MODE_MIGRATIONS: Record<string, Record<string, string>> = {
+  'row-smear': { glitchMode: 'rows' },
+};
+export const effectModeFields = (ids: string[] | undefined | null): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const id of ids || []) Object.assign(out, EFFECT_MODE_MIGRATIONS[id]);
+  return out;
+};
 export const migrateIds = (ids: string[] | undefined | null): string[] =>
   (ids || []).filter(id => !REMOVED_EFFECTS.has(id)).map(id => EFFECT_ONLY_MIGRATIONS[id] || migrateId(id));
 

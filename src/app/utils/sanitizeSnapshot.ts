@@ -1,7 +1,7 @@
 import { SNAPSHOT_LIMITS } from '../constants/snapshotLimits';
 import { EFFECT_IDS } from '../constants/effectRegistry';
 import { costOf, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
-import { FULL_GRADIENT_TYPES, GRADIENT_DISPLAY_NAMES, migrateId, migrateIds } from '../constants/gradientEffects';
+import { FULL_GRADIENT_TYPES, GRADIENT_DISPLAY_NAMES, migrateId, migrateIds, effectModeFields } from '../constants/gradientEffects';
 
 const MAX_STRING = 2000;
 const MAX_COLORS = 24;
@@ -39,6 +39,7 @@ export function sanitizeSnapshot<T extends object>(input: T): T {
     const raw = Array.isArray(out.activeEffects) ? out.activeEffects.filter((e: unknown) => typeof e === 'string') : [];
     const kept: string[] = [];
     let cost = 0;
+    for (const [k, v] of Object.entries(effectModeFields(raw))) if (!(k in out)) out[k] = v;
     for (const id of migrateIds(raw)) {
       if (!KNOWN_EFFECTS.has(id) || kept.includes(id)) continue;
       const c = costOf(id as never);

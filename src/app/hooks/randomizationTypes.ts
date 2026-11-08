@@ -155,6 +155,7 @@ export interface RandomizationParams {
   setSlitScanDirection: (value: SetStateAction<"radial" | "horizontal" | "vertical" | "circular">) => void;
   setSlitScanHistory: (value: SetStateAction<number>) => void;
   setSlitScanSpeed: (value: SetStateAction<number>) => void;
+  setGlitchMode: (value: SetStateAction<"blocks" | "rows">) => void;
   setNestedFramesTwist: (value: SetStateAction<number>) => void;
   setFilmBurnAmount: (value: SetStateAction<number>) => void;
   setFilmBurnDust: (value: SetStateAction<number>) => void;

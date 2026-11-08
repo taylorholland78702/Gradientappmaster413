@@ -36,15 +36,14 @@ import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiqu
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
 import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
-import { applyRowSmear } from '../hooks/effects/applyRowSmear';
 import { applyHardBands } from '../hooks/effects/applyHardBands';
 import { applyPolarWarp } from '../hooks/effects/applyPolarWarp';
 import { applyNeonEdges } from '../hooks/effects/applyNeonEdges';
 import { applyTilePuzzle } from '../hooks/effects/applyTilePuzzle';
-import { applyGlitchBlocks } from '../hooks/effects/applyGlitchBlocks';
 import { applyFilmStock } from '../hooks/effects/applyFilmStock';
 import { applyDatamosh } from '../hooks/effects/applyDatamosh';
 import { applyFilmBurn } from '../hooks/effects/applyFilmBurn';
+import { applyGlitch } from '../hooks/effects/applyGlitch';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -183,7 +182,7 @@ const EFFECT_REGISTRY = {
   'film-stock': { drawFn: applyFilmStock, label: 'Film Stock', cost: 3, category: ['Film Stock'], audio: false },
   'film-burn': { drawFn: applyFilmBurn, label: 'Film Burn', cost: 2, category: ['Film Burn'], audio: false },
   gesso: { drawFn: applyGesso, label: 'Gesso', cost: 1, category: ['Gesso'], audio: true },
-  'glitch-blocks': { drawFn: applyGlitchBlocks, label: 'Glitch Blocks', cost: 2, category: ['Glitch Blocks'], audio: false },
+  'glitch': { drawFn: applyGlitch, label: 'Glitch', cost: 2, category: ['Glitch Blocks', 'Row Smear'], audio: false },
   grain: { drawFn: applyGrain, label: 'Grain', cost: 2, category: ['Grain'], audio: true },
   'grid-effect': { drawFn: applyGridEffectWorkerAuto, label: 'Grid', cost: 3, category: ['Grid', 'Grid Effect'], audio: false },
   // CMYK mode (halftoneCMYK, ~40% of shuffles) draws 4 full rotated dot
@@ -224,7 +223,6 @@ const EFFECT_REGISTRY = {
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },
   'polar-warp': { drawFn: applyPolarWarp, label: 'Polar Warp', cost: 2, category: ['Polar Warp'], audio: false },
   posterize: { drawFn: applyPosterize, label: 'Posterize', cost: 1, category: ['Posterize'], audio: true },
-  'row-smear': { drawFn: applyRowSmear, label: 'Row Smear', cost: 2, category: ['Row Smear'], audio: false },
   shift: { drawFn: applyShift, label: 'Shift', cost: 1, category: ['Shift'], audio: true },
   'slit-scan': { drawFn: applySlitScan, label: 'Slit-Scan', cost: 2, category: ['Slit-Scan'], audio: false },
   'tile-puzzle': { drawFn: applyTilePuzzle, label: 'Tile Puzzle', cost: 2, category: ['Tile Puzzle'], audio: false },
