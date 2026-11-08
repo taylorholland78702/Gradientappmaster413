@@ -107,7 +107,7 @@ export function useRandomization(params: RandomizationParams) {
     setTopographicScale, setTopographicBands, setTopographicLineWidth,
     setFieldContrast, setPaletteMode, setPaletteBands, setInvertAmount, setFieldScale, setFieldSpeed,
     setPaletteStops, setPaletteBias, setPaletteSharp, applyLookValues, setFieldShapes, setFieldSwirl,
-    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
+    setSlitScanIntensity, setSlitScanDirection, setSlitScanHistory, setSlitScanSpeed, setMoshBlock, setMoshSmear, setMoshDrift, setMoshRefresh, setFilmStockLook, setFilmStockHalation, setFilmStockGrain, setFilmStockRoll, setGlitchBlocksCount, setGlitchBlocksShift, setGlitchBlocksSplit, setGlitchBlocksSpeed, setTilePuzzleEmpty, setTilePuzzleCount, setTilePuzzleShuffle, setTilePuzzleRotate, setTilePuzzleGap, setTilePuzzleSpeed, setNeonStrength, setNeonGlow, setNeonDim, setPolarMode, setPolarRepeat, setPolarTwist, setPolarX, setPolarY, setPolarSpeed, setLensMode, setLensStrength, setLensRadius, setLensX, setLensY, setLensSpeed, setCrtGlass, setCrtMoire, setCrtDrift, setCrtCurve, setCrtGlow, setCrtBleed, setCrtFlicker, setVhsBleed, setVhsNoise, setVhsTracking, setVhsDropouts, setHardBandsSteps, setHardBandsBlend, setRowSmearLength, setRowSmearAmount, setRowSmearDirection, setRowSmearSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed,
     setCrtSpeed, setDitherSpeed, setDadaSpeed, setAsciiSpeed, setWatercolorSpeed, setImpastoSpeed, setGridEffectSpeed, setLiquidSpeed,
     setOilPaintRadius, setOilPaintLevels, setImpastoStrength, setImpastoLightAngle, setWatercolorBleed, setWatercolorGrain,
     setDadaPanels, setDadaChaos,
@@ -347,6 +347,12 @@ export function useRandomization(params: RandomizationParams) {
     setSlitScanDirection((['horizontal', 'vertical', 'radial', 'circular'] as const)[Math.floor(Math.random() * 4)]);
     setSlitScanHistory(Math.floor(Math.random() * 109) + 12);            // 12–120
     setSlitScanSpeed(0.5 + Math.random() * 1.5);                                  // 0.5–2
+
+    // Datamosh effect
+    setMoshBlock(Math.floor(Math.random() * 40) + 12);
+    setMoshSmear(0.4 + Math.random() * 0.5);
+    setMoshDrift(0.2 + Math.random() * 0.6);
+    setMoshRefresh(1 + Math.random() * 5);
 
     // Film Stock effect
     setFilmStockLook((['warm', 'cool', 'faded', 'punchy'] as const)[Math.floor(Math.random() * 4)]);
@@ -1026,6 +1032,7 @@ export function useRandomization(params: RandomizationParams) {
       else if (eff === 'tile-puzzle') { setTilePuzzleEmpty(Math.random() < 0.3 ? 'on' : 'off'); setTilePuzzleCount(Math.round(rng(3, 7))); setTilePuzzleShuffle(rng(0.3, 0.9)); setTilePuzzleRotate(rng(0, 0.5)); setTilePuzzleGap(Math.round(rng(0, 5))); setTilePuzzleSpeed(rng(0.5, 2)); }
       else if (eff === 'glitch-blocks') { setGlitchBlocksCount(Math.round(rng(6, 26))); setGlitchBlocksShift(Math.round(rng(8, 38))); setGlitchBlocksSplit(Math.round(rng(0, 15))); setGlitchBlocksSpeed(rng(0.5, 2)); }
       else if (eff === 'film-stock') { setFilmStockLook((['warm', 'cool', 'faded', 'punchy'] as const)[Math.floor(Math.random() * 4)]); setFilmStockHalation(rng(0, 0.7)); setFilmStockGrain(rng(0, 0.6)); setFilmStockRoll(rng(0.2, 0.9)); }
+      else if (eff === 'datamosh') { setMoshBlock(Math.round(rng(12, 52))); setMoshSmear(rng(0.4, 0.9)); setMoshDrift(rng(0.2, 0.8)); setMoshRefresh(rng(1, 6)); }
       else if (eff === 'slit-scan') { setSlitScanIntensity(rng(0, 1)); setSlitScanHistory(Math.round(rng(12, 120))); setSlitScanSpeed(rng(0.5, 2)); }
     }
 

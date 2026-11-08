@@ -197,6 +197,9 @@ export function useMasterClock(p: UseMasterClockParams) {
       if (activeEffectsRef.current.includes('slit-scan')) {
         drawParamsDirtyRef.current = true;
       }
+      if (activeEffectsRef.current.includes('datamosh')) {
+        drawParamsDirtyRef.current = true;
+      }
       if (activeEffectsRef.current.includes('film-stock')) {
         drawParamsDirtyRef.current = true;
       }
