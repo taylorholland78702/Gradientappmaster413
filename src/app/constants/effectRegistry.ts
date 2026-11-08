@@ -35,6 +35,7 @@ import { applyLiquid } from '../hooks/effects/applyLiquid';
 import { applyLiquidGL, detectLiquidGLSupport } from '../hooks/effects/applyLiquidGL';
 import { applyMirror } from '../hooks/effects/applyMirror';
 import { applyMirrorGL, detectMirrorGLSupport } from '../hooks/effects/applyMirrorGL';
+import { applyNestedFrames } from '../hooks/effects/applyNestedFrames';
 import { applyOilPaint } from '../hooks/effects/applyOilPaint';
 import { applyPhoto } from '../hooks/effects/applyPhoto';
 import { applyPixelate } from '../hooks/effects/applyPixelate';
@@ -204,6 +205,7 @@ const EFFECT_REGISTRY = {
   // worker's response could arrive after the loop had already stopped
   // calling draw() for good, leaving the finished result computed but
   // never painted — reads as the canvas freezing and refusing to update.
+  'nested-frames': { drawFn: applyNestedFrames, label: 'Nested Frames', cost: 2, category: ['Nested Frames'], audio: false },
   'oil-paint': { drawFn: applyOilPaint, label: 'Oil Paint', cost: 4, category: ['Oil Paint'], audio: false },
   photo: { drawFn: applyPhoto, label: 'Photo', cost: 1, category: ['Photo'], audio: true },
   pixelate: { drawFn: applyPixelate, label: 'Pixelate', cost: 1, category: ['Pixelate'], audio: false },

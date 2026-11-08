@@ -197,6 +197,9 @@ export function useMasterClock(p: UseMasterClockParams) {
       if (activeEffectsRef.current.includes('slit-scan')) {
         drawParamsDirtyRef.current = true;
       }
+      if (activeEffectsRef.current.includes('nested-frames')) {
+        drawParamsDirtyRef.current = true;
+      }
 
       const isPlayActive = isAutoModeRef.current || isVCRPlayingRef.current || isMicActiveRef.current;
 

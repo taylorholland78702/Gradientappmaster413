@@ -130,6 +130,11 @@ export interface EffectsTabProps {
   slitScanIntensity: number; setSlitScanIntensity: (v: number) => void;
   slitScanHistory: number; setSlitScanHistory: (v: number) => void;
   slitScanSpeed: number; setSlitScanSpeed: (v: number) => void;
+  nestedFramesCount: number; setNestedFramesCount: (v: number) => void;
+  nestedFramesShrink: number; setNestedFramesShrink: (v: number) => void;
+  nestedFramesX: number; setNestedFramesX: (v: number) => void;
+  nestedFramesY: number; setNestedFramesY: (v: number) => void;
+  nestedFramesSpeed: number; setNestedFramesSpeed: (v: number) => void;
   slitScanDirection: 'horizontal' | 'vertical' | 'radial' | 'circular'; setSlitScanDirection: (v: 'horizontal' | 'vertical' | 'radial' | 'circular') => void;
   // Dither
   ditherLevels: number; setDitherLevels: (v: number) => void;
@@ -188,7 +193,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
     vhsGlitchIntensity, setVhsGlitchIntensity, vhsJitterAmount, setVhsJitterAmount, dustCrackleIntensity, setDustCrackleIntensity,
     dustCrackleLength, setDustCrackleLength, dustCrackleColor, setDustCrackleColor,
     waveDistortionStrength, setWaveDistortionStrength, waveDistortionRotation, setWaveDistortionRotation,
-    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, setSlitScanSpeed, slitScanDirection, setSlitScanDirection,
+    slitScanIntensity, setSlitScanIntensity, slitScanHistory, setSlitScanHistory, slitScanSpeed, nestedFramesCount, nestedFramesShrink, nestedFramesX, nestedFramesY, nestedFramesSpeed, setSlitScanSpeed, setNestedFramesCount, setNestedFramesShrink, setNestedFramesX, setNestedFramesY, setNestedFramesSpeed, slitScanDirection, setSlitScanDirection,
     ditherLevels, setDitherLevels, ditherScale, setDitherScale, ditherType, setDitherType,
     oilPaintRadius, setOilPaintRadius, oilPaintLevels, setOilPaintLevels,
     impastoStrength, setImpastoStrength, impastoLightAngle, setImpastoLightAngle,
@@ -822,6 +827,15 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                   </div>
                   <SliderRow label="Strength:" value={slitScanIntensity} onChange={setSlitScanIntensity} min="0.1" max="10" step="0.1" />
                   <SliderRow label="Speed:" title="How fast the scan evolves. Zero freezes it." value={slitScanSpeed} onChange={setSlitScanSpeed} min="0" max="4" step="0.1" />
+                </EffectSection>
+              )}
+              {activeEffects.includes('nested-frames') && (
+                <EffectSection id="nested-frames" label="Nested Frames" isMulti={isMulti} expanded={!collapsedEffects.has('nested-frames')} onToggle={toggleEffectCollapsed}>
+                  <SliderRow label="Frames:" title="How many inset copies are stacked." value={nestedFramesCount} onChange={setNestedFramesCount} min="1" max="14" step="1" />
+                  <SliderRow label="Shrink:" title="How much smaller each copy is than the one around it." value={nestedFramesShrink} onChange={setNestedFramesShrink} min="0.5" max="0.95" step="0.01" />
+                  <SliderRow label="Point X:" title="Where the copies converge, left to right." value={nestedFramesX} onChange={setNestedFramesX} min="0" max="100" step="1" />
+                  <SliderRow label="Point Y:" title="Where the copies converge, top to bottom." value={nestedFramesY} onChange={setNestedFramesY} min="0" max="100" step="1" />
+                  <SliderRow label="Speed:" title="How fast the copies stream toward the point. Zero freezes them." value={nestedFramesSpeed} onChange={setNestedFramesSpeed} min="0" max="3" step="0.1" />
                 </EffectSection>
               )}
               {activeEffects.includes('triangulate') && (
