@@ -3,7 +3,8 @@ import { Shuffle } from '@phosphor-icons/react';
 import { type EffectType } from '../constants/gradientEffects';
 import { costOf, totalCost, MULTI_FX_COST_BUDGET } from '../constants/effectCost';
 import { EFFECTS_UI_LIST, EFFECT_LABELS } from '../constants/effectRegistry';
-import { EffectSection } from './EffectSection';
+import { EffectSection, EffectOrderCtx } from './EffectSection';
+import { moveItem } from '../utils/moveItem';
 import { EMOJI_PICKER_CATEGORIES, isEmojiRenderable, pickRandomEmojiSet } from '../constants/emojiPicker';
 import { SliderRow } from './SliderRow';
 import { AngleDial } from './AngleDial';
@@ -390,6 +391,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
 
           return (
           <div className="w-full px-1.5 pt-0 pb-1">
+            <EffectOrderCtx.Provider value={isMulti ? { order: activeEffects, move: (id, to) => setActiveEffects(moveItem(activeEffects, activeEffects.indexOf(id as EffectType), to)) } : null}>
             <div className={`flex flex-col ${isMulti ? 'gap-0' : 'gap-2'}`}>
               {activeEffects.includes('ascii') && (
                 <EffectSection id="ascii" label="ASCII" isMulti={isMulti} expanded={!collapsedEffects.has('ascii')} onToggle={toggleEffectCollapsed}>
@@ -1163,6 +1165,7 @@ const EffectsTabInner: React.FC<EffectsTabProps> = (props) => {
                 </EffectSection>
               )}
             </div>
+            </EffectOrderCtx.Provider>
           </div>
           );
         })()}
