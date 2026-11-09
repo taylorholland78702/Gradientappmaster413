@@ -19,8 +19,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useAudioReactivity } from '../hooks/useAudioReactivity';
 import { useVCRPlayback } from '../hooks/useVCRPlayback';
 import { useDisplaySync } from '../hooks/useDisplaySync';
-import { useUndoRedo, lookThumbOf } from '../hooks/useUndoRedo';
-import { captureLookThumb } from '../utils/lookThumb';
+import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useAutoShuffle } from '../hooks/useAutoShuffle';
 import { useExportControls } from '../hooks/useExportControls';
 import { useGifExport } from '../hooks/useGifExport';
@@ -770,25 +769,9 @@ export function InteractiveGradient() {
 
 
   // Save current state for undo (defined early for use in other functions)
-  // The look filmstrip: the picture kept with each saved look, refreshed whenever the history changes.
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const bumpHistory = useCallback(() => setHistoryVersion(v => v + 1), []);
-  const captureThumb = useCallback(() => captureLookThumb(canvasRef.current), []);
-  const { saveCurrentState, undoLastChange, redoLastChange, jumpToLook } = useUndoRedo({
+  const { saveCurrentState, undoLastChange, redoLastChange } = useUndoRedo({
     buildSnapshot, applySnapshot, undoStackRef, undoIndexRef, setUndoDepth, redoStackRef, setRedoDepth,
-    captureThumb, onHistoryChange: bumpHistory,
-});
-  const filmstripLooks = useMemo(
-    () => undoStackRef.current.slice(0, undoIndexRef.current + 1).map((snapshot, index) => ({ index, thumb: lookThumbOf(snapshot) })).slice(-8),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [historyVersion, undoDepth],
-  );
-  // The look on screen now, pictured a moment after the last change so it has settled.
-  const [nowThumb, setNowThumb] = useState<string | null>(null);
-  useEffect(() => {
-    const t = window.setTimeout(() => setNowThumb(captureThumb()), 700);
-    return () => window.clearTimeout(t);
-  }, [historyVersion, undoDepth, captureThumb]);
+  });
 
   // Randomize all colors
   const { applyGradientLook, applyLookValues, applyPalette, colorFamilyRef, keepFamily, setKeepFamily, shuffleColors } = useLooks({ gradientColorsRef, gradientTypeRef, saveCurrentState, setAngleStartOffset, setAttractorPointCount, setAttractorScale, setAttractorSpeed, setCausticsBrightness, setCausticsScale, setCausticsSpeed, setColorsInstant, setFadeDirection, setFieldContrast, setFieldScale, setFieldShapes, setFieldSpeed, setFieldSwirl, setGridColumns, setGridRows, setHatchLayers, setHatchResponse, setHatchSpacing, setHatchSpeed, setHelixTightness, setHelixTurns, setJuliaImaginary, setJuliaIterations, setJuliaSpeed, setJuliaReal, setJuliaZoom, setLavaBlobCount, setLavaBlobSize, setLavaSpeed, setMarbleOctaves, setMarbleSpeed, setMarbleTurbulence, setMarbleVeinFreq, setMetaballCount, setMetaballSize, setMetaballSpeed, setNoiseOctaves, setNoiseScale, setNoiseSpeed, setNoiseType, setNoiseWarp, setPaletteBias, setPaletteSharp, setPaletteStops, setParticlesCount, setParticlesGravity, setParticlesSize, setParticlesSpeed, setParticlesTrail, setRadialBurstCount, setRadialBurstSize, setRadialBurstSpread, setRadialSizeScale, setRadialSpeed, setReactionDiffusionFeed, setReactionDiffusionKill, setReactionDiffusionSpeed, setShapesCount, setShapesSpeed, setShapesSides, setTargetColors, setTilingComplexity, setTilingRotation, setTilingSize, setTilingSymmetry, setTopographicBands, setTopographicLineWidth, setTopographicScale, setTruchetSize, setTruchetThickness, setTruchetSpeed, setTruchetVariation, setVoronoiCellCount, setVoronoiDistortion, setVoronoiSpeed, setWindmillMode });
@@ -1361,7 +1344,7 @@ export function InteractiveGradient() {
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
     isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
-    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} shuffleIntensity={shuffleIntensity} setShuffleIntensity={setShuffleIntensity} filmstripLooks={filmstripLooks} nowThumb={nowThumb} jumpToLook={jumpToLook} loadAudioFile={loadAudioFile} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} shuffleIntensity={shuffleIntensity} setShuffleIntensity={setShuffleIntensity} loadAudioFile={loadAudioFile} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
     setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
     shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}
