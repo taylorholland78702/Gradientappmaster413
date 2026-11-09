@@ -886,7 +886,7 @@ export function InteractiveGradient() {
   // While Auto Shuffle changes the look on a timer, leaving a look alone says nothing about it.
   shuffleLearning.paused = isAutoShuffleOn;
   const {
-    exportSize, setExportSize, exportAspect, setExportAspect,
+    exportSize, setExportSize, exportAspect, setExportAspect, videoSize, setVideoSize,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,
@@ -1338,7 +1338,7 @@ export function InteractiveGradient() {
     autoShufflePopoverRef={autoShufflePopoverRef} autoShuffleScope={autoShuffleScope} canvasRef={canvasRef} containerRef={containerRef}
     controlDrawerTabProps={controlDrawerTabProps} controlRailProps={controlRailProps} copiedKey={copiedKey} copyText={copyText}
     currentPlayerUrl={currentPlayerUrl} dismissWavHint={dismissWavHint} drawerRef={drawerRef} exportAsPNG={exportAsPNG} saveWallpaper={saveWallpaper}
-    exportAspect={exportAspect} exportSize={exportSize} fileInputRef={fileInputRef} handleFileUpload={handleFileUpload}
+    exportAspect={exportAspect} exportSize={exportSize} videoSize={videoSize} setVideoSize={setVideoSize} fileInputRef={fileInputRef} handleFileUpload={handleFileUpload}
     handleMouseDown={handleMouseDown} handleMouseMove={handleMouseMove} handleMouseUp={handleMouseUp} handlePhotoFileChange={handlePhotoFileChange}
     handleTouchCancel={handleTouchCancel} handleTouchEnd={handleTouchEnd} handleTouchMove={handleTouchMove} handleTouchStart={handleTouchStart}
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}

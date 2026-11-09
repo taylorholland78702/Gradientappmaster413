@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  type ExportSize, type ExportAspect, EXPORT_SIZES, EXPORT_ASPECTS,
+  type ExportSize, type ExportAspect, type VideoSize, EXPORT_SIZES, EXPORT_ASPECTS, VIDEO_SIZES,
   EXPORT_MAX_EDGE, EXPORT_MAX_PIXELS, wallpaperTarget,
 } from '../constants/exportOptions';
 import { exportRender } from './useCanvasDraw';
-import { videoEncoderCandidates, pickVideoMultiplier, VIDEO_FPS, PHONE_VIDEO_MAX_EDGE } from '../utils/videoEncoding';
+import { videoEncoderCandidates, pickVideoMultiplier, VIDEO_FPS, PHONE_VIDEO_MAX_EDGE, VIDEO_MAX_EDGE, VIDEO_STANDARD_EDGE } from '../utils/videoEncoding';
 import { isTouchPlatform } from '../utils/touchPlatform';
 import { shareParam } from '../utils/shareLink';
 import { shuffleLearning } from '../utils/shuffleLearning';
@@ -27,6 +27,10 @@ export function useExportControls({
   const [exportSize, setExportSizeState] = useState<ExportSize>(() => {
     try { const v = localStorage.getItem('exportSize'); return EXPORT_SIZES.some(o => o.id === v) ? (v as ExportSize) : 'screen'; } catch { return 'screen'; }
   });
+  const [videoSize, setVideoSizeState] = useState<VideoSize>(() => {
+    try { const v = localStorage.getItem('videoSize'); return VIDEO_SIZES.some(o => o.id === v) ? (v as VideoSize) : '4k'; } catch { return '4k'; }
+  });
+  const setVideoSize = (v: VideoSize) => { setVideoSizeState(v); try { localStorage.setItem('videoSize', v); } catch { /* not saved */ } };
   const [exportAspect, setExportAspectState] = useState<ExportAspect>(() => {
     try { const v = localStorage.getItem('exportAspect'); return EXPORT_ASPECTS.some(o => o.id === v) ? (v as ExportAspect) : 'screen'; } catch { return 'screen'; }
   });
@@ -139,7 +143,7 @@ export function useExportControls({
     return exportAsPNG('download', { w, h, name: 'wallpaper' });
   }, [exportAsPNG]);
 
-  // Starts (or stops) a video take. It always records at 4K, so the artwork is re-rendered at that size first,
+  // Starts (or stops) a video take. It records at 4K (8K when chosen, on a desktop that can encode it), so the artwork is re-rendered at that size first,
   // since the encoder is fixed to the canvas size at the moment recording begins.
   const startVideoTake = async () => {
     if (isRecording) { toggleVCRRecording(); return; }
@@ -157,7 +161,7 @@ export function useExportControls({
             return false;
           }
         : null;
-      const mult = await pickVideoMultiplier(cssW, cssH, supports, isTouchPlatform() ? PHONE_VIDEO_MAX_EDGE : Infinity);
+      const mult = await pickVideoMultiplier(cssW, cssH, supports, isTouchPlatform() ? PHONE_VIDEO_MAX_EDGE : videoSize === '8k' ? VIDEO_MAX_EDGE : VIDEO_STANDARD_EDGE);
       exportRender.multiplier = mult;
       drawParamsDirtyRef.current = true;
       sized = true;
@@ -186,7 +190,7 @@ export function useExportControls({
   }, [isRecording]);
 
   return {
-    exportSize, setExportSize, exportAspect, setExportAspect,
+    exportSize, setExportSize, exportAspect, setExportAspect, videoSize, setVideoSize,
     copiedKey, copyText, currentPlayerUrl,
     savePreview, setSavePreview, exportAsPNG, saveWallpaper,
     startVideoTake,

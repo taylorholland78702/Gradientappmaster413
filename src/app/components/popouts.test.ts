@@ -12,6 +12,7 @@ const exportProps = (over: Partial<Parameters<typeof ExportPopout>[0]> = {}) => 
   closePopover: noop,
   copiedKey: null, copyText: noop, currentPlayerUrl: () => 'http://x/?display=1',
   saveWallpaper: noop,
+  videoSize: '4k' as const, setVideoSize: noop,
   ...over,
 });
 
@@ -34,7 +35,6 @@ describe('ExportPopout', () => {
     expect(html).toContain('Box 16:9');
     expect(html).toContain('Background');
     expect(html).not.toContain('recording');
-    expect(html).not.toContain('Video');
     expect(html).not.toContain('Copy palette');
   });
 
@@ -44,8 +44,17 @@ describe('ExportPopout', () => {
     expect(mobile).not.toContain('The S key saves it too');
   });
 
-  it('is stills only: no looping clip, GIF, MP4 or video controls', () => {
-    for (const word of ['Looping clip', 'Record loop', 'Loop length', 'Loop format', 'MP4', 'GIF', 'Video']) expect(html).not.toContain(word);
+  it('has no looping clip, GIF or MP4 controls; the only video setting is the size of the Record button\'s take', () => {
+    for (const word of ['Looping clip', 'Record loop', 'Loop length', 'Loop format', 'MP4', 'GIF']) expect(html).not.toContain(word);
+  });
+
+  it('offers a 4K / 8K video size on desktop only, with the chosen one pressed', () => {
+    expect(groupLabels(html, 'Video size')).toEqual(['4K', '8K']);
+    expect(html).toMatch(/aria-pressed="true"[^>]*title="Up to 4K, with a higher bitrate"/);
+    const eight = renderToStaticMarkup(createElement(ExportPopout, exportProps({ videoSize: '8k' })));
+    expect(eight).toMatch(/aria-pressed="true"[^>]*title="Needs a computer that can encode 8K/);
+    const mobile = renderToStaticMarkup(createElement(ExportPopout, exportProps({ isMobile: true })));
+    expect(mobile).not.toContain('Video size');
   });
 
   it('shows Copied on the embed button that was just copied', () => {
