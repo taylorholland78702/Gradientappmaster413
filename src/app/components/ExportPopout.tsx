@@ -25,7 +25,7 @@ export function ExportPopout({
           <span className="text-[10px] text-wav-text-2" title="How big the Record button's video is">Video size</span>
           <ChoiceChips
             ariaLabel="Video size"
-            options={VIDEO_SIZES.map(o => ({ id: o.id, label: o.label, title: o.id === '8k' ? 'Needs a computer that can encode 8K (HEVC); otherwise it records at 4K. Slower to render and a much bigger file.' : 'Up to 4K, with a higher bitrate' }))}
+            options={VIDEO_SIZES.map(o => ({ id: o.id, label: o.label, title: o.id === '8k' ? 'Needs a computer that can encode 8K (HEVC); otherwise it records at 4K. Slower to render and a much bigger file.' : 'Up to 4K, with a high bitrate' }))}
             value={videoSize}
             onChange={setVideoSize}
           />

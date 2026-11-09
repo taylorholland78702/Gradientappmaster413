@@ -50,7 +50,7 @@ describe('ExportPopout', () => {
 
   it('offers a 4K / 8K video size on desktop only, with the chosen one pressed', () => {
     expect(groupLabels(html, 'Video size')).toEqual(['4K', '8K']);
-    expect(html).toMatch(/aria-pressed="true"[^>]*title="Up to 4K, with a higher bitrate"/);
+    expect(html).toMatch(/aria-pressed="true"[^>]*title="Up to 4K, with a high bitrate"/);
     const eight = renderToStaticMarkup(createElement(ExportPopout, exportProps({ videoSize: '8k' })));
     expect(eight).toMatch(/aria-pressed="true"[^>]*title="Needs a computer that can encode 8K/);
     const mobile = renderToStaticMarkup(createElement(ExportPopout, exportProps({ isMobile: true })));

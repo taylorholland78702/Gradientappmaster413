@@ -57,10 +57,11 @@ describe('8K and bitrate', () => {
     expect(big.every(c => videoCodecKind(c.codec) === 'hevc')).toBe(true);
   });
 
-  it('gives bigger frames more bitrate: about 40 Mbps at 4K, more at 8K, and never less than the old flat rates', () => {
+  it('gives bigger frames more bitrate: about 60 Mbps at 4K, about 120 at 8K, and never less than the old flat rates', () => {
     const rate = (w: number, h: number) => videoEncoderCandidates(w, h, 30)[0].bitrate ?? 0;
-    expect(rate(3840, 2160)).toBeGreaterThan(35_000_000);
+    expect(rate(3840, 2160)).toBeGreaterThan(55_000_000);
     expect(rate(7680, 4320)).toBeGreaterThan(rate(3840, 2160));
+    expect(rate(7680, 4320)).toBeGreaterThan(110_000_000);
     expect(rate(7680, 4320)).toBeLessThanOrEqual(150_000_000);
     expect(rate(1280, 720)).toBeGreaterThanOrEqual(20_000_000);
   });
