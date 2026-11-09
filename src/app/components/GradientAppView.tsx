@@ -5,6 +5,7 @@ import type { ChangeEvent, ComponentProps, MouseEvent as ReactMouseEvent, Mutabl
 import { ControlDrawer } from './ControlDrawer';
 import { ControlRail } from './ControlRail';
 import { NoticeToast } from './NoticeToast';
+import { LookFilmstrip, type FilmstripLook } from './LookFilmstrip';
 import { RailPopouts } from './RailPopouts';
 import { WavHint } from './WavHint';
 import { AboutPanel } from './AboutPanel';
@@ -68,6 +69,9 @@ export interface GradientAppViewParams {
   setReduceFlash: (on: boolean) => void;
   shuffleIntensity: number;
   setShuffleIntensity: (v: number) => void;
+  filmstripLooks: FilmstripLook[];
+  nowThumb: string | null;
+  jumpToLook: (index: number) => void;
   loadAudioFile: (file: File) => void;
   clearVideoResult: () => void;
   setAutoShuffleIntervalSec: (sec: number) => void;
@@ -87,7 +91,7 @@ export interface GradientAppViewParams {
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, videoSize, setVideoSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, shuffleIntensity, setShuffleIntensity, loadAudioFile, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, videoSize, setVideoSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, shuffleIntensity, setShuffleIntensity, filmstripLooks, nowThumb, jumpToLook, loadAudioFile, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
   // Dropping an audio file anywhere on the page loads it and starts the music.
   const [isDraggingAudio, setIsDraggingAudio] = React.useState(false);
   const dragDepth = React.useRef(0);
@@ -191,6 +195,11 @@ export function GradientAppView(p: GradientAppViewParams) {
           repositioned now that it can't sit inline under the wordmark
           inside a card anymore (the rail is a slim strip with no room for
           it). Hidden while a drawer is open so it can't overlap one. */}
+      {/* The last few looks along the bottom of the canvas. Hidden with the rest of the controls, and on a phone while a drawer or
+          popout is open over the same space. */}
+      {isControlsVisible && !(isMobile && (activeTab || autoShufflePopoverAnchor || isAboutOpen)) && (
+        <LookFilmstrip looks={filmstripLooks} nowThumb={nowThumb} onJump={jumpToLook} isMobile={isMobile} />
+      )}
       <FlashWarning reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} />
       {isDraggingAudio && (
         <div className="fixed inset-0 z-[65] flex items-center justify-center pointer-events-none" style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)' }} aria-hidden="true">
