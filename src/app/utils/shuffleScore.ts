@@ -1,5 +1,5 @@
 import type { EffectType, GradientType } from '../constants/gradientEffects';
-import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, type Mood } from '../constants/shuffleTaste';
+import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, MOOD_ENERGY, gradientKind, type Mood } from '../constants/shuffleTaste';
 import { ShuffleHistory, pickWeighted } from './shuffleHistory';
 
 // Rolling and judging a shuffled look before it is drawn. Shuffle rolls several candidate looks (a gradient and an
@@ -77,8 +77,12 @@ export function chooseLook(opts: RollOptions, mood: Mood, history: ShuffleHistor
 }
 
 // A mood for this shuffle, steering away from the one just used (and toward the ones you tend to keep).
-export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, learnedMood?: (id: string) => number): Mood {
-  return pickWeighted(MOODS, m => history.weight('mood', m.id) * (learnedMood?.(m.id) ?? 1), rng);
+export function chooseMood(history: ShuffleHistory, rng: () => number = Math.random, learnedMood?: (id: string) => number, intensity = 0.5): Mood {
+  // The further the Intensity setting is from the middle, the more the moods near it are favoured; in the middle every
+  // mood keeps its usual chance, so Shuffle behaves as it always did.
+  const pull = Math.min(1, Math.abs(intensity - 0.5) * 2);
+  const nearness = (m: Mood) => (1 - pull) + pull * (0.05 + Math.exp(-Math.pow((MOOD_ENERGY[m.id] - intensity) / 0.25, 2)));
+  return pickWeighted(MOODS, m => history.weight('mood', m.id) * (learnedMood?.(m.id) ?? 1) * nearness(m), rng);
 }
 
 // Scales a [min, max] range by a mood's strength: a gentle mood keeps the low end, a strong one uses all of it.

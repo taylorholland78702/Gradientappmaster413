@@ -58,6 +58,7 @@ describe('AutoShufflePopout', () => {
     isAutoShuffleOn: false, setIsAutoShuffleOn: vi.fn(),
     autoShuffleIntervalSec: 7, setAutoShuffleIntervalSec: vi.fn(),
     autoShuffleScope: 'all' as const, setAutoShuffleScope: vi.fn(),
+    shuffleIntensity: 0.5, setShuffleIntensity: vi.fn(), reduceFlash: false,
   };
 
   it('lists the scopes, with the interval in seconds and no preset buttons', () => {
@@ -65,6 +66,16 @@ describe('AutoShufflePopout', () => {
     expect(groupLabels(html, 'What Auto Shuffle changes')).toEqual(['All', 'Gradient', 'Effects', 'Colors']);
     expect(html).not.toContain('Auto Shuffle interval presets');
     expect(html).toMatch(/aria-label="Auto Shuffle interval in seconds"[^>]*\/?>\s*<span[^>]*>sec</);
+  });
+
+  it('offers Intensity as a slider and three presets, with the matching one pressed', () => {
+    const html = renderToStaticMarkup(createElement(AutoShufflePopout, base));
+    expect(html).toContain('aria-label="Shuffle intensity"');
+    expect(groupLabels(html, 'Shuffle intensity presets')).toEqual(['Calm', 'Lively', 'Wild']);
+    expect(html).toMatch(/aria-pressed="true"[^>]*title="The usual mix"/);
+    const wild = renderToStaticMarkup(createElement(AutoShufflePopout, { ...base, shuffleIntensity: 0.9, reduceFlash: true }));
+    expect(wild).toMatch(/aria-pressed="true"[^>]*title="Fast, busy looks with many effects"/);
+    expect(wild).toContain('Held back while Reduce flashing is on.');
   });
 
   it('reflects on/off state and the chosen scope', () => {

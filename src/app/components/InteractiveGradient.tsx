@@ -144,6 +144,7 @@ import { useMasterClock } from '../hooks/useMasterClock';
 import { usePopoutAnchor } from '../hooks/usePopoutAnchor';
 import { useAutoColor } from '../hooks/useAutoColor';
 import { useReduceFlash } from '../hooks/useReduceFlash';
+import { useShuffleIntensity } from '../hooks/useShuffleIntensity';
 import { useBeatEffects } from '../hooks/useBeatEffects';
 import { usePhotoUpload } from '../hooks/usePhotoUpload';
 import { generateAIColors as generateAIColorsFor } from '../utils/aiColors';
@@ -404,6 +405,7 @@ export function InteractiveGradient() {
 
   // Per-device accessibility setting: mutes the beat reactions that can strobe.
   const [reduceFlash, setReduceFlash] = useReduceFlash();
+  const [shuffleIntensity, setShuffleIntensity] = useShuffleIntensity();
 
   // useAudioReactivity — all audio state, refs, processing loops
   const audio = useAudioReactivity({
@@ -791,7 +793,7 @@ export function InteractiveGradient() {
     shuffleGradientType, randomizeEffects,
     evolveWithFactor: evolveRaw, shuffleAudiovisuals,
   } = useRandomization({
-    colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
+    shuffleIntensity, colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     randomColor, randomHexColor, ratedResults, saveCurrentState, setActiveEffects,
     setAngleCenterX, setAngleCenterY, setAngleStartOffset, setAsciiSize, setAsciiColor, setAuroraBandCount, setAuroraBandHeight,
@@ -1340,7 +1342,7 @@ export function InteractiveGradient() {
     handleWheel={handleWheel} hasRevealed={hasRevealed} isAboutOpen={isAboutOpen} isAutoShuffleOn={isAutoShuffleOn}
     isControlsVisible={isControlsVisible} isDisplayLinkCopied={isDisplayLinkCopied} isMobile={isMobile} isRecording={isRecording}
     mobilePanelMaxHeight={mobilePanelMaxHeight} motionDenied={motionDenied} panelRef={panelRef} photoInputRef={photoInputRef}
-    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} loadAudioFile={loadAudioFile} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
+    popoverMode={popoverMode} railRect={railRect} savePreview={savePreview} reduceFlash={reduceFlash} setReduceFlash={setReduceFlash} shuffleIntensity={shuffleIntensity} setShuffleIntensity={setShuffleIntensity} loadAudioFile={loadAudioFile} videoResult={videoResult ?? gifResult} clearVideoResult={() => { clearVideoResult(); clearGifResult(); }} setAutoShuffleIntervalSec={setAutoShuffleIntervalSec}
     setAutoShufflePopoverAnchor={setAutoShufflePopoverAnchor} setAutoShuffleScope={setAutoShuffleScope} setExportAspect={setExportAspect} setExportSize={setExportSize}
     setIsAboutOpen={setIsAboutOpen} setIsAutoShuffleOn={setIsAutoShuffleOn} setSavePreview={setSavePreview}
     shakeEnabled={shakeEnabled} shakeWrapperRef={shakeWrapperRef} showWavHint={showWavHint}

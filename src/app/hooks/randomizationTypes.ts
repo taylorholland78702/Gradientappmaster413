@@ -8,6 +8,8 @@ import type { RatedSnapshot } from './snapshotTypes';
 // Everything InteractiveGradient hands to useRandomization. Generated from the call site's inferred type,
 // then checked against it by tsc.
 export interface RandomizationParams {
+  // How calm or wild every shuffle runs, 0-1 (hooks/useShuffleIntensity.ts); 0.5 is the usual behaviour.
+  shuffleIntensity: number;
   colorFamilyRef: MutableRefObject<{ enabled: boolean; anchor: Family; }>;
   activeEffects: EffectType[];
   adjustColorArrayLength: (colors: ColorRGB[], targetLength: number) => ColorRGB[];
