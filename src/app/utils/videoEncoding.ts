@@ -2,26 +2,46 @@ import { EXPORT_MAX_EDGE } from '../constants/exportOptions';
 
 export const VIDEO_FPS = 30;
 
-// H.264 settings to try, best first. Desktop gets High profile at level 5.2; phones usually cannot encode that in real
-// time, so the lower rungs trade bitrate (and, through pickVideoLongEdge, resolution) for something the device can do.
+// The encoder settings to try, best first. Up to 4K it is H.264: High profile at level 5.2 on desktop, and phones usually
+// cannot encode that in real time, so the lower rungs trade bitrate (and, through pickVideoMultiplier, resolution) for
+// something the device can do. Above 4K H.264 stops (its levels top out around 4096 wide), so 8K asks for HEVC.
+// Bitrate follows the frame size (bits per pixel per frame) instead of one flat number, with the old flat rates as a floor,
+// so a 4K take gets about 40 Mbps and an 8K one about 90.
+const MAX_BITRATE = 150_000_000;
+const bitrateFor = (width: number, height: number, framerate: number, bitsPerPixel: number, floor = 0) =>
+  Math.min(MAX_BITRATE, Math.max(floor, Math.round(width * height * framerate * bitsPerPixel)));
+
 export function videoEncoderCandidates(width: number, height: number, framerate: number): VideoEncoderConfig[] {
-  const base = [
-    { codec: 'avc1.640034', bitrate: 20_000_000, hardwareAcceleration: 'prefer-hardware' as const },
-    { codec: 'avc1.4d0033', bitrate: 12_000_000, hardwareAcceleration: 'no-preference' as const },
-    { codec: 'avc1.4d0028', bitrate: 8_000_000, hardwareAcceleration: 'no-preference' as const },
-  ];
-  // Each rung is offered twice: asking for MP4-style output ('avc', which carries the stream description the muxer
-  // needs) first, then without the field for encoders that reject it.
+  const big = Math.max(width, height) > 4096;
+  const base = big
+    ? [
+        { codec: 'hvc1.1.6.L186.B0', bitrate: bitrateFor(width, height, framerate, 0.09), hardwareAcceleration: 'prefer-hardware' as const },
+        { codec: 'hvc1.1.6.L183.B0', bitrate: bitrateFor(width, height, framerate, 0.07), hardwareAcceleration: 'no-preference' as const },
+      ]
+    : [
+        { codec: 'avc1.640034', bitrate: bitrateFor(width, height, framerate, 0.17, 20_000_000), hardwareAcceleration: 'prefer-hardware' as const },
+        { codec: 'avc1.4d0033', bitrate: bitrateFor(width, height, framerate, 0.1, 12_000_000), hardwareAcceleration: 'no-preference' as const },
+        { codec: 'avc1.4d0028', bitrate: bitrateFor(width, height, framerate, 0.06, 8_000_000), hardwareAcceleration: 'no-preference' as const },
+      ];
+  // Each rung is offered twice: asking for MP4-style output (which carries the stream description the muxer needs)
+  // first, then without the field for encoders that reject it.
+  const format = big ? { hevc: { format: 'hevc' as const } } : { avc: { format: 'avc' as const } };
   return base.flatMap(b => [
-    { ...b, width, height, framerate, avc: { format: 'avc' as const } },
-    { ...b, width, height, framerate },
+    { ...b, width, height, framerate, ...format } as VideoEncoderConfig,
+    { ...b, width, height, framerate } as VideoEncoderConfig,
   ]);
 }
 
-// A phone records at about its own screen's resolution: 4K frames are more than its memory and encoder keep up with.
-export const PHONE_VIDEO_MAX_EDGE = 2560;
+// Which codec family a config produced, for the muxer's video track.
+export const videoCodecKind = (codec: string): 'avc' | 'hevc' => (/^(hvc1|hev1)/.test(codec) ? 'hevc' : 'avc');
 
-export const VIDEO_EDGE_LADDER = [3840, 2560, 1920, 1280];
+// A phone goes up to 4K and steps down from there to what its encoder really takes (8K is desktop only).
+export const PHONE_VIDEO_MAX_EDGE = 3840;
+// What a take asks for unless 8K is chosen.
+export const VIDEO_STANDARD_EDGE = 3840;
+export const VIDEO_MAX_EDGE = 7680;
+
+export const VIDEO_EDGE_LADDER = [7680, 3840, 2560, 1920, 1280];
 
 // The render multiplier that puts the canvas's long edge at `longEdge`, nudged until both sides come out even
 // (H.264 needs even dimensions).
@@ -39,7 +59,7 @@ export function evenVideoScale(cssW: number, cssH: number, longEdge: number): nu
 export async function pickVideoMultiplier(
   cssW: number, cssH: number,
   supports: ((w: number, h: number) => Promise<boolean>) | null,
-  maxEdge = Infinity,
+  maxEdge = VIDEO_STANDARD_EDGE,
 ): Promise<number> {
   if (!supports) return evenVideoScale(cssW, cssH, VIDEO_EDGE_LADDER[VIDEO_EDGE_LADDER.length - 1]);
   for (const edge of VIDEO_EDGE_LADDER.filter(e => e <= maxEdge)) {

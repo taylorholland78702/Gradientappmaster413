@@ -15,8 +15,14 @@ export const EXPORT_ASPECTS: { id: ExportAspect; label: string; ratio: number }[
   { id: '16:9', label: '16:9', ratio: 16 / 9 },
   { id: '9:16', label: '9:16', ratio: 9 / 16 },
 ];
-// Record Video always writes 4K: this is the long edge of the take (the artwork is re-rendered at that size).
+// Record Video writes 4K unless 8K is chosen (and the device can encode it): the long edge of the take, the artwork is
+// re-rendered at that size.
 export const VIDEO_LONG_EDGE = 3840;
+export type VideoSize = '4k' | '8k';
+export const VIDEO_SIZES: { id: VideoSize; label: string; longEdge: number }[] = [
+  { id: '4k', label: '4K', longEdge: 3840 },
+  { id: '8k', label: '8K', longEdge: 7680 },
+];
 
 // Canvas backing-store ceilings: one edge, and total pixels (about 36 MB of RGBA x4).
 export const EXPORT_MAX_EDGE = 8192;

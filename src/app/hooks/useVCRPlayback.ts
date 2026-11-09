@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
-import { videoEncoderCandidates, VIDEO_FPS } from '../utils/videoEncoding';
+import { videoEncoderCandidates, videoCodecKind, VIDEO_FPS } from '../utils/videoEncoding';
 import { isTouchPlatform } from '../utils/touchPlatform';
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
@@ -307,7 +307,7 @@ export function useVCRPlayback(params: UseVCRPlaybackParams) {
     const muxer = new Muxer({
       target,
       video: {
-        codec: 'avc',
+        codec: videoCodecKind(config.codec),
         width: canvas.width,
         height: canvas.height,
       },

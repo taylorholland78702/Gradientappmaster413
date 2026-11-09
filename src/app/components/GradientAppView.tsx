@@ -36,6 +36,8 @@ export interface GradientAppViewParams {
   saveWallpaper: () => Promise<void>;
   exportAspect: "screen" | "1:1" | "4:5" | "16:9" | "9:16";
   exportSize: "screen" | "1080" | "4k" | "8k";
+  videoSize: "4k" | "8k";
+  setVideoSize: (v: "4k" | "8k") => void;
   fileInputRef: MutableRefObject<HTMLInputElement>;
   handleFileUpload: (e: ChangeEvent<HTMLInputElement>) => void;
   handleMouseDown: (e: ReactMouseEvent<HTMLCanvasElement>) => void;
@@ -85,7 +87,7 @@ export interface GradientAppViewParams {
 }
 
 export function GradientAppView(p: GradientAppViewParams) {
-  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, shuffleIntensity, setShuffleIntensity, loadAudioFile, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
+  const { saveWallpaper, aboutDialogRef, activeTab, audioFile, audioPanelActions, audioPanelState, audioRef, autoShuffleIntervalSec, autoShufflePopoverAnchor, autoShufflePopoverRef, autoShuffleScope, canvasRef, containerRef, controlDrawerTabProps, controlRailProps, copiedKey, copyText, currentPlayerUrl, dismissWavHint, drawerRef, exportAsPNG, exportAspect, exportSize, videoSize, setVideoSize, fileInputRef, handleFileUpload, handleMouseDown, handleMouseMove, handleMouseUp, handlePhotoFileChange, handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel, hasRevealed, isAboutOpen, isAutoShuffleOn, isControlsVisible, isDisplayLinkCopied, isMobile, isRecording, mobilePanelMaxHeight, motionDenied, panelRef, photoInputRef, popoverMode, railRect, savePreview, videoResult, clearVideoResult, reduceFlash, setReduceFlash, shuffleIntensity, setShuffleIntensity, loadAudioFile, setAutoShuffleIntervalSec, setAutoShufflePopoverAnchor, setAutoShuffleScope, setExportAspect, setExportSize, setIsAboutOpen, setIsAutoShuffleOn, setSavePreview, shakeEnabled, shakeWrapperRef, showWavHint, startVideoTake, tiltEnabled, toggleMotion } = p;
   // Dropping an audio file anywhere on the page loads it and starts the music.
   const [isDraggingAudio, setIsDraggingAudio] = React.useState(false);
   const dragDepth = React.useRef(0);
@@ -260,7 +262,7 @@ export function GradientAppView(p: GradientAppViewParams) {
       <RailPopouts
         mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
         setAnchor={setAutoShufflePopoverAnchor}
-        exportProps={{ copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
+        exportProps={{ copiedKey, copyText, currentPlayerUrl, saveWallpaper, videoSize, setVideoSize }}
         autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
         intensityProps={{ shuffleIntensity, setShuffleIntensity, reduceFlash }}
       />
