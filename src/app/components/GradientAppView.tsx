@@ -58,7 +58,7 @@ export interface GradientAppViewParams {
   motionDenied: boolean;
   panelRef: MutableRefObject<HTMLElement>;
   photoInputRef: MutableRefObject<HTMLInputElement>;
-  popoverMode: "autoShuffle" | "export";
+  popoverMode: "autoShuffle" | "export" | "intensity";
   railRect: { top: number; left: number; right: number; bottom: number; width: number; height: number; };
   savePreview: { url: string; blob: Blob; name: string; };
   videoResult: VideoResult | null;
@@ -261,7 +261,8 @@ export function GradientAppView(p: GradientAppViewParams) {
         mode={popoverMode} anchor={autoShufflePopoverAnchor} popoverRef={autoShufflePopoverRef} isMobile={isMobile}
         setAnchor={setAutoShufflePopoverAnchor}
         exportProps={{ copiedKey, copyText, currentPlayerUrl, saveWallpaper }}
-        autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope, shuffleIntensity, setShuffleIntensity, reduceFlash }}
+        autoShuffleProps={{ isAutoShuffleOn, setIsAutoShuffleOn, autoShuffleIntervalSec, setAutoShuffleIntervalSec, autoShuffleScope, setAutoShuffleScope }}
+        intensityProps={{ shuffleIntensity, setShuffleIntensity, reduceFlash }}
       />
 
       <NoticeToast />

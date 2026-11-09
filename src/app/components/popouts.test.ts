@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ExportPopout } from './ExportPopout';
 import { AutoShufflePopout } from './AutoShufflePopout';
+import { IntensityPopout } from './IntensityPopout';
 
 const noop = () => {};
 
@@ -58,7 +59,6 @@ describe('AutoShufflePopout', () => {
     isAutoShuffleOn: false, setIsAutoShuffleOn: vi.fn(),
     autoShuffleIntervalSec: 7, setAutoShuffleIntervalSec: vi.fn(),
     autoShuffleScope: 'all' as const, setAutoShuffleScope: vi.fn(),
-    shuffleIntensity: 0.5, setShuffleIntensity: vi.fn(), reduceFlash: false,
   };
 
   it('lists the scopes, with the interval in seconds and no preset buttons', () => {
@@ -68,21 +68,25 @@ describe('AutoShufflePopout', () => {
     expect(html).toMatch(/aria-label="Auto Shuffle interval in seconds"[^>]*\/?>\s*<span[^>]*>sec</);
   });
 
-  it('offers Intensity as a slider and three presets, with the matching one pressed', () => {
-    const html = renderToStaticMarkup(createElement(AutoShufflePopout, base));
-    expect(html).toContain('aria-label="Shuffle intensity"');
-    expect(groupLabels(html, 'Shuffle intensity presets')).toEqual(['Calm', 'Lively', 'Wild']);
-    expect(html).toMatch(/aria-pressed="true"[^>]*title="The usual mix"/);
-    const wild = renderToStaticMarkup(createElement(AutoShufflePopout, { ...base, shuffleIntensity: 0.9, reduceFlash: true }));
-    expect(wild).toMatch(/aria-pressed="true"[^>]*title="Fast, busy looks with many effects"/);
-    expect(wild).toContain('Held back while Reduce flashing is on.');
-  });
-
   it('reflects on/off state and the chosen scope', () => {
     const on = renderToStaticMarkup(createElement(AutoShufflePopout, { ...base, isAutoShuffleOn: true, autoShuffleScope: 'colors' }));
     expect(on).toContain('Turn off Auto Shuffle');
     expect(on).toMatch(/aria-pressed="true"[^>]*title="Only roll a new palette"/);
     const off = renderToStaticMarkup(createElement(AutoShufflePopout, base));
     expect(off).toContain('Turn on Auto Shuffle');
+  });
+});
+
+describe('IntensityPopout', () => {
+  const base = { shuffleIntensity: 0.5, setShuffleIntensity: vi.fn(), reduceFlash: false };
+
+  it('offers Intensity as a slider and three presets, with the matching one pressed', () => {
+    const html = renderToStaticMarkup(createElement(IntensityPopout, base));
+    expect(html).toContain('aria-label="Shuffle intensity"');
+    expect(groupLabels(html, 'Shuffle intensity presets')).toEqual(['Calm', 'Lively', 'Wild']);
+    expect(html).toMatch(/aria-pressed="true"[^>]*title="The usual mix"/);
+    const wild = renderToStaticMarkup(createElement(IntensityPopout, { ...base, shuffleIntensity: 0.9, reduceFlash: true }));
+    expect(wild).toMatch(/aria-pressed="true"[^>]*title="Fast, busy looks with many effects"/);
+    expect(wild).toContain('Held back while Reduce flashing is on.');
   });
 });

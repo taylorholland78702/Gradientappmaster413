@@ -912,7 +912,7 @@ export function InteractiveGradient() {
   // instead of the popover, confirming it wasn't clipping-adjacent content
   // but a real "present in the layout, absent from the painted/hit-tested
   // page" case — a portal sidesteps the whole ancestor-clipping chain.
-  const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
+  const { popoverMode, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, autoShufflePopoverRef, openAutoShufflePopover, openExportPopover, openIntensityPopover, openAboutPanel } = usePopoutAnchor({ panelRef, isMobile, activeTab, setActiveTab, setIsAboutOpen });
   // Undo to previous state (up to 10 levels)
   // Apply a snapshot's values to live state (shared by undo and redo)
 
@@ -1305,6 +1305,8 @@ export function InteractiveGradient() {
     setAutoShufflePopoverAnchor,
     openAutoShufflePopover,
     openExportPopover,
+    openIntensityPopover,
+    shuffleIntensity,
     exportAsPNG,
     toggleGifRecording,
     isFinalizingGif,

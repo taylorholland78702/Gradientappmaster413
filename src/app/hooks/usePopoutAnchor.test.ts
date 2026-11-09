@@ -37,6 +37,21 @@ describe('usePopoutAnchor', () => {
     hook.unmount();
   });
 
+  it('Shuffle intensity is its own popout, level with its button, and swaps with Auto Shuffle', () => {
+    const { hook } = setup();
+    const trigger = document.createElement('button');
+    trigger.getBoundingClientRect = () => ({ top: 120, bottom: 150 }) as DOMRect;
+    hook.act(() => hook.current.openIntensityPopover(trigger));
+    expect(hook.current.popoverMode).toBe('intensity');
+    expect(hook.current.autoShufflePopoverAnchor).toMatchObject({ top: 120, left: 60 });
+    hook.act(() => hook.current.openAutoShufflePopover());
+    expect(hook.current.popoverMode).toBe('autoShuffle');
+    hook.act(() => hook.current.openIntensityPopover(trigger));
+    hook.act(() => hook.current.openIntensityPopover(trigger));
+    expect(hook.current.autoShufflePopoverAnchor).toBeNull();
+    hook.unmount();
+  });
+
   it('on mobile it opens full width above the bottom bar', () => {
     const { hook } = setup({ isMobile: true });
     hook.act(() => hook.current.openExportPopover());

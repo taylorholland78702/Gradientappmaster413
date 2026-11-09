@@ -531,7 +531,7 @@ input[type="range"]::-moz-range-thumb:hover {
 .wav-mobile input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; }
 .wav-mobile input[type="number"] { min-height: 36px; }
 /* The bottom bar is one row of narrow, short buttons (it used to wrap to two tall rows). */
-.wav-mobile .wav-rail-btn { height: 40px; width: 28px; }
+.wav-mobile .wav-rail-btn { height: 40px; width: 26px; }
 /* A text field under 16px makes iOS Safari zoom the whole page when it takes focus (and leave it zoomed). */
 .wav-mobile input[type="text"], .wav-mobile input[type="email"], .wav-mobile input[type="password"],
 .wav-mobile input[type="search"], .wav-mobile textarea { font-size: 16px; }

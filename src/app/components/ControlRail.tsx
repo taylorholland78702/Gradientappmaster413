@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import {
-  Shuffle, Infinity as InfinityIcon, Camera, Gif, Circle,
+  Shuffle, Infinity as InfinityIcon, Gauge, Camera, Gif, Circle,
   Gradient, MagicWand, SpeakerHigh, Palette, FloppyDisk,
 } from '@phosphor-icons/react';
 
@@ -24,6 +24,9 @@ export interface ControlRailProps {
   autoShufflePopoverAnchor: unknown;
   setAutoShufflePopoverAnchor: (v: null) => void;
   openAutoShufflePopover: (triggerEl?: HTMLElement | null) => void;
+  openIntensityPopover: (triggerEl?: HTMLElement | null) => void;
+  // How calm or wild Shuffle runs, 0-1 (shown in the intensity button's tooltip).
+  shuffleIntensity: number;
   openExportPopover: (triggerEl?: HTMLElement | null) => void;
 
   // Export
@@ -94,7 +97,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
   const {
     isMobile, onWordmarkClick,
     handleWavClick, isWavPressed, isAutoShuffleOn, isNewPresetPending,
-    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover,
+    autoShuffleIntervalSec, formatAutoShuffleInterval, autoShufflePopoverAnchor, setAutoShufflePopoverAnchor, openAutoShufflePopover, openExportPopover, openIntensityPopover, shuffleIntensity,
     exportAsPNG, toggleGifRecording, isFinalizingGif, isRecordingGif,
     activeTab, setActiveTab, isMicActive, liveSubBassLevel, liveBassLevel, liveMidsLevel, liveTrebleLevel, audioEnergy,
     isRecording, isEncoding, encodingProgress, recordVideo,
@@ -139,7 +142,7 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
     <div
       className={
         isMobile
-          ? 'flex flex-row flex-wrap items-center justify-center gap-x-0.5 gap-y-0 px-1 py-1'
+          ? 'flex flex-row flex-wrap items-center justify-center gap-x-0 gap-y-0 px-1 py-1'
           : 'flex flex-col items-center gap-2 px-1 pt-0.5 pb-2 origin-top-left'
       }
       style={!isMobile ? { transform: `scale(${DESKTOP_RAIL_SCALE})`, width: DESKTOP_RAIL_CONTENT_W } : undefined}
@@ -207,12 +210,20 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button
         onClick={(e) => openAutoShufflePopover(e.currentTarget)}
         className={`${railBtnBase} ${isAutoShuffleOn ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
-        title={`Shuffle options — Intensity, and Auto Shuffle every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-        aria-label="Shuffle options"
+        title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
+        aria-label="Auto Shuffle settings"
         aria-pressed={isAutoShuffleOn}
         disabled={isNewPresetPending}
       >
         <InfinityIcon weight="regular" className={iconCls} />
+      </button>
+      <button
+        onClick={(e) => openIntensityPopover(e.currentTarget)}
+        className={`${railBtnBase} text-white hover:bg-wav-hover`}
+        title={`Shuffle intensity — ${shuffleIntensity < 0.34 ? 'Calm' : shuffleIntensity < 0.67 ? 'Lively' : 'Wild'}`}
+        aria-label="Shuffle intensity"
+      >
+        <Gauge weight="regular" className={iconCls} />
       </button>
 
       <RailSep isMobile={isMobile} />
