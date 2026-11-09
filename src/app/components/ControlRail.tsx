@@ -207,8 +207,8 @@ export const ControlRail = forwardRef<HTMLElement, ControlRailProps>(function Co
       <button
         onClick={(e) => openAutoShufflePopover(e.currentTarget)}
         className={`${railBtnBase} ${isAutoShuffleOn ? 'bg-wav-active text-white' : 'text-white hover:bg-wav-hover'} ${isNewPresetPending ? 'opacity-40 pointer-events-none' : ''}`}
-        title={`Auto Shuffle — remix every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
-        aria-label="Auto Shuffle settings"
+        title={`Shuffle options — Intensity, and Auto Shuffle every ${formatAutoShuffleInterval(autoShuffleIntervalSec)} (⌥⇧W)`}
+        aria-label="Shuffle options"
         aria-pressed={isAutoShuffleOn}
         disabled={isNewPresetPending}
       >

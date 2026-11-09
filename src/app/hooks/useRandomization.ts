@@ -19,11 +19,12 @@ import { shuffleHistory, pickWeighted } from '../utils/shuffleHistory';
 import { chooseLook, chooseMood, scaleRange } from '../utils/shuffleScore';
 import { generatePalette, pickPalette } from '../utils/shufflePalette';
 import { shuffleLearning, type LearnedKind } from '../utils/shuffleLearning';
-import { USE_LEARNED_TASTE } from '../constants/shuffleTaste';
+import { USE_LEARNED_TASTE, tuneMood } from '../constants/shuffleTaste';
 
 // What you have kept steers Shuffle only while USE_LEARNED_TASTE is on; otherwise every learned multiplier is 1.
 const learnedWeight = (kind: LearnedKind, id: string) => (USE_LEARNED_TASTE ? shuffleLearning.weight(kind, id) : 1);
 import { varyLook, nudgeHue, lookVariation } from '../utils/shuffleLook';
+import { effectiveShuffleIntensity } from './useShuffleIntensity';
 import { EFFECT_MOD_CATEGORY } from '../constants/effectRegistry';
 import { randomBindings } from '../utils/randomBindings';
 
@@ -81,7 +82,7 @@ export type { RandomizationParams };
 
 export function useRandomization(params: RandomizationParams) {
   const {
-    colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
+    shuffleIntensity, colorFamilyRef, activeEffects, adjustColorArrayLength, gradientAngle, gradientColors, gradientType, isAudioEnabled, isAudioReactive, isMobile,
     kaleidoscopeSegments, pixelSize, resolutionMultiplier, setResolutionMultiplier,
     setFireworksCount, setFireworksParticleCount, setFireworksTrailFade,
     setLightningBoltCount, setLightningJitter, setLightningBranchiness,
@@ -580,7 +581,9 @@ export function useRandomization(params: RandomizationParams) {
     // canvas).
     const sparseGradient = isSparseContentGradient(gradientType);
     const pool = sparseGradient ? ALL_EFFECTS.filter(e => !CONTENT_ERASERS.includes(e)) : ALL_EFFECTS;
-    const maxEffects = sparseGradient ? 2 : 8;
+    // Intensity sets how many effects can stack: a calm shuffle keeps a few, a wild one can pile up to eight.
+    const intensity = effectiveShuffleIntensity(shuffleIntensity);
+    const maxEffects = sparseGradient ? 2 : Math.max(1, Math.round(1 + 7 * intensity));
     const numEffects = Math.floor(Math.random() * maxEffects) + 1;
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const selectedEffects = shuffled.slice(0, numEffects);
@@ -596,7 +599,7 @@ export function useRandomization(params: RandomizationParams) {
     // etc.) stayed wherever they last were, so repeated shuffles looked
     // identical apart from which effects were on.
     randomizeUncoveredParams();
-  }, [gradientType, saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier]);
+  }, [gradientType, saveCurrentState, randomizeUncoveredParams, setResolutionMultiplier, shuffleIntensity]);
   // Optional overrides let feelingLucky pass the gradient/effects it JUST
   // picked in this same call — without them, this closes over gradientType/
   // activeEffects from the render that triggered it, which is the state
@@ -607,6 +610,8 @@ export function useRandomization(params: RandomizationParams) {
   const shuffleAudiovisuals = useCallback((overrideGradientType?: GradientType, overrideEffects?: EffectType[]) => {
     const effectiveGradientType = overrideGradientType ?? gradientType;
     const effectiveActiveEffects = overrideEffects ?? activeEffects;
+    // Intensity sets how likely the beat reactions (zoom, shake, contrast, palette snap) are to be switched on.
+    const beatChance = 0.1 + 0.8 * effectiveShuffleIntensity(shuffleIntensity);
     setMasterSensitivity(0.1 + Math.random() * 2.9); // 0.1-3
     setSubBassMultiplier(Math.random() * 5);
     setBassMultiplier(Math.random() * 5);
@@ -616,13 +621,13 @@ export function useRandomization(params: RandomizationParams) {
     setBassBeatSync(Math.random() < 0.5);
     setMidsBeatSync(Math.random() < 0.5);
     setTrebleBeatSync(Math.random() < 0.5);
-    setZoomBeatEnabled(Math.random() < 0.5);
-    setShakeBeatEnabled(Math.random() < 0.5);
-    setContrastBeatEnabled(Math.random() < 0.5);
-    setPaletteBeatEnabled(Math.random() < 0.5);
+    setZoomBeatEnabled(Math.random() < beatChance);
+    setShakeBeatEnabled(Math.random() < beatChance);
+    setContrastBeatEnabled(Math.random() < beatChance);
+    setPaletteBeatEnabled(Math.random() < beatChance);
 
     setAudioBindings(randomBindings(effectiveGradientType, effectiveActiveEffects as string[]));
-  }, [gradientType, activeEffects]);
+  }, [gradientType, activeEffects, shuffleIntensity]);
   const feelingLucky = useCallback(() => {
     setShowRatingUI(false);
     setTimeout(() => {
@@ -650,8 +655,11 @@ export function useRandomization(params: RandomizationParams) {
     let finalEffects: EffectType[] = activeEffects;
     // The mood of this shuffle: it steers speed, how hard effects hit, how big the shape sliders run and which
     // effects are favoured (constants/shuffleTaste.ts), and it avoids the mood just used.
-    const mood = chooseMood(shuffleHistory, Math.random, id => learnedWeight('mood', id));
-    shuffleHistory.record('mood', mood.id);
+    const intensity = effectiveShuffleIntensity(shuffleIntensity);
+    const picked = chooseMood(shuffleHistory, Math.random, id => learnedWeight('mood', id), intensity);
+    shuffleHistory.record('mood', picked.id);
+    // The Intensity setting stretches or relaxes the mood (speeds, strength, how many effects stack).
+    const mood = tuneMood(picked, intensity);
     let chosenPalette: string | undefined;
 
     // Get high-rated results (7+) to use as preference guidance
@@ -929,7 +937,7 @@ export function useRandomization(params: RandomizationParams) {
     if (audioActive && finalGradientType) shuffleAudiovisuals(finalGradientType, finalEffects);
 
     // (rating UI shown at top of feelingLucky)
-  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp, setStructuralSeed, setFieldShapes, setFieldSwirl]);
+  }, [gradientType, gradientColors, randomColor, FEELING_LUCKY_GRADIENT_TYPES, ALL_EFFECTS, saveCurrentState, ratedResults, isAudioEnabled, isAudioReactive, AUDIO_GRADIENTS, AUDIO_EFFECTS, randomizeUncoveredParams, shuffleAudiovisuals, setResolutionMultiplier, applyLookValues, adjustColorArrayLength, gradientColors, setPaletteStops, setPaletteBias, setPaletteSharp, setStructuralSeed, setFieldShapes, setFieldSwirl, shuffleIntensity]);
   const evolveWithFactor = useCallback((factor: number) => {
     // At full factor, hand off to feelingLucky for true randomness
     if (factor >= 1) { feelingLucky(); return; }

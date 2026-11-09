@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ShuffleHistory, pickWeighted } from './shuffleHistory';
 import { chooseLook, chooseMood, rollCandidate, scaleRange, scoreLook, type RollOptions } from './shuffleScore';
-import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, moodById } from '../constants/shuffleTaste';
+import { EFFECT_AFFINITY, EFFECT_PAIRS, MOODS, gradientKind, moodById, tuneMood } from '../constants/shuffleTaste';
 import { ALL_EFFECTS } from '../constants/effectRegistry';
 import { FEELING_LUCKY_GRADIENT_TYPES, type EffectType, type GradientType } from '../constants/gradientEffects';
 import { costOf } from '../constants/effectCost';
@@ -190,5 +190,46 @@ describe('shuffle before and after (400 seeded shuffles each)', () => {
     const seen = new Set(rolls.flatMap(r => r.effects));
     const missing = (ALL_EFFECTS as EffectType[]).filter(e => !seen.has(e));
     expect(missing).toEqual([]);
+  });
+});
+
+describe('Shuffle intensity', () => {
+  it('leaves a mood untouched in the middle', () => {
+    for (const m of MOODS) expect(tuneMood(m, 0.5)).toBe(m);
+  });
+
+  it('makes a mood faster, harder-hitting and busier as it rises, and the reverse as it falls', () => {
+    const bold = moodById('bold');
+    const wild = tuneMood(bold, 1), calm = tuneMood(bold, 0);
+    const mean = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    expect(mean(wild.speeds)).toBeGreaterThan(mean(bold.speeds));
+    expect(mean(calm.speeds)).toBeLessThan(mean(bold.speeds));
+    expect(wild.strength).toBeGreaterThan(bold.strength);
+    expect(calm.strength).toBeLessThan(bold.strength);
+    expect(wild.maxEffects).toBeGreaterThanOrEqual(bold.maxEffects);
+    expect(calm.maxEffects).toBeLessThan(bold.maxEffects);
+    expect(calm.shapeChangerChance).toBeLessThan(wild.shapeChangerChance);
+  });
+
+  it('keeps every value in range at both ends', () => {
+    for (const m of MOODS) for (const i of [0, 1]) {
+      const t = tuneMood(m, i);
+      expect(t.speeds.every(s => s >= 1)).toBe(true);
+      expect(t.strength).toBeGreaterThan(0); expect(t.strength).toBeLessThanOrEqual(1);
+      expect(t.maxEffects).toBeGreaterThanOrEqual(1);
+      expect(t.shapeChangerChance).toBeLessThanOrEqual(1); expect(t.swirlChance).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('picks calm moods when low and wild moods when high, and every mood as usual in the middle', () => {
+    const tally = (intensity: number) => {
+      const h = new ShuffleHistory(); const rng = seeded(7); const counts: Record<string, number> = {};
+      for (let n = 0; n < 600; n++) { const m = chooseMood(h, rng, undefined, intensity); counts[m.id] = (counts[m.id] ?? 0) + 1; }
+      return counts;
+    };
+    const low = tally(0.05), high = tally(0.95), mid = tally(0.5);
+    expect((low.soft ?? 0) + (low.calm ?? 0)).toBeGreaterThan((low.glitchy ?? 0) + (low.bold ?? 0));
+    expect((high.glitchy ?? 0) + (high.bold ?? 0)).toBeGreaterThan((high.soft ?? 0) + (high.calm ?? 0));
+    for (const m of MOODS) expect(mid[m.id] ?? 0).toBeGreaterThan(0);
   });
 });

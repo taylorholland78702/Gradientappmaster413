@@ -27,7 +27,7 @@ export function RailPopouts({ mode, anchor, popoverRef, isMobile, setAnchor, exp
       body: <ExportPopout isMobile={isMobile} closePopover={closePopover} {...exportProps} />,
     },
     autoShuffle: {
-      title: 'Auto Shuffle',
+      title: 'Shuffle',
       icon: <InfinityIcon weight="regular" className={iconCls} />,
       body: <AutoShufflePopout {...autoShuffleProps} />,
     },

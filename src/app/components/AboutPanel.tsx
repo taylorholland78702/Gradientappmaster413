@@ -67,7 +67,7 @@ export function AboutPanel({
               className="flex items-center justify-between gap-2 text-left"
               aria-pressed={isAutoShuffleOn}
             >
-              <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Auto Shuffle — remix every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
+              <span className="flex items-center gap-2"><InfinityIcon weight="regular" className="w-4 h-4 shrink-0" /> Shuffle options — Intensity, and Auto Shuffle every {formatAutoShuffleInterval(autoShuffleIntervalSec)}</span>
               <span className="flex items-center gap-2">
                 <Kbd label="⌥⇧W" />
                 <SwitchTrack on={isAutoShuffleOn} />

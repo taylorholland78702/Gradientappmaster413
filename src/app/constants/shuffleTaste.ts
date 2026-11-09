@@ -94,4 +94,25 @@ export const MOODS: readonly Mood[] = [
     effectBias: { chromatic: 1, crt: 1, shift: 1, pixelate: 1, 'slit-scan': 1, 'chromatic-trails': 1, bloom: -1 } },
 ];
 
+// Where each mood sits between calm (0) and wild (1), so Shuffle can favour the moods near the Intensity setting.
+export const MOOD_ENERGY: Record<MoodId, number> = { soft: 0.1, calm: 0.2, cinematic: 0.4, dense: 0.55, bold: 0.75, glitchy: 0.95 };
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+// A mood stretched or relaxed by the Intensity setting (0 calm, 0.5 as the mood is written, 1 wild): the speeds it picks
+// from, how hard effects hit, how many stack and how often a shape-changer or twist turns up. At 0.5 it returns the mood unchanged.
+export function tuneMood(mood: Mood, intensity: number): Mood {
+  const i = clamp(intensity, 0, 1);
+  if (Math.abs(i - 0.5) < 1e-9) return mood;
+  const speedScale = 0.5 + i;
+  return {
+    ...mood,
+    speeds: mood.speeds.map(s => Math.max(1, Math.round(s * speedScale))),
+    strength: clamp(mood.strength * (0.6 + 0.8 * i), 0.05, 1),
+    maxEffects: clamp(Math.round(mood.maxEffects * (0.5 + i)), 1, 8),
+    shapeChangerChance: clamp(mood.shapeChangerChance * (0.4 + 1.2 * i), 0, 1),
+    swirlChance: clamp(mood.swirlChance * (0.4 + 1.2 * i), 0, 1),
+  };
+}
+
 export const moodById = (id: MoodId): Mood => MOODS.find(m => m.id === id) ?? MOODS[0];
